@@ -15,7 +15,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
-import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import AdminAuthPage from "./pages/admin/AdminAuthPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
@@ -45,8 +45,9 @@ const AppContent = () => {
         <Route path="/contact" element={<ContactPage />} />
         
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLoginPage />} />
+        <Route path="/admin/auth" element={<AdminAuthPage />} />
         <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="orders" element={<AdminOrders />} />
