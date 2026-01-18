@@ -1,45 +1,16 @@
-import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Zap } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCartStore, formatPrice } from '@/lib/store';
-import { useToast } from '@/hooks/use-toast';
+import { formatPrice } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/hooks/useProducts';
 
 interface ProductCardProps {
   product: Product;
   className?: string;
+  onViewDetails: (product: Product) => void;
 }
 
-const ProductCard = ({ product, className }: ProductCardProps) => {
-  const navigate = useNavigate();
-  const addItem = useCartStore((state) => state.addItem);
-  const { toast } = useToast();
-
-  // Convert Product from useProducts to cart format
-  const cartProduct = {
-    id: product.id,
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    oldPrice: product.old_price ?? undefined,
-    image: product.image_url,
-    category: product.category,
-  };
-
-  const handleAddToCart = () => {
-    addItem(cartProduct);
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
-  };
-
-  const handleBuyNow = () => {
-    addItem(cartProduct);
-    navigate('/checkout');
-  };
-
+const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) => {
   const discount = product.old_price
     ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
     : 0;
@@ -92,28 +63,18 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
               {formatPrice(product.old_price)}
             </span>
           )}
-          <span className="text-xs text-muted-foreground">/month</span>
+          <span className="text-xs text-muted-foreground">onwards</span>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Add to Cart
-          </Button>
-          <Button
-            variant="hero"
-            className="flex-1"
-            onClick={handleBuyNow}
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            Buy Now
-          </Button>
-        </div>
+        {/* View Details Button */}
+        <Button
+          variant="hero"
+          className="w-full"
+          onClick={() => onViewDetails(product)}
+        >
+          <Eye className="w-4 h-4 mr-2" />
+          View Details
+        </Button>
       </div>
     </div>
   );
