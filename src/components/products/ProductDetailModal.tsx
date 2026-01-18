@@ -47,7 +47,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
   const { toast } = useToast();
   const { data: pricingPlans = [] } = usePricingPlans(product?.id);
   const { data: additionalImages = [] } = useProductImages(product?.id);
-  
+
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -214,7 +214,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                     alt={product.name}
                     className="w-full h-full object-contain"
                   />
-                  
+
                   {/* Image Navigation */}
                   {allImages.length > 1 && (
                     <>
@@ -230,7 +230,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
-                      
+
                       {/* Image Dots */}
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                         {allImages.map((_, idx) => (
@@ -380,7 +380,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                       <Button
                         variant="outline"
                         size="lg"
-                        className="flex-1 h-11 sm:h-12"
+                        className="w-full sm:flex-1 h-11 sm:h-12"
                         onClick={handleAddToCart}
                         disabled={isOutOfStock}
                       >
@@ -390,7 +390,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                       <Button
                         variant="hero"
                         size="lg"
-                        className="flex-1 h-11 sm:h-12"
+                        className="w-full sm:flex-1 h-11 sm:h-12"
                         onClick={handleBuyNow}
                         disabled={isOutOfStock}
                       >

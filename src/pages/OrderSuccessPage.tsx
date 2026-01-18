@@ -24,6 +24,8 @@ const OrderSuccessPage = () => {
     const storedOrder = sessionStorage.getItem('lastOrder');
     if (storedOrder) {
       setOrderData(JSON.parse(storedOrder));
+      // Clear sensitive data from session storage after reading it
+      sessionStorage.removeItem('lastOrder');
     } else {
       navigate('/');
     }

@@ -16,7 +16,7 @@ const CheckoutPage = () => {
   const { items, getTotal, clearCart } = useCartStore();
   const { toast } = useToast();
   const createOrder = useCreateOrder();
-  
+
   const [formData, setFormData] = useState({
     whatsapp: '',
     name: '',
@@ -39,11 +39,12 @@ const CheckoutPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.whatsapp) {
+
+    const whatsappRegex = /^\+?[\d\s-]{10,}$/;
+    if (!formData.whatsapp || !whatsappRegex.test(formData.whatsapp)) {
       toast({
-        title: "WhatsApp number required",
-        description: "Please enter your WhatsApp number to proceed.",
+        title: "Invalid WhatsApp number",
+        description: "Please enter a valid WhatsApp number (e.g., +94771234567).",
         variant: "destructive",
       });
       return;
@@ -91,7 +92,7 @@ const CheckoutPage = () => {
       // Upload payment proof
       const fileExt = proofFile.name.split('.').pop();
       const fileName = `${orderId}-${Date.now()}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('payment-proofs')
         .upload(fileName, proofFile);
@@ -144,7 +145,7 @@ const CheckoutPage = () => {
       };
 
       sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
-      
+
       clearCart();
       navigate('/order-success');
     } catch (error) {
@@ -281,7 +282,7 @@ const CheckoutPage = () => {
                     How it works
                   </p>
                   <p className="text-muted-foreground">
-                    After placing your order, we'll verify your payment and send a confirmation 
+                    After placing your order, we'll verify your payment and send a confirmation
                     message to your WhatsApp with your subscription details.
                   </p>
                 </div>
@@ -326,7 +327,7 @@ const CheckoutPage = () => {
                 {/* Products */}
                 <div className="py-4 space-y-4 border-b border-border">
                   {items.map((item) => (
-                      <div key={item.product.id} className="flex items-start gap-3 sm:gap-4">
+                    <div key={item.product.id} className="flex items-start gap-3 sm:gap-4">
                       <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                         <img
                           src={item.product.image}

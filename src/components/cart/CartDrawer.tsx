@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useCartStore, formatPrice } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -11,6 +12,18 @@ interface CartDrawerProps {
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   const { items, removeItem, updateQuantity, getTotal } = useCartStore();
+
+  // Handle body scroll locking
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   return (
     <>
@@ -82,23 +95,25 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                       <p className="text-xs text-muted-foreground truncate">Plan: {item.product.plan_name}</p>
                     )}
                     <p className="text-sm text-muted-foreground">{formatPrice(item.product.price)}/mo</p>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-3 mt-3">
                       <Button
                         variant="outline"
                         size="icon"
-                        className="w-7 h-7"
+                        className="w-8 h-8 md:w-7 md:h-7"
                         onClick={() => item.quantity > 1 && updateQuantity(item.id, item.quantity - 1)}
+                        aria-label="Decrease quantity"
                       >
-                        <Minus className="w-3 h-3" />
+                        <Minus className="w-3.5 h-3.5 md:w-3 md:h-3" />
                       </Button>
-                      <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                      <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
                       <Button
                         variant="outline"
                         size="icon"
-                        className="w-7 h-7"
+                        className="w-8 h-8 md:w-7 md:h-7"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        aria-label="Increase quantity"
                       >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-3.5 h-3.5 md:w-3 md:h-3" />
                       </Button>
                     </div>
                   </div>

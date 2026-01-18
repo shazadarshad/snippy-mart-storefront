@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/products/ProductCard';
 import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
+import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 
 const HomePage = () => {
   const { data: products = [], isLoading } = useProducts();
@@ -90,7 +91,7 @@ const HomePage = () => {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              AI tools, design software, streaming & more — affordable and fast. 
+              AI tools, design software, streaming & more — affordable and fast.
               Premium digital subscriptions at unbeatable prices.
             </p>
 
@@ -141,7 +142,7 @@ const HomePage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/20 to-background" />
         <div className="absolute top-1/2 left-0 w-72 h-72 bg-primary/10 rounded-full blur-[100px] -translate-y-1/2" />
         <div className="absolute top-1/2 right-0 w-72 h-72 bg-accent/10 rounded-full blur-[100px] -translate-y-1/2" />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
@@ -179,7 +180,7 @@ const HomePage = () => {
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/40 to-accent/5" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
@@ -199,9 +200,7 @@ const HomePage = () => {
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+            <ProductsGridSkeleton count={4} />
           ) : popularProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {popularProducts.map((product) => (
@@ -225,7 +224,7 @@ const HomePage = () => {
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-t from-secondary/30 via-background to-secondary/20" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/10 rounded-full blur-[120px]" />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
@@ -275,7 +274,7 @@ const HomePage = () => {
               Need help choosing a subscription?
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Our team is here to help you find the perfect digital subscription for your needs. 
+              Our team is here to help you find the perfect digital subscription for your needs.
               Contact us on WhatsApp for personalized recommendations.
             </p>
             <Button variant="whatsapp" size="xl" asChild>

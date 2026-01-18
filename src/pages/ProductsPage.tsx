@@ -6,6 +6,7 @@ import ProductCard from '@/components/products/ProductCard';
 import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
+import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 
 const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,9 +104,7 @@ const ProductsPage = () => {
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+          <ProductsGridSkeleton count={8} />
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (

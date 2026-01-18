@@ -15,6 +15,19 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
   const location = useLocation();
   const itemCount = useCartStore((state) => state.getItemCount());
   const { data: settings } = useSiteSettings();
+
+  // Handle body scroll locking for mobile menu
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
+
   const logoUrl = settings?.logo_url;
   const storeName = settings?.store_name || 'Snippy Mart';
 
@@ -34,8 +47,8 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             {logoUrl ? (
-              <img 
-                src={logoUrl} 
+              <img
+                src={logoUrl}
                 alt={storeName}
                 className="h-10 w-auto object-contain transition-transform group-hover:scale-110"
               />
@@ -76,7 +89,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
           {/* Right Side */}
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -113,7 +126,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
                   to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                    "px-4 py-4 rounded-lg text-base font-medium transition-all duration-200",
                     isActive(link.path)
                       ? "bg-secondary text-foreground"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
