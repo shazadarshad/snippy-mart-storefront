@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, Search, Upload, Loader2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, Loader2, X, Eye, EyeOff, Star, Package, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   useProducts,
   useAddProduct,
   useUpdateProduct,
@@ -19,14 +27,20 @@ import {
   useUploadProductImage,
   type Product,
   type ProductFormData,
+  type StockStatus,
 } from '@/hooks/useProducts';
 import {
   useAllPricingPlans,
   useAddPricingPlan,
   useDeletePricingPlan,
-  type PricingPlan,
 } from '@/hooks/usePricingPlans';
+import {
+  useAllProductImages,
+  useAddProductImage,
+  useDeleteProductImage,
+} from '@/hooks/useProductImages';
 import { formatPrice } from '@/lib/store';
+import { cn } from '@/lib/utils';
 
 interface PricingPlanInput {
   id?: string;
@@ -37,15 +51,23 @@ interface PricingPlanInput {
   is_default: boolean;
 }
 
+interface GalleryImageInput {
+  id?: string;
+  image_url: string;
+}
+
 const AdminProducts = () => {
-  const { data: products = [], isLoading } = useProducts();
+  const { data: products = [], isLoading } = useProducts(true); // Include inactive
   const { data: allPricingPlans = [] } = useAllPricingPlans();
+  const { data: allProductImages = [] } = useAllProductImages();
   const addProduct = useAddProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const uploadImage = useUploadProductImage();
   const addPricingPlan = useAddPricingPlan();
   const deletePricingPlan = useDeletePricingPlan();
+  const addProductImage = useAddProductImage();
+  const deleteProductImage = useDeleteProductImage();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -57,10 +79,16 @@ const AdminProducts = () => {
     old_price: null,
     category: '',
     image_url: '/placeholder.svg',
+    is_active: true,
+    is_featured: false,
+    stock_status: 'in_stock',
   });
   const [pricingPlans, setPricingPlans] = useState<PricingPlanInput[]>([]);
   const [existingPlanIds, setExistingPlanIds] = useState<string[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImageInput[]>([]);
+  const [existingImageIds, setExistingImageIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -70,6 +98,10 @@ const AdminProducts = () => {
 
   const getProductPricingPlans = (productId: string) => {
     return allPricingPlans.filter(p => p.product_id === productId);
+  };
+
+  const getProductGalleryImages = (productId: string) => {
+    return allProductImages.filter(img => img.product_id === productId);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -90,10 +122,23 @@ const AdminProducts = () => {
     setFormData((prev) => ({ ...prev, image_url: url }));
   };
 
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const url = await uploadImage.mutateAsync(file);
+    setGalleryImages(prev => [...prev, { image_url: url }]);
+  };
+
+  const handleRemoveGalleryImage = (index: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleOpenDialog = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
       const productPlans = getProductPricingPlans(product.id);
+      const productImages = getProductGalleryImages(product.id);
       setFormData({
         name: product.name,
         description: product.description,
@@ -101,6 +146,9 @@ const AdminProducts = () => {
         old_price: product.old_price ?? null,
         category: product.category,
         image_url: product.image_url,
+        is_active: product.is_active ?? true,
+        is_featured: product.is_featured ?? false,
+        stock_status: product.stock_status ?? 'in_stock',
       });
       setPricingPlans(productPlans.map(p => ({
         id: p.id,
@@ -111,6 +159,11 @@ const AdminProducts = () => {
         is_default: p.is_default,
       })));
       setExistingPlanIds(productPlans.map(p => p.id));
+      setGalleryImages(productImages.map(img => ({
+        id: img.id,
+        image_url: img.image_url,
+      })));
+      setExistingImageIds(productImages.map(img => img.id));
     } else {
       setEditingProduct(null);
       setFormData({
@@ -120,9 +173,14 @@ const AdminProducts = () => {
         old_price: null,
         category: '',
         image_url: '/placeholder.svg',
+        is_active: true,
+        is_featured: false,
+        stock_status: 'in_stock',
       });
       setPricingPlans([]);
       setExistingPlanIds([]);
+      setGalleryImages([]);
+      setExistingImageIds([]);
     }
     setIsDialogOpen(true);
   };
@@ -140,7 +198,6 @@ const AdminProducts = () => {
   const handleRemovePricingPlan = (index: number) => {
     setPricingPlans(prev => {
       const updated = prev.filter((_, i) => i !== index);
-      // Ensure at least one default if any plans exist
       if (updated.length > 0 && !updated.some(p => p.is_default)) {
         updated[0].is_default = true;
       }
@@ -152,7 +209,6 @@ const AdminProducts = () => {
     setPricingPlans(prev => prev.map((plan, i) => {
       if (i === index) {
         if (field === 'is_default' && value === true) {
-          // Set all others to false
           return { ...plan, is_default: true };
         }
         return { ...plan, [field]: value };
@@ -179,12 +235,19 @@ const AdminProducts = () => {
       for (const planId of plansToDelete) {
         await deletePricingPlan.mutateAsync(planId);
       }
+
+      // Delete removed images
+      const currentImageIds = galleryImages.filter(img => img.id).map(img => img.id!);
+      const imagesToDelete = existingImageIds.filter(id => !currentImageIds.includes(id));
+      for (const imageId of imagesToDelete) {
+        await deleteProductImage.mutateAsync(imageId);
+      }
     } else {
       const newProduct = await addProduct.mutateAsync(formData);
       productId = newProduct.id;
     }
 
-    // Add/update pricing plans
+    // Add new pricing plans
     for (const plan of pricingPlans) {
       if (!plan.id) {
         await addPricingPlan.mutateAsync({
@@ -198,6 +261,18 @@ const AdminProducts = () => {
       }
     }
 
+    // Add new gallery images
+    for (let i = 0; i < galleryImages.length; i++) {
+      const img = galleryImages[i];
+      if (!img.id) {
+        await addProductImage.mutateAsync({
+          product_id: productId,
+          image_url: img.image_url,
+          sort_order: i,
+        });
+      }
+    }
+
     setIsDialogOpen(false);
   };
 
@@ -205,7 +280,37 @@ const AdminProducts = () => {
     await deleteProduct.mutateAsync(productId);
   };
 
-  const isSubmitting = addProduct.isPending || updateProduct.isPending || addPricingPlan.isPending;
+  const handleToggleActive = async (product: Product) => {
+    await updateProduct.mutateAsync({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      old_price: product.old_price,
+      category: product.category,
+      image_url: product.image_url,
+      is_active: !product.is_active,
+      is_featured: product.is_featured,
+      stock_status: product.stock_status,
+    });
+  };
+
+  const handleToggleFeatured = async (product: Product) => {
+    await updateProduct.mutateAsync({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      old_price: product.old_price,
+      category: product.category,
+      image_url: product.image_url,
+      is_active: product.is_active,
+      is_featured: !product.is_featured,
+      stock_status: product.stock_status,
+    });
+  };
+
+  const isSubmitting = addProduct.isPending || updateProduct.isPending || addPricingPlan.isPending || addProductImage.isPending;
 
   return (
     <div>
@@ -240,6 +345,7 @@ const AdminProducts = () => {
                   required
                 />
               </div>
+
               <div>
                 <Label htmlFor="description" className="text-foreground">Description</Label>
                 <Textarea
@@ -252,6 +358,7 @@ const AdminProducts = () => {
                   required
                 />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="price" className="text-foreground">Base Price (Rs.)</Label>
@@ -279,19 +386,64 @@ const AdminProducts = () => {
                   />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="category" className="text-foreground">Category</Label>
-                <Input
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="mt-1.5 bg-secondary/50 border-border"
-                  required
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="category" className="text-foreground">Category</Label>
+                  <Input
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="mt-1.5 bg-secondary/50 border-border"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="text-foreground">Stock Status</Label>
+                  <Select
+                    value={formData.stock_status}
+                    onValueChange={(value: StockStatus) => setFormData(prev => ({ ...prev, stock_status: value }))}
+                  >
+                    <SelectTrigger className="mt-1.5 bg-secondary/50 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      <SelectItem value="in_stock">In Stock</SelectItem>
+                      <SelectItem value="limited">Limited</SelectItem>
+                      <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
+              {/* Status Toggles */}
+              <div className="flex flex-wrap gap-6 py-2">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                  />
+                  <Label htmlFor="is_active" className="text-foreground cursor-pointer">
+                    Active (visible to customers)
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="is_featured"
+                    checked={formData.is_featured}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
+                  />
+                  <Label htmlFor="is_featured" className="text-foreground cursor-pointer">
+                    Featured on homepage
+                  </Label>
+                </div>
+              </div>
+
+              {/* Main Image */}
               <div>
-                <Label className="text-foreground">Product Image</Label>
+                <Label className="text-foreground">Main Product Image</Label>
                 <div className="mt-1.5 flex items-center gap-4">
                   <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden">
                     <img
@@ -321,6 +473,45 @@ const AdminProducts = () => {
                     )}
                     Upload
                   </Button>
+                </div>
+              </div>
+
+              {/* Gallery Images */}
+              <div>
+                <Label className="text-foreground">Gallery Images (optional)</Label>
+                <p className="text-xs text-muted-foreground mb-2">Add additional images for the product gallery</p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {galleryImages.map((img, idx) => (
+                    <div key={idx} className="relative w-16 h-16 rounded-lg bg-muted overflow-hidden group">
+                      <img
+                        src={img.image_url}
+                        alt={`Gallery ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGalleryImage(idx)}
+                        className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGalleryUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    disabled={uploadImage.isPending}
+                    className="w-16 h-16 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 
@@ -456,6 +647,7 @@ const AdminProducts = () => {
                     <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Product</th>
                     <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Category</th>
                     <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Price</th>
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Status</th>
                     <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Plans</th>
                     <th className="text-right text-sm font-medium text-muted-foreground py-4 px-4">Actions</th>
                   </tr>
@@ -463,19 +655,30 @@ const AdminProducts = () => {
                 <tbody>
                   {filteredProducts.map((product) => {
                     const productPlans = getProductPricingPlans(product.id);
+                    const productImages = getProductGalleryImages(product.id);
                     return (
-                      <tr key={product.id} className="border-t border-border">
+                      <tr key={product.id} className={cn("border-t border-border", !product.is_active && "opacity-60")}>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                            <div className="relative w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                               <img
                                 src={product.image_url}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                               />
+                              {productImages.length > 0 && (
+                                <div className="absolute bottom-0 right-0 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center rounded-tl">
+                                  +{productImages.length}
+                                </div>
+                              )}
                             </div>
                             <div>
-                              <p className="font-medium text-foreground">{product.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-foreground">{product.name}</p>
+                                {product.is_featured && (
+                                  <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
                             </div>
                           </div>
@@ -494,6 +697,25 @@ const AdminProducts = () => {
                           )}
                         </td>
                         <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1">
+                            <span className={cn(
+                              "px-2 py-0.5 rounded text-xs font-medium w-fit",
+                              product.is_active ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                            )}>
+                              {product.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                            <span className={cn(
+                              "px-2 py-0.5 rounded text-xs w-fit",
+                              product.stock_status === 'in_stock' ? "bg-green-500/10 text-green-500" :
+                              product.stock_status === 'limited' ? "bg-amber-500/10 text-amber-500" :
+                              "bg-red-500/10 text-red-500"
+                            )}>
+                              {product.stock_status === 'in_stock' ? 'In Stock' :
+                               product.stock_status === 'limited' ? 'Limited' : 'Out of Stock'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
                           {productPlans.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {productPlans.map(plan => (
@@ -510,7 +732,30 @@ const AdminProducts = () => {
                           )}
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleToggleActive(product)}
+                              title={product.is_active ? 'Deactivate' : 'Activate'}
+                            >
+                              {product.is_active ? (
+                                <Eye className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <EyeOff className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleToggleFeatured(product)}
+                              title={product.is_featured ? 'Remove from featured' : 'Add to featured'}
+                            >
+                              <Star className={cn(
+                                "w-4 h-4",
+                                product.is_featured ? "text-amber-500 fill-amber-500" : "text-muted-foreground"
+                              )} />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"

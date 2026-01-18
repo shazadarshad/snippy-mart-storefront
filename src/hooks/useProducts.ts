@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+export type StockStatus = 'in_stock' | 'limited' | 'out_of_stock';
+
 export interface Product {
   id: string;
   name: string;
@@ -10,6 +12,9 @@ export interface Product {
   old_price?: number | null;
   category: string;
   image_url: string;
+  is_active?: boolean;
+  is_featured?: boolean;
+  stock_status?: StockStatus;
   created_at?: string;
   updated_at?: string;
 }
@@ -21,16 +26,42 @@ export interface ProductFormData {
   old_price?: number | null;
   category: string;
   image_url: string;
+  is_active?: boolean;
+  is_featured?: boolean;
+  stock_status?: StockStatus;
 }
 
-// Fetch all products
-export const useProducts = () => {
+// Fetch all products (active only for public, all for admin)
+export const useProducts = (includeInactive = false) => {
   return useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', includeInactive],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!includeInactive) {
+        query = query.eq('is_active', true);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Product[];
+    },
+  });
+};
+
+// Fetch featured products
+export const useFeaturedProducts = () => {
+  return useQuery({
+    queryKey: ['products', 'featured'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .eq('is_active', true)
+        .eq('is_featured', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

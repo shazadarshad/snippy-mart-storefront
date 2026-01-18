@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      product_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          product_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          product_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          product_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_pricing_plans: {
         Row: {
           created_at: string
@@ -65,9 +97,12 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
           name: string
           old_price: number | null
           price: number
+          stock_status: string | null
           updated_at: string
         }
         Insert: {
@@ -76,9 +111,12 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
           name: string
           old_price?: number | null
           price: number
+          stock_status?: string | null
           updated_at?: string
         }
         Update: {
@@ -87,9 +125,12 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
           name?: string
           old_price?: number | null
           price?: number
+          stock_status?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X, ShoppingCart, Zap, Check } from 'lucide-react';
+import { X, ShoppingCart, Zap, Check, Share2, Copy, MessageCircle, ChevronLeft, ChevronRight, Package, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCartStore, formatPrice } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 import { usePricingPlans, type PricingPlan } from '@/hooks/usePricingPlans';
+import { useProductImages } from '@/hooks/useProductImages';
 import type { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 
@@ -15,13 +16,43 @@ interface ProductDetailModalProps {
   onClose: () => void;
 }
 
+const StockIndicator = ({ status }: { status?: string }) => {
+  if (!status || status === 'in_stock') {
+    return (
+      <div className="flex items-center gap-2 text-green-500">
+        <Package className="w-4 h-4" />
+        <span className="text-sm font-medium">In Stock</span>
+      </div>
+    );
+  }
+  if (status === 'limited') {
+    return (
+      <div className="flex items-center gap-2 text-amber-500">
+        <AlertTriangle className="w-4 h-4" />
+        <span className="text-sm font-medium">Limited Availability</span>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2 text-red-500">
+      <AlertTriangle className="w-4 h-4" />
+      <span className="text-sm font-medium">Out of Stock</span>
+    </div>
+  );
+};
+
 const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProps) => {
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const { toast } = useToast();
   const { data: pricingPlans = [] } = usePricingPlans(product?.id);
+  const { data: additionalImages = [] } = useProductImages(product?.id);
   
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Build images array: main image + additional images
+  const allImages = product ? [product.image_url, ...additionalImages.map(img => img.image_url)] : [];
 
   // Set default plan when plans load
   useEffect(() => {
@@ -29,10 +60,14 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
       const defaultPlan = pricingPlans.find(p => p.is_default) || pricingPlans[0];
       setSelectedPlan(defaultPlan);
     } else if (product) {
-      // Fallback to product price if no plans
       setSelectedPlan(null);
     }
   }, [pricingPlans, product]);
+
+  // Reset image index when product changes
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [product?.id]);
 
   // Close on escape key
   useEffect(() => {
@@ -53,7 +88,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
   const currentPrice = selectedPlan?.price ?? product.price;
   const currentOldPrice = selectedPlan?.old_price ?? product.old_price;
-  const planName = selectedPlan?.name ?? '';
+  const isOutOfStock = product.stock_status === 'out_of_stock';
 
   const discount = currentOldPrice
     ? Math.round(((currentOldPrice - currentPrice) / currentOldPrice) * 100)
@@ -70,6 +105,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
   };
 
   const handleAddToCart = () => {
+    if (isOutOfStock) return;
     addItem(cartProduct);
     toast({
       title: "Added to cart",
@@ -79,9 +115,33 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
   };
 
   const handleBuyNow = () => {
+    if (isOutOfStock) return;
     addItem(cartProduct);
     onClose();
     navigate('/checkout');
+  };
+
+  const handleShareWhatsApp = () => {
+    const url = window.location.origin + '/products';
+    const text = `Check out ${product.name} on Snippy Mart! ${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleCopyLink = async () => {
+    const url = window.location.origin + '/products';
+    await navigator.clipboard.writeText(url);
+    toast({
+      title: "Link copied",
+      description: "Product link has been copied to clipboard.",
+    });
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
   // Parse description for formatting
@@ -89,7 +149,6 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     const lines = desc.split('\n').filter(line => line.trim());
     return lines.map((line, idx) => {
       const trimmed = line.trim();
-      // Check for bullet points
       if (trimmed.startsWith('*') || trimmed.startsWith('-') || trimmed.startsWith('•')) {
         return (
           <li key={idx} className="flex items-start gap-2 text-muted-foreground">
@@ -98,7 +157,6 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
           </li>
         );
       }
-      // Check for emoji headers
       if (/^[🔥✨💎🎯🚀💡⭐]/.test(trimmed)) {
         return (
           <h3 key={idx} className="text-lg font-semibold text-foreground mt-4 first:mt-0">
@@ -147,13 +205,46 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
               {/* Content */}
               <div className="flex flex-col md:flex-row h-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto md:overflow-hidden">
-                {/* Image Section */}
-                <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-square bg-muted flex-shrink-0 flex items-center justify-center">
+                {/* Image Section with Gallery */}
+                <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-square bg-muted flex-shrink-0">
                   <img
-                    src={product.image_url}
+                    src={allImages[currentImageIndex] || product.image_url}
                     alt={product.name}
                     className="w-full h-full object-contain"
                   />
+                  
+                  {/* Image Navigation */}
+                  {allImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                      
+                      {/* Image Dots */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {allImages.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentImageIndex(idx)}
+                            className={cn(
+                              "w-2 h-2 rounded-full transition-colors",
+                              idx === currentImageIndex ? "bg-white" : "bg-white/50"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+
                   {discount > 0 && (
                     <div className="absolute top-2 sm:top-4 left-2 sm:left-4 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold">
                       -{discount}% OFF
@@ -164,15 +255,37 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 {/* Details Section */}
                 <div className="flex-1 flex flex-col overflow-hidden md:overflow-y-auto">
                   <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-                    {/* Category */}
-                    <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider mb-2 sm:mb-3">
-                      {product.category}
-                    </span>
+                    {/* Category & Stock */}
+                    <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-3">
+                      <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
+                        {product.category}
+                      </span>
+                      <StockIndicator status={product.stock_status} />
+                    </div>
 
                     {/* Title */}
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-3 sm:mb-4">
                       {product.name}
                     </h2>
+
+                    {/* Share Buttons */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-sm text-muted-foreground">Share:</span>
+                      <button
+                        onClick={handleShareWhatsApp}
+                        className="p-2 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] transition-colors"
+                        title="Share on WhatsApp"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleCopyLink}
+                        className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                        title="Copy link"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
 
                     {/* Description */}
                     <div className="space-y-2 mb-6">
@@ -267,18 +380,20 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                         size="lg"
                         className="flex-1 h-11 sm:h-12"
                         onClick={handleAddToCart}
+                        disabled={isOutOfStock}
                       >
                         <ShoppingCart className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-                        Add to Cart
+                        {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                       </Button>
                       <Button
                         variant="hero"
                         size="lg"
                         className="flex-1 h-11 sm:h-12"
                         onClick={handleBuyNow}
+                        disabled={isOutOfStock}
                       >
                         <Zap className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-                        Buy Now
+                        {isOutOfStock ? 'Unavailable' : 'Buy Now'}
                       </Button>
                     </div>
                   </div>
