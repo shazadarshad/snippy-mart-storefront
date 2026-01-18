@@ -90,8 +90,8 @@ const HomePage = () => {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Netflix, AI tools, design tools & more — affordable and fast. 
-              Get the best digital subscriptions at unbeatable prices.
+              AI tools, design software, streaming & more — affordable and fast. 
+              Premium digital subscriptions at unbeatable prices.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
