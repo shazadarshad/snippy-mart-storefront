@@ -262,6 +262,7 @@ const CheckoutPage = () => {
                   onBinanceIdChange={setBinanceId}
                   proofFile={proofFile}
                   onProofFileChange={setProofFile}
+                  orderId={orderId}
                 />
               </div>
 
