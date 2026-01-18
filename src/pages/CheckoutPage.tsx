@@ -142,10 +142,11 @@ const CheckoutPage = () => {
       clearCart();
       navigate('/order-success');
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       console.error('Order creation failed:', error);
       toast({
         title: "Order failed",
-        description: "Something went wrong. Please try again.",
+        description: message,
         variant: "destructive",
       });
     } finally {
