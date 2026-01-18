@@ -104,6 +104,11 @@ const CheckoutPage = () => {
       const paymentProofPath = fileName;
 
       // Create order in database
+      const invalid = items.find((i) => i.product.id.length !== 36);
+      if (invalid) {
+        throw new Error('Your cart has an invalid item (old cached data). Please clear the cart and add items again.');
+      }
+
       await createOrder.mutateAsync({
         order_number: orderId,
         customer_name: formData.name || 'Customer',

@@ -37,7 +37,7 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
 
-  const { data: orders = [], isLoading, refetch } = useOrders();
+  const { data: orders = [], isLoading, error, refetch } = useOrders();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
 
@@ -211,6 +211,19 @@ const AdminOrders = () => {
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : error ? (
+        <div className="p-6 rounded-xl bg-destructive/10 border border-destructive/20">
+          <p className="text-sm font-medium text-destructive mb-1">Failed to load orders</p>
+          <p className="text-sm text-muted-foreground break-words">
+            {(error as Error).message || 'Unknown error'}
+          </p>
+          <div className="mt-4">
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
+          </div>
         </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
