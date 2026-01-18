@@ -3,13 +3,16 @@ import { Search, Filter, ChevronDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ProductCard from '@/components/products/ProductCard';
-import { useProducts } from '@/hooks/useProducts';
+import ProductDetailModal from '@/components/products/ProductDetailModal';
+import { useProducts, type Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 
 const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: products = [], isLoading } = useProducts();
 
@@ -21,6 +24,16 @@ const ProductsPage = () => {
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleViewDetails = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedProduct(null), 300);
+  };
 
   return (
     <div className="min-h-screen pt-24 pb-20">
@@ -94,7 +107,11 @@ const ProductsPage = () => {
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onViewDetails={handleViewDetails}
+              />
             ))}
           </div>
         ) : (
@@ -114,6 +131,13 @@ const ProductsPage = () => {
           Showing {filteredProducts.length} of {products.length} products
         </div>
       </div>
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

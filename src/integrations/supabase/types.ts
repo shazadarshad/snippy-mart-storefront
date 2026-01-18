@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      product_pricing_plans: {
+        Row: {
+          created_at: string
+          duration: string
+          id: string
+          is_default: boolean | null
+          name: string
+          old_price: number | null
+          price: number
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration: string
+          id?: string
+          is_default?: boolean | null
+          name: string
+          old_price?: number | null
+          price: number
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration?: string
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          old_price?: number | null
+          price?: number
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_pricing_plans_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string
