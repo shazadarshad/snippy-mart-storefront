@@ -38,6 +38,21 @@ const getCartItemId = (product: Product) => {
   return `${product.id}${product.plan_id ? `:${product.plan_id}` : ''}`;
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const mergeItemsById = (items: CartItem[]) => {
+  const map = new Map<string, CartItem>();
+  for (const item of items) {
+    const existing = map.get(item.id);
+    if (!existing) {
+      map.set(item.id, item);
+      continue;
+    }
+    map.set(item.id, { ...existing, quantity: existing.quantity + item.quantity });
+  }
+  return Array.from(map.values());
+};
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
@@ -76,6 +91,62 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'snippy-cart',
+      version: 2,
+      migrate: (persistedState: any) => {
+        const state = (persistedState?.state ?? persistedState) as any;
+        const items = Array.isArray(state?.items) ? state.items : [];
+
+        const migrated = items.map((raw: any) => {
+          const legacyProduct = raw?.product ?? {};
+
+          // Legacy shape was { product, quantity } and legacy product.id was "<productUuid>-<planUuid>".
+          let baseId = String(legacyProduct.id ?? '');
+          let plan_id: string | undefined = legacyProduct.plan_id;
+          let plan_name: string | undefined = legacyProduct.plan_name;
+          let name: string = String(legacyProduct.name ?? '');
+
+          if (baseId.length > 36 && baseId[36] === '-') {
+            const maybeProductId = baseId.slice(0, 36);
+            const maybePlanId = baseId.slice(37, 73);
+            if (UUID_RE.test(maybeProductId) && UUID_RE.test(maybePlanId)) {
+              baseId = maybeProductId;
+              plan_id = plan_id ?? maybePlanId;
+
+              if (!plan_name) {
+                const m = name.match(/\(([^)]+)\)\s*$/);
+                if (m?.[1]) plan_name = m[1];
+              }
+
+              // Remove "(Plan)" suffix from display name if present.
+              name = name.replace(/\s*\([^)]+\)\s*$/, '');
+            }
+          }
+
+          const product: Product = {
+            id: baseId,
+            name,
+            description: String(legacyProduct.description ?? ''),
+            price: Number(legacyProduct.price ?? 0),
+            oldPrice: legacyProduct.oldPrice ?? undefined,
+            image: String(legacyProduct.image ?? ''),
+            category: String(legacyProduct.category ?? ''),
+            plan_id,
+            plan_name,
+          };
+
+          const id = getCartItemId(product);
+          return {
+            id,
+            product,
+            quantity: Number(raw?.quantity ?? 1),
+          } satisfies CartItem;
+        });
+
+        return {
+          ...state,
+          items: mergeItemsById(migrated),
+        };
+      },
     }
   )
 );

@@ -17,8 +17,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300',
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
         onClick={onClose}
       />
@@ -26,8 +26,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       {/* Drawer */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-full w-full sm:max-w-md bg-card border-l border-border z-50 transition-transform duration-300 ease-out flex flex-col",
-          isOpen ? "translate-x-0" : "translate-x-full"
+          'fixed top-0 right-0 h-full w-full sm:max-w-md bg-card border-l border-border z-50 transition-transform duration-300 ease-out flex flex-col',
+          isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
         {/* Header */}
@@ -66,7 +66,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             <div className="space-y-4">
               {items.map((item) => (
                 <div
-                  key={item.product.id}
+                  key={item.id}
                   className="flex gap-4 p-4 rounded-xl bg-secondary/50 border border-border"
                 >
                   <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -77,34 +77,26 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-foreground truncate">
-                      {item.product.name}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {formatPrice(item.product.price)}/mo
-                    </p>
+                    <h4 className="font-medium text-foreground truncate">{item.product.name}</h4>
+                    {item.product.plan_name && (
+                      <p className="text-xs text-muted-foreground truncate">Plan: {item.product.plan_name}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">{formatPrice(item.product.price)}/mo</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Button
                         variant="outline"
                         size="icon"
                         className="w-7 h-7"
-                        onClick={() =>
-                          item.quantity > 1 &&
-                          updateQuantity(item.product.id, item.quantity - 1)
-                        }
+                        onClick={() => item.quantity > 1 && updateQuantity(item.id, item.quantity - 1)}
                       >
                         <Minus className="w-3 h-3" />
                       </Button>
-                      <span className="w-8 text-center text-sm font-medium">
-                        {item.quantity}
-                      </span>
+                      <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
                       <Button
                         variant="outline"
                         size="icon"
                         className="w-7 h-7"
-                        onClick={() =>
-                          updateQuantity(item.product.id, item.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       >
                         <Plus className="w-3 h-3" />
                       </Button>
@@ -115,7 +107,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                       variant="ghost"
                       size="icon"
                       className="w-7 h-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeItem(item.product.id)}
+                      onClick={() => removeItem(item.id)}
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -134,17 +126,9 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           <div className="p-6 border-t border-border bg-card">
             <div className="flex items-center justify-between mb-4">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-xl font-bold text-foreground">
-                {formatPrice(getTotal())}
-              </span>
+              <span className="text-xl font-bold text-foreground">{formatPrice(getTotal())}</span>
             </div>
-            <Button
-              variant="hero"
-              size="lg"
-              className="w-full"
-              onClick={onClose}
-              asChild
-            >
+            <Button variant="hero" size="lg" className="w-full" onClick={onClose} asChild>
               <Link to="/checkout">
                 Proceed to Checkout
                 <ArrowRight className="w-4 h-4 ml-2" />

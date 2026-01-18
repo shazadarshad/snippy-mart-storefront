@@ -35,6 +35,9 @@ function json(data: unknown, status = 200) {
 }
 
 serve(async (req) => {
+  const url = new URL(req.url);
+  console.log(`[create-order] ${req.method} ${url.pathname}`);
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
@@ -42,6 +45,7 @@ serve(async (req) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
+    console.error("[create-order] Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
     return json({ error: "Missing Supabase env vars" }, 500);
   }
 
@@ -52,13 +56,21 @@ serve(async (req) => {
   let body: CreateOrderBody;
   try {
     body = (await req.json()) as CreateOrderBody;
-  } catch {
+  } catch (e) {
+    console.error("[create-order] Invalid JSON body", e);
     return json({ error: "Invalid JSON body" }, 400);
   }
 
   if (!body.order_number || !body.customer_whatsapp || !Array.isArray(body.items) || body.items.length === 0) {
+    console.error("[create-order] Missing required fields", {
+      order_number: body.order_number,
+      customer_whatsapp: body.customer_whatsapp,
+      items_count: Array.isArray(body.items) ? body.items.length : null,
+    });
     return json({ error: "Missing required fields" }, 400);
   }
+
+  console.log(`[create-order] Creating order ${body.order_number} items=${body.items.length}`);
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -79,6 +91,7 @@ serve(async (req) => {
     .single();
 
   if (orderError || !order) {
+    console.error("[create-order] Failed to create order", orderError);
     return json({ error: orderError?.message ?? "Failed to create order" }, 400);
   }
 
@@ -95,6 +108,7 @@ serve(async (req) => {
   const { error: itemsError } = await supabase.from("order_items").insert(itemsPayload);
 
   if (itemsError) {
+    console.error("[create-order] Failed to create order items", itemsError);
     // best-effort rollback to avoid dangling orders
     await supabase.from("orders").delete().eq("id", order.id);
     return json({ error: itemsError.message ?? "Failed to create order items" }, 400);
