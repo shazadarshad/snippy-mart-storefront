@@ -84,7 +84,7 @@ const ContactPage = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <a
-              href="https://wa.me/94771234567"
+              href="https://wa.me/94787767869"
               target="_blank"
               rel="noopener noreferrer"
               className="p-6 rounded-2xl bg-card border border-border card-hover text-center group"
@@ -94,7 +94,7 @@ const ContactPage = () => {
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">WhatsApp</h3>
               <p className="text-sm text-muted-foreground">Fastest response</p>
-              <p className="text-sm text-primary mt-2">+1 234 567 8900</p>
+              <p className="text-sm text-primary mt-2">+94 78 776 7869</p>
             </a>
 
             <div className="p-6 rounded-2xl bg-card border border-border text-center">
@@ -103,7 +103,7 @@ const ContactPage = () => {
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Email</h3>
               <p className="text-sm text-muted-foreground">For detailed inquiries</p>
-              <p className="text-sm text-primary mt-2">support@snippymart.com</p>
+              <p className="text-sm text-primary mt-2">snippymartco@gmail.com</p>
             </div>
 
             <div className="p-6 rounded-2xl bg-card border border-border text-center">
@@ -210,7 +210,7 @@ const ContactPage = () => {
               Get immediate assistance from our team on WhatsApp. We're available 24/7 to help with any questions.
             </p>
             <Button variant="whatsapp" size="xl" asChild>
-              <a href="https://wa.me/94771234567" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/94787767869" target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="w-5 h-5 mr-2" />
                 Chat on WhatsApp Now
               </a>

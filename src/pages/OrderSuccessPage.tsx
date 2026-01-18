@@ -93,7 +93,7 @@ const OrderSuccessPage = () => {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <Button variant="whatsapp" size="lg" asChild>
-              <a href="https://wa.me/94771234567" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/94787767869" target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="w-5 h-5 mr-2" />
                 Contact Support on WhatsApp
               </a>
