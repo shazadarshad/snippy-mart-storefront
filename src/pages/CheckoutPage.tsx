@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Info, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,8 @@ const CheckoutPage = () => {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const orderId = generateOrderId();
+  const orderIdRef = useRef<string>(generateOrderId());
+  const orderId = orderIdRef.current;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({
@@ -99,19 +100,18 @@ const CheckoutPage = () => {
         throw new Error('Failed to upload payment proof');
       }
 
-      // Get the public URL
-      const { data: urlData } = supabase.storage
-        .from('payment-proofs')
-        .getPublicUrl(fileName);
+      // Store the uploaded file path (bucket is private)
+      const paymentProofPath = fileName;
 
       // Create order in database
       await createOrder.mutateAsync({
+        order_number: orderId,
         customer_name: formData.name || 'Customer',
         customer_whatsapp: formData.whatsapp,
         total_amount: getTotal(),
         notes: formData.notes || undefined,
         payment_method: paymentMethod,
-        payment_proof_url: urlData.publicUrl,
+        payment_proof_url: paymentProofPath,
         binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
         items: items.map((item) => ({
           product_id: item.product.id,
