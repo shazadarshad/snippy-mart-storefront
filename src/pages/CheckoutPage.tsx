@@ -105,7 +105,7 @@ const CheckoutPage = () => {
           Back
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
           {/* Customer Details */}
           <div>
             <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
@@ -225,8 +225,8 @@ const CheckoutPage = () => {
                 {/* Products */}
                 <div className="py-4 space-y-4 border-b border-border">
                   {items.map((item) => (
-                    <div key={item.product.id} className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                      <div key={item.product.id} className="flex items-start gap-3 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                         <img
                           src={item.product.image}
                           alt={item.product.name}

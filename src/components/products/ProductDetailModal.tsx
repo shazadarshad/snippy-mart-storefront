@@ -129,48 +129,48 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
           />
 
           {/* Modal Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="w-full max-w-4xl max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden relative"
+              className="w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] bg-card border border-border rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden relative"
             >
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute right-4 top-4 z-10 p-2 rounded-full bg-secondary/80 hover:bg-secondary text-foreground transition-colors"
+                className="absolute right-2 sm:right-4 top-2 sm:top-4 z-10 p-2 rounded-full bg-secondary/80 hover:bg-secondary text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
 
               {/* Content */}
-              <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
+              <div className="flex flex-col md:flex-row h-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto md:overflow-hidden">
                 {/* Image Section */}
-                <div className="relative w-full md:w-1/2 aspect-square bg-muted flex-shrink-0 flex items-center justify-center">
+                <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-square bg-muted flex-shrink-0 flex items-center justify-center">
                   <img
                     src={product.image_url}
                     alt={product.name}
                     className="w-full h-full object-contain"
                   />
                   {discount > 0 && (
-                    <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                    <div className="absolute top-2 sm:top-4 left-2 sm:left-4 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold">
                       -{discount}% OFF
                     </div>
                   )}
                 </div>
 
                 {/* Details Section */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                <div className="flex-1 flex flex-col overflow-hidden md:overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                     {/* Category */}
-                    <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider mb-3">
+                    <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider mb-2 sm:mb-3">
                       {product.category}
                     </span>
 
                     {/* Title */}
-                    <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-3 sm:mb-4">
                       {product.name}
                     </h2>
 
@@ -240,20 +240,20 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="flex-shrink-0 p-6 md:p-8 pt-0">
+                  <div className="flex-shrink-0 p-4 sm:p-6 md:p-8 pt-0 border-t border-border md:border-t-0 bg-card md:bg-transparent">
                     {/* Selected Plan Summary */}
                     {selectedPlan && (
-                      <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-secondary/50">
+                      <div className="flex items-center justify-between mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-secondary/50">
                         <div>
-                          <p className="text-sm text-muted-foreground">Selected:</p>
-                          <p className="font-semibold text-foreground">{selectedPlan.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Selected:</p>
+                          <p className="text-sm sm:text-base font-semibold text-foreground">{selectedPlan.name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-foreground">
+                          <p className="text-lg sm:text-2xl font-bold text-foreground">
                             {formatPrice(currentPrice)}
                           </p>
                           {currentOldPrice && (
-                            <p className="text-sm text-muted-foreground line-through">
+                            <p className="text-xs sm:text-sm text-muted-foreground line-through">
                               {formatPrice(currentOldPrice)}
                             </p>
                           )}
@@ -261,23 +261,23 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                       </div>
                     )}
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <Button
                         variant="outline"
                         size="lg"
-                        className="flex-1"
+                        className="flex-1 h-11 sm:h-12"
                         onClick={handleAddToCart}
                       >
-                        <ShoppingCart className="w-5 h-5 mr-2" />
+                        <ShoppingCart className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
                         Add to Cart
                       </Button>
                       <Button
                         variant="hero"
                         size="lg"
-                        className="flex-1"
+                        className="flex-1 h-11 sm:h-12"
                         onClick={handleBuyNow}
                       >
-                        <Zap className="w-5 h-5 mr-2" />
+                        <Zap className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
                         Buy Now
                       </Button>
                     </div>

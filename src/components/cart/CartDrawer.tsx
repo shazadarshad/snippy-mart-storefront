@@ -26,7 +26,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       {/* Drawer */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-full w-full max-w-md bg-card border-l border-border z-50 transition-transform duration-300 ease-out flex flex-col",
+          "fixed top-0 right-0 h-full w-full sm:max-w-md bg-card border-l border-border z-50 transition-transform duration-300 ease-out flex flex-col",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
