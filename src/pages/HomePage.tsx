@@ -136,8 +136,13 @@ const HomePage = () => {
       </section>
 
       {/* Why Snippy Mart */}
-      <section className="py-24 lg:py-36 relative">
-        <div className="container mx-auto px-4">
+      <section className="py-24 lg:py-36 relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/20 to-background" />
+        <div className="absolute top-1/2 left-0 w-72 h-72 bg-primary/10 rounded-full blur-[100px] -translate-y-1/2" />
+        <div className="absolute top-1/2 right-0 w-72 h-72 bg-accent/10 rounded-full blur-[100px] -translate-y-1/2" />
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
               Why Choose <span className="gradient-text">Snippy Mart</span>?
@@ -151,7 +156,7 @@ const HomePage = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group p-6 rounded-2xl bg-card border border-border card-hover"
+                className="group p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border card-hover"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
@@ -170,8 +175,12 @@ const HomePage = () => {
       </section>
 
       {/* Popular Products */}
-      <section className="py-24 lg:py-36 bg-secondary/30">
-        <div className="container mx-auto px-4">
+      <section className="py-24 lg:py-36 relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/40 to-accent/5" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
@@ -212,8 +221,12 @@ const HomePage = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 lg:py-36">
-        <div className="container mx-auto px-4">
+      <section className="py-24 lg:py-36 relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-t from-secondary/30 via-background to-secondary/20" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/10 rounded-full blur-[120px]" />
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
               How It <span className="gradient-text">Works</span>
@@ -226,7 +239,7 @@ const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {steps.map((step, index) => (
               <div key={index} className="relative">
-                <div className="p-8 rounded-2xl bg-card border border-border text-center">
+                <div className="p-8 rounded-2xl bg-card/80 backdrop-blur-sm border border-border text-center">
                   <div className="text-5xl font-display font-bold gradient-text mb-4">
                     {step.number}
                   </div>
@@ -238,8 +251,10 @@ const HomePage = () => {
                   </p>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
-                    <ChevronRight className="w-8 h-8 text-primary" />
+                  <div className="hidden md:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                      <ArrowRight className="w-4 h-4 text-primary-foreground" />
+                    </div>
                   </div>
                 )}
               </div>
