@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { formatPrice } from '@/lib/store';
+import { supabase } from '@/integrations/supabase/client';
 import { useOrders, useUpdateOrderStatus, useDeleteOrder, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 
@@ -39,6 +40,9 @@ const AdminOrders = () => {
   const { data: orders = [], isLoading, refetch } = useOrders();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
+
+  const [paymentProofHref, setPaymentProofHref] = useState<string | null>(null);
+  const [isLoadingProof, setIsLoadingProof] = useState(false);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -111,6 +115,38 @@ const AdminOrders = () => {
       day: 'numeric',
     });
   };
+
+  useEffect(() => {
+    const run = async () => {
+      const proof = selectedOrder?.payment_proof_url;
+      if (!selectedOrder || !proof) {
+        setPaymentProofHref(null);
+        return;
+      }
+
+      // Backward compatible: older rows may store a full URL
+      if (/^https?:\/\//i.test(proof)) {
+        setPaymentProofHref(proof);
+        return;
+      }
+
+      setIsLoadingProof(true);
+      try {
+        const { data, error } = await supabase.storage
+          .from('payment-proofs')
+          .createSignedUrl(proof, 60 * 60);
+
+        if (error) throw error;
+        setPaymentProofHref(data?.signedUrl ?? null);
+      } catch {
+        setPaymentProofHref(null);
+      } finally {
+        setIsLoadingProof(false);
+      }
+    };
+
+    run();
+  }, [selectedOrder]);
 
   return (
     <div>
@@ -378,20 +414,34 @@ const AdminOrders = () => {
               {selectedOrder.payment_proof_url && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Payment Proof</p>
-                  <a
-                    href={selectedOrder.payment_proof_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg border border-border hover:border-primary/50 transition-colors"
-                  >
-                    {selectedOrder.payment_proof_url.endsWith('.pdf') ? (
-                      <FileText className="w-5 h-5 text-destructive" />
-                    ) : (
-                      <ImageIcon className="w-5 h-5 text-primary" />
-                    )}
-                    <span className="text-sm font-medium flex-1">View Payment Proof</span>
-                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                  </a>
+
+                  {isLoadingProof ? (
+                    <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg border border-border">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Loading proof…</span>
+                    </div>
+                  ) : paymentProofHref ? (
+                    <a
+                      href={paymentProofHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg border border-border hover:border-primary/50 transition-colors"
+                    >
+                      {(paymentProofHref.split('?')[0] || '').endsWith('.pdf') ? (
+                        <FileText className="w-5 h-5 text-destructive" />
+                      ) : (
+                        <ImageIcon className="w-5 h-5 text-primary" />
+                      )}
+                      <span className="text-sm font-medium flex-1">View Payment Proof</span>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                    </a>
+                  ) : (
+                    <div className="p-3 bg-secondary/50 rounded-lg border border-border">
+                      <p className="text-sm text-muted-foreground">
+                        Could not load the proof file (check Storage access).
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
