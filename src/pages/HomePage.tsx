@@ -112,7 +112,7 @@ const HomePage = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-12 sm:mt-16 pt-12 sm:pt-16 border-t border-border/50 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div>
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-1 sm:mb-2">10K+</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-1 sm:mb-2">2K+</div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Happy Customers</div>
               </div>
               <div>
@@ -136,7 +136,7 @@ const HomePage = () => {
       </section>
 
       {/* Why Snippy Mart */}
-      <section className="py-20 lg:py-32 relative">
+      <section className="py-24 lg:py-36 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
@@ -170,7 +170,7 @@ const HomePage = () => {
       </section>
 
       {/* Popular Products */}
-      <section className="py-20 lg:py-32 bg-secondary/20">
+      <section className="py-24 lg:py-36 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
@@ -212,7 +212,7 @@ const HomePage = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 lg:py-32">
+      <section className="py-24 lg:py-36">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
@@ -249,7 +249,7 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 lg:py-32 relative overflow-hidden">
+      <section className="py-24 lg:py-36 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10" />
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[150px]" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[150px]" />
