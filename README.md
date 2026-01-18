@@ -50,6 +50,58 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+## Supabase CLI Setup
+
+For local development with Supabase edge functions and database migrations, you'll need the Supabase CLI.
+
+### Installation
+
+The Supabase CLI is installed as a dev dependency in this project. Use `npx` to run commands:
+
+```sh
+# Install dependencies (includes Supabase CLI)
+npm install
+```
+
+### Authentication & Project Linking
+
+```sh
+# One-time setup: Login to Supabase
+npx supabase login
+
+# Link to your Supabase project
+npx supabase link --project-ref vuffzfuklzzcnfnubtzx
+```
+
+### Edge Functions Deployment
+
+Edge functions deploy automatically in Lovable. For local development:
+
+```sh
+# Deploy a specific function
+npx supabase functions deploy create-order
+
+# Deploy all functions
+npx supabase functions deploy
+```
+
+View your deployed functions in the [Supabase Dashboard](https://supabase.com/dashboard/project/vuffzfuklzzcnfnubtzx/functions).
+
+### Database Migrations
+
+```sh
+# Apply new migrations to your database
+npx supabase db push
+```
+
+### Environment Variables
+
+For local development, create a `.env.local` file (already in `.gitignore`) for any local-only variables.
+
+### Bidirectional Sync
+
+If you keep Lovable connected to the same GitHub repo, changes you push from local development will sync back to Lovable automatically, and vice versa. This means you can use both tools interchangeably!
+
 ## What technologies are used for this project?
 
 This project is built with:
