@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useCartStore, generateOrderId } from '@/lib/store';
+import { useCartStore, generateOrderId, formatPrice } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 
 const CheckoutPage = () => {
@@ -129,7 +129,7 @@ const CheckoutPage = () => {
                         id="whatsapp"
                         name="whatsapp"
                         type="tel"
-                        placeholder="+1 234 567 8900"
+                        placeholder="+94 77 123 4567"
                         value={formData.whatsapp}
                         onChange={handleInputChange}
                         className="pl-10 h-12 bg-secondary/50 border-border"
@@ -242,7 +242,7 @@ const CheckoutPage = () => {
                         </p>
                       </div>
                       <div className="text-sm font-medium text-foreground">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+                        {formatPrice(item.product.price * item.quantity)}
                       </div>
                     </div>
                   ))}
@@ -252,7 +252,7 @@ const CheckoutPage = () => {
                 <div className="py-4 space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="text-foreground">${getTotal().toFixed(2)}</span>
+                    <span className="text-foreground">{formatPrice(getTotal())}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Processing Fee</span>
@@ -262,7 +262,7 @@ const CheckoutPage = () => {
 
                 <div className="flex items-center justify-between pt-4 border-t border-border">
                   <span className="text-lg font-semibold text-foreground">Total</span>
-                  <span className="text-2xl font-bold gradient-text">${getTotal().toFixed(2)}</span>
+                  <span className="text-2xl font-bold gradient-text">{formatPrice(getTotal())}</span>
                 </div>
               </div>
             </div>

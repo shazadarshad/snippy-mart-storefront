@@ -76,14 +76,25 @@ export const useCartStore = create<CartStore>()(
   )
 );
 
-// Sample products data
+// Currency configuration
+export const CURRENCY = {
+  code: 'LKR',
+  symbol: 'Rs.',
+  locale: 'en-LK',
+};
+
+export const formatPrice = (amount: number) => {
+  return `${CURRENCY.symbol} ${amount.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+// Sample products data (prices in LKR)
 export const products: Product[] = [
   {
     id: '1',
     name: 'Netflix Premium',
     description: '4K Ultra HD streaming with 4 screens. Watch anywhere, anytime.',
-    price: 9.99,
-    oldPrice: 15.99,
+    price: 2999,
+    oldPrice: 4799,
     image: '/placeholder.svg',
     category: 'Streaming',
   },
@@ -91,8 +102,8 @@ export const products: Product[] = [
     id: '2',
     name: 'Spotify Premium',
     description: 'Ad-free music streaming with offline downloads and high quality audio.',
-    price: 4.99,
-    oldPrice: 9.99,
+    price: 1499,
+    oldPrice: 2999,
     image: '/placeholder.svg',
     category: 'Music',
   },
@@ -100,8 +111,8 @@ export const products: Product[] = [
     id: '3',
     name: 'ChatGPT Plus',
     description: 'Access to GPT-4, faster responses, and priority access to new features.',
-    price: 12.99,
-    oldPrice: 20.00,
+    price: 3899,
+    oldPrice: 5999,
     image: '/placeholder.svg',
     category: 'AI Tools',
   },
@@ -109,8 +120,8 @@ export const products: Product[] = [
     id: '4',
     name: 'Canva Pro',
     description: 'Premium design tools, templates, and brand kit for professionals.',
-    price: 6.99,
-    oldPrice: 12.99,
+    price: 2099,
+    oldPrice: 3899,
     image: '/placeholder.svg',
     category: 'Design',
   },
@@ -118,8 +129,8 @@ export const products: Product[] = [
     id: '5',
     name: 'YouTube Premium',
     description: 'Ad-free videos, background play, and YouTube Music included.',
-    price: 5.99,
-    oldPrice: 11.99,
+    price: 1799,
+    oldPrice: 3599,
     image: '/placeholder.svg',
     category: 'Streaming',
   },
@@ -127,8 +138,8 @@ export const products: Product[] = [
     id: '6',
     name: 'Adobe Creative Cloud',
     description: 'Full access to Photoshop, Illustrator, Premiere Pro, and more.',
-    price: 24.99,
-    oldPrice: 54.99,
+    price: 7499,
+    oldPrice: 16499,
     image: '/placeholder.svg',
     category: 'Design',
   },
@@ -136,8 +147,8 @@ export const products: Product[] = [
     id: '7',
     name: 'Disney+ Premium',
     description: 'Marvel, Star Wars, Pixar, and Disney classics in 4K HDR.',
-    price: 6.99,
-    oldPrice: 10.99,
+    price: 2099,
+    oldPrice: 3299,
     image: '/placeholder.svg',
     category: 'Streaming',
   },
@@ -145,8 +156,8 @@ export const products: Product[] = [
     id: '8',
     name: 'Grammarly Premium',
     description: 'Advanced writing assistance with tone detection and plagiarism checker.',
-    price: 7.99,
-    oldPrice: 14.99,
+    price: 2399,
+    oldPrice: 4499,
     image: '/placeholder.svg',
     category: 'Productivity',
   },

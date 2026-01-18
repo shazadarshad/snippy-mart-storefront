@@ -8,12 +8,13 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatPrice } from '@/lib/store';
 
 const AdminDashboard = () => {
   const stats = [
     {
       title: 'Total Revenue',
-      value: '$12,459',
+      value: formatPrice(3745900),
       change: '+12.5%',
       trend: 'up',
       icon: DollarSign,
@@ -50,11 +51,11 @@ const AdminDashboard = () => {
   ];
 
   const recentOrders = [
-    { id: 'SNIP-2026-000123', customer: '+1 234 567 8900', product: 'Netflix Premium', status: 'completed', amount: '$9.99' },
-    { id: 'SNIP-2026-000122', customer: '+1 234 567 8901', product: 'Spotify Premium', status: 'pending', amount: '$4.99' },
-    { id: 'SNIP-2026-000121', customer: '+1 234 567 8902', product: 'ChatGPT Plus', status: 'completed', amount: '$12.99' },
-    { id: 'SNIP-2026-000120', customer: '+1 234 567 8903', product: 'Canva Pro', status: 'cancelled', amount: '$6.99' },
-    { id: 'SNIP-2026-000119', customer: '+1 234 567 8904', product: 'YouTube Premium', status: 'completed', amount: '$5.99' },
+    { id: 'SNIP-2026-000123', customer: '+94 77 123 4567', product: 'Netflix Premium', status: 'completed', amount: formatPrice(2999) },
+    { id: 'SNIP-2026-000122', customer: '+94 77 234 5678', product: 'Spotify Premium', status: 'pending', amount: formatPrice(1499) },
+    { id: 'SNIP-2026-000121', customer: '+94 77 345 6789', product: 'ChatGPT Plus', status: 'completed', amount: formatPrice(3899) },
+    { id: 'SNIP-2026-000120', customer: '+94 77 456 7890', product: 'Canva Pro', status: 'cancelled', amount: formatPrice(2099) },
+    { id: 'SNIP-2026-000119', customer: '+94 77 567 8901', product: 'YouTube Premium', status: 'completed', amount: formatPrice(1799) },
   ];
 
   const getStatusColor = (status: string) => {
