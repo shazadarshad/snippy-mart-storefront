@@ -4,7 +4,7 @@ import { Menu, X, ShoppingCart, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-
+import ThemeToggle from '@/components/ThemeToggle';
 interface NavbarProps {
   onCartOpen: () => void;
 }
@@ -56,7 +56,9 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            
             <Button
               variant="ghost"
               size="icon"
