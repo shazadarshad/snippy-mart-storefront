@@ -128,162 +128,164 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
             onClick={onClose}
           />
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-50 md:w-full md:max-w-4xl md:max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
-          >
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 z-10 p-2 rounded-full bg-secondary/80 hover:bg-secondary text-foreground transition-colors"
+          {/* Modal Container */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="w-full max-w-4xl max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden relative"
             >
-              <X className="w-5 h-5" />
-            </button>
+              {/* Close Button */}
+              <button
+                onClick={onClose}
+                className="absolute right-4 top-4 z-10 p-2 rounded-full bg-secondary/80 hover:bg-secondary text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-            {/* Content */}
-            <div className="flex flex-col md:flex-row h-full max-h-[calc(100vh-2rem)] md:max-h-[90vh]">
-              {/* Image Section */}
-              <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto bg-muted flex-shrink-0">
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-                {discount > 0 && (
-                  <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                    -{discount}% OFF
-                  </div>
-                )}
-              </div>
-
-              {/* Details Section */}
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-y-auto p-6 md:p-8">
-                  {/* Category */}
-                  <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider mb-3">
-                    {product.category}
-                  </span>
-
-                  {/* Title */}
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4">
-                    {product.name}
-                  </h2>
-
-                  {/* Pricing Plans */}
-                  {pricingPlans.length > 0 && (
-                    <div className="mb-6">
-                      <p className="text-sm font-medium text-foreground mb-3">Select Plan:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {pricingPlans.map((plan) => (
-                          <button
-                            key={plan.id}
-                            onClick={() => setSelectedPlan(plan)}
-                            className={cn(
-                              "relative px-4 py-3 rounded-xl border-2 transition-all duration-200",
-                              selectedPlan?.id === plan.id
-                                ? "border-primary bg-primary/10"
-                                : "border-border hover:border-primary/50 bg-secondary/30"
-                            )}
-                          >
-                            <div className="text-sm font-semibold text-foreground">
-                              {plan.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {plan.duration}
-                            </div>
-                            <div className="mt-1 flex items-center gap-2">
-                              <span className="text-lg font-bold text-foreground">
-                                {formatPrice(plan.price)}
-                              </span>
-                              {plan.old_price && (
-                                <span className="text-xs text-muted-foreground line-through">
-                                  {formatPrice(plan.old_price)}
-                                </span>
-                              )}
-                            </div>
-                            {selectedPlan?.id === plan.id && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                                <Check className="w-3 h-3 text-primary-foreground" />
-                              </div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
+              {/* Content */}
+              <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
+                {/* Image Section */}
+                <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto bg-muted flex-shrink-0">
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                  {discount > 0 && (
+                    <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                      -{discount}% OFF
                     </div>
                   )}
-
-                  {/* Price Display (when no plans) */}
-                  {pricingPlans.length === 0 && (
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="text-3xl font-bold text-foreground">
-                        {formatPrice(currentPrice)}
-                      </span>
-                      {currentOldPrice && (
-                        <span className="text-lg text-muted-foreground line-through">
-                          {formatPrice(currentOldPrice)}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <ul className="space-y-2">
-                      {formatDescription(product.description)}
-                    </ul>
-                  </div>
                 </div>
 
-                {/* Actions Footer */}
-                <div className="flex-shrink-0 p-6 md:p-8 pt-0">
-                  {/* Selected Plan Summary */}
-                  {selectedPlan && (
-                    <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-secondary/50">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Selected:</p>
-                        <p className="font-semibold text-foreground">{selectedPlan.name}</p>
+                {/* Details Section */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                    {/* Category */}
+                    <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider mb-3">
+                      {product.category}
+                    </span>
+
+                    {/* Title */}
+                    <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4">
+                      {product.name}
+                    </h2>
+
+                    {/* Pricing Plans */}
+                    {pricingPlans.length > 0 && (
+                      <div className="mb-6">
+                        <p className="text-sm font-medium text-foreground mb-3">Select Plan:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {pricingPlans.map((plan) => (
+                            <button
+                              key={plan.id}
+                              onClick={() => setSelectedPlan(plan)}
+                              className={cn(
+                                "relative px-4 py-3 rounded-xl border-2 transition-all duration-200",
+                                selectedPlan?.id === plan.id
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-primary/50 bg-secondary/30"
+                              )}
+                            >
+                              <div className="text-sm font-semibold text-foreground">
+                                {plan.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {plan.duration}
+                              </div>
+                              <div className="mt-1 flex items-center gap-2">
+                                <span className="text-lg font-bold text-foreground">
+                                  {formatPrice(plan.price)}
+                                </span>
+                                {plan.old_price && (
+                                  <span className="text-xs text-muted-foreground line-through">
+                                    {formatPrice(plan.old_price)}
+                                  </span>
+                                )}
+                              </div>
+                              {selectedPlan?.id === plan.id && (
+                                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-primary-foreground" />
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-foreground">
+                    )}
+
+                    {/* Price Display (when no plans) */}
+                    {pricingPlans.length === 0 && (
+                      <div className="flex items-center gap-3 mb-6">
+                        <span className="text-3xl font-bold text-foreground">
                           {formatPrice(currentPrice)}
-                        </p>
+                        </span>
                         {currentOldPrice && (
-                          <p className="text-sm text-muted-foreground line-through">
+                          <span className="text-lg text-muted-foreground line-through">
                             {formatPrice(currentOldPrice)}
-                          </p>
+                          </span>
                         )}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="flex-1"
-                      onClick={handleAddToCart}
-                    >
-                      <ShoppingCart className="w-5 h-5 mr-2" />
-                      Add to Cart
-                    </Button>
-                    <Button
-                      variant="hero"
-                      size="lg"
-                      className="flex-1"
-                      onClick={handleBuyNow}
-                    >
-                      <Zap className="w-5 h-5 mr-2" />
-                      Buy Now
-                    </Button>
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <ul className="space-y-2">
+                        {formatDescription(product.description)}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="flex-shrink-0 p-6 md:p-8 pt-0">
+                    {/* Selected Plan Summary */}
+                    {selectedPlan && (
+                      <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-secondary/50">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Selected:</p>
+                          <p className="font-semibold text-foreground">{selectedPlan.name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-foreground">
+                            {formatPrice(currentPrice)}
+                          </p>
+                          {currentOldPrice && (
+                            <p className="text-sm text-muted-foreground line-through">
+                              {formatPrice(currentOldPrice)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="flex-1"
+                        onClick={handleAddToCart}
+                      >
+                        <ShoppingCart className="w-5 h-5 mr-2" />
+                        Add to Cart
+                      </Button>
+                      <Button
+                        variant="hero"
+                        size="lg"
+                        className="flex-1"
+                        onClick={handleBuyNow}
+                      >
+                        <Zap className="w-5 h-5 mr-2" />
+                        Buy Now
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
