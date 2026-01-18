@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, MessageCircle } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const Footer = () => {
+  const { data: settings } = useSiteSettings();
+  const logoUrl = settings?.logo_url;
+  const storeName = settings?.store_name || 'Snippy Mart';
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
@@ -24,11 +28,25 @@ const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-              </div>
+              {logoUrl ? (
+                <img 
+                  src={logoUrl} 
+                  alt={storeName}
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary-foreground" />
+                </div>
+              )}
               <span className="text-xl font-display font-bold text-foreground">
-                Snippy<span className="gradient-text">Mart</span>
+                {storeName.includes(' ') ? (
+                  <>
+                    {storeName.split(' ')[0]}<span className="gradient-text">{storeName.split(' ').slice(1).join(' ')}</span>
+                  </>
+                ) : (
+                  storeName
+                )}
               </span>
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">
@@ -85,7 +103,7 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {currentYear} Snippy Mart. All rights reserved.
+              © {currentYear} {storeName}. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground">
               Made with ❤️ for digital enthusiasts

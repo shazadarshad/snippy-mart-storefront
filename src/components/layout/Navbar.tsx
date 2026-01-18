@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 interface NavbarProps {
   onCartOpen: () => void;
 }
@@ -13,6 +14,9 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const itemCount = useCartStore((state) => state.getItemCount());
+  const { data: settings } = useSiteSettings();
+  const logoUrl = settings?.logo_url;
+  const storeName = settings?.store_name || 'Snippy Mart';
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -29,11 +33,25 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center transition-transform group-hover:scale-110">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={storeName}
+                className="h-10 w-auto object-contain transition-transform group-hover:scale-110"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center transition-transform group-hover:scale-110">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              </div>
+            )}
             <span className="text-xl font-display font-bold text-foreground">
-              Snippy<span className="gradient-text">Mart</span>
+              {storeName.includes(' ') ? (
+                <>
+                  {storeName.split(' ')[0]}<span className="gradient-text">{storeName.split(' ').slice(1).join(' ')}</span>
+                </>
+              ) : (
+                storeName
+              )}
             </span>
           </Link>
 
