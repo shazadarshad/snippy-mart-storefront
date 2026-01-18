@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
-import { Building2, Bitcoin, ChevronDown, Upload, X, FileText, Image as ImageIcon, Check } from 'lucide-react';
+import { Building2, Bitcoin, ChevronDown, Upload, X, FileText, Image as ImageIcon, Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useToast } from '@/hooks/use-toast';
 
 export type PaymentMethod = 'bank_transfer' | 'binance_usdt';
 
@@ -14,6 +16,7 @@ interface PaymentMethodSelectorProps {
   onBinanceIdChange: (id: string) => void;
   proofFile: File | null;
   onProofFileChange: (file: File | null) => void;
+  orderNumber?: string;
 }
 
 const PaymentMethodSelector = ({
@@ -23,8 +26,19 @@ const PaymentMethodSelector = ({
   onBinanceIdChange,
   proofFile,
   onProofFileChange,
+  orderNumber,
 }: PaymentMethodSelectorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const { data: settings } = useSiteSettings();
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: 'Copied!',
+      description: `${label} copied to clipboard`,
+    });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,12 +46,20 @@ const PaymentMethodSelector = ({
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Please upload an image (JPG, PNG, WebP) or PDF file');
+        toast({
+          title: 'Invalid file type',
+          description: 'Please upload an image (JPG, PNG, WebP) or PDF file',
+          variant: 'destructive',
+        });
         return;
       }
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB');
+        toast({
+          title: 'File too large',
+          description: 'File size must be less than 10MB',
+          variant: 'destructive',
+        });
         return;
       }
       onProofFileChange(file);
@@ -58,6 +80,17 @@ const PaymentMethodSelector = ({
     }
     return <ImageIcon className="w-5 h-5 text-primary" />;
   };
+
+  // Bank details from settings
+  const bankName = settings?.bank_name || 'Sampath Bank';
+  const bankBranch = settings?.bank_branch || 'Horana';
+  const bankAccountName = settings?.bank_account_name || 'M A MUSAMMIL';
+  const bankAccountNumber = settings?.bank_account_number || '105752093919';
+
+  // Binance details from settings
+  const storeBinanceId = settings?.binance_id || '1190172947';
+  const storeBinanceName = settings?.binance_name || 'Snippy Mart';
+  const storeBinanceCoin = settings?.binance_coin || 'USDT';
 
   return (
     <div className="space-y-4">
@@ -109,17 +142,63 @@ const PaymentMethodSelector = ({
         {/* Expanded Content for Bank Transfer */}
         <div className={cn(
           "overflow-hidden transition-all duration-300",
-          selectedMethod === 'bank_transfer' ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          selectedMethod === 'bank_transfer' ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
         )}>
           <div className="p-4 pt-0 space-y-4">
             <div className="p-4 rounded-lg bg-secondary/50 border border-border">
-              <p className="text-sm font-medium text-foreground mb-2">Bank Details</p>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p><span className="font-medium text-foreground">Bank:</span> Commercial Bank</p>
-                <p><span className="font-medium text-foreground">Account Name:</span> Snippy Mart</p>
-                <p><span className="font-medium text-foreground">Account Number:</span> 1234567890</p>
-                <p><span className="font-medium text-foreground">Branch:</span> Colombo</p>
+              <p className="text-sm font-medium text-foreground mb-3">Bank Details</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground">Bank:</span>{' '}
+                    <span className="font-medium text-foreground">{bankName}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground">Branch:</span>{' '}
+                    <span className="font-medium text-foreground">{bankBranch}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground">Account Name:</span>{' '}
+                    <span className="font-medium text-foreground">{bankAccountName}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => copyToClipboard(bankAccountName, 'Account name')}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground">Account Number:</span>{' '}
+                    <span className="font-medium text-foreground font-mono">{bankAccountNumber}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => copyToClipboard(bankAccountNumber, 'Account number')}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
               </div>
+              
+              {orderNumber && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-xs text-primary font-medium">
+                    ⚡ Enter "{orderNumber}" as beneficiary remarks
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
@@ -196,7 +275,7 @@ const PaymentMethodSelector = ({
               <Bitcoin className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Binance USDT</p>
+              <p className="font-medium text-foreground">Binance {storeBinanceCoin}</p>
               <p className="text-sm text-muted-foreground">Pay with Binance Pay</p>
             </div>
           </div>
@@ -216,18 +295,51 @@ const PaymentMethodSelector = ({
         {/* Expanded Content for Binance */}
         <div className={cn(
           "overflow-hidden transition-all duration-300",
-          selectedMethod === 'binance_usdt' ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          selectedMethod === 'binance_usdt' ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
         )}>
           <div className="p-4 pt-0 space-y-4">
             <div className="p-4 rounded-lg bg-[#F0B90B]/10 border border-[#F0B90B]/20">
-              <p className="text-sm font-medium text-foreground mb-2">Binance Pay Details</p>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p><span className="font-medium text-foreground">Binance ID:</span> 123456789</p>
-                <p><span className="font-medium text-foreground">Network:</span> Binance Pay (No fees)</p>
+              <p className="text-sm font-medium text-foreground mb-3">Binance Pay Details</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground">Account Name:</span>{' '}
+                    <span className="font-medium text-foreground">{storeBinanceName}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground">Binance ID:</span>{' '}
+                    <span className="font-medium text-foreground font-mono">{storeBinanceId}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => copyToClipboard(storeBinanceId, 'Binance ID')}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground">Coin:</span>{' '}
+                    <span className="font-medium text-foreground">{storeBinanceCoin}</span>
+                  </div>
+                </div>
                 <p className="text-xs mt-2 text-muted-foreground">
-                  Use Binance Pay to send USDT - it's instant and free!
+                  Use Binance Pay to send {storeBinanceCoin} - it's instant and free!
                 </p>
               </div>
+              
+              {orderNumber && (
+                <div className="mt-3 pt-3 border-t border-[#F0B90B]/20">
+                  <p className="text-xs text-[#F0B90B] font-medium">
+                    ⚡ Enter "{orderNumber}" as note when sending
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
