@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -191,6 +191,7 @@ const AdminOrders = () => {
                   <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Order ID</th>
                   <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Customer</th>
                   <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Products</th>
+                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Payment</th>
                   <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Status</th>
                   <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Date</th>
                   <th className="text-right text-sm font-medium text-muted-foreground py-4 px-4">Total</th>
@@ -212,6 +213,25 @@ const AdminOrders = () => {
                     <td className="py-4 px-4">
                       <div className="text-sm text-foreground max-w-[200px] truncate">
                         {order.order_items?.map(item => item.product_name).join(', ') || '-'}
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        {order.payment_method === 'bank_transfer' && (
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
+                            <Building2 className="w-3 h-3" />
+                            Bank
+                          </div>
+                        )}
+                        {order.payment_method === 'binance_usdt' && (
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#F0B90B]/10 text-[#F0B90B] text-xs font-medium">
+                            <Bitcoin className="w-3 h-3" />
+                            USDT
+                          </div>
+                        )}
+                        {!order.payment_method && (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -304,6 +324,26 @@ const AdminOrders = () => {
                   <p className="text-muted-foreground">Total</p>
                   <p className="font-medium text-primary">{formatPrice(selectedOrder.total_amount)}</p>
                 </div>
+                <div>
+                  <p className="text-muted-foreground">Payment Method</p>
+                  <div className="flex items-center gap-1.5">
+                    {selectedOrder.payment_method === 'bank_transfer' && (
+                      <>
+                        <Building2 className="w-4 h-4 text-primary" />
+                        <span className="font-medium">Bank Transfer</span>
+                      </>
+                    )}
+                    {selectedOrder.payment_method === 'binance_usdt' && (
+                      <>
+                        <Bitcoin className="w-4 h-4 text-[#F0B90B]" />
+                        <span className="font-medium">Binance USDT</span>
+                      </>
+                    )}
+                    {!selectedOrder.payment_method && (
+                      <span className="text-muted-foreground">Not specified</span>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {selectedOrder.order_items && selectedOrder.order_items.length > 0 && (
@@ -325,6 +365,33 @@ const AdminOrders = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {selectedOrder.payment_method === 'binance_usdt' && selectedOrder.binance_id && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Customer Binance ID</p>
+                  <p className="text-sm p-3 bg-[#F0B90B]/10 rounded-lg font-mono">{selectedOrder.binance_id}</p>
+                </div>
+              )}
+
+              {selectedOrder.payment_proof_url && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Payment Proof</p>
+                  <a
+                    href={selectedOrder.payment_proof_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg border border-border hover:border-primary/50 transition-colors"
+                  >
+                    {selectedOrder.payment_proof_url.endsWith('.pdf') ? (
+                      <FileText className="w-5 h-5 text-destructive" />
+                    ) : (
+                      <ImageIcon className="w-5 h-5 text-primary" />
+                    )}
+                    <span className="text-sm font-medium flex-1">View Payment Proof</span>
+                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                  </a>
                 </div>
               )}
 

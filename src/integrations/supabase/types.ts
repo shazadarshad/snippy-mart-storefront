@@ -67,34 +67,43 @@ export type Database = {
       }
       orders: {
         Row: {
+          binance_id: string | null
           created_at: string
           customer_name: string
           customer_whatsapp: string
           id: string
           notes: string | null
           order_number: string
+          payment_method: string | null
+          payment_proof_url: string | null
           status: string
           total_amount: number
           updated_at: string
         }
         Insert: {
+          binance_id?: string | null
           created_at?: string
           customer_name: string
           customer_whatsapp: string
           id?: string
           notes?: string | null
           order_number: string
+          payment_method?: string | null
+          payment_proof_url?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
         }
         Update: {
+          binance_id?: string | null
           created_at?: string
           customer_name?: string
           customer_whatsapp?: string
           id?: string
           notes?: string | null
           order_number?: string
+          payment_method?: string | null
+          payment_proof_url?: string | null
           status?: string
           total_amount?: number
           updated_at?: string

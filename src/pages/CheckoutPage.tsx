@@ -7,17 +7,24 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useCartStore, generateOrderId, formatPrice } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
+import { useCreateOrder } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
+import PaymentMethodSelector, { type PaymentMethod } from '@/components/checkout/PaymentMethodSelector';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { items, getTotal, clearCart } = useCartStore();
   const { toast } = useToast();
+  const createOrder = useCreateOrder();
   
   const [formData, setFormData] = useState({
     whatsapp: '',
     name: '',
     notes: '',
   });
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [binanceId, setBinanceId] = useState('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const orderId = generateOrderId();
@@ -29,7 +36,7 @@ const CheckoutPage = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.whatsapp) {
@@ -50,10 +57,72 @@ const CheckoutPage = () => {
       return;
     }
 
+    if (!paymentMethod) {
+      toast({
+        title: "Payment method required",
+        description: "Please select a payment method.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!proofFile) {
+      toast({
+        title: "Payment proof required",
+        description: "Please upload your payment receipt or screenshot.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (paymentMethod === 'binance_usdt' && !binanceId) {
+      toast({
+        title: "Binance ID required",
+        description: "Please enter your Binance ID.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate order processing
-    setTimeout(() => {
+    try {
+      // Upload payment proof
+      const fileExt = proofFile.name.split('.').pop();
+      const fileName = `${orderId}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('payment-proofs')
+        .upload(fileName, proofFile);
+
+      if (uploadError) {
+        throw new Error('Failed to upload payment proof');
+      }
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('payment-proofs')
+        .getPublicUrl(fileName);
+
+      // Create order in database
+      await createOrder.mutateAsync({
+        customer_name: formData.name || 'Customer',
+        customer_whatsapp: formData.whatsapp,
+        total_amount: getTotal(),
+        notes: formData.notes || undefined,
+        payment_method: paymentMethod,
+        payment_proof_url: urlData.publicUrl,
+        binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
+        items: items.map((item) => ({
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          unit_price: item.product.price,
+          total_price: item.product.price * item.quantity,
+        })),
+      });
+
+      // Store order data for success page
       const orderData = {
         orderId,
         whatsapp: formData.whatsapp,
@@ -65,14 +134,23 @@ const CheckoutPage = () => {
           quantity: item.quantity,
         })),
         total: getTotal(),
+        paymentMethod,
       };
 
-      // Store order data for success page
       sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
       
       clearCart();
       navigate('/order-success');
-    }, 1500);
+    } catch (error) {
+      console.error('Order creation failed:', error);
+      toast({
+        title: "Order failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (items.length === 0) {
@@ -172,6 +250,21 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
+              {/* Payment Method Selection */}
+              <div className="p-6 rounded-2xl bg-card border border-border">
+                <h2 className="text-lg font-semibold text-foreground mb-4">
+                  Payment Method
+                </h2>
+                <PaymentMethodSelector
+                  selectedMethod={paymentMethod}
+                  onMethodChange={setPaymentMethod}
+                  binanceId={binanceId}
+                  onBinanceIdChange={setBinanceId}
+                  proofFile={proofFile}
+                  onProofFileChange={setProofFile}
+                />
+              </div>
+
               {/* Info Box */}
               <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20">
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
@@ -180,8 +273,8 @@ const CheckoutPage = () => {
                     How it works
                   </p>
                   <p className="text-muted-foreground">
-                    After placing your order, you'll receive a confirmation message on WhatsApp 
-                    with payment instructions and your subscription details.
+                    After placing your order, we'll verify your payment and send a confirmation 
+                    message to your WhatsApp with your subscription details.
                   </p>
                 </div>
               </div>
