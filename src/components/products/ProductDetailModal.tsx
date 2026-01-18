@@ -189,13 +189,13 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
           />
 
           {/* Modal Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] bg-card border border-border rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden relative"
+              className="w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] bg-card border border-border rounded-2xl sm:rounded-2xl shadow-2xl overflow-hidden relative"
             >
               {/* Close Button */}
               <button
