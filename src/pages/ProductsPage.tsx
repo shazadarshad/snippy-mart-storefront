@@ -74,13 +74,14 @@ const ProductsPage = () => {
               </Button>
 
               <div className={cn(
-                "flex flex-wrap gap-2",
+                "flex flex-wrap gap-2 w-full md:w-auto",
                 !showFilters && "hidden md:flex"
               )}>
                 <Button
                   variant={selectedCategory === null ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedCategory(null)}
+                  className="flex-shrink-0"
                 >
                   All
                 </Button>
@@ -90,6 +91,7 @@ const ProductsPage = () => {
                     variant={selectedCategory === category ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedCategory(category)}
+                    className="flex-shrink-0"
                   >
                     {category}
                   </Button>

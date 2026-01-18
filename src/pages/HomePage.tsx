@@ -67,11 +67,11 @@ const HomePage = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative min-h-screen pt-24 lg:pt-28 flex items-center justify-center overflow-hidden">
-        {/* Background Effects */}
+        {/* Background Effects - Hidden on mobile for performance */}
         <div className="absolute inset-0 bg-background">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse-soft" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px]" />
+          <div className="hidden sm:block absolute top-1/4 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-primary/20 rounded-full blur-[80px] md:blur-[120px] animate-pulse-soft" />
+          <div className="hidden sm:block absolute bottom-1/4 right-1/4 w-64 md:w-96 h-64 md:h-96 bg-accent/20 rounded-full blur-[80px] md:blur-[120px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
+          <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/5 rounded-full blur-[80px] md:blur-[100px]" />
         </div>
 
         {/* Grid Pattern */}
@@ -110,18 +110,18 @@ const HomePage = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-border/50 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-12 sm:mt-16 pt-12 sm:pt-16 border-t border-border/50 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div>
-                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">10K+</div>
-                <div className="text-sm text-muted-foreground">Happy Customers</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-1 sm:mb-2">10K+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Happy Customers</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">50+</div>
-                <div className="text-sm text-muted-foreground">Premium Products</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-1 sm:mb-2">50+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Premium Products</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">24/7</div>
-                <div className="text-sm text-muted-foreground">Support Available</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-1 sm:mb-2">24/7</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Support Available</div>
               </div>
             </div>
           </div>
