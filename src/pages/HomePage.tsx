@@ -110,7 +110,7 @@ const HomePage = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-12 sm:mt-16 pt-12 sm:pt-16 border-t border-border/50 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-12 sm:mt-16 pt-12 sm:pt-16 pb-16 sm:pb-24 border-t border-border/50 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div>
                 <div className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-1 sm:mb-2">2K+</div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Happy Customers</div>
