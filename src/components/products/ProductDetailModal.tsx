@@ -148,11 +148,11 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               {/* Content */}
               <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
                 {/* Image Section */}
-                <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto bg-muted flex-shrink-0">
+                <div className="relative w-full md:w-1/2 aspect-square bg-muted flex-shrink-0 flex items-center justify-center">
                   <img
                     src={product.image_url}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                   {discount > 0 && (
                     <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-bold">
