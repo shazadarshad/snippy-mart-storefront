@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Product, useCartStore, formatPrice } from '@/lib/store';
+import { useCartStore, formatPrice } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import type { Product } from '@/hooks/useProducts';
 
 interface ProductCardProps {
   product: Product;
@@ -15,8 +16,19 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
   const { toast } = useToast();
 
+  // Convert Product from useProducts to cart format
+  const cartProduct = {
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    oldPrice: product.old_price ?? undefined,
+    image: product.image_url,
+    category: product.category,
+  };
+
   const handleAddToCart = () => {
-    addItem(product);
+    addItem(cartProduct);
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,
@@ -24,12 +36,12 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
   };
 
   const handleBuyNow = () => {
-    addItem(product);
+    addItem(cartProduct);
     navigate('/checkout');
   };
 
-  const discount = product.oldPrice
-    ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
+  const discount = product.old_price
+    ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
     : 0;
 
   return (
@@ -49,7 +61,7 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
       {/* Image */}
       <div className="relative aspect-square bg-muted overflow-hidden">
         <img
-          src={product.image}
+          src={product.image_url}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
@@ -75,9 +87,9 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
           <span className="text-xl font-bold text-foreground">
             {formatPrice(product.price)}
           </span>
-          {product.oldPrice && (
+          {product.old_price && (
             <span className="text-sm text-muted-foreground line-through">
-              {formatPrice(product.oldPrice)}
+              {formatPrice(product.old_price)}
             </span>
           )}
           <span className="text-xs text-muted-foreground">/month</span>

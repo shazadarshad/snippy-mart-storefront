@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { Search, Filter, ChevronDown } from 'lucide-react';
+import { Search, Filter, ChevronDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ProductCard from '@/components/products/ProductCard';
-import { products } from '@/lib/store';
+import { useProducts } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 
 const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  const { data: products = [], isLoading } = useProducts();
 
   const categories = Array.from(new Set(products.map((p) => p.category)));
 
@@ -84,8 +86,12 @@ const ProductsPage = () => {
           </div>
         </div>
 
-        {/* Products Grid */}
-        {filteredProducts.length > 0 ? (
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
