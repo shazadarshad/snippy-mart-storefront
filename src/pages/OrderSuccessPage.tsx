@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2, MessageCircle, Home, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatPrice } from '@/lib/store';
 
 interface OrderData {
   orderId: string;
@@ -77,14 +78,14 @@ const OrderSuccessPage = () => {
                       <span className="text-sm text-muted-foreground">×{item.quantity}</span>
                     </div>
                     <span className="font-medium text-foreground">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.price * item.quantity)}
                     </span>
                   </div>
                 ))}
               </div>
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                 <span className="font-semibold text-foreground">Total</span>
-                <span className="text-xl font-bold gradient-text">${orderData.total.toFixed(2)}</span>
+                <span className="text-xl font-bold gradient-text">{formatPrice(orderData.total)}</span>
               </div>
             </div>
           </div>
@@ -92,7 +93,7 @@ const OrderSuccessPage = () => {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <Button variant="whatsapp" size="lg" asChild>
-              <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/94771234567" target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="w-5 h-5 mr-2" />
                 Contact Support on WhatsApp
               </a>

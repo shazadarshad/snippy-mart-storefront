@@ -17,9 +17,9 @@ const AdminSettings = () => {
   const { toast } = useToast();
   const [settings, setSettings] = useState({
     storeName: 'Snippy Mart',
-    storeEmail: 'support@snippymart.com',
-    whatsappNumber: '+1 234 567 8900',
-    currency: 'USD',
+    storeEmail: 'support@snippymart.lk',
+    whatsappNumber: '+94 77 123 4567',
+    currency: 'LKR',
     footerText: '© 2026 Snippy Mart. All rights reserved.',
     welcomeMessage: 'Thank you for your order! Your subscription details will be shared shortly.',
   });

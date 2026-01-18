@@ -36,7 +36,7 @@ const Footer = () => {
               Instant delivery, reliable service.
             </p>
             <a
-              href="https://wa.me/1234567890"
+              href="https://wa.me/94771234567"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] text-white font-medium hover:bg-[#22c55e] transition-colors"

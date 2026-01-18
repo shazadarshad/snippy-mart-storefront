@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { formatPrice } from '@/lib/store';
 
 interface Order {
   id: string;
@@ -27,46 +28,46 @@ const AdminOrders = () => {
   const [orders] = useState<Order[]>([
     {
       id: 'SNIP-2026-000123',
-      customer: 'John Doe',
-      whatsapp: '+1 234 567 8900',
+      customer: 'Kasun Perera',
+      whatsapp: '+94 77 123 4567',
       products: ['Netflix Premium', 'Spotify Premium'],
-      total: 14.98,
+      total: 4498,
       status: 'completed',
       date: '2026-01-18',
     },
     {
       id: 'SNIP-2026-000122',
-      customer: 'Jane Smith',
-      whatsapp: '+1 234 567 8901',
+      customer: 'Nimali Silva',
+      whatsapp: '+94 77 234 5678',
       products: ['ChatGPT Plus'],
-      total: 12.99,
+      total: 3899,
       status: 'pending',
       date: '2026-01-18',
     },
     {
       id: 'SNIP-2026-000121',
-      customer: 'Mike Johnson',
-      whatsapp: '+1 234 567 8902',
+      customer: 'Ruwan Fernando',
+      whatsapp: '+94 77 345 6789',
       products: ['Canva Pro', 'YouTube Premium'],
-      total: 12.98,
+      total: 3898,
       status: 'completed',
       date: '2026-01-17',
     },
     {
       id: 'SNIP-2026-000120',
-      customer: 'Sarah Williams',
-      whatsapp: '+1 234 567 8903',
+      customer: 'Dilini Jayasinghe',
+      whatsapp: '+94 77 456 7890',
       products: ['Adobe Creative Cloud'],
-      total: 24.99,
+      total: 7499,
       status: 'cancelled',
       date: '2026-01-17',
     },
     {
       id: 'SNIP-2026-000119',
-      customer: 'Tom Brown',
-      whatsapp: '+1 234 567 8904',
+      customer: 'Tharindu Bandara',
+      whatsapp: '+94 77 567 8901',
       products: ['Disney+ Premium'],
-      total: 6.99,
+      total: 2099,
       status: 'pending',
       date: '2026-01-16',
     },
@@ -186,7 +187,7 @@ const AdminOrders = () => {
                   </td>
                   <td className="py-4 px-4 text-sm text-muted-foreground">{order.date}</td>
                   <td className="py-4 px-4 text-right font-medium text-foreground">
-                    ${order.total.toFixed(2)}
+                    {formatPrice(order.total)}
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-end gap-2">

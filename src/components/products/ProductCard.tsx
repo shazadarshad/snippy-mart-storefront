@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Product, useCartStore } from '@/lib/store';
+import { Product, useCartStore, formatPrice } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -71,13 +71,13 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
         </p>
 
         {/* Price */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl font-bold text-foreground">
-            ${product.price.toFixed(2)}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <span className="text-xl font-bold text-foreground">
+            {formatPrice(product.price)}
           </span>
           {product.oldPrice && (
             <span className="text-sm text-muted-foreground line-through">
-              ${product.oldPrice.toFixed(2)}
+              {formatPrice(product.oldPrice)}
             </span>
           )}
           <span className="text-xs text-muted-foreground">/month</span>

@@ -1,7 +1,7 @@
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useCartStore } from '@/lib/store';
+import { useCartStore, formatPrice } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 interface CartDrawerProps {
@@ -81,7 +81,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                       {item.product.name}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      ${item.product.price.toFixed(2)}/mo
+                      {formatPrice(item.product.price)}/mo
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <Button
@@ -120,7 +120,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                       <X className="w-4 h-4" />
                     </Button>
                     <span className="font-semibold text-foreground">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.product.price * item.quantity)}
                     </span>
                   </div>
                 </div>
@@ -135,7 +135,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             <div className="flex items-center justify-between mb-4">
               <span className="text-muted-foreground">Subtotal</span>
               <span className="text-xl font-bold text-foreground">
-                ${getTotal().toFixed(2)}
+                {formatPrice(getTotal())}
               </span>
             </div>
             <Button
