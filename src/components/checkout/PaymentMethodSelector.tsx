@@ -11,12 +11,12 @@ export type PaymentMethod = 'bank_transfer' | 'binance_usdt';
 
 interface PaymentMethodSelectorProps {
   selectedMethod: PaymentMethod | null;
-  onMethodChange: (method: PaymentMethod) => void;
+  onMethodChange: (method: PaymentMethod | null) => void;
   binanceId: string;
   onBinanceIdChange: (id: string) => void;
   proofFile: File | null;
   onProofFileChange: (file: File | null) => void;
-  orderNumber?: string;
+  orderId: string;
 }
 
 const PaymentMethodSelector = ({
@@ -26,7 +26,7 @@ const PaymentMethodSelector = ({
   onBinanceIdChange,
   proofFile,
   onProofFileChange,
-  orderNumber,
+  orderId,
 }: PaymentMethodSelectorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -110,7 +110,7 @@ const PaymentMethodSelector = ({
         <button
           type="button"
           className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => onMethodChange('bank_transfer')}
+          onClick={() => onMethodChange(selectedMethod === 'bank_transfer' ? null : 'bank_transfer')}
         >
           <div className="flex items-center gap-3">
             <div className={cn(
@@ -192,13 +192,24 @@ const PaymentMethodSelector = ({
                 </div>
               </div>
               
-              {orderNumber && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <p className="text-xs text-primary font-medium">
-                    ⚡ Enter "{orderNumber}" as beneficiary remarks
-                  </p>
+              <div className="mt-3 pt-3 border-t border-border">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-muted-foreground">Your Order ID:</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => copyToClipboard(orderId, 'Order ID')}
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
                 </div>
-              )}
+                <p className="text-sm font-mono font-bold text-primary">{orderId}</p>
+                <p className="text-xs text-primary/80 mt-1">
+                  ⚡ Enter this Order ID as beneficiary remarks
+                </p>
+              </div>
             </div>
 
             <div>
@@ -263,7 +274,7 @@ const PaymentMethodSelector = ({
         <button
           type="button"
           className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => onMethodChange('binance_usdt')}
+          onClick={() => onMethodChange(selectedMethod === 'binance_usdt' ? null : 'binance_usdt')}
         >
           <div className="flex items-center gap-3">
             <div className={cn(
@@ -333,13 +344,24 @@ const PaymentMethodSelector = ({
                 </p>
               </div>
               
-              {orderNumber && (
-                <div className="mt-3 pt-3 border-t border-[#F0B90B]/20">
-                  <p className="text-xs text-[#F0B90B] font-medium">
-                    ⚡ Enter "{orderNumber}" as note when sending
-                  </p>
+              <div className="mt-3 pt-3 border-t border-[#F0B90B]/20">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-muted-foreground">Your Order ID:</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => copyToClipboard(orderId, 'Order ID')}
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
                 </div>
-              )}
+                <p className="text-sm font-mono font-bold text-[#F0B90B]">{orderId}</p>
+                <p className="text-xs text-[#F0B90B]/80 mt-1">
+                  ⚡ Enter this Order ID as note when sending
+                </p>
+              </div>
             </div>
 
             <div>
