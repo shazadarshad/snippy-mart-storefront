@@ -207,8 +207,8 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
               {/* Content */}
               <div className="flex flex-col md:flex-row h-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto md:overflow-hidden">
-                {/* Image Section with Gallery */}
-                <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-square bg-muted flex-shrink-0">
+                {/* Image Section with Gallery - Hidden on Mobile */}
+                <div className="hidden md:block relative w-full md:w-1/2 aspect-square bg-muted flex-shrink-0">
                   <img
                     src={allImages[currentImageIndex] || product.image_url}
                     alt={product.name}
