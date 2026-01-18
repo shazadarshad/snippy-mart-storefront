@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Shield, Clock, MessageCircle, ChevronRight } from 'lucide-react';
+import { ArrowRight, Zap, Shield, Clock, MessageCircle, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/products/ProductCard';
-import { products } from '@/lib/store';
+import { useProducts } from '@/hooks/useProducts';
 
 const HomePage = () => {
+  const { data: products = [], isLoading } = useProducts();
   const popularProducts = products.slice(0, 4);
 
   const features = [
@@ -174,11 +175,21 @@ const HomePage = () => {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : popularProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              No products available yet. Check back soon!
+            </div>
+          )}
         </div>
       </section>
 
