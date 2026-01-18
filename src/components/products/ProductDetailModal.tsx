@@ -95,13 +95,15 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     : 0;
 
   const cartProduct = {
-    id: selectedPlan ? `${product.id}-${selectedPlan.id}` : product.id,
-    name: selectedPlan ? `${product.name} (${selectedPlan.name})` : product.name,
+    id: product.id,
+    name: product.name,
     description: product.description,
     price: currentPrice,
     oldPrice: currentOldPrice ?? undefined,
     image: product.image_url,
     category: product.category,
+    plan_id: selectedPlan?.id,
+    plan_name: selectedPlan?.name,
   };
 
   const handleAddToCart = () => {

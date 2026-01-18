@@ -97,7 +97,7 @@ const CheckoutPage = () => {
         .upload(fileName, proofFile);
 
       if (uploadError) {
-        throw new Error('Failed to upload payment proof');
+        throw new Error(uploadError.message || 'Failed to upload payment proof');
       }
 
       // Store the uploaded file path (bucket is private)
@@ -116,6 +116,7 @@ const CheckoutPage = () => {
         items: items.map((item) => ({
           product_id: item.product.id,
           product_name: item.product.name,
+          plan_name: item.product.plan_name,
           quantity: item.quantity,
           unit_price: item.product.price,
           total_price: item.product.price * item.quantity,

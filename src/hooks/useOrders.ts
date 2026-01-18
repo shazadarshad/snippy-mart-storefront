@@ -142,7 +142,22 @@ export const useCreateOrder = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        const anyErr = error as any;
+
+        // Supabase Functions errors often hide the real JSON body; extract it when possible.
+        if (anyErr?.context) {
+          try {
+            const body = await anyErr.context.json();
+            const msg = body?.error || body?.message;
+            if (msg) throw new Error(String(msg));
+          } catch {
+            // ignore JSON parse errors and fall back to the generic message
+          }
+        }
+
+        throw new Error(error.message || 'Edge function failed');
+      }
       if (!data?.order) throw new Error('Failed to create order');
 
       return data.order as Order;
