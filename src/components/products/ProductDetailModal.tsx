@@ -174,6 +174,13 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                       {product.name}
                     </h2>
 
+                    {/* Description */}
+                    <div className="space-y-2 mb-6">
+                      <ul className="space-y-2">
+                        {formatDescription(product.description)}
+                      </ul>
+                    </div>
+
                     {/* Pricing Plans */}
                     {pricingPlans.length > 0 && (
                       <div className="mb-6">
@@ -230,13 +237,6 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                         )}
                       </div>
                     )}
-
-                    {/* Description */}
-                    <div className="space-y-2">
-                      <ul className="space-y-2">
-                        {formatDescription(product.description)}
-                      </ul>
-                    </div>
                   </div>
 
                   {/* Actions Footer */}
