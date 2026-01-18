@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -10,14 +10,24 @@ import {
   X,
   Sparkles,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, isAdmin, loading, signOut } = useAuth();
+
+  // Redirect to auth page if not logged in or not admin
+  useEffect(() => {
+    if (!loading && (!user || !isAdmin)) {
+      navigate('/admin/auth');
+    }
+  }, [user, isAdmin, loading, navigate]);
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
@@ -28,10 +38,24 @@ const AdminLayout = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('adminAuth');
-    navigate('/admin');
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/admin/auth');
   };
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render if not authorized
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,6 +106,12 @@ const AdminLayout = () => {
                 <p className="text-xs text-muted-foreground">Admin Panel</p>
               </div>
             </Link>
+          </div>
+
+          {/* User Info */}
+          <div className="px-4 py-3 border-b border-border">
+            <p className="text-xs text-muted-foreground">Signed in as</p>
+            <p className="text-sm font-medium text-foreground truncate">{user.email}</p>
           </div>
 
           {/* Navigation */}
