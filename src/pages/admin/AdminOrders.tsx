@@ -79,10 +79,10 @@ const AdminOrders = () => {
         title: 'Status updated',
         description: `Order status changed to ${newStatus}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to update order status',
+        description: error.message || 'Failed to update order status',
         variant: 'destructive',
       });
     }
