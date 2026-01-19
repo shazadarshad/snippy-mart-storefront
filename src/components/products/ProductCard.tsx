@@ -42,6 +42,11 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
 
   const isOutOfStock = product.stock_status === 'out_of_stock';
 
+  const stripFormatting = (text: string) => {
+    if (!text) return '';
+    return text.replace(/\*\*/g, '');
+  };
+
   return (
     <div
       className={cn(
@@ -87,7 +92,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           {product.name}
         </h3>
         <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {product.description}
+          {stripFormatting(product.description)}
         </p>
 
         {/* Price */}

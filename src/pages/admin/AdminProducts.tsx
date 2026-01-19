@@ -20,6 +20,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import { FormattedDescription } from '@/components/products/FormattedDescription';
+import {
   useProducts,
   useAddProduct,
   useUpdateProduct,
@@ -108,7 +115,7 @@ const AdminProducts = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' || name === 'old_price' 
+      [name]: name === 'price' || name === 'old_price'
         ? value === '' ? (name === 'old_price' ? null : 0) : parseFloat(value)
         : value,
     }));
@@ -348,15 +355,29 @@ const AdminProducts = () => {
 
               <div>
                 <Label htmlFor="description" className="text-foreground">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  className="mt-1.5 bg-secondary/50 border-border min-h-[120px]"
-                  placeholder="Use emoji headers and bullet points for best formatting&#10;&#10;🔥 PRODUCT TITLE&#10;&#10;✨ What's Included:&#10;* Feature 1&#10;* Feature 2&#10;* Feature 3"
-                  required
-                />
+                <Tabs defaultValue="write" className="mt-1.5">
+                  <TabsList className="bg-secondary/50 border border-border">
+                    <TabsTrigger value="write">Write</TabsTrigger>
+                    <TabsTrigger value="preview">Live Preview</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="write">
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      className="bg-secondary/50 border-border min-h-[150px] font-mono text-sm"
+                      placeholder="Use emoji headers and bullet points for best formatting&#10;&#10;🚀 PRODUCT TITLE&#10;&#10;✨ What's Included:&#10;✅ Feature 1&#10;✅ Feature 2&#10;✅ Feature 3"
+                      required
+                    />
+                  </TabsContent>
+                  <TabsContent value="preview" className="bg-secondary/30 border border-border rounded-lg p-4 min-h-[150px]">
+                    <FormattedDescription description={formData.description} />
+                    {!formData.description && (
+                      <p className="text-sm text-muted-foreground italic">Type something in the 'Write' tab to see a preview...</p>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -459,9 +480,9 @@ const AdminProducts = () => {
                     onChange={handleImageUpload}
                     className="hidden"
                   />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadImage.isPending}
@@ -519,9 +540,9 @@ const AdminProducts = () => {
               <div className="border-t border-border pt-4">
                 <div className="flex items-center justify-between mb-3">
                   <Label className="text-foreground text-base font-semibold">Pricing Plans</Label>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     size="sm"
                     onClick={handleAddPricingPlan}
                   >
@@ -707,11 +728,11 @@ const AdminProducts = () => {
                             <span className={cn(
                               "px-2 py-0.5 rounded text-xs w-fit",
                               product.stock_status === 'in_stock' ? "bg-green-500/10 text-green-500" :
-                              product.stock_status === 'limited' ? "bg-amber-500/10 text-amber-500" :
-                              "bg-red-500/10 text-red-500"
+                                product.stock_status === 'limited' ? "bg-amber-500/10 text-amber-500" :
+                                  "bg-red-500/10 text-red-500"
                             )}>
                               {product.stock_status === 'in_stock' ? 'In Stock' :
-                               product.stock_status === 'limited' ? 'Limited' : 'Out of Stock'}
+                                product.stock_status === 'limited' ? 'Limited' : 'Out of Stock'}
                             </span>
                           </div>
                         </td>

@@ -9,6 +9,7 @@ import { usePricingPlans, type PricingPlan } from '@/hooks/usePricingPlans';
 import { useProductImages } from '@/hooks/useProductImages';
 import type { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
+import { FormattedDescription } from './FormattedDescription';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -146,33 +147,6 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  // Parse description for formatting
-  const formatDescription = (desc: string) => {
-    const lines = desc.split('\n').filter(line => line.trim());
-    return lines.map((line, idx) => {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('*') || trimmed.startsWith('-') || trimmed.startsWith('•')) {
-        return (
-          <li key={idx} className="flex items-start gap-2 text-muted-foreground">
-            <Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-            <span>{trimmed.replace(/^[\*\-•]\s*/, '')}</span>
-          </li>
-        );
-      }
-      if (/^[🔥✨💎🎯🚀💡⭐]/.test(trimmed)) {
-        return (
-          <h3 key={idx} className="text-lg font-semibold text-foreground mt-4 first:mt-0">
-            {trimmed}
-          </h3>
-        );
-      }
-      return (
-        <p key={idx} className="text-muted-foreground">
-          {trimmed}
-        </p>
-      );
-    });
-  };
 
   return (
     <AnimatePresence>
@@ -290,10 +264,8 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                     </div>
 
                     {/* Description */}
-                    <div className="space-y-2 mb-6">
-                      <ul className="space-y-2">
-                        {formatDescription(product.description)}
-                      </ul>
+                    <div className="mb-6">
+                      <FormattedDescription description={product.description} />
                     </div>
 
                     {/* Pricing Plans */}
