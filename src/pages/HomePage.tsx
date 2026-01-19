@@ -6,10 +6,11 @@ import ProductCard from '@/components/products/ProductCard';
 import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
+import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 
 const HomePage = () => {
   const { data: products = [], isLoading } = useProducts();
-  const popularProducts = products.slice(0, 4);
+  const popularProducts = products.filter(p => p.is_featured).slice(0, 5);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -200,9 +201,9 @@ const HomePage = () => {
           </div>
 
           {isLoading ? (
-            <ProductsGridSkeleton count={4} />
+            <ProductsGridSkeleton count={5} />
           ) : popularProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
               {popularProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -216,6 +217,21 @@ const HomePage = () => {
               No products available yet. Check back soon!
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-24 lg:py-36 bg-secondary/10">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
+              What Our <span className="gradient-text">Customers Say</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Don't just take our word for it. Here's what thousands of happy customers think about Snippy Mart.
+            </p>
+          </div>
+          <TestimonialCarousel />
         </div>
       </section>
 

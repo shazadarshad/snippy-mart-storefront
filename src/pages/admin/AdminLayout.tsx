@@ -11,6 +11,7 @@ import {
   Sparkles,
   ChevronRight,
   Loader2,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ const AdminLayout = () => {
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+    { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquare },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

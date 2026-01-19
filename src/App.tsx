@@ -22,6 +22,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
 
@@ -37,7 +38,7 @@ const AppContent = () => {
       <ScrollToTop />
       {!isAdminRoute && <Navbar onCartOpen={() => setCartOpen(true)} />}
       {!isAdminRoute && <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
-      
+
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
@@ -46,7 +47,7 @@ const AppContent = () => {
           <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
-          
+
           {/* Admin Routes */}
           <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />
           <Route path="/admin" element={<AdminLayout />}>
@@ -54,9 +55,10 @@ const AppContent = () => {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="testimonials" element={<AdminTestimonials />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
-          
+
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
