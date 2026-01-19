@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
