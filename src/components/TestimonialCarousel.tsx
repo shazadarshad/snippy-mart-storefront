@@ -39,6 +39,26 @@ export const TestimonialCarousel = () => {
 
     const activeTestimonial = testimonials[currentIndex];
 
+    // Helper to beautify text (wrap emojis in a span for styling)
+    const beautifyContent = (text: string) => {
+        if (!text) return "";
+
+        // Regex to match emojis
+        const emojiRegex = /([\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}])/gu;
+
+        const parts = text.split(emojiRegex);
+        return parts.map((part, i) => {
+            if (emojiRegex.test(part)) {
+                return (
+                    <span key={i} className="inline-block scale-110 mx-0.5 filter drop-shadow-[0_0_5px_rgba(var(--primary),0.3)] animate-pulse-soft">
+                        {part}
+                    </span>
+                );
+            }
+            return part;
+        });
+    };
+
     const variants = {
         enter: (direction: number) => ({
             x: direction > 0 ? 1000 : -1000,
@@ -107,7 +127,7 @@ export const TestimonialCarousel = () => {
                             </div>
 
                             <blockquote className="text-2xl md:text-3xl lg:text-4xl font-display font-medium text-foreground leading-tight md:leading-tight max-w-4xl mb-10 italic">
-                                "{activeTestimonial.content}"
+                                "{beautifyContent(activeTestimonial.content)}"
                             </blockquote>
 
                             <div className="space-y-2">

@@ -12,6 +12,12 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from '@/components/ui/tabs';
 import { useTestimonials, useAddTestimonial, useUpdateTestimonial, useDeleteTestimonial, type Testimonial, type TestimonialFormData } from '@/hooks/useTestimonials';
 import { cn } from '@/lib/utils';
 
@@ -89,6 +95,22 @@ const AdminTestimonials = () => {
         });
     };
 
+    const beautifyPreview = (text: string) => {
+        if (!text) return "";
+        const emojiRegex = /([\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}])/gu;
+        const parts = text.split(emojiRegex);
+        return parts.map((part, i) => {
+            if (emojiRegex.test(part)) {
+                return (
+                    <span key={i} className="inline-block scale-110 mx-0.5 filter drop-shadow-[0_0_5px_rgba(var(--primary),0.3)] font-normal not-italic">
+                        {part}
+                    </span>
+                );
+            }
+            return part;
+        });
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -148,15 +170,42 @@ const AdminTestimonials = () => {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="content">Review Content</Label>
-                                <Textarea
-                                    id="content"
-                                    name="content"
-                                    value={formData.content}
-                                    onChange={handleInputChange}
-                                    placeholder="What did they say about Snippy Mart?"
-                                    className="bg-secondary/50 border-border min-h-[100px]"
-                                    required
-                                />
+                                <Tabs defaultValue="write" className="w-full">
+                                    <TabsList className="bg-secondary/50 border border-border h-8 mb-2">
+                                        <TabsTrigger value="write" className="text-xs">Write</TabsTrigger>
+                                        <TabsTrigger value="preview" className="text-xs">Live Preview</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="write">
+                                        <Textarea
+                                            id="content"
+                                            name="content"
+                                            value={formData.content}
+                                            onChange={handleInputChange}
+                                            placeholder="What did they say about Snippy Mart?"
+                                            className="bg-secondary/50 border-border min-h-[100px]"
+                                            required
+                                        />
+                                    </TabsContent>
+                                    <TabsContent value="preview" className="bg-secondary/30 border border-border rounded-lg p-4 min-h-[100px]">
+                                        <div className="flex flex-col items-center text-center space-y-4">
+                                            <div className="relative w-16 h-16 rounded-full border-2 border-primary/20 p-1">
+                                                <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center">
+                                                    <User className="w-8 h-8 text-muted-foreground" />
+                                                </div>
+                                                <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 shadow-lg ring-1 ring-primary/20">
+                                                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                                                </div>
+                                            </div>
+                                            <blockquote className="text-lg font-medium text-foreground italic">
+                                                "{beautifyPreview(formData.content) || "Your testimonial content will appear here..."}"
+                                            </blockquote>
+                                            <div>
+                                                <p className="font-bold gradient-text">{formData.name || "Verified Member"}</p>
+                                                <p className="text-xs text-muted-foreground uppercase tracking-wider">{formData.role || "Satisfied customer"}</p>
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+                                </Tabs>
                             </div>
                             <div className="flex items-center gap-2 py-2">
                                 <Switch
