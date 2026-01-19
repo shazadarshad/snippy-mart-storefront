@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, MessageCircle, Home, Package, Loader2 } from 'lucide-react';
+import { CheckCircle2, MessageCircle, Home, Package, Loader2, Search, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/store';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -104,23 +104,44 @@ const OrderSuccessPage = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <Button variant="whatsapp" size="xl" className="w-full sm:w-auto px-8 py-6 text-lg shadow-lg hover:shadow-success/20 transition-all duration-300" asChild disabled={isSettingsLoading}>
-              <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
-                {isSettingsLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <MessageCircle className="w-6 h-6 mr-2 animate-bounce" />}
-                Confirm on WhatsApp
-              </a>
-            </Button>
-            <Button variant="outline" size="xl" className="w-full sm:w-auto px-8" asChild>
-              <Link to="/">
-                <Home className="w-5 h-5 mr-2" />
-                Back to Home
-              </Link>
-            </Button>
+          <div className="flex flex-col gap-4 mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="whatsapp" size="xl" className="w-full sm:w-auto px-8 py-6 text-lg shadow-lg hover:shadow-success/20 transition-all duration-300" asChild disabled={isSettingsLoading}>
+                <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
+                  {isSettingsLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <MessageCircle className="w-6 h-6 mr-2 animate-bounce" />}
+                  Confirm on WhatsApp
+                </a>
+              </Button>
+              <Button variant="outline" size="xl" className="w-full sm:w-auto px-8" asChild>
+                <Link to="/">
+                  <Home className="w-5 h-5 mr-2" />
+                  Back to Home
+                </Link>
+              </Button>
+            </div>
+
+            {/* Track Order CTA */}
+            <div className="mt-8 p-6 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col md:flex-row items-center justify-between gap-4 text-left">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <Search className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground">Want to track your order?</h3>
+                  <p className="text-sm text-muted-foreground">You can check your order status anytime on our tracking page.</p>
+                </div>
+              </div>
+              <Button variant="hero" asChild>
+                <Link to="/track-order">
+                  Track Order
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            </div>
           </div>
 
-          <p className="text-sm text-muted-foreground mt-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            Having trouble? <a href={getWhatsAppLink()} className="text-primary hover:underline">Click here to contact support manually.</a>
+          <p className="text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            Having trouble? <a href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`} className="text-primary hover:underline font-bold">Message support directly.</a>
           </p>
         </div>
       </div>

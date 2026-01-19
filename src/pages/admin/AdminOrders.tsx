@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -56,16 +56,13 @@ const AdminOrders = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-success/10 text-success';
-      case 'pending':
-        return 'bg-warning/10 text-warning';
-      case 'cancelled':
-        return 'bg-destructive/10 text-destructive';
-      case 'refunded':
-        return 'bg-muted text-muted-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
+      case 'completed': return 'bg-success/10 text-success border-success/20';
+      case 'processing': return 'bg-primary/10 text-primary border-primary/20';
+      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
+      case 'on_hold': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+      case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'refunded': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -201,11 +198,42 @@ const AdminOrders = () => {
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="processing">Processing</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="on_hold">On Hold</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
             <SelectItem value="refunded">Refunded</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Admin Quick Detail Checker */}
+      <div className="mb-8 p-4 md:p-6 rounded-2xl bg-primary/5 border border-primary/10">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Super Detailed Checker</h2>
+            <p className="text-xs text-muted-foreground">Search by full Order ID for maximum details</p>
+          </div>
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const q = (e.currentTarget.elements.namedItem('detailedSearch') as HTMLInputElement).value;
+            const order = orders.find(o => o.order_number === q);
+            if (order) setSelectedOrder(order);
+          }}
+          className="flex gap-2"
+        >
+          <Input
+            name="detailedSearch"
+            placeholder="Enter full Order ID (e.g., SNIP-2026-000001)"
+            className="bg-card border-border h-12"
+          />
+          <Button type="submit" variant="hero" size="lg">Inspect</Button>
+        </form>
       </div>
 
       {/* Orders Table */}
@@ -233,99 +261,81 @@ const AdminOrders = () => {
           <p className="text-sm">Orders will appear here once customers start purchasing.</p>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+          {/* Desktop/Tablet Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-secondary/50">
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Order ID</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Customer</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Products</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Payment</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Status</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Date</th>
-                  <th className="text-right text-sm font-medium text-muted-foreground py-4 px-4">Total</th>
-                  <th className="text-right text-sm font-medium text-muted-foreground py-4 px-4">Actions</th>
+                  <th className="text-left text-sm font-bold text-muted-foreground py-4 px-4">Order Details</th>
+                  <th className="text-left text-sm font-bold text-muted-foreground py-4 px-4">Fulfillment</th>
+                  <th className="text-left text-sm font-bold text-muted-foreground py-4 px-4">Total</th>
+                  <th className="text-right text-sm font-bold text-muted-foreground py-4 px-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-t border-border">
+                  <tr key={order.id} className="border-t border-border hover:bg-secondary/30 transition-colors">
                     <td className="py-4 px-4">
-                      <span className="font-mono text-sm text-foreground">{order.order_number}</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div>
-                        <p className="font-medium text-foreground">{order.customer_name}</p>
-                        <p className="text-sm text-muted-foreground">{order.customer_whatsapp}</p>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-foreground max-w-[200px] truncate">
-                        {order.order_items?.map(item => item.product_name).join(', ') || '-'}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        {order.payment_method === 'bank_transfer' && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
-                            <Building2 className="w-3 h-3" />
-                            Bank
+                      <div className="flex items-start gap-4">
+                        <div className="mt-1">
+                          <p className="font-mono text-sm font-bold text-foreground">{order.order_number}</p>
+                          <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+                            <User className="w-3 h-3" />
+                            {order.customer_name}
                           </div>
-                        )}
-                        {order.payment_method === 'binance_usdt' && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#F0B90B]/10 text-[#F0B90B] text-xs font-medium">
-                            <Bitcoin className="w-3 h-3" />
-                            USDT
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Globe className="w-3 h-3" />
+                            {order.customer_country || 'Unknown'}
                           </div>
-                        )}
-                        {!order.payment_method && (
-                          <span className="text-xs text-muted-foreground">-</span>
-                        )}
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <Select
-                        value={order.status}
-                        onValueChange={(value) => handleStatusChange(order.id, value as OrderStatus)}
-                      >
-                        <SelectTrigger className={`w-32 h-8 text-xs ${getStatusColor(order.status)}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                          <SelectItem value="refunded">Refunded</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="py-4 px-4 text-sm text-muted-foreground">
-                      {formatDate(order.created_at)}
-                    </td>
-                    <td className="py-4 px-4 text-right font-medium text-foreground">
-                      {formatPrice(order.total_amount)}
+                      <div className="space-y-2">
+                        <Select
+                          value={order.status}
+                          onValueChange={(value) => handleStatusChange(order.id, value as OrderStatus)}
+                        >
+                          <SelectTrigger className={`w-32 h-8 text-[11px] font-bold uppercase tracking-wider ${getStatusColor(order.status)}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="on_hold">On Hold</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                            <SelectItem value="refunded">Refunded</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium uppercase">
+                          <Clock className="w-3 h-3" />
+                          {formatDate(order.created_at)}
+                        </div>
+                      </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+                      <p className="font-bold text-foreground">{formatPrice(order.total_amount)}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        {order.payment_method === 'bank_transfer' && <Building2 className="w-3 h-3 text-primary" />}
+                        {order.payment_method === 'binance_usdt' && <Bitcoin className="w-3 h-3 text-[#F0B90B]" />}
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          {order.payment_method?.replace('_', ' ') || 'UNPAID'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedOrder(order)}>
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" asChild>
-                          <a
-                            href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:text-success" asChild>
+                          <a href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                             <MessageCircle className="w-4 h-4" />
                           </a>
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setOrderToDelete(order)}
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setOrderToDelete(order)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -335,6 +345,46 @@ const AdminOrders = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile View (Card List) */}
+          <div className="md:hidden space-y-px bg-border">
+            {filteredOrders.map((order) => (
+              <div key={order.id} className="bg-card p-4 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-mono text-sm font-bold text-foreground">{order.order_number}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{order.customer_name}</p>
+                    <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-muted-foreground uppercase opacity-70">
+                      <Clock className="w-3 h-3" />
+                      {formatDateTime(order.created_at)}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-primary">{formatPrice(order.total_amount)}</p>
+                    <div className={`mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs h-9" onClick={() => setSelectedOrder(order)}>
+                    <Eye className="w-3.5 h-3.5 mr-1.5" />
+                    Details
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1 text-xs h-9 text-success" asChild>
+                    <a href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+                      WhatsApp
+                    </a>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="w-9 h-9 text-destructive" onClick={() => setOrderToDelete(order)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -342,151 +392,191 @@ const AdminOrders = () => {
         Showing {filteredOrders.length} of {orders.length} orders
       </p>
 
-      {/* Order Detail Modal */}
+      {/* Super Detailed Order Inspector */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-none sm:rounded-3xl shadow-2xl">
           {selectedOrder && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-lg">{selectedOrder.order_number}</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(selectedOrder.status)}`}>
+            <div className="flex flex-col max-h-[90vh]">
+              {/* Modal Header */}
+              <div className="bg-primary p-6 md:p-8 text-primary-foreground relative">
+                <div className="flex items-center gap-3 mb-2 opacity-80">
+                  <ShieldCheck className="w-5 h-5 text-primary-foreground" />
+                  <span className="text-xs font-bold uppercase tracking-[0.2em]">Internal Audit Report</span>
+                </div>
+                <h2 className="text-3xl font-display font-black mb-1">{selectedOrder.order_number}</h2>
+                <p className="text-primary-foreground/60 text-sm font-medium">Secured Order Entry • System Verified</p>
+                <div className={`absolute top-6 right-6 px-4 py-1.5 rounded-full text-xs font-black uppercase border-2 ${getStatusColor(selectedOrder.status)} bg-white shadow-xl`}>
                   {selectedOrder.status}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Customer</p>
-                  <p className="font-medium">{selectedOrder.customer_name}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">WhatsApp</p>
-                  <p className="font-medium">{selectedOrder.customer_whatsapp}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Purchased At</p>
-                  <p className="font-medium flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                    {formatDateTime(selectedOrder.created_at)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Total</p>
-                  <p className="font-medium text-primary">{formatPrice(selectedOrder.total_amount)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Country</p>
-                  <p className="font-medium flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-muted-foreground" />
-                    {selectedOrder.customer_country || 'Unknown'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Payment Method</p>
-                  <div className="flex items-center gap-1.5">
-                    {selectedOrder.payment_method === 'bank_transfer' && (
-                      <>
-                        <Building2 className="w-4 h-4 text-primary" />
-                        <span className="font-medium">Bank Transfer</span>
-                      </>
-                    )}
-                    {selectedOrder.payment_method === 'binance_usdt' && (
-                      <>
-                        <Bitcoin className="w-4 h-4 text-[#F0B90B]" />
-                        <span className="font-medium">Binance USDT</span>
-                      </>
-                    )}
-                    {!selectedOrder.payment_method && (
-                      <span className="text-muted-foreground">Not specified</span>
-                    )}
-                  </div>
                 </div>
               </div>
 
-              {selectedOrder.order_items && selectedOrder.order_items.length > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Items</p>
-                  <div className="space-y-2">
-                    {selectedOrder.order_items.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
+                {/* Section: Customer Intelligence */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3 text-primary">
+                        <User className="w-4 h-4" />
+                        <h3 className="text-xs font-black uppercase tracking-wider">Customer Profile</h3>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-3">
                         <div>
-                          <p className="font-medium text-sm">{item.product_name}</p>
-                          {item.plan_name && (
-                            <p className="text-xs text-muted-foreground">{item.plan_name}</p>
-                          )}
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Legal Name</p>
+                          <p className="text-sm font-bold text-foreground">{selectedOrder.customer_name}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">{formatPrice(item.total_price)}</p>
-                          <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Contact Channel</p>
+                          <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                            {selectedOrder.customer_whatsapp}
+                            <MessageCircle className="w-3.5 h-3.5 text-success" />
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Origin Country</p>
+                          <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                            <Globe className="w-3.5 h-3.5 text-primary" />
+                            {selectedOrder.customer_country || 'Manual Entry'}
+                          </p>
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-3 text-primary">
+                        <CreditCard className="w-4 h-4" />
+                        <h3 className="text-xs font-black uppercase tracking-wider">Financial Data</h3>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-3">
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Payload</p>
+                            <p className="text-xl font-black text-foreground">{formatPrice(selectedOrder.total_amount)}</p>
+                          </div>
+                          <div className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedOrder.status === 'completed' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'}`}>
+                            {selectedOrder.status === 'completed' ? 'Success' : 'Pending'}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Payment Method</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {selectedOrder.payment_method === 'binance_usdt' ? (
+                              <div className="flex items-center gap-2 text-sm font-bold text-[#F0B90B]">
+                                <Bitcoin className="w-4 h-4" /> Binance USDT
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 text-sm font-bold text-primary">
+                                <Building2 className="w-4 h-4" /> Bank Transfer
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3 text-primary">
+                        <LayoutList className="w-4 h-4" />
+                        <h3 className="text-xs font-black uppercase tracking-wider">Manifest Items</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {selectedOrder.order_items?.map((item) => (
+                          <div key={item.id} className="p-3 rounded-xl bg-secondary/30 border border-border flex justify-between items-center group hover:border-primary/50 transition-colors">
+                            <div>
+                              <p className="text-xs font-black text-foreground">{item.product_name}</p>
+                              <p className="text-[10px] font-bold text-primary">{item.plan_name}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs font-black text-foreground">x{item.quantity}</p>
+                              <p className="text-[10px] text-muted-foreground">{formatPrice(item.unit_price)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-3 text-primary">
+                        <Fingerprint className="w-4 h-4" />
+                        <h3 className="text-xs font-black uppercase tracking-wider">System Metadata</h3>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-3 font-mono">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Internal UUID</p>
+                          <p className="text-[10px] font-medium text-muted-foreground break-all">{selectedOrder.id}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Created Sequence</p>
+                          <p className="text-[10px] font-medium text-muted-foreground">{formatDateTime(selectedOrder.created_at)}</p>
+                        </div>
+                        {selectedOrder.binance_id && (
+                          <div>
+                            <p className="text-[10px] text-[#F0B90B] uppercase font-black">Verify Binance ID</p>
+                            <p className="text-sm font-black text-[#F0B90B]">{selectedOrder.binance_id}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {selectedOrder.payment_method === 'binance_usdt' && selectedOrder.binance_id && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Customer Binance ID</p>
-                  <p className="text-sm p-3 bg-[#F0B90B]/10 rounded-lg font-mono">{selectedOrder.binance_id}</p>
-                </div>
-              )}
-
-              {selectedOrder.payment_proof_url && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Payment Proof</p>
-
-                  {isLoadingProof ? (
-                    <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg border border-border">
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Loading proof…</span>
-                    </div>
-                  ) : paymentProofHref ? (
-                    <a
-                      href={paymentProofHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg border border-border hover:border-primary/50 transition-colors"
-                    >
-                      {(paymentProofHref.split('?')[0] || '').endsWith('.pdf') ? (
-                        <FileText className="w-5 h-5 text-destructive" />
+                {/* Section: Assets & Communications */}
+                <div className="space-y-4">
+                  {selectedOrder.payment_proof_url && (
+                    <div className="group">
+                      <p className="text-[10px] text-muted-foreground uppercase font-black mb-2 tracking-widest pl-1">Compliance Proof</p>
+                      {isLoadingProof ? (
+                        <div className="h-20 rounded-2xl bg-secondary animate-pulse flex items-center justify-center">
+                          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        </div>
                       ) : (
-                        <ImageIcon className="w-5 h-5 text-primary" />
+                        <a
+                          href={paymentProofHref || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block p-4 rounded-2xl bg-success/5 border-2 border-dashed border-success/20 group-hover:border-success/50 transition-all"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success">
+                                <ImageIcon className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-black text-success">Transaction Proof Available</p>
+                                <p className="text-xs text-success/60">Click to expand audit capture</p>
+                              </div>
+                            </div>
+                            <ExternalLink className="w-5 h-5 text-success/40 group-hover:text-success transition-colors" />
+                          </div>
+                        </a>
                       )}
-                      <span className="text-sm font-medium flex-1">View Payment Proof</span>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </a>
-                  ) : (
-                    <div className="p-3 bg-secondary/50 rounded-lg border border-border">
-                      <p className="text-sm text-muted-foreground">
-                        Could not load the proof file (check Storage access).
-                      </p>
+                    </div>
+                  )}
+
+                  {selectedOrder.notes && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase font-black mb-2 tracking-widest pl-1">Customer Dispatch Notes</p>
+                      <div className="p-4 rounded-2xl bg-secondary/50 border border-border italic text-sm text-foreground">
+                        "{selectedOrder.notes}"
+                      </div>
                     </div>
                   )}
                 </div>
-              )}
 
-              {selectedOrder.notes && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                  <p className="text-sm p-3 bg-secondary/50 rounded-lg">{selectedOrder.notes}</p>
+                {/* Full Width Actions */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+                  <Button variant="whatsapp" size="xl" className="flex-1 font-black uppercase text-xs tracking-widest h-14" asChild>
+                    <a href={`https://wa.me/${selectedOrder.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="w-5 h-5 mr-3" />
+                      Dispatch Response
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="xl" className="sm:w-14 h-14 flex items-center justify-center p-0 border-2" onClick={() => setSelectedOrder(null)}>
+                    <X className="w-6 h-6" />
+                  </Button>
                 </div>
-              )}
-
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" className="flex-1" asChild>
-                  <a
-                    href={`https://wa.me/${selectedOrder.customer_whatsapp.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Contact Customer
-                  </a>
-                </Button>
               </div>
             </div>
           )}

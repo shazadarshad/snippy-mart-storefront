@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export type OrderStatus = 'pending' | 'completed' | 'cancelled' | 'refunded';
+export type OrderStatus = 'pending' | 'processing' | 'completed' | 'on_hold' | 'cancelled' | 'refunded';
 
 export interface OrderItem {
   id: string;
