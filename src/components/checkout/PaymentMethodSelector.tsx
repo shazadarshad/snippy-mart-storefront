@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Building2, Bitcoin, ChevronDown, Upload, X, FileText, Image as ImageIcon, Check, Copy } from 'lucide-react';
+import { Building2, Bitcoin, ChevronDown, Upload, X, FileText, Image as ImageIcon, Check, Copy, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/hooks/use-toast';
 
-export type PaymentMethod = 'bank_transfer' | 'binance_usdt';
+export type PaymentMethod = 'bank_transfer' | 'binance_usdt' | 'card';
 
 interface PaymentMethodSelectorProps {
   selectedMethod: PaymentMethod | null;
@@ -426,6 +426,62 @@ const PaymentMethodSelector = ({
                   </Button>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Card Payment Option (Coming Soon) */}
+      <div
+        className={cn(
+          "border rounded-xl overflow-hidden transition-all duration-300",
+          selectedMethod === 'card'
+            ? "border-primary bg-primary/5"
+            : "border-border hover:border-primary/50"
+        )}
+      >
+        <button
+          type="button"
+          className="w-full p-4 flex items-center justify-between text-left"
+          onClick={() => onMethodChange(selectedMethod === 'card' ? null : 'card')}
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
+              selectedMethod === 'card'
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground"
+            )}>
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">Card Payment (Visa / Master)</p>
+              <p className="text-sm text-muted-foreground">Pay with Credit or Debit card</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary text-muted-foreground uppercase tracking-wider">
+              Soon
+            </span>
+            <ChevronDown className={cn(
+              "w-5 h-5 text-muted-foreground transition-transform duration-300",
+              selectedMethod === 'card' && "rotate-180"
+            )} />
+          </div>
+        </button>
+
+        {/* Expanded Content for Card Payment */}
+        <div className={cn(
+          "overflow-hidden transition-all duration-300",
+          selectedMethod === 'card' ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+        )}>
+          <div className="p-6 pt-0 text-center">
+            <div className="p-4 rounded-xl bg-secondary/50 border border-border border-dashed">
+              <CreditCard className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-50" />
+              <p className="text-sm font-medium text-foreground">Card payment is currently unavailable</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                We are working hard to bring VISA and Mastercard payments to Snippy Mart soon!
+              </p>
             </div>
           </div>
         </div>
