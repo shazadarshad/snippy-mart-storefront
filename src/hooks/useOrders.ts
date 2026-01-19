@@ -26,6 +26,7 @@ export interface Order {
   payment_method: 'bank_transfer' | 'binance_usdt' | null;
   payment_proof_url: string | null;
   binance_id: string | null;
+  customer_country: string | null;
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];
@@ -88,7 +89,7 @@ export const useOrderStats = () => {
       if (error) throw error;
 
       const orders = data || [];
-      
+
       const stats: OrderStats = {
         totalOrders: orders.length,
         totalRevenue: orders
@@ -119,6 +120,7 @@ export const useCreateOrder = () => {
       payment_method?: 'bank_transfer' | 'binance_usdt';
       payment_proof_url?: string;
       binance_id?: string;
+      customer_country?: string;
       items: {
         product_id?: string;
         product_name: string;
@@ -138,6 +140,7 @@ export const useCreateOrder = () => {
           payment_method: orderData.payment_method,
           payment_proof_url: orderData.payment_proof_url,
           binance_id: orderData.binance_id,
+          customer_country: orderData.customer_country,
           items: orderData.items,
         },
       });
@@ -204,5 +207,31 @@ export const useDeleteOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
+  });
+};
+
+export const useTrackOrder = (orderNumber: string) => {
+  return useQuery({
+    queryKey: ['orders', 'track', orderNumber],
+    queryFn: async () => {
+      if (!orderNumber) return null;
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          order_number,
+          customer_name,
+          total_amount,
+          status,
+          created_at,
+          payment_method,
+          order_items (*)
+        `)
+        .eq('order_number', orderNumber)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orderNumber,
   });
 };

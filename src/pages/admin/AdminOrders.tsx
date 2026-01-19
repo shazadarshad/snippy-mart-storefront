@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,6 +29,7 @@ import { formatPrice } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrders, useUpdateOrderStatus, useDeleteOrder, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
+import { formatDateTime } from '@/lib/utils';
 
 const AdminOrders = () => {
   const { toast } = useToast();
@@ -319,8 +320,8 @@ const AdminOrders = () => {
                             <MessageCircle className="w-4 h-4" />
                           </a>
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive"
                           onClick={() => setOrderToDelete(order)}
@@ -366,12 +367,22 @@ const AdminOrders = () => {
                   <p className="font-medium">{selectedOrder.customer_whatsapp}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Date</p>
-                  <p className="font-medium">{formatDate(selectedOrder.created_at)}</p>
+                  <p className="text-muted-foreground">Purchased At</p>
+                  <p className="font-medium flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                    {formatDateTime(selectedOrder.created_at)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Total</p>
                   <p className="font-medium text-primary">{formatPrice(selectedOrder.total_amount)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Country</p>
+                  <p className="font-medium flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                    {selectedOrder.customer_country || 'Unknown'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Payment Method</p>

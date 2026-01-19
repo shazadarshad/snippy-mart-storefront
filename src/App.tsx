@@ -17,6 +17,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
+import TrackOrderPage from "./pages/TrackOrderPage";
 import AdminAuthPage from "./pages/admin/AdminAuthPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -47,6 +48,7 @@ const AppContent = () => {
           <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+          <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
 
           {/* Admin Routes */}
           <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />

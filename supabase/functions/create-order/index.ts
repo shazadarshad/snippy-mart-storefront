@@ -17,6 +17,7 @@ type CreateOrderBody = {
   payment_method?: PaymentMethod;
   payment_proof_url?: string; // for this app we store the storage path here
   binance_id?: string;
+  customer_country?: string;
   items: Array<{
     product_id?: string;
     product_name: string;
@@ -85,6 +86,7 @@ serve(async (req) => {
         payment_method: body.payment_method ?? null,
         payment_proof_url: body.payment_proof_url ?? null,
         binance_id: body.binance_id ?? null,
+        customer_country: body.customer_country ?? 'Unknown',
       },
     ])
     .select()

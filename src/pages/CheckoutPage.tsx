@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import PaymentMethodSelector, { type PaymentMethod } from '@/components/checkout/PaymentMethodSelector';
+import { getCountry } from '@/lib/utils';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -110,6 +111,9 @@ const CheckoutPage = () => {
         throw new Error('Your cart has an invalid item (old cached data). Please clear the cart and add items again.');
       }
 
+      // Detect country
+      const customerCountry = await getCountry();
+
       await createOrder.mutateAsync({
         order_number: orderId,
         customer_name: formData.name || 'Customer',
@@ -119,6 +123,7 @@ const CheckoutPage = () => {
         payment_method: paymentMethod,
         payment_proof_url: paymentProofPath,
         binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
+        customer_country: customerCountry,
         items: items.map((item) => ({
           product_id: item.product.id,
           product_name: item.product.name,

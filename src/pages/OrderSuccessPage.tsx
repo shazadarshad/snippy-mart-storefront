@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, MessageCircle, Home, Package } from 'lucide-react';
+import { CheckCircle2, MessageCircle, Home, Package, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/store';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface OrderData {
   orderId: string;
@@ -19,13 +20,15 @@ interface OrderData {
 const OrderSuccessPage = () => {
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const { data: settings, isLoading: isSettingsLoading } = useSiteSettings();
 
   useEffect(() => {
     const storedOrder = sessionStorage.getItem('lastOrder');
     if (storedOrder) {
       setOrderData(JSON.parse(storedOrder));
       // Clear sensitive data from session storage after reading it
-      sessionStorage.removeItem('lastOrder');
+      // Note: We might want to keep it if we allow refresh, but user requested clearing in original code
+      // sessionStorage.removeItem('lastOrder'); 
     } else {
       navigate('/');
     }
@@ -34,6 +37,13 @@ const OrderSuccessPage = () => {
   if (!orderData) {
     return null;
   }
+
+  const getWhatsAppLink = () => {
+    const number = settings?.whatsapp_number || '94787767869';
+    const template = settings?.whatsapp_message_template || 'Hello! I just placed an order. Order ID: {order_id}';
+    const message = template.replace('{order_id}', orderData.orderId);
+    return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+  };
 
   return (
     <div className="min-h-screen pt-24 pb-20 flex items-center justify-center">
@@ -53,7 +63,8 @@ const OrderSuccessPage = () => {
             Order Received Successfully!
           </h1>
           <p className="text-lg text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Thank you for your order. We'll send your confirmation and subscription details on WhatsApp.
+            Thank you for your order. Your order ID is <span className="text-foreground font-mono font-bold">{orderData.orderId}</span>.
+            Please click the button below to confirm your order on WhatsApp.
           </p>
 
           {/* Order Details Card */}
@@ -64,7 +75,7 @@ const OrderSuccessPage = () => {
                 <p className="font-mono font-semibold text-foreground">{orderData.orderId}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">WhatsApp</p>
+                <p className="text-sm text-muted-foreground">Your WhatsApp</p>
                 <p className="font-medium text-foreground">{orderData.whatsapp}</p>
               </div>
             </div>
@@ -94,19 +105,23 @@ const OrderSuccessPage = () => {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <Button variant="whatsapp" size="lg" asChild>
-              <a href="https://wa.me/94787767869" target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Contact Support on WhatsApp
+            <Button variant="whatsapp" size="xl" className="w-full sm:w-auto px-8 py-6 text-lg shadow-lg hover:shadow-success/20 transition-all duration-300" asChild disabled={isSettingsLoading}>
+              <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
+                {isSettingsLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <MessageCircle className="w-6 h-6 mr-2 animate-bounce" />}
+                Confirm on WhatsApp
               </a>
             </Button>
-            <Button variant="outline" size="lg" asChild>
+            <Button variant="outline" size="xl" className="w-full sm:w-auto px-8" asChild>
               <Link to="/">
-                <Home className="w-4 h-4 mr-2" />
+                <Home className="w-5 h-5 mr-2" />
                 Back to Home
               </Link>
             </Button>
           </div>
+
+          <p className="text-sm text-muted-foreground mt-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            Having trouble? <a href={getWhatsAppLink()} className="text-primary hover:underline">Click here to contact support manually.</a>
+          </p>
         </div>
       </div>
     </div>

@@ -1,26 +1,66 @@
-import { useState } from 'react';
-import { MessageCircle, FileText, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageCircle, FileText, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useSiteSettings, useUpdateSiteSetting } from '@/hooks/useSiteSettings';
 
 const ContactSettingsSection = () => {
   const { toast } = useToast();
+  const { data: settings, isLoading } = useSiteSettings();
+  const updateSetting = useUpdateSiteSetting();
 
-  const [settings, setSettings] = useState({
-    whatsappNumber: '+94 78 776 7869',
-    welcomeMessage: 'Thank you for your order! Your subscription details will be shared shortly.',
-    footerText: '© 2026 Snippy Mart. All rights reserved.',
+  const [formData, setFormData] = useState({
+    whatsappNumber: '',
+    whatsappMessageTemplate: '',
+    footerText: '',
   });
 
-  const handleSave = () => {
-    toast({
-      title: 'Settings saved',
-      description: 'Contact & Footer settings have been updated.',
-    });
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (settings) {
+      setFormData({
+        whatsappNumber: settings.whatsapp_number || '',
+        whatsappMessageTemplate: settings.whatsapp_message_template || '',
+        footerText: settings.footer_text || '© 2026 Snippy Mart. All rights reserved.',
+      });
+    }
+  }, [settings]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await Promise.all([
+        updateSetting.mutateAsync({ key: 'whatsapp_number', value: formData.whatsappNumber }),
+        updateSetting.mutateAsync({ key: 'whatsapp_message_template', value: formData.whatsappMessageTemplate }),
+        updateSetting.mutateAsync({ key: 'footer_text', value: formData.footerText }),
+      ]);
+
+      toast({
+        title: 'Settings saved',
+        description: 'Contact & Footer settings have been updated.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -41,20 +81,23 @@ const ContactSettingsSection = () => {
             <Label htmlFor="whatsappNumber" className="text-foreground">WhatsApp Number</Label>
             <Input
               id="whatsappNumber"
-              value={settings.whatsappNumber}
-              onChange={(e) => setSettings(prev => ({ ...prev, whatsappNumber: e.target.value }))}
+              value={formData.whatsappNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, whatsappNumber: e.target.value }))}
+              placeholder="e.g. 94787767869"
               className="mt-1.5 bg-secondary/50 border-border"
             />
-            <p className="text-xs text-muted-foreground mt-1">Include country code (e.g., +94 78 776 7869)</p>
+            <p className="text-xs text-muted-foreground mt-1">Include country code without + (e.g., 94787767869)</p>
           </div>
           <div>
-            <Label htmlFor="welcomeMessage" className="text-foreground">Order Confirmation Message</Label>
+            <Label htmlFor="whatsappMessageTemplate" className="text-foreground">WhatsApp Message Template</Label>
             <Textarea
-              id="welcomeMessage"
-              value={settings.welcomeMessage}
-              onChange={(e) => setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))}
+              id="whatsappMessageTemplate"
+              value={formData.whatsappMessageTemplate}
+              onChange={(e) => setFormData(prev => ({ ...prev, whatsappMessageTemplate: e.target.value }))}
+              placeholder="e.g. Hello! I just placed an order. Order ID: {order_id}"
               className="mt-1.5 bg-secondary/50 border-border min-h-[100px]"
             />
+            <p className="text-xs text-muted-foreground mt-1">Use {'{order_id}'} to automatically insert the Order ID.</p>
           </div>
         </div>
       </div>
@@ -76,8 +119,8 @@ const ContactSettingsSection = () => {
             <Label htmlFor="footerText" className="text-foreground">Footer Text</Label>
             <Input
               id="footerText"
-              value={settings.footerText}
-              onChange={(e) => setSettings(prev => ({ ...prev, footerText: e.target.value }))}
+              value={formData.footerText}
+              onChange={(e) => setFormData(prev => ({ ...prev, footerText: e.target.value }))}
               className="mt-1.5 bg-secondary/50 border-border"
             />
           </div>
@@ -85,9 +128,18 @@ const ContactSettingsSection = () => {
       </div>
 
       {/* Save Button */}
-      <Button onClick={handleSave} variant="hero" size="lg">
-        <Save className="w-4 h-4 mr-2" />
-        Save Contact Settings
+      <Button onClick={handleSave} variant="hero" size="lg" disabled={isSaving}>
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Saving...
+          </>
+        ) : (
+          <>
+            <Save className="w-4 h-4 mr-2" />
+            Save Contact Settings
+          </>
+        )}
       </Button>
     </div>
   );
