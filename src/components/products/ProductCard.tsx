@@ -76,7 +76,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
       </div>
 
       {/* Content */}
-      <div className="p-5">
+      <div className="p-3.5 sm:p-5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-primary uppercase tracking-wider">
             {product.category}

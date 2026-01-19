@@ -4,6 +4,7 @@ import { Menu, X, ShoppingCart, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 interface NavbarProps {
@@ -75,13 +76,20 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
                 key={link.path}
                 to={link.path}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                   isActive(link.path)
-                    ? "bg-secondary text-foreground"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 )}
               >
                 {link.name}
+                {isActive(link.path) && (
+                  <motion.div
+                    layoutId="nav-active"
+                    className="absolute -bottom-1 left-4 right-4 h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
               </Link>
             ))}
           </div>

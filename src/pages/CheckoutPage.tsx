@@ -252,7 +252,7 @@ const CheckoutPage = () => {
                       placeholder="Any special instructions..."
                       value={formData.notes}
                       onChange={handleInputChange}
-                      className="mt-1.5 bg-secondary/50 border-border min-h-[100px]"
+                      className="mt-1.5 bg-secondary/50 border-border min-h-[80px]"
                     />
                   </div>
                 </div>

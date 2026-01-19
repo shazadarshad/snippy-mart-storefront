@@ -93,7 +93,7 @@ const PaymentMethodSelector = ({
   const storeBinanceCoin = settings?.binance_coin || 'USDT';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Label className="text-foreground text-base font-semibold">
         Payment Method <span className="text-destructive">*</span>
       </Label>
@@ -191,7 +191,7 @@ const PaymentMethodSelector = ({
                   </Button>
                 </div>
               </div>
-              
+
               <div className="mt-3 pt-3 border-t border-border">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-muted-foreground">Your Order ID:</span>
@@ -219,7 +219,7 @@ const PaymentMethodSelector = ({
               <p className="text-xs text-muted-foreground mb-2">
                 Upload a screenshot or photo of your payment receipt (JPG, PNG, PDF)
               </p>
-              
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -343,7 +343,7 @@ const PaymentMethodSelector = ({
                   Use Binance Pay to send {storeBinanceCoin} - it's instant and free!
                 </p>
               </div>
-              
+
               <div className="mt-3 pt-3 border-t border-[#F0B90B]/20">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-muted-foreground">Your Order ID:</span>
@@ -388,7 +388,7 @@ const PaymentMethodSelector = ({
               <p className="text-xs text-muted-foreground mb-2">
                 Upload a screenshot of your payment confirmation
               </p>
-              
+
               <input
                 ref={fileInputRef}
                 type="file"
