@@ -59,6 +59,7 @@ const AdminOrders = () => {
     switch (status) {
       case 'completed': return 'bg-success/10 text-success border-success/20';
       case 'processing': return 'bg-primary/10 text-primary border-primary/20';
+      case 'shipping': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
       case 'pending': return 'bg-warning/10 text-warning border-warning/20';
       case 'on_hold': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
       case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
@@ -304,6 +305,7 @@ const AdminOrders = () => {
                           <SelectContent>
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="shipping">Shipping</SelectItem>
                             <SelectItem value="completed">Completed</SelectItem>
                             <SelectItem value="on_hold">On Hold</SelectItem>
                             <SelectItem value="cancelled">Cancelled</SelectItem>

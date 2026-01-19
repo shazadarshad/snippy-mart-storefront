@@ -62,6 +62,8 @@ const AdminDashboard = () => {
         return 'bg-success/10 text-success';
       case 'processing':
         return 'bg-primary/10 text-primary';
+      case 'shipping':
+        return 'bg-blue-500/10 text-blue-500';
       case 'pending':
         return 'bg-warning/10 text-warning';
       case 'on_hold':

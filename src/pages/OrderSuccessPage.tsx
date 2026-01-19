@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, MessageCircle, Home, Package, Loader2, Search, ArrowRight } from 'lucide-react';
+import { CheckCircle2, MessageCircle, Home, Package, Loader2, Search, ArrowRight, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/store';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderData {
   orderId: string;
@@ -19,20 +20,31 @@ interface OrderData {
 
 const OrderSuccessPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [copied, setCopied] = useState(false);
   const { data: settings, isLoading: isSettingsLoading } = useSiteSettings();
 
   useEffect(() => {
     const storedOrder = sessionStorage.getItem('lastOrder');
     if (storedOrder) {
       setOrderData(JSON.parse(storedOrder));
-      // Clear sensitive data from session storage after reading it
-      // Note: We might want to keep it if we allow refresh, but user requested clearing in original code
-      // sessionStorage.removeItem('lastOrder'); 
     } else {
       navigate('/');
     }
   }, [navigate]);
+
+  const copyToClipboard = () => {
+    if (orderData?.orderId) {
+      navigator.clipboard.writeText(orderData.orderId);
+      setCopied(true);
+      toast({
+        title: 'Order ID Copied!',
+        description: 'You can now use this to track your order.',
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (!orderData) {
     return null;
@@ -59,100 +71,120 @@ const OrderSuccessPage = () => {
             </div>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4 animate-fade-in">
-            Order Received Successfully!
+          <h1 className="text-3xl md:text-5xl font-display font-black text-foreground mb-4 animate-fade-in">
+            Order Confirmed!
           </h1>
           <p className="text-lg text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Thank you for your order. Your order ID is <span className="text-foreground font-mono font-bold">{orderData.orderId}</span>.
-            Please click the button below to confirm your order on WhatsApp.
+            Success! Your order <span className="text-primary font-mono font-black">{orderData.orderId}</span> has been locked in.
           </p>
 
           {/* Order Details Card */}
-          <div className="p-6 rounded-2xl bg-card border border-border text-left mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <p className="text-sm text-muted-foreground">Order ID</p>
-                <p className="font-mono font-semibold text-foreground">{orderData.orderId}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Your WhatsApp</p>
-                <p className="font-medium text-foreground">{orderData.whatsapp}</p>
-              </div>
-            </div>
+          <div className="p-1 rounded-[2.5rem] bg-gradient-to-b from-primary/20 to-transparent mb-12 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <div className="p-6 md:p-8 rounded-[2.4rem] bg-card border border-white/10 shadow-2xl overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
 
-            <div className="border-t border-border pt-4">
-              <p className="text-sm text-muted-foreground mb-3">Products Ordered</p>
-              <div className="space-y-3">
-                {orderData.items.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Package className="w-4 h-4 text-primary" />
-                      <span className="text-foreground">{item.name}</span>
-                      <span className="text-sm text-muted-foreground">×{item.quantity}</span>
-                    </div>
-                    <span className="font-medium text-foreground">
-                      {formatPrice(item.price * item.quantity)}
-                    </span>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8 pb-8 border-b border-border/50">
+                <div className="text-left w-full sm:w-auto">
+                  <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1.5">Official Order ID</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-mono font-black text-foreground">{orderData.orderId}</span>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-10 w-10 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
+                      onClick={copyToClipboard}
+                    >
+                      {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                    </Button>
                   </div>
-                ))}
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1.5">Customer Handle</p>
+                  <p className="text-xl font-bold text-foreground flex items-center sm:justify-end gap-2">
+                    <MessageCircle className="w-5 h-5 text-success" />
+                    {orderData.whatsapp}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                <span className="font-semibold text-foreground">Total</span>
-                <span className="text-xl font-bold gradient-text">{formatPrice(orderData.total)}</span>
+
+              <div className="space-y-4">
+                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest text-left mb-4">Parcel Contents</p>
+                <div className="space-y-3">
+                  {orderData.items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/30 border border-border group hover:border-primary/30 transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-primary">
+                          <Package className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-bold text-foreground group-hover:text-primary transition-colors">{item.name}</p>
+                          <p className="text-[10px] text-muted-foreground font-bold">UNIT VOL: x{item.quantity}</p>
+                        </div>
+                      </div>
+                      <span className="text-lg font-black text-foreground">
+                        {formatPrice(item.price * item.quantity)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/50">
+                  <span className="text-lg font-black text-muted-foreground uppercase tracking-tighter">Net Total</span>
+                  <span className="text-4xl font-display font-black gradient-text">{formatPrice(orderData.total)}</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col gap-4 mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button variant="whatsapp" size="xl" className="w-full sm:w-auto px-8 py-6 text-lg shadow-lg hover:shadow-success/20 transition-all duration-300" asChild disabled={isSettingsLoading}>
+          <div className="flex flex-col gap-6 mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Button variant="whatsapp" size="xl" className="h-20 rounded-3xl text-xl font-black uppercase tracking-widest shadow-2xl hover:translate-y-[-4px] active:translate-y-[0px] transition-all" asChild disabled={isSettingsLoading}>
                 <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
-                  {isSettingsLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <MessageCircle className="w-6 h-6 mr-2 animate-bounce" />}
-                  Confirm on WhatsApp
+                  {isSettingsLoading ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <MessageCircle className="w-7 h-7 mr-3 animate-bounce" />}
+                  Confirm Order
                 </a>
               </Button>
-              <div className="flex flex-col items-center sm:items-start">
-                <Button variant="outline" size="xl" className="w-full sm:w-auto px-8" asChild>
-                  <Link to="/">
-                    <Home className="w-5 h-5 mr-2" />
-                    Back to Home
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-2 mt-2">
-              <p className="text-sm text-muted-foreground">Having trouble with the button?</p>
-              <a
-                href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline font-bold flex items-center gap-1.5"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Contact Support Manually
-              </a>
-            </div>
-
-            {/* Track Order CTA */}
-            <div className="mt-8 p-6 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col md:flex-row items-center justify-between gap-4 text-left">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <Search className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground">Want to track your order?</h3>
-                  <p className="text-sm text-muted-foreground">You can check your order status anytime on our tracking page.</p>
-                </div>
-              </div>
-              <Button variant="hero" asChild>
-                <Link to="/track-order">
-                  Track Order
-                  <ArrowRight className="w-4 h-4 ml-2" />
+              <Button variant="outline" size="xl" className="h-20 rounded-3xl text-lg font-bold border-2" asChild>
+                <Link to="/">
+                  <Home className="w-6 h-6 mr-3" />
+                  Home
                 </Link>
               </Button>
             </div>
+
+            {/* Track Order CTA */}
+            <div className="group p-1 rounded-[2.5rem] bg-gradient-to-r from-primary/10 via-transparent to-primary/10 hover:from-primary/20 hover:to-primary/20 transition-all cursor-pointer overflow-hidden relative">
+              <Link to={`/track-order?orderId=${orderData.orderId}`} className="block p-6 md:p-8 rounded-[2.4rem] bg-card border border-border/50 text-left relative overflow-hidden">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                      <Search className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-foreground mb-1">Live Tracking Enabled</h3>
+                      <p className="text-sm text-muted-foreground max-w-xs">Monitor your delivery status in real-time. Secure & encrypted.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-primary font-black uppercase text-xs tracking-[0.2em] bg-primary/10 px-6 py-3 rounded-full group-hover:bg-primary group-hover:text-white transition-all">
+                    Launch Tracker
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <p className="text-xs text-muted-foreground uppercase font-black tracking-widest">Fail-safe Communication</p>
+            <a
+              href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-4 rounded-2xl bg-secondary/50 border border-border text-primary hover:bg-primary hover:text-white transition-all font-black uppercase text-xs tracking-widest flex items-center gap-3 shadow-xl"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Manual Support Line
+            </a>
           </div>
         </div>
       </div>
