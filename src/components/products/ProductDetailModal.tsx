@@ -206,7 +206,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               </button>
 
               {/* Content */}
-              <div className="flex flex-col md:flex-row h-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto md:overflow-hidden">
+              <div className="flex flex-col md:flex-row h-full overflow-hidden">
                 {/* Image Section with Gallery - Hidden on Mobile */}
                 <div className="hidden md:block relative w-full md:w-1/2 aspect-square bg-muted flex-shrink-0">
                   <img
@@ -248,15 +248,15 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                   )}
 
                   {discount > 0 && (
-                    <div className="absolute top-2 sm:top-4 left-2 sm:left-4 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold">
+                    <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                       -{discount}% OFF
                     </div>
                   )}
                 </div>
 
                 {/* Details Section */}
-                <div className="flex-1 flex flex-col overflow-hidden md:overflow-y-auto">
-                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+                <div className="flex-1 flex flex-col h-full overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pt-12 md:pt-8">
                     {/* Category & Stock */}
                     <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-3">
                       <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
@@ -355,7 +355,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="flex-shrink-0 p-4 sm:p-6 md:p-8 pt-0 border-t border-border md:border-t-0 bg-card md:bg-transparent">
+                  <div className="flex-shrink-0 p-4 sm:p-6 md:p-8 pt-0 border-t border-border bg-card">
                     {/* Selected Plan Summary */}
                     {selectedPlan && (
                       <div className="flex items-center justify-between mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-secondary/50">
