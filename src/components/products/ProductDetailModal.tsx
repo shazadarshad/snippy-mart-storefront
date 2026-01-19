@@ -195,7 +195,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] bg-card border border-border rounded-2xl sm:rounded-2xl shadow-2xl overflow-hidden relative"
+              className="w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden relative"
             >
               {/* Close Button */}
               <button
@@ -205,10 +205,10 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Content */}
-              <div className="flex flex-col md:flex-row h-full overflow-hidden">
+              {/* Content Wrapper */}
+              <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
                 {/* Image Section with Gallery - Hidden on Mobile */}
-                <div className="hidden md:block relative w-full md:w-1/2 aspect-square bg-muted flex-shrink-0">
+                <div className="hidden md:block relative w-1/2 aspect-square bg-muted flex-shrink-0">
                   <img
                     src={allImages[currentImageIndex] || product.image_url}
                     alt={product.name}
@@ -255,8 +255,8 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 </div>
 
                 {/* Details Section */}
-                <div className="flex-1 flex flex-col h-full overflow-hidden">
-                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pt-12 md:pt-8">
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 md:p-8 pt-12 md:pt-8">
                     {/* Category & Stock */}
                     <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-3">
                       <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
