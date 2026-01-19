@@ -1,7 +1,7 @@
-import { 
-  DollarSign, 
-  Package, 
-  ShoppingCart, 
+import {
+  DollarSign,
+  Package,
+  ShoppingCart,
   Clock,
   TrendingUp,
   ArrowUpRight,
@@ -60,8 +60,12 @@ const AdminDashboard = () => {
     switch (status) {
       case 'completed':
         return 'bg-success/10 text-success';
+      case 'processing':
+        return 'bg-primary/10 text-primary';
       case 'pending':
         return 'bg-warning/10 text-warning';
+      case 'on_hold':
+        return 'bg-orange-500/10 text-orange-500';
       case 'cancelled':
         return 'bg-destructive/10 text-destructive';
       case 'refunded':

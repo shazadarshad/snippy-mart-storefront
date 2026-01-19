@@ -105,19 +105,34 @@ const OrderSuccessPage = () => {
 
           {/* Actions */}
           <div className="flex flex-col gap-4 mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button variant="whatsapp" size="xl" className="w-full sm:w-auto px-8 py-6 text-lg shadow-lg hover:shadow-success/20 transition-all duration-300" asChild disabled={isSettingsLoading}>
                 <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
                   {isSettingsLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <MessageCircle className="w-6 h-6 mr-2 animate-bounce" />}
                   Confirm on WhatsApp
                 </a>
               </Button>
-              <Button variant="outline" size="xl" className="w-full sm:w-auto px-8" asChild>
-                <Link to="/">
-                  <Home className="w-5 h-5 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
+              <div className="flex flex-col items-center sm:items-start">
+                <Button variant="outline" size="xl" className="w-full sm:w-auto px-8" asChild>
+                  <Link to="/">
+                    <Home className="w-5 h-5 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 mt-2">
+              <p className="text-sm text-muted-foreground">Having trouble with the button?</p>
+              <a
+                href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-bold flex items-center gap-1.5"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Contact Support Manually
+              </a>
             </div>
 
             {/* Track Order CTA */}
@@ -139,10 +154,6 @@ const OrderSuccessPage = () => {
               </Button>
             </div>
           </div>
-
-          <p className="text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            Having trouble? <a href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`} className="text-primary hover:underline font-bold">Message support directly.</a>
-          </p>
         </div>
       </div>
     </div>
