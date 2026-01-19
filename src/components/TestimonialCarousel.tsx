@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Quote, Star, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Quote, Star, User, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import { cn } from '@/lib/utils';
 
@@ -77,38 +77,45 @@ export const TestimonialCarousel = () => {
                             <div className="absolute -top-6 -left-8 md:-left-12 opacity-10">
                                 <Quote className="w-16 h-16 md:w-24 md:h-24 text-primary rotate-180" />
                             </div>
-                            <div className="relative z-10 w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-primary/20 p-1 mb-4 mx-auto">
-                                <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                            <div className="relative z-10 w-24 h-24 rounded-full border-4 border-primary/20 p-1 mb-6 mx-auto group">
+                                <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center overflow-hidden ring-4 ring-primary/5">
                                     {activeTestimonial.avatar_url ? (
                                         <img src={activeTestimonial.avatar_url} alt={activeTestimonial.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <User className="w-10 h-10 text-muted-foreground" />
+                                        <img
+                                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${activeTestimonial.id}`}
+                                            alt="Avatar"
+                                            className="w-full h-full object-cover bg-primary/10"
+                                        />
                                     )}
+                                </div>
+                                <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 shadow-lg ring-2 ring-primary/20">
+                                    <CheckCircle2 className="w-5 h-5 text-primary fill-primary/10" />
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-center gap-1 mb-6">
+                            <div className="flex items-center justify-center gap-1.5 mb-8">
                                 {[...Array(5)].map((_, i) => (
                                     <Star
                                         key={i}
                                         className={cn(
-                                            "w-4 h-4 md:w-5 md:h-5",
-                                            i < activeTestimonial.rating ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20"
+                                            "w-5 h-5 transition-all duration-300",
+                                            i < activeTestimonial.rating ? "fill-amber-500 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" : "text-muted-foreground/20"
                                         )}
                                     />
                                 ))}
                             </div>
 
-                            <blockquote className="text-xl md:text-3xl font-display font-medium text-foreground leading-tight md:leading-snug max-w-3xl mb-8 italic">
+                            <blockquote className="text-2xl md:text-3xl lg:text-4xl font-display font-medium text-foreground leading-tight md:leading-tight max-w-4xl mb-10 italic">
                                 "{activeTestimonial.content}"
                             </blockquote>
 
-                            <div className="space-y-1">
-                                <cite className="not-italic text-lg md:text-xl font-bold gradient-text">
-                                    {activeTestimonial.name}
+                            <div className="space-y-2">
+                                <cite className="not-italic text-xl md:text-2xl font-display font-bold text-foreground inline-flex items-center gap-2">
+                                    {activeTestimonial.name || 'Verified Member'}
                                 </cite>
-                                <div className="text-sm md:text-base text-muted-foreground">
-                                    {activeTestimonial.role || 'Verified Customer'}
+                                <div className="text-base text-primary/80 font-medium tracking-wide uppercase">
+                                    {activeTestimonial.role || 'Satisfied customer'}
                                 </div>
                             </div>
                         </div>

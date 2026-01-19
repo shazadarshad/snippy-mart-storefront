@@ -117,9 +117,8 @@ const AdminTestimonials = () => {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    placeholder="e.g. John Doe"
+                                    placeholder="e.g. John Doe (Optional)"
                                     className="bg-secondary/50 border-border"
-                                    required
                                 />
                             </div>
                             <div className="space-y-2">
