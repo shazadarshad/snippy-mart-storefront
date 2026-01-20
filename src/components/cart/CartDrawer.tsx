@@ -39,7 +39,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 right-0 h-full w-full sm:max-w-md bg-card border-l border-border z-50 transition-transform duration-300 ease-out flex flex-col',
+          'fixed top-0 right-0 h-full w-full sm:max-w-md bg-background/95 backdrop-blur-3xl border-l border-white/10 z-50 transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) flex flex-col shadow-2xl',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -96,25 +96,21 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                     )}
                     <p className="text-sm text-muted-foreground">{formatPrice(item.product.price)}/mo</p>
                     <div className="flex items-center gap-3 mt-3">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-8 h-8 md:w-7 md:h-7"
+                      <button
+                        className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-secondary active:scale-90 transition-all"
                         onClick={() => item.quantity > 1 && updateQuantity(item.id, item.quantity - 1)}
                         aria-label="Decrease quantity"
                       >
-                        <Minus className="w-3.5 h-3.5 md:w-3 md:h-3" />
-                      </Button>
-                      <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-8 h-8 md:w-7 md:h-7"
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="w-4 text-center text-sm font-bold tabular-nums">{item.quantity}</span>
+                      <button
+                        className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-90 transition-all"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         aria-label="Increase quantity"
                       >
-                        <Plus className="w-3.5 h-3.5 md:w-3 md:h-3" />
-                      </Button>
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                   <div className="flex flex-col items-end justify-between">
@@ -138,15 +134,21 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="p-6 border-t border-border bg-card">
+          <div className="p-6 border-t border-border/50 bg-secondary/30 backdrop-blur-md">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-xl font-bold text-foreground">{formatPrice(getTotal())}</span>
+              <span className="text-muted-foreground font-medium">Subtotal</span>
+              <span className="text-2xl font-display font-bold text-foreground">{formatPrice(getTotal())}</span>
             </div>
-            <Button variant="hero" size="lg" className="w-full" onClick={onClose} asChild>
+            <Button
+              variant="hero"
+              size="lg"
+              className="w-full h-14 text-base font-bold shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all"
+              onClick={onClose}
+              asChild
+            >
               <Link to="/checkout">
                 Proceed to Checkout
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
           </div>

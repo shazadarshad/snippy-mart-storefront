@@ -17,6 +17,28 @@ interface ProductDetailModalProps {
   onClose: () => void;
 }
 
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 }
+};
+
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: 'spring', damping: 25, stiffness: 300 }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    y: 20,
+    transition: { duration: 0.2 }
+  }
+};
+
 const StockIndicator = ({ status }: { status?: string }) => {
   if (!status || status === 'in_stock') {
     return (
@@ -154,22 +176,22 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
         <>
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
             onClick={onClose}
           />
 
           {/* Modal Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden relative"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] flex flex-col bg-card border border-border/50 rounded-3xl shadow-2xl overflow-hidden relative pointer-events-auto"
             >
               {/* Close Button */}
               <button
@@ -278,10 +300,10 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                               key={plan.id}
                               onClick={() => setSelectedPlan(plan)}
                               className={cn(
-                                "relative px-4 py-3 rounded-xl border-2 transition-all duration-200",
+                                "relative px-4 py-3 rounded-xl border transition-all duration-200 text-left group",
                                 selectedPlan?.id === plan.id
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border hover:border-primary/50 bg-secondary/30"
+                                  ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)] scale-[1.02]"
+                                  : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50"
                               )}
                             >
                               <div className="text-sm font-semibold text-foreground">
@@ -352,21 +374,21 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                       <Button
                         variant="outline"
                         size="lg"
-                        className="w-full sm:flex-1 h-11 sm:h-12"
+                        className="w-full sm:flex-1 h-12 rounded-xl border-2 font-bold hover:bg-secondary/80 active:scale-95 transition-all"
                         onClick={handleAddToCart}
                         disabled={isOutOfStock}
                       >
-                        <ShoppingCart className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+                        <ShoppingCart className="w-5 h-5 mr-2" />
                         {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                       </Button>
                       <Button
                         variant="hero"
                         size="lg"
-                        className="w-full sm:flex-1 h-11 sm:h-12"
+                        className="w-full sm:flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all"
                         onClick={handleBuyNow}
                         disabled={isOutOfStock}
                       >
-                        <Zap className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+                        <Zap className="w-5 h-5 mr-2 fill-current" />
                         {isOutOfStock ? 'Unavailable' : 'Buy Now'}
                       </Button>
                     </div>
