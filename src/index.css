@@ -1,5 +1,5 @@
 /* CSS Reset and Variables */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Fonts loaded via index.html for performance */
 
 @tailwind base;
 @tailwind components;

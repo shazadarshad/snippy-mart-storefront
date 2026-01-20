@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,24 +12,27 @@ import Footer from "./components/layout/Footer";
 import CartDrawer from "./components/cart/CartDrawer";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
-import HomePage from "./pages/HomePage";
-import ProductsPage from "./pages/ProductsPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import OrderSuccessPage from "./pages/OrderSuccessPage";
-import AboutPage from "./pages/AboutPage";
-import ContactPage from "./pages/ContactPage";
-import TrackOrderPage from "./pages/TrackOrderPage";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import RefundPolicy from "./pages/RefundPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import AdminAuthPage from "./pages/admin/AdminAuthPage";
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminTestimonials from "./pages/admin/AdminTestimonials";
-import AdminSettings from "./pages/admin/AdminSettings";
-import NotFound from "./pages/NotFound";
+import GlobalLoader from "./components/GlobalLoader";
+
+// Lazy Load Pages for Performance
+const HomePage = lazy(() => import("./pages/HomePage"));
+const ProductsPage = lazy(() => import("./pages/ProductsPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const AdminAuthPage = lazy(() => import("./pages/admin/AdminAuthPage"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -45,31 +48,33 @@ const AppContent = () => {
       {!isAdminRoute && <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
 
       <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-          <Route path="/products" element={<PageTransition><ProductsPage /></PageTransition>} />
-          <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
-          <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
-          <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
-          <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
-          <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
-          <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
-          <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
-          <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
+        <Suspense fallback={<GlobalLoader />}>
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+            <Route path="/products" element={<PageTransition><ProductsPage /></PageTransition>} />
+            <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
+            <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
+            <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+            <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+            <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
+            <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+            <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+            <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
 
-          {/* Admin Routes */}
-          <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="testimonials" element={<AdminTestimonials />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
+            {/* Admin Routes */}
+            <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="testimonials" element={<AdminTestimonials />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
 
-          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-        </Routes>
+            <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+          </Routes>
+        </Suspense>
       </AnimatePresence>
 
       {!isAdminRoute && <Footer />}
