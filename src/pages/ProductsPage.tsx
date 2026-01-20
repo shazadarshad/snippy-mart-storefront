@@ -8,6 +8,7 @@ import { useProducts, type Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+import SEO from '@/components/seo/SEO';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -62,6 +63,11 @@ const ProductsPage = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-20">
+      <SEO
+        title="Products"
+        description="Browse our collection of premium digital subscriptions. High-quality tools, streaming services, and software at unbeatable prices."
+        type="website"
+      />
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">

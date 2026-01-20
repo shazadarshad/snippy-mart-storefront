@@ -7,6 +7,7 @@ import { useTrackOrder, type OrderStatus } from '@/hooks/useOrders';
 import { formatPrice } from '@/lib/store';
 import { formatDateTime, cn } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import SEO from '@/components/seo/SEO';
 
 const TrackOrderPage = () => {
     const [searchParams] = useSearchParams();
@@ -50,6 +51,10 @@ const TrackOrderPage = () => {
 
     return (
         <div className="min-h-screen pt-24 pb-20">
+            <SEO
+                title="Track Order"
+                description="Track the status of your Snippy Mart order in real-time. Enter your Order ID to see delivery progress."
+            />
             <div className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto">
                     {/* Header */}

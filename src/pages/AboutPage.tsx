@@ -1,5 +1,6 @@
 import { Shield, Target, Heart, Users, Award, Zap } from 'lucide-react';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
+import SEO from '@/components/seo/SEO';
 
 const AboutPage = () => {
   const values = [
@@ -34,6 +35,10 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-20">
+      <SEO
+        title="About Us"
+        description="Learn about Snippy Mart's mission to provide affordable, premium digital subscriptions with instant delivery and exceptional support."
+      />
       {/* Hero */}
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">

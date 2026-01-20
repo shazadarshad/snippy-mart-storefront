@@ -7,6 +7,7 @@ import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
+import SEO from '@/components/seo/SEO';
 import { motion } from 'framer-motion';
 
 const containerVariants = {
@@ -109,6 +110,27 @@ const HomePage = () => {
               <Zap className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-foreground">Premium Digital Subscriptions</span>
             </div>
+
+            <SEO
+              description="Get premium digital subscriptions for tools, streaming, and creative software at unbeatable prices. Instant WhatsApp delivery available."
+              jsonLd={{
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "Snippy Mart",
+                "url": "https://snippymart.vercel.app",
+                "logo": "https://snippymart.vercel.app/android-chrome-512x512.png",
+                "sameAs": [
+                  "https://twitter.com/SnippyMart",
+                  "https://facebook.com/SnippyMart"
+                ],
+                "contactPoint": {
+                  "@type": "ContactPoint",
+                  "telephone": "+94787767869",
+                  "contactType": "customer service",
+                  "availableLanguage": ["English", "Sinhala"]
+                }
+              }}
+            />
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-foreground mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
               Premium Digital Subscriptions.{' '}

@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
+import SEO from '@/components/seo/SEO';
 
 const ContactPage = () => {
   const { toast } = useToast();
@@ -65,6 +66,10 @@ const ContactPage = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-20">
+      <SEO
+        title="Contact Us"
+        description="Get in touch with Snippy Mart. We're available 24/7 via WhatsApp and email to help you with your digital subscription needs."
+      />
       {/* Hero */}
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
