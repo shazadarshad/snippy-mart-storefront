@@ -101,10 +101,10 @@ const PaymentMethodSelector = ({
       {/* Bank Transfer Option */}
       <div
         className={cn(
-          "border rounded-xl overflow-hidden transition-all duration-300",
+          "border rounded-xl overflow-hidden transition-all duration-300 ease-out",
           selectedMethod === 'bank_transfer'
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50"
+            ? "border-primary bg-primary/5 shadow-md shadow-primary/5 scale-[1.01]"
+            : "border-border hover:border-primary/50 hover:bg-secondary/30 active:scale-[0.99]"
         )}
       >
         <button
@@ -265,10 +265,10 @@ const PaymentMethodSelector = ({
       {/* Binance USDT Option */}
       <div
         className={cn(
-          "border rounded-xl overflow-hidden transition-all duration-300",
+          "border rounded-xl overflow-hidden transition-all duration-300 ease-out",
           selectedMethod === 'binance_usdt'
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50"
+            ? "border-[#F0B90B] bg-[#F0B90B]/5 shadow-md shadow-[#F0B90B]/5 scale-[1.01]"
+            : "border-border hover:border-[#F0B90B]/50 hover:bg-secondary/30 active:scale-[0.99]"
         )}
       >
         <button
@@ -434,10 +434,10 @@ const PaymentMethodSelector = ({
       {/* Card Payment Option (Coming Soon) */}
       <div
         className={cn(
-          "border rounded-xl overflow-hidden transition-all duration-300",
+          "border rounded-xl overflow-hidden transition-all duration-300 ease-out",
           selectedMethod === 'card'
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50"
+            ? "border-primary bg-primary/5 shadow-md shadow-primary/5 scale-[1.01]"
+            : "border-border hover:border-primary/50 hover:bg-secondary/30 active:scale-[0.99]"
         )}
       >
         <button
