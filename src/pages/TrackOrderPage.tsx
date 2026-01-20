@@ -53,32 +53,32 @@ const TrackOrderPage = () => {
             <div className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto">
                     {/* Header */}
-                    <div className="text-center mb-12">
-                        <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">
+                    <div className="text-center mb-8 md:mb-12">
+                        <h1 className="text-3xl md:text-5xl font-display font-black text-foreground mb-3">
                             Track Your <span className="gradient-text">Order</span>
                         </h1>
-                        <p className="text-lg text-muted-foreground">
-                            Enter your Order ID to see your order status and details.
+                        <p className="text-sm md:text-lg text-muted-foreground max-w-md mx-auto">
+                            Enter your Order ID to see your status and shipment details in real-time.
                         </p>
                     </div>
 
                     {/* Search Box */}
-                    <form onSubmit={handleSearch} className="relative mb-12">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
+                    <form onSubmit={handleSearch} className="relative mb-8 md:mb-12 group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input
                             type="text"
-                            placeholder="Enter Order ID (e.g., SNIP-2026-000001)"
+                            placeholder="Order ID (e.g., SNIP-2026-000001)"
                             value={orderId}
                             onChange={(e) => setOrderId(e.target.value)}
-                            className="pl-12 h-16 text-lg bg-card border-border rounded-2xl shadow-xl focus:ring-primary/20"
+                            className="pl-11 md:pl-12 h-14 md:h-16 text-base md:text-lg bg-card border-border rounded-2xl shadow-xl focus:ring-primary/20 transition-all font-mono"
                         />
                         <Button
                             type="submit"
                             variant="hero"
-                            className="absolute right-2 top-2 bottom-2 px-8 rounded-xl"
+                            className="absolute right-1.5 top-1.5 bottom-1.5 px-4 md:px-8 rounded-xl text-sm md:text-base"
                             disabled={isLoading}
                         >
-                            {isLoading ? 'Searching...' : 'Track Order'}
+                            {isLoading ? '...' : 'Track'}
                         </Button>
                     </form>
 
@@ -109,27 +109,27 @@ const TrackOrderPage = () => {
                     {order && (
                         <div className="space-y-8 animate-fade-in">
                             {/* Neural Progress Bar */}
-                            <div className="bg-card border border-border p-6 md:p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                            <div className="bg-card border border-border p-5 md:p-10 rounded-[2rem] shadow-2xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
 
-                                <div className="flex items-center justify-between mb-12 relative z-10">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 ${getStatusInfo(order.status).color} bg-white shadow-xl`}>
-                                            <Package className="w-7 h-7" />
+                                <div className="flex items-center justify-between mb-8 md:mb-12 relative z-10">
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center border-2 ${getStatusInfo(order.status).color} bg-white shadow-xl`}>
+                                            <Package className="w-5 h-5 md:w-7 md:h-7" />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Live Delivery Pulse</p>
-                                            <h2 className="text-2xl font-display font-black text-foreground capitalize">{order.status}</h2>
+                                            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Live Delivery Pulse</p>
+                                            <h2 className="text-xl md:text-2xl font-display font-black text-foreground capitalize">{order.status}</h2>
                                         </div>
                                     </div>
-                                    <div className="hidden sm:block text-right">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Tracking Phase</p>
-                                        <p className="text-lg font-bold text-primary">Stage {getStatusInfo(order.status).step} of 4</p>
+                                    <div className="text-right">
+                                        <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Progress</p>
+                                        <p className="text-base md:text-lg font-bold text-primary">Stage {getStatusInfo(order.status).step}/4</p>
                                     </div>
                                 </div>
 
-                                <div className="relative pt-2 pb-8 px-2">
-                                    <div className="absolute top-[1.35rem] left-0 w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                                <div className="relative pt-2 pb-6 md:pb-8 px-1 md:px-2">
+                                    <div className="absolute top-[1.2rem] md:top-[1.35rem] left-0 w-full h-1 md:h-1.5 bg-secondary rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-primary transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(var(--primary),0.5)]"
                                             style={{ width: `${(getStatusInfo(order.status).step / 4) * 100}%` }}
@@ -139,19 +139,19 @@ const TrackOrderPage = () => {
                                     <div className="relative flex justify-between">
                                         {[
                                             { label: 'Placed', icon: Clock, step: 1 },
-                                            { label: 'Processing', icon: Loader2, step: 2 },
-                                            { label: 'Shipping', icon: Truck, step: 3 },
-                                            { label: 'Delivered', icon: CheckCircle2, step: 4 }
+                                            { label: 'Process', icon: Loader2, step: 2 },
+                                            { label: 'Ship', icon: Truck, step: 3 },
+                                            { label: 'Done', icon: CheckCircle2, step: 4 }
                                         ].map((p, i) => (
-                                            <div key={i} className="flex flex-col items-center gap-4 relative z-10">
+                                            <div key={i} className="flex flex-col items-center gap-3 md:gap-4 relative z-10">
                                                 <div className={cn(
-                                                    "w-10 h-10 rounded-full border-4 flex items-center justify-center transition-all duration-500 bg-white",
+                                                    "w-8 h-8 md:w-10 md:h-10 rounded-full border-[3px] md:border-4 flex items-center justify-center transition-all duration-500 bg-white",
                                                     getStatusInfo(order.status).step >= p.step ? "border-primary text-primary scale-110 shadow-lg" : "border-secondary text-muted-foreground"
                                                 )}>
-                                                    <p.icon className="w-4 h-4" />
+                                                    <p.icon className="w-3 h-3 md:w-4 md:h-4" />
                                                 </div>
                                                 <p className={cn(
-                                                    "text-[10px] font-black uppercase tracking-widest",
+                                                    "text-[8px] md:text-[10px] font-black uppercase tracking-widest",
                                                     getStatusInfo(order.status).step >= p.step ? "text-primary" : "text-muted-foreground opacity-50"
                                                 )}>{p.label}</p>
                                             </div>
@@ -163,12 +163,12 @@ const TrackOrderPage = () => {
                             {/* Detailed Order Intelligence */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div className="lg:col-span-2 space-y-8">
-                                    <div className="bg-card border border-border p-6 md:p-8 rounded-[2.5rem] shadow-xl">
-                                        <div className="flex items-center gap-3 mb-8 pb-6 border-b border-border/50">
-                                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-xl">
+                                        <div className="flex items-center gap-3 mb-6 md:mb-8 pb-5 md:pb-6 border-b border-border/50">
+                                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                                 <ShieldCheck className="w-5 h-5" />
                                             </div>
-                                            <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Verified Package Manifest</h3>
+                                            <h3 className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">Verified Manifest</h3>
                                         </div>
 
                                         <div className="space-y-4">
@@ -192,15 +192,15 @@ const TrackOrderPage = () => {
                                             ))}
                                         </div>
 
-                                        <div className="mt-10 p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
-                                            <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">Global Order Total</span>
-                                            <span className="text-3xl font-display font-black gradient-text">{formatPrice(order.total_amount)}</span>
+                                        <div className="mt-8 md:mt-10 p-5 md:p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
+                                            <span className="text-[10px] md:text-sm font-black text-muted-foreground uppercase tracking-widest">Global Total</span>
+                                            <span className="text-2xl md:text-3xl font-display font-black gradient-text">{formatPrice(order.total_amount)}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <div className="bg-card border border-border p-6 rounded-[2rem] shadow-xl space-y-6">
+                                <div className="space-y-4 md:space-y-6">
+                                    <div className="bg-card border border-border p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl space-y-5 md:space-y-6">
                                         <div className="space-y-4">
                                             <div className="text-left">
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Transaction ID</p>
