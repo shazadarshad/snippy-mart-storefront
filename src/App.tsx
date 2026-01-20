@@ -19,6 +19,9 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import TrackOrderPage from "./pages/TrackOrderPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import AdminAuthPage from "./pages/admin/AdminAuthPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -50,6 +53,9 @@ const AppContent = () => {
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
           <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
+          <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+          <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+          <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
 
           {/* Admin Routes */}
           <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />
