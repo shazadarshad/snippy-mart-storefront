@@ -128,9 +128,9 @@
 }
 
 @layer base {
-  html {
-    scroll-behavior: smooth !important;
-  }
+  /* html {
+   Lenis handles smooth scrolling, so we remove standard scroll-behavior
+  } */
 
   * {
     @apply border-border;

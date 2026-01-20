@@ -8,21 +8,15 @@ interface PageTransitionProps {
 const pageVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 15,
-    scale: 0.99,
-    filter: 'blur(4px)',
+    y: 20,
   },
   enter: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    filter: 'blur(0px)',
   },
   exit: {
     opacity: 0,
-    y: -10,
-    scale: 1.01,
-    filter: 'blur(4px)',
+    y: -20,
   },
 };
 

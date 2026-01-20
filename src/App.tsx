@@ -13,6 +13,7 @@ import CartDrawer from "./components/cart/CartDrawer";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import GlobalLoader from "./components/GlobalLoader";
+import { useSmoothScroll } from "./hooks/useSmoothScroll";
 
 // Lazy Load Pages for Performance
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -40,6 +41,9 @@ const AppContent = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Initialize Lenis Smooth Scroll
+  useSmoothScroll();
 
   return (
     <>
