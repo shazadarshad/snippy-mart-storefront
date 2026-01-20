@@ -6,14 +6,23 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export async function getCountry(): Promise<string> {
-  try {
-    // Try a free geolocation API first
-    const response = await fetch('https://ip-api.com/json/');
-    if (!response.ok) throw new Error('IP API failed');
-    const data = await response.json();
-    if (data && data.country) return data.country;
-  } catch (err) {
-    console.warn('Geolocation failed, falling back to browser locale:', err);
+  // Silent Geolocation check - keeping console clean for "Ultra Pro Max" experience
+  const providers = [
+    'https://ipapi.co/json/',
+    'https://ip-api.com/json/'
+  ];
+
+  for (const url of providers) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
+      if (response.ok) {
+        const data = await response.json();
+        const country = data.country_name || data.country;
+        if (country) return country;
+      }
+    } catch {
+      // Silently continue to next provider or fallback
+    }
   }
 
   // Fallback to browser locale if API fails
