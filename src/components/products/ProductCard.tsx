@@ -81,43 +81,58 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
       </div>
 
       {/* Content */}
-      <div className="p-3.5 sm:p-5">
+      <div className="p-3.5 sm:p-5 flex flex-col flex-grow relative">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-primary uppercase tracking-wider">
-            {product.category}
+          <span className="text-[10px] font-black font-mono text-primary uppercase tracking-[0.2em] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+            {product.category.toUpperCase()}
           </span>
           <StockBadge status={product.stock_status} />
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-1">
+
+        <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">
           {product.name}
         </h3>
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+
+        <p className="text-xs text-muted-foreground mb-4 line-clamp-2 leading-relaxed flex-grow">
           {stripFormatting(product.description)}
         </p>
 
-        {/* Price */}
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <span className="text-xl font-bold text-foreground">
-            {formatPrice(product.price)}
-          </span>
-          {product.old_price && (
-            <span className="text-sm text-muted-foreground line-through">
-              {formatPrice(product.old_price)}
-            </span>
-          )}
-          <span className="text-xs text-muted-foreground">onwards</span>
-        </div>
+        {/* Separator */}
+        <div className="h-px bg-border/50 w-full mb-4" />
 
-        {/* View Details Button */}
-        <Button
-          variant="hero"
-          className="w-full"
-          onClick={() => onViewDetails(product)}
-          disabled={isOutOfStock}
-        >
-          <Eye className="w-4 h-4 mr-2" />
-          {isOutOfStock ? 'Out of Stock' : 'View Details'}
-        </Button>
+        {/* Price & Action */}
+        <div className="flex items-end justify-between gap-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Starting at</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl font-display font-black text-foreground">
+                {formatPrice(product.price)}
+              </span>
+              {product.old_price && (
+                <span className="text-xs text-muted-foreground line-through decoration-destructive decoration-2 opacity-60">
+                  {formatPrice(product.old_price)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <Button
+            size="sm"
+            variant="default" // Changed to default for better contrast with new card style
+            className="rounded-xl font-bold text-xs h-9 px-4 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
+            onClick={() => onViewDetails(product)}
+            disabled={isOutOfStock}
+          >
+            {isOutOfStock ? (
+              <span className="text-[10px]">Sold Out</span>
+            ) : (
+              <>
+                View
+                <Eye className="w-3.5 h-3.5 ml-1.5" />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
