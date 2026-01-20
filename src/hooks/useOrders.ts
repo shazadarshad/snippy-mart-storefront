@@ -27,6 +27,9 @@ export interface Order {
   payment_proof_url: string | null;
   binance_id: string | null;
   customer_country: string | null;
+  security_metadata: any | null;
+  user_agent: string | null;
+  client_ip: string | null;
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];
@@ -141,6 +144,8 @@ export const useCreateOrder = () => {
           payment_proof_url: orderData.payment_proof_url,
           binance_id: orderData.binance_id,
           customer_country: orderData.customer_country,
+          security_metadata: (orderData as any).security_metadata,
+          user_agent: (orderData as any).user_agent,
           items: orderData.items,
         },
       });
@@ -203,6 +208,36 @@ export const useDeleteOrder = () => {
         .eq('id', orderId);
 
       if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+export const useDeleteOrderProof = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ orderId, filePath }: { orderId: string; filePath: string }) => {
+      // 1. Delete from storage
+      const { error: storageError } = await supabase
+        .storage
+        .from('payment-proofs')
+        .remove([filePath]);
+
+      if (storageError) {
+        console.error('Storage deletion failed:', storageError);
+        // We continue anyway to nullify the DB record if it's already missing from storage
+      }
+
+      // 2. Update DB
+      const { error: dbError } = await supabase
+        .from('orders')
+        .update({ payment_proof_url: null })
+        .eq('id', orderId);
+
+      if (dbError) throw dbError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { formatPrice } from '@/lib/store';
 import { supabase } from '@/integrations/supabase/client';
-import { useOrders, useUpdateOrderStatus, useDeleteOrder, type Order, type OrderStatus } from '@/hooks/useOrders';
+import { useOrders, useUpdateOrderStatus, useDeleteOrder, useDeleteOrderProof, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateTime } from '@/lib/utils';
 
@@ -42,6 +42,7 @@ const AdminOrders = () => {
   const { data: orders = [], isLoading, error, refetch } = useOrders();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
+  const deleteProof = useDeleteOrderProof();
 
   const [paymentProofHref, setPaymentProofHref] = useState<string | null>(null);
   const [isLoadingProof, setIsLoadingProof] = useState(false);
@@ -98,11 +99,35 @@ const AdminOrders = () => {
         title: 'Order deleted',
         description: `Order ${orderToDelete.order_number} has been deleted`,
       });
-      setOrderToDelete(null);
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to delete order',
+        variant: 'destructive',
+      });
+    } finally {
+      setOrderToDelete(null);
+    }
+  };
+
+  const handleDeleteProof = async (orderId: string, filePath: string) => {
+    if (!confirm('Are you sure you want to DISPOSE this payment receipt? This will permanently delete the capture from storage.')) return;
+
+    try {
+      await deleteProof.mutateAsync({ orderId, filePath });
+      toast({
+        title: 'Receipt Disposed',
+        description: 'The payment proof has been permanently deleted.',
+      });
+      // Update local state if needed
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, payment_proof_url: null });
+        setPaymentProofHref(null);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to dispose receipt',
         variant: 'destructive',
       });
     }
@@ -535,25 +560,42 @@ const AdminOrders = () => {
                           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                         </div>
                       ) : (
-                        <a
-                          href={paymentProofHref || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block p-4 rounded-2xl bg-success/5 border-2 border-dashed border-success/20 group-hover:border-success/50 transition-all"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success">
-                                <ImageIcon className="w-5 h-5" />
+                        <div className="relative group">
+                          <a
+                            href={paymentProofHref || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block p-5 rounded-2xl bg-success/5 border border-success/20 hover:bg-success/10 transition-all border-dashed"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-success">
+                                  <ImageIcon className="w-6 h-6" />
+                                </div>
+                                <div className="text-left">
+                                  <p className="text-sm font-black text-success">Transaction Proof Available</p>
+                                  <p className="text-xs text-success/60">Click to expand audit capture</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-sm font-black text-success">Transaction Proof Available</p>
-                                <p className="text-xs text-success/60">Click to expand audit capture</p>
-                              </div>
+                              <ExternalLink className="w-5 h-5 text-success/40 group-hover:text-success transition-colors" />
                             </div>
-                            <ExternalLink className="w-5 h-5 text-success/40 group-hover:text-success transition-colors" />
-                          </div>
-                        </a>
+                          </a>
+
+                          {/* Disposal Button */}
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="absolute -top-3 -right-3 h-8 px-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteProof(selectedOrder.id, selectedOrder.payment_proof_url!);
+                            }}
+                          >
+                            <ShieldAlert className="w-3.5 h-3.5" />
+                            Dispose Receipt
+                          </Button>
+                        </div>
                       )}
                     </div>
                   )}
@@ -566,6 +608,53 @@ const AdminOrders = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Enterprise Security Intelligence */}
+                  <div className="pt-4 border-t border-border/50">
+                    <p className="text-[10px] text-muted-foreground uppercase font-black mb-3 tracking-widest pl-1">Security Intelligence</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Monitor className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Environment</span>
+                        </div>
+                        <p className="text-[10px] font-bold text-foreground truncate" title={selectedOrder.user_agent || 'Unknown'}>
+                          {selectedOrder.user_agent ? selectedOrder.user_agent.split(')')[0] + ')' : 'Browser Fingerprint'}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-success/5 border border-success/10">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Activity className="w-3.5 h-3.5 text-success" />
+                          <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Network Node</span>
+                        </div>
+                        <p className="text-[10px] font-bold text-foreground">
+                          {selectedOrder.client_ip || 'Masked (SECURE)'}
+                        </p>
+                      </div>
+                      {selectedOrder.security_metadata && (
+                        <>
+                          <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <Cpu className="w-3.5 h-3.5 text-amber-500" />
+                              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Hardware Pulse</span>
+                            </div>
+                            <p className="text-[10px] font-bold text-foreground">
+                              {selectedOrder.security_metadata.platform} • {selectedOrder.security_metadata.hardware_concurrency} Core
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-purple-500" />
+                              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Geolocation</span>
+                            </div>
+                            <p className="text-[10px] font-bold text-foreground">
+                              {selectedOrder.customer_country || 'Unknown'} ({selectedOrder.security_metadata.timezone})
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Full Width Actions */}

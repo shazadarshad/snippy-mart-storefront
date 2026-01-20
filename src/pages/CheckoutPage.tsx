@@ -114,6 +114,18 @@ const CheckoutPage = () => {
       // Detect country
       const customerCountry = await getCountry();
 
+      // Collect Enterprise-Grade Security Metadata
+      const securityMetadata = {
+        screen_resolution: `${window.screen.width}x${window.screen.height}`,
+        language: navigator.language,
+        platform: (navigator as any).platform || 'unknown',
+        hardware_concurrency: navigator.hardwareConcurrency,
+        device_memory: (navigator as any).deviceMemory || 'unknown',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        referrer: document.referrer || 'direct',
+        timestamp: new Date().toISOString()
+      };
+
       await createOrder.mutateAsync({
         order_number: orderId,
         customer_name: formData.name || 'Customer',
@@ -124,6 +136,8 @@ const CheckoutPage = () => {
         payment_proof_url: paymentProofPath,
         binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
         customer_country: customerCountry,
+        security_metadata: securityMetadata,
+        user_agent: navigator.userAgent,
         items: items.map((item) => ({
           product_id: item.product.id,
           product_name: item.product.name,
