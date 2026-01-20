@@ -7,6 +7,30 @@ import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 260,
+      damping: 20,
+    },
+  },
+};
 
 const HomePage = () => {
   const { data: products = [], isLoading } = useProducts();
@@ -154,12 +178,18 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
             {features.map((feature, index) => (
-              <div
+              <motion.div
                 key={index}
+                variants={itemVariants}
                 className="group p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border card-hover"
-                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <feature.icon className="w-6 h-6 text-primary" />
@@ -170,9 +200,9 @@ const HomePage = () => {
                 <p className="text-sm text-muted-foreground">
                   {feature.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -203,15 +233,22 @@ const HomePage = () => {
           {isLoading ? (
             <ProductsGridSkeleton count={5} />
           ) : popularProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6"
+            >
               {popularProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onViewDetails={handleViewDetails}
-                />
+                <motion.div key={product.id} variants={itemVariants}>
+                  <ProductCard
+                    product={product}
+                    onViewDetails={handleViewDetails}
+                  />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               No products available yet. Check back soon!
@@ -251,9 +288,15 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+          >
             {steps.map((step, index) => (
-              <div key={index} className="relative">
+              <motion.div key={index} variants={itemVariants} className="relative">
                 <div className="p-8 rounded-2xl bg-card/80 backdrop-blur-sm border border-border text-center">
                   <div className="text-5xl font-display font-bold gradient-text mb-4">
                     {step.number}
@@ -272,9 +315,9 @@ const HomePage = () => {
                     </div>
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 

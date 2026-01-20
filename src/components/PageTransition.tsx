@@ -8,22 +8,28 @@ interface PageTransitionProps {
 const pageVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 20,
+    y: 15,
+    scale: 0.99,
+    filter: 'blur(4px)',
   },
   enter: {
     opacity: 1,
     y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
   },
   exit: {
     opacity: 0,
     y: -10,
+    scale: 1.01,
+    filter: 'blur(4px)',
   },
 };
 
 const pageTransition: Transition = {
   type: 'tween',
-  ease: 'easeOut',
-  duration: 0.3,
+  ease: 'anticipate',
+  duration: 0.6,
 };
 
 const PageTransition = ({ children }: PageTransitionProps) => {

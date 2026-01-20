@@ -9,17 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 btn-glow",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 btn-glow hover:scale-[1.02] active:scale-95",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-border bg-transparent hover:bg-secondary hover:text-secondary-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        outline: "border border-border bg-transparent hover:bg-secondary hover:text-secondary-foreground hover:scale-[1.02] active:scale-95",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-[1.02] active:scale-95",
         ghost: "hover:bg-secondary hover:text-secondary-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         hero: "bg-primary text-primary-foreground font-semibold btn-glow hover:scale-105 active:scale-95",
         heroOutline: "border-2 border-primary/50 bg-transparent text-foreground hover:bg-primary/10 hover:border-primary",
         glass: "glass text-foreground hover:bg-white/20",
-        success: "bg-success text-success-foreground hover:bg-success/90",
-        whatsapp: "bg-[#25D366] text-white hover:bg-[#22c55e] font-semibold",
+        success: "bg-success text-success-foreground hover:bg-success/90 hover:scale-[1.02] active:scale-95",
+        whatsapp: "bg-[#25D366] text-white hover:bg-[#22c55e] font-semibold hover:scale-[1.02] active:scale-95",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -38,7 +38,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
