@@ -82,7 +82,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
       </div>
 
       {/* Content */}
-      <div className="p-3.5 sm:p-5 flex flex-col flex-grow relative">
+      <div className="p-3 sm:p-5 flex flex-col flex-grow relative">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-black font-mono text-primary uppercase tracking-[0.2em] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
             {product.category.toUpperCase()}
@@ -94,7 +94,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           {product.name}
         </h3>
 
-        <p className="text-xs text-muted-foreground mb-4 line-clamp-2 leading-relaxed flex-grow">
+        <p className="hidden sm:block text-xs text-muted-foreground mb-4 line-clamp-2 leading-relaxed flex-grow">
           {stripFormatting(product.description)}
         </p>
 
@@ -103,11 +103,12 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
 
         {/* Price & Action */}
         {/* Price & Action */}
-        <div className="flex items-end justify-between gap-2 mt-auto pt-2">
+        {/* Price & Action */}
+        <div className="flex items-center justify-between gap-2 mt-auto pt-2">
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider truncate">Starting at</span>
             <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className="text-lg sm:text-xl font-display font-black text-foreground">
+              <span className="text-base sm:text-l font-display font-black text-foreground">
                 {formatPrice(product.price)}
               </span>
               {product.old_price && (
@@ -121,7 +122,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           <Button
             size="sm"
             variant="default"
-            className="flex-shrink-0 rounded-xl font-bold text-xs h-9 px-3 sm:px-4 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
+            className="flex-shrink-0 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-4 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(product);
@@ -131,10 +132,10 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
             {isOutOfStock ? (
               <span className="text-[10px]">Sold Out</span>
             ) : (
-              <>
-                View
-                <Eye className="w-3.5 h-3.5 ml-1.5" />
-              </>
+              <div className="flex items-center gap-1.5">
+                <span>View</span>
+                <Eye className="w-3.5 h-3.5" />
+              </div>
             )}
           </Button>
         </div>
