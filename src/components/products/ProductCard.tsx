@@ -82,34 +82,30 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
       </div>
 
       {/* Content */}
-      <div className="p-3 sm:p-5 flex flex-col flex-grow relative">
-        <div className="flex items-center justify-between mb-2">
+      <div className="p-4 sm:p-5 flex flex-col h-full">
+        <div className="flex items-center justify-between mb-3">
           <span className="text-[10px] font-black font-mono text-primary uppercase tracking-[0.2em] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
             {product.category.toUpperCase()}
           </span>
           <StockBadge status={product.stock_status} />
         </div>
 
-        <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">
+        <h3 className="text-base sm:text-lg font-bold text-foreground mb-4 line-clamp-2 leading-tight group-hover:text-primary transition-colors min-h-[3rem]">
           {product.name}
         </h3>
 
-        <p className="hidden sm:block text-xs text-muted-foreground mb-4 line-clamp-2 leading-relaxed flex-grow">
-          {stripFormatting(product.description)}
-        </p>
+        {/* Spacer to push price/button to bottom */}
+        <div className="flex-grow" />
 
         {/* Separator */}
         <div className="h-px bg-border/50 w-full mb-4" />
 
         {/* Price & Action */}
-        {/* Price & Action */}
-        {/* Price & Action */}
-        {/* Price & Action */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-2 mt-auto pt-2">
-          <div className="flex flex-col min-w-0">
-            <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider truncate">Starting at</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">Starting at</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-lg sm:text-xl font-display font-black text-foreground">
+              <span className="text-xl sm:text-2xl font-display font-black text-foreground">
                 {formatPrice(product.price)}
               </span>
               {product.old_price && (
@@ -123,7 +119,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           <Button
             size="sm"
             variant="default"
-            className="w-full sm:w-auto flex-shrink-0 rounded-xl font-bold text-xs h-9 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
+            className="w-full sm:w-auto flex-shrink-0 rounded-xl font-bold text-xs h-10 px-6 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(product);
@@ -135,7 +131,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <span>View Details</span>
-                <Eye className="w-3.5 h-3.5" />
+                <Eye className="w-4 h-4" />
               </div>
             )}
           </Button>
