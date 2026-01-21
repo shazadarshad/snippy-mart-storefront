@@ -108,13 +108,33 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-sm text-muted-foreground font-medium">
-            © {currentYear} {storeName}. All rights reserved.
-          </p>
-          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-            Made with <span className="text-red-500 animate-pulse">❤️</span> for digital enthusiasts
-          </p>
+        <div className="mt-16 pt-8 border-t border-border/50">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <p className="text-sm text-muted-foreground font-medium">
+              © {currentYear} {storeName}. All rights reserved.
+            </p>
+
+            {/* DMCA Badge */}
+            <div className="flex items-center">
+              <a
+                href="//www.dmca.com/Protection/Status.aspx?ID=0a993e42-3372-4b7b-bd4c-889fc5b93577"
+                title="DMCA.com Protection Status"
+                className="dmca-badge transition-all hover:scale-105 active:scale-95 opacity-80 hover:opacity-100"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src="https://images.dmca.com/Badges/dmca-badge-w100-5x1-11.png?ID=0a993e42-3372-4b7b-bd4c-889fc5b93577"
+                  alt="DMCA.com Protection Status"
+                  className="h-8 w-auto"
+                />
+              </a>
+            </div>
+
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              Made with <span className="text-red-500 animate-pulse">❤️</span> for digital enthusiasts
+            </p>
+          </div>
         </div>
       </div>
     </footer>
