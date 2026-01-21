@@ -104,15 +104,16 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
         {/* Price & Action */}
         {/* Price & Action */}
         {/* Price & Action */}
-        <div className="flex items-center justify-between gap-2 mt-auto pt-2">
+        {/* Price & Action */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-2 mt-auto pt-2">
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider truncate">Starting at</span>
-            <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className="text-base sm:text-l font-display font-black text-foreground">
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg sm:text-xl font-display font-black text-foreground">
                 {formatPrice(product.price)}
               </span>
               {product.old_price && (
-                <span className="text-[10px] sm:text-xs text-muted-foreground line-through decoration-destructive decoration-2 opacity-60">
+                <span className="text-xs text-muted-foreground line-through decoration-destructive decoration-2 opacity-60">
                   {formatPrice(product.old_price)}
                 </span>
               )}
@@ -122,7 +123,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           <Button
             size="sm"
             variant="default"
-            className="flex-shrink-0 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-4 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
+            className="w-full sm:w-auto flex-shrink-0 rounded-xl font-bold text-xs h-9 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(product);
@@ -132,8 +133,8 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
             {isOutOfStock ? (
               <span className="text-[10px]">Sold Out</span>
             ) : (
-              <div className="flex items-center gap-1.5">
-                <span>View</span>
+              <div className="flex items-center justify-center gap-2">
+                <span>View Details</span>
                 <Eye className="w-3.5 h-3.5" />
               </div>
             )}
