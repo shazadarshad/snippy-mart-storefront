@@ -102,15 +102,16 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
         <div className="h-px bg-border/50 w-full mb-4" />
 
         {/* Price & Action */}
-        <div className="flex items-end justify-between gap-2">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Starting at</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-display font-black text-foreground">
+        {/* Price & Action */}
+        <div className="flex items-end justify-between gap-2 mt-auto pt-2">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider truncate">Starting at</span>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-lg sm:text-xl font-display font-black text-foreground">
                 {formatPrice(product.price)}
               </span>
               {product.old_price && (
-                <span className="text-xs text-muted-foreground line-through decoration-destructive decoration-2 opacity-60">
+                <span className="text-[10px] sm:text-xs text-muted-foreground line-through decoration-destructive decoration-2 opacity-60">
                   {formatPrice(product.old_price)}
                 </span>
               )}
@@ -119,9 +120,12 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
 
           <Button
             size="sm"
-            variant="default" // Changed to default for better contrast with new card style
-            className="rounded-xl font-bold text-xs h-9 px-4 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
-            onClick={() => onViewDetails(product)}
+            variant="default"
+            className="flex-shrink-0 rounded-xl font-bold text-xs h-9 px-3 sm:px-4 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(product);
+            }}
             disabled={isOutOfStock}
           >
             {isOutOfStock ? (
