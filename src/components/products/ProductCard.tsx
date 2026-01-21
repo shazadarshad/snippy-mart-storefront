@@ -100,26 +100,28 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
         {/* Separator */}
         <div className="h-px bg-border/50 w-full mb-4" />
 
-        {/* Price & Action */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-2">
-          <div className="flex flex-col">
+        {/* Price & Action - Stacked Layout */}
+        <div className="flex flex-col gap-4">
+          {/* Price Section - Centered */}
+          <div className="flex flex-col items-center text-center">
             <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">Starting at</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl sm:text-2xl font-display font-black text-foreground">
+            <div className="flex items-baseline gap-2 justify-center">
+              <span className="text-2xl font-display font-black text-foreground">
                 {formatPrice(product.price)}
               </span>
               {product.old_price && (
-                <span className="text-xs text-muted-foreground line-through decoration-destructive decoration-2 opacity-60">
+                <span className="text-sm text-muted-foreground line-through decoration-destructive decoration-2 opacity-60">
                   {formatPrice(product.old_price)}
                 </span>
               )}
             </div>
           </div>
 
+          {/* Full-width Button */}
           <Button
-            size="sm"
+            size="default"
             variant="default"
-            className="w-full sm:w-auto flex-shrink-0 rounded-xl font-bold text-xs h-10 px-6 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-95"
+            className="w-full rounded-xl font-bold text-sm h-11 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:scale-[0.98]"
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(product);
@@ -127,11 +129,11 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
             disabled={isOutOfStock}
           >
             {isOutOfStock ? (
-              <span className="text-[10px]">Sold Out</span>
+              <span>Sold Out</span>
             ) : (
               <div className="flex items-center justify-center gap-2">
-                <span>View Details</span>
                 <Eye className="w-4 h-4" />
+                <span>View Details</span>
               </div>
             )}
           </Button>
