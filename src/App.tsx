@@ -35,6 +35,8 @@ const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminEmailSettings = lazy(() => import("./pages/admin/AdminEmailSettings"));
+const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -76,6 +78,8 @@ const AppContent = () => {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="email-settings" element={<AdminEmailSettings />} />
+              <Route path="email-templates" element={<AdminEmailTemplates />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 

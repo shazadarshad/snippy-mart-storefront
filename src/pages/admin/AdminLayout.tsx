@@ -13,6 +13,8 @@ import {
   Loader2,
   MessageSquare,
   BarChart3,
+  Mail,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -37,6 +39,8 @@ const AdminLayout = () => {
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
     { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquare },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
+    { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
+    { name: 'Email Templates', path: '/admin/email-templates', icon: FileText },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

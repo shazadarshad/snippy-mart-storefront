@@ -21,6 +21,7 @@ const CheckoutPage = () => {
   const [formData, setFormData] = useState({
     whatsapp: '',
     name: '',
+    email: '',
     notes: '',
   });
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
@@ -136,6 +137,7 @@ const CheckoutPage = () => {
         payment_proof_url: paymentProofPath,
         binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
         customer_country: customerCountry,
+        customer_email: formData.email || undefined,
         security_metadata: securityMetadata,
         user_agent: navigator.userAgent,
         items: items.map((item) => ({
@@ -259,6 +261,24 @@ const CheckoutPage = () => {
                       onChange={handleInputChange}
                       className="mt-1.5 h-12 bg-secondary/50 border-border"
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email" className="text-foreground">
+                      Email Address (Optional)
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="mt-1.5 h-12 bg-secondary/50 border-border"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      We'll send order confirmation and product delivery to this email
+                    </p>
                   </div>
 
                   <div>
