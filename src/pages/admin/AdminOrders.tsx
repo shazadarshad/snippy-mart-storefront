@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
