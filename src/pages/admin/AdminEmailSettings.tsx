@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Server, Lock, Eye, EyeOff, Send, CheckCircle, AlertCircle, Loader2, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import {
     useEmailSettings,
     useUpdateEmailSettings,
     useSendTestEmail,
+    useTestEmailConnection,
     type EmailSettingsInput,
 } from '@/hooks/useEmailSettings';
 
@@ -32,7 +33,7 @@ const AdminEmailSettings = () => {
     });
 
     // Update form when settings load
-    useState(() => {
+    useEffect(() => {
         if (settings) {
             setFormData({
                 smtp_host: settings.smtp_host || '',
@@ -45,7 +46,7 @@ const AdminEmailSettings = () => {
                 reply_to_email: settings.reply_to_email || '',
             });
         }
-    });
+    }, [settings]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
