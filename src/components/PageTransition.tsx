@@ -8,7 +8,7 @@ interface PageTransitionProps {
 const pageVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 20,
+    y: 10,
   },
   enter: {
     opacity: 1,
@@ -16,14 +16,14 @@ const pageVariants: Variants = {
   },
   exit: {
     opacity: 0,
-    y: -20,
+    y: -10,
   },
 };
 
 const pageTransition: Transition = {
   type: 'tween',
-  ease: 'anticipate',
-  duration: 0.6,
+  ease: 'easeOut',
+  duration: 0.3,
 };
 
 const PageTransition = ({ children }: PageTransitionProps) => {

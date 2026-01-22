@@ -13,6 +13,7 @@ import CartDrawer from "./components/cart/CartDrawer";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import GlobalLoader from "./components/GlobalLoader";
+import TopProgressBar from "./components/TopProgressBar";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
 import { CurrencyProvider } from "./hooks/useCurrency";
 
@@ -53,6 +54,7 @@ const AppContent = () => {
   return (
     <>
       <ScrollToTop />
+      <TopProgressBar />
       {!isAdminRoute && <Navbar onCartOpen={() => setCartOpen(true)} />}
       {!isAdminRoute && <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
 
