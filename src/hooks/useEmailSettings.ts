@@ -117,9 +117,11 @@ export const useTestEmailConnection = () => {
             if (error) {
                 // Extract descriptive error from Edge Function
                 const anyErr = error as any;
+                console.error("Test Connection Invoke Error:", anyErr);
                 if (anyErr?.context) {
                     try {
                         const body = await anyErr.context.json();
+                        console.log("Error context body:", body);
                         const msg = body?.error || body?.message;
                         if (msg) throw new Error(String(msg));
                     } catch { /* ignore */ }
@@ -168,9 +170,11 @@ export const useSendTestEmail = () => {
             if (error) {
                 // Extract descriptive error from Edge Function
                 const anyErr = error as any;
+                console.error("Send Email Invoke Error:", anyErr);
                 if (anyErr?.context) {
                     try {
                         const body = await anyErr.context.json();
+                        console.log("Error context body:", body);
                         const msg = body?.error || body?.message;
                         if (msg) throw new Error(String(msg));
                     } catch { /* ignore */ }

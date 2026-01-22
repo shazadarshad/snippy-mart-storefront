@@ -136,12 +136,13 @@ serve(async (req: Request) => {
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     } catch (error: any) {
-        console.error("Email error:", error);
+        const errorMsg = error instanceof Error ? error.message : (typeof error === 'string' ? error : JSON.stringify(error));
+        console.error("Email error:", errorMsg);
 
         // Log failed email
         try {
             const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-            const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+            const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SERVICE_ROLE_KEY")!;
             const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
             // Use the already parsed body if available, or try to parse again safely
@@ -158,14 +159,14 @@ serve(async (req: Request) => {
                 to_email: bodyToLog.to || "unknown",
                 subject: bodyToLog.subject || "unknown",
                 status: "failed",
-                error_message: error.message,
+                error_message: errorMsg,
             });
         } catch (e: any) {
             console.error("Failed to log email error:", e);
         }
 
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: errorMsg }),
             { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
