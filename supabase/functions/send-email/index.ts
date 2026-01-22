@@ -31,41 +31,69 @@ serve(async (req: Request) => {
         const body: EmailRequest = await req.json();
         const { to, subject, html, templateId, variables = {}, orderId, isPreview } = body;
 
+        console.log(`[send-email] Request received for: ${to}`);
+        console.log(`[send-email] Template ID: ${templateId || 'none (custom email)'}`);
+        console.log(`[send-email] Order ID: ${orderId || 'none'}`);
+
         // Get email settings
+        console.log(`[send-email] Fetching email settings...`);
         const { data: settings, error: settingsError } = await supabase
             .from("email_settings")
             .select("*")
             .single();
 
-        if (settingsError || !settings?.is_configured) {
+        if (settingsError) {
+            console.error(`[send-email] Settings error:`, settingsError);
+            return new Response(
+                JSON.stringify({ error: `Email settings error: ${settingsError.message}` }),
+                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        if (!settings?.is_configured) {
+            console.error(`[send-email] Email not configured!`);
             return new Response(
                 JSON.stringify({ error: "Email not configured. Please set up SMTP in admin panel." }),
                 { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
         }
 
+        console.log(`[send-email] ✅ Email settings found: ${settings.smtp_host}:${settings.smtp_port}`);
+
         let emailSubject = subject || "";
         let emailHtml = html || "";
 
         // If templateId provided, fetch template
         if (templateId) {
+            console.log(`[send-email] Fetching template with ID: ${templateId}...`);
             const { data: template, error: templateError } = await supabase
                 .from("email_templates")
                 .select("*")
                 .eq("id", templateId)
                 .single();
 
-            if (templateError || !template) {
+            if (templateError) {
+                console.error(`[send-email] Error fetching template:`, templateError);
+                return new Response(
+                    JSON.stringify({ error: `Template fetch error: ${templateError.message}` }),
+                    { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+
+            if (!template) {
+                console.error(`[send-email] Template not found with ID: ${templateId}`);
                 return new Response(
                     JSON.stringify({ error: "Template not found" }),
                     { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
                 );
             }
 
+            console.log(`[send-email] ✅ Template found: ${template.name}`);
             emailSubject = template.subject;
             emailHtml = template.html_content;
 
             // Replace variables
+            console.log(`[send-email] Replacing ${Object.keys(variables).length} variables...`);
             for (const [key, value] of Object.entries(variables)) {
                 const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
                 emailSubject = emailSubject.replace(regex, value);
@@ -91,6 +119,7 @@ serve(async (req: Request) => {
         }
 
         // Create SMTP client
+        console.log(`[send-email] Creating SMTP client for ${settings.smtp_host}:${settings.smtp_port} (TLS: ${settings.smtp_secure})...`);
         const client = new SMTPClient({
             connection: {
                 hostname: settings.smtp_host,
@@ -105,6 +134,8 @@ serve(async (req: Request) => {
 
         try {
             // Send email
+            console.log(`[send-email] Sending email to ${to}...`);
+            console.log(`[send-email] Subject: ${emailSubject}`);
             await client.send({
                 from: `${settings.from_name} <${settings.from_email}>`,
                 to: to,
@@ -113,6 +144,7 @@ serve(async (req: Request) => {
                 content: "Please view this email in an HTML-compatible email client.",
                 html: emailHtml,
             });
+            console.log(`[send-email] ✅ Email sent successfully to ${to}`);
         } finally {
             try {
                 await client.close();

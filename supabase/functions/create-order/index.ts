@@ -118,39 +118,67 @@ serve(async (req) => {
     return json({ error: itemsError.message ?? "Failed to create order items" }, 400);
   }
 
+  console.log(`[create-order] Order created successfully: ${order.id}`);
+
   // Trigger automated order confirmation email (optional/background)
   if (body.customer_email) {
-    console.log(`[create-order] Triggering confirmation email for ${body.customer_email}`);
+    console.log(`[create-order] Customer email provided: ${body.customer_email}`);
+    console.log(`[create-order] Attempting to fetch order_confirmation template...`);
 
     // We fetch the template ID for order_confirmation
-    const { data: template } = await supabase
+    const { data: template, error: templateError } = await supabase
       .from("email_templates")
-      .select("id")
+      .select("id, name, is_active")
       .eq("template_key", "order_confirmation")
       .single();
 
-    if (template) {
+    if (templateError) {
+      console.error(`[create-order] Template lookup error:`, templateError);
+      console.log(`[create-order] Template might not exist in database. Please run the SQL migration.`);
+    }
+
+    if (!template) {
+      console.error(`[create-order] No template found for order_confirmation!`);
+      console.error(`[create-order] Email will NOT be sent. Please ensure email_templates table has order_confirmation template.`);
+    } else if (!template.is_active) {
+      console.warn(`[create-order] Template exists but is not active: ${template.name}`);
+    } else {
+      console.log(`[create-order] Template found: ${template.name} (ID: ${template.id})`);
+
       // Invoke send-email function
       // We await this to ensure the email request is actually sent before the function completes
       try {
-        await supabase.functions.invoke("send-email", {
-          body: {
-            to: body.customer_email,
-            templateId: template.id,
-            orderId: order.id,
-            variables: {
-              customer_name: body.customer_name || 'Customer',
-              order_id: body.order_number,
-              total: order.total_amount.toString(),
-              items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
-            }
+        console.log(`[create-order] Invoking send-email function...`);
+        const emailPayload = {
+          to: body.customer_email,
+          templateId: template.id,
+          orderId: order.id,
+          variables: {
+            customer_name: body.customer_name || 'Customer',
+            order_id: body.order_number,
+            total: `$${order.total_amount.toFixed(2)}`,
+            items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
           }
+        };
+
+        console.log(`[create-order] Email payload:`, JSON.stringify(emailPayload, null, 2));
+
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke("send-email", {
+          body: emailPayload
         });
-        console.log(`[create-order] Confirmation email sent successfully to ${body.customer_email}`);
+
+        if (emailError) {
+          console.error(`[create-order] send-email function returned error:`, emailError);
+        } else {
+          console.log(`[create-order] send-email invoked successfully. Result:`, emailResult);
+          console.log(`[create-order] ✅ Confirmation email sent to ${body.customer_email}`);
+        }
       } catch (err) {
-        console.error("[create-order] Failed to trigger email:", err);
+        console.error(`[create-order] Exception while invoking send-email:`, err);
       }
     }
+  } else {
+    console.log(`[create-order] No customer email provided - skipping confirmation email`);
   }
 
   return json({ order });
