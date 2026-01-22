@@ -16,6 +16,7 @@ const AdminEmailSettings = () => {
     const { data: settings, isLoading } = useEmailSettings();
     const updateSettings = useUpdateEmailSettings();
     const sendTestEmail = useSendTestEmail();
+    const testConnection = useTestEmailConnection();
 
     const [showPassword, setShowPassword] = useState(false);
     const [testEmail, setTestEmail] = useState('');
@@ -231,15 +232,31 @@ const AdminEmailSettings = () => {
                                 />
                             </div>
 
-                            {/* Save Button */}
-                            <Button type="submit" className="w-full" disabled={updateSettings.isPending}>
-                                {updateSettings.isPending ? (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                    <Save className="w-4 h-4 mr-2" />
-                                )}
-                                Save Settings
-                            </Button>
+                            {/* Action Buttons */}
+                            <div className="flex gap-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => testConnection.mutate(formData)}
+                                    disabled={testConnection.isPending || !formData.smtp_host}
+                                >
+                                    {testConnection.isPending ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Server className="w-4 h-4 mr-2" />
+                                    )}
+                                    Test Connection
+                                </Button>
+                                <Button type="submit" className="flex-1" disabled={updateSettings.isPending}>
+                                    {updateSettings.isPending ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Save className="w-4 h-4 mr-2" />
+                                    )}
+                                    Save Settings
+                                </Button>
+                            </div>
                         </form>
                     </CardContent>
                 </Card>

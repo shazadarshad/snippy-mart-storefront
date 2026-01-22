@@ -18,6 +18,7 @@ type CreateOrderBody = {
   payment_proof_url?: string; // for this app we store the storage path here
   binance_id?: string;
   customer_country?: string;
+  customer_email?: string;
   items: Array<{
     product_id?: string;
     product_name: string;
@@ -87,6 +88,7 @@ serve(async (req) => {
         payment_proof_url: body.payment_proof_url ?? null,
         binance_id: body.binance_id ?? null,
         customer_country: body.customer_country ?? 'Unknown',
+        customer_email: body.customer_email ?? null,
       },
     ])
     .select()
@@ -114,6 +116,36 @@ serve(async (req) => {
     // best-effort rollback to avoid dangling orders
     await supabase.from("orders").delete().eq("id", order.id);
     return json({ error: itemsError.message ?? "Failed to create order items" }, 400);
+  }
+
+  // Trigger automated order confirmation email (optional/background)
+  if (body.customer_email) {
+    console.log(`[create-order] Triggering confirmation email for ${body.customer_email}`);
+
+    // We fetch the template ID for order_confirmation
+    const { data: template } = await supabase
+      .from("email_templates")
+      .select("id")
+      .eq("template_key", "order_confirmation")
+      .single();
+
+    if (template) {
+      // Invoke send-email function
+      // We don't await this to keep the order creation fast
+      supabase.functions.invoke("send-email", {
+        body: {
+          to: body.customer_email,
+          templateId: template.id,
+          orderId: order.id,
+          variables: {
+            customer_name: body.customer_name || 'Customer',
+            order_id: body.order_number,
+            total: order.total_amount.toString(),
+            items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
+          }
+        }
+      }).catch(err => console.error("[create-order] Failed to trigger email:", err));
+    }
   }
 
   return json({ order });
