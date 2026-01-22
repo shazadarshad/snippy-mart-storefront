@@ -114,7 +114,18 @@ export const useTestEmailConnection = () => {
                 body: settings,
             });
 
-            if (error) throw error;
+            if (error) {
+                // Extract descriptive error from Edge Function
+                const anyErr = error as any;
+                if (anyErr?.context) {
+                    try {
+                        const body = await anyErr.context.json();
+                        const msg = body?.error || body?.message;
+                        if (msg) throw new Error(String(msg));
+                    } catch { /* ignore */ }
+                }
+                throw error;
+            }
             return data;
         },
         onSuccess: (data) => {
@@ -154,7 +165,18 @@ export const useSendTestEmail = () => {
                 },
             });
 
-            if (error) throw error;
+            if (error) {
+                // Extract descriptive error from Edge Function
+                const anyErr = error as any;
+                if (anyErr?.context) {
+                    try {
+                        const body = await anyErr.context.json();
+                        const msg = body?.error || body?.message;
+                        if (msg) throw new Error(String(msg));
+                    } catch { /* ignore */ }
+                }
+                throw error;
+            }
             return data;
         },
         onSuccess: () => {
