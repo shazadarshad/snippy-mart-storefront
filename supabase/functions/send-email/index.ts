@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
@@ -17,7 +17,7 @@ interface EmailRequest {
     isPreview?: boolean;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
     // Handle CORS preflight
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
@@ -103,17 +103,23 @@ serve(async (req) => {
             },
         });
 
-        // Send email
-        await client.send({
-            from: `${settings.from_name} <${settings.from_email}>`,
-            to: to,
-            replyTo: settings.reply_to_email || settings.from_email,
-            subject: emailSubject,
-            content: "Please view this email in an HTML-compatible email client.",
-            html: emailHtml,
-        });
-
-        await client.close();
+        try {
+            // Send email
+            await client.send({
+                from: `${settings.from_name} <${settings.from_email}>`,
+                to: to,
+                replyTo: settings.reply_to_email || settings.from_email,
+                subject: emailSubject,
+                content: "Please view this email in an HTML-compatible email client.",
+                html: emailHtml,
+            });
+        } finally {
+            try {
+                await client.close();
+            } catch (e) {
+                console.error("Error closing SMTP client:", e);
+            }
+        }
 
         // Log email
         await supabase.from("email_logs").insert({
@@ -129,7 +135,7 @@ serve(async (req) => {
             JSON.stringify({ success: true, message: "Email sent successfully" }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("Email error:", error);
 
         // Log failed email
@@ -138,14 +144,23 @@ serve(async (req) => {
             const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
             const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-            const body = await req.clone().json();
+            // Use the already parsed body if available, or try to parse again safely
+            let bodyToLog = body;
+            if (!bodyToLog) {
+                try {
+                    bodyToLog = await req.clone().json();
+                } catch {
+                    bodyToLog = { to: "unknown" };
+                }
+            }
+
             await supabase.from("email_logs").insert({
-                to_email: body.to || "unknown",
-                subject: body.subject || "unknown",
+                to_email: bodyToLog.to || "unknown",
+                subject: bodyToLog.subject || "unknown",
                 status: "failed",
                 error_message: error.message,
             });
-        } catch (e) {
+        } catch (e: any) {
             console.error("Failed to log email error:", e);
         }
 

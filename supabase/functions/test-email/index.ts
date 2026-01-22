@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
@@ -15,7 +15,7 @@ interface TestEmailBody {
     from_email: string;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
@@ -52,7 +52,7 @@ serve(async (req) => {
             JSON.stringify({ success: true, message: "SMTP Connection verified successfully!" }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("SMTP Test Error:", error);
         return new Response(
             JSON.stringify({ success: false, message: error.message }),
