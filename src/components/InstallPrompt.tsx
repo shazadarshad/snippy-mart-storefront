@@ -11,8 +11,26 @@ const InstallPrompt = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [showPrompt, setShowPrompt] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
+        // Check if mobile/tablet device (not desktop/laptop)
+        const checkMobile = () => {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i.test(userAgent);
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isSmallScreen = window.innerWidth <= 1024;
+
+            // Must be mobile/tablet, not desktop
+            return isMobileDevice && (isTouchDevice || isSmallScreen);
+        };
+
+        const mobileCheck = checkMobile();
+        setIsMobile(mobileCheck);
+
+        // Only proceed if on mobile device
+        if (!mobileCheck) return;
+
         // Check if already installed
         if (window.matchMedia('(display-mode: standalone)').matches) {
             return;
