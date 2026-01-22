@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Loader2,
   MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ const AdminLayout = () => {
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
     { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquare },
+    { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

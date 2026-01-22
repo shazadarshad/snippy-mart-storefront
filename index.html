@@ -8,18 +8,30 @@
   <meta name="description"
     content="Get the best deals on premium digital subscriptions and services with instant WhatsApp confirmation. Snippy Mart is your trusted source for digital products." />
   <meta name="author" content="Snippy Mart" />
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#00b8d4" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Snippy Mart" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
+  <!-- Open Graph -->
   <meta property="og:title" content="Snippy Mart - Premium Digital Subscriptions" />
   <meta property="og:description"
     content="Get the best deals on premium digital subscriptions and services with instant WhatsApp confirmation." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/og-image.png" />
 
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@SnippyMart" />
   <meta name="twitter:image" content="/og-image.png" />
@@ -32,6 +44,21 @@
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
   <script src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('SW registration failed:', error);
+          });
+      });
+    }
+  </script>
 </body>
 
 </html>

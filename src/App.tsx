@@ -13,7 +13,9 @@ import CartDrawer from "./components/cart/CartDrawer";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import GlobalLoader from "./components/GlobalLoader";
+import InstallPrompt from "./components/InstallPrompt";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
+import { CurrencyProvider } from "./hooks/useCurrency";
 
 // Lazy Load Pages for Performance
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -33,6 +35,7 @@ const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -73,6 +76,7 @@ const AppContent = () => {
               <Route path="products" element={<AdminProducts />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="testimonials" element={<AdminTestimonials />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 
@@ -82,23 +86,26 @@ const AppContent = () => {
       </AnimatePresence>
 
       {!isAdminRoute && <Footer />}
+      <InstallPrompt />
     </>
   );
 };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <HelmetProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </TooltipProvider>
-      </HelmetProvider>
-    </ThemeProvider>
+    <CurrencyProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <HelmetProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </TooltipProvider>
+        </HelmetProvider>
+      </ThemeProvider>
+    </CurrencyProvider>
   </QueryClientProvider>
 );
 
