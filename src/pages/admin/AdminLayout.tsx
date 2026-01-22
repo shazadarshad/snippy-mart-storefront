@@ -41,6 +41,7 @@ const AdminLayout = () => {
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
     { name: 'Email Templates', path: '/admin/email-templates', icon: FileText },
+    { name: 'Policies', path: '/admin/policies', icon: FileText },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
