@@ -74,9 +74,18 @@ const OrderSuccessPage = () => {
           <h1 className="text-3xl md:text-5xl font-display font-black text-foreground mb-4 animate-fade-in">
             Order Confirmed!
           </h1>
-          <p className="text-lg text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <p className="text-lg text-muted-foreground mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             Success! Your order <span className="text-primary font-mono font-black">{orderData.orderId}</span> has been locked in.
           </p>
+
+          {/* Delivery Time Notice */}
+          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-primary/10 border border-primary/20 mb-8 animate-fade-in" style={{ animationDelay: '0.15s' }}>
+            <span className="text-2xl">⏱️</span>
+            <div className="text-left">
+              <p className="text-sm font-bold text-primary">Estimated Delivery: 1 - 24 Hours</p>
+              <p className="text-xs text-muted-foreground">Credentials sent via WhatsApp & Email</p>
+            </div>
+          </div>
 
           {/* Order Details Card */}
           <div className="p-0.5 rounded-[2rem] bg-gradient-to-b from-primary/20 to-transparent mb-8 md:mb-12 animate-fade-in" style={{ animationDelay: '0.2s' }}>

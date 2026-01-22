@@ -1,38 +1,27 @@
 -- =====================================================
--- EMAIL SYSTEM INTEGRATION - Complete SQL Migration
--- Run this in Supabase SQL Editor
--- FIXED: Uses user_roles table instead of admin_users
--- ENHANCED: Better email templates with logo
+-- EMAIL SYSTEM - FIX MIGRATION
+-- Run this AFTER the first migration failed
+-- This drops existing policies and recreates them correctly
+-- Also updates email templates to better versions
 -- =====================================================
 
+-- Drop existing policies first (they had wrong table reference)
+DROP POLICY IF EXISTS "Only admins can view email settings" ON public.email_settings;
+DROP POLICY IF EXISTS "Only admins can insert email settings" ON public.email_settings;
+DROP POLICY IF EXISTS "Only admins can update email settings" ON public.email_settings;
+DROP POLICY IF EXISTS "Only admins can view email templates" ON public.email_templates;
+DROP POLICY IF EXISTS "Only admins can insert email templates" ON public.email_templates;
+DROP POLICY IF EXISTS "Only admins can update email templates" ON public.email_templates;
+DROP POLICY IF EXISTS "Only admins can delete email templates" ON public.email_templates;
+DROP POLICY IF EXISTS "Only admins can view email logs" ON public.email_logs;
+DROP POLICY IF EXISTS "Allow insert for email logs" ON public.email_logs;
+DROP POLICY IF EXISTS "Service role can insert email logs" ON public.email_logs;
+
 -- =====================================================
--- 1. EMAIL SETTINGS TABLE
--- Stores SMTP configuration for sending emails
+-- RECREATE POLICIES WITH CORRECT TABLE (user_roles)
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.email_settings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    smtp_host TEXT NOT NULL DEFAULT '',
-    smtp_port INTEGER NOT NULL DEFAULT 587,
-    smtp_user TEXT NOT NULL DEFAULT '',
-    smtp_password TEXT NOT NULL DEFAULT '',
-    smtp_secure BOOLEAN DEFAULT true,
-    from_email TEXT NOT NULL DEFAULT '',
-    from_name TEXT DEFAULT 'Snippy Mart',
-    reply_to_email TEXT,
-    is_configured BOOLEAN DEFAULT false,
-    last_test_at TIMESTAMPTZ,
-    last_test_success BOOLEAN,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
-);
 
--- Only allow one settings row (singleton pattern)
-CREATE UNIQUE INDEX IF NOT EXISTS email_settings_singleton ON public.email_settings ((true));
-
--- Enable RLS
-ALTER TABLE public.email_settings ENABLE ROW LEVEL SECURITY;
-
--- Only admins can access email settings (using user_roles table)
+-- Email Settings Policies
 CREATE POLICY "Only admins can view email settings"
     ON public.email_settings FOR SELECT
     TO authenticated
@@ -63,28 +52,7 @@ CREATE POLICY "Only admins can update email settings"
         )
     );
 
--- =====================================================
--- 2. EMAIL TEMPLATES TABLE
--- Stores customizable email templates
--- =====================================================
-CREATE TABLE IF NOT EXISTS public.email_templates (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    template_key TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    subject TEXT NOT NULL,
-    html_content TEXT NOT NULL,
-    text_content TEXT,
-    description TEXT,
-    variables JSONB DEFAULT '[]'::jsonb,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Enable RLS
-ALTER TABLE public.email_templates ENABLE ROW LEVEL SECURITY;
-
--- Admins can manage templates
+-- Email Templates Policies
 CREATE POLICY "Only admins can view email templates"
     ON public.email_templates FOR SELECT
     TO authenticated
@@ -125,26 +93,7 @@ CREATE POLICY "Only admins can delete email templates"
         )
     );
 
--- =====================================================
--- 3. EMAIL LOG TABLE
--- Tracks all sent emails for debugging
--- =====================================================
-CREATE TABLE IF NOT EXISTS public.email_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
-    template_key TEXT,
-    to_email TEXT NOT NULL,
-    subject TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending',
-    error_message TEXT,
-    sent_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Enable RLS
-ALTER TABLE public.email_logs ENABLE ROW LEVEL SECURITY;
-
--- Admins can view logs
+-- Email Logs Policies
 CREATE POLICY "Only admins can view email logs"
     ON public.email_logs FOR SELECT
     TO authenticated
@@ -155,35 +104,18 @@ CREATE POLICY "Only admins can view email logs"
         )
     );
 
--- Allow inserts for email logging (from Edge Functions via service role)
 CREATE POLICY "Allow insert for email logs"
     ON public.email_logs FOR INSERT
     TO authenticated, anon
     WITH CHECK (true);
 
 -- =====================================================
--- 4. ADD CUSTOMER EMAIL TO ORDERS TABLE
+-- UPDATE EMAIL TEMPLATES TO ENHANCED VERSIONS
 -- =====================================================
-DO $$ 
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'orders' AND column_name = 'customer_email'
-    ) THEN
-        ALTER TABLE public.orders ADD COLUMN customer_email TEXT;
-    END IF;
-END $$;
-
--- =====================================================
--- 5. INSERT DEFAULT EMAIL TEMPLATES (ENHANCED)
--- =====================================================
-INSERT INTO public.email_templates (template_key, name, subject, html_content, description, variables)
-VALUES 
-(
-    'order_confirmation',
-    'Order Confirmation',
-    '✅ Order Confirmed! Your Snippy Mart Order #{{order_id}}',
-    '<!DOCTYPE html>
+UPDATE public.email_templates 
+SET 
+    subject = '✅ Order Confirmed! Your Snippy Mart Order #{{order_id}}',
+    html_content = '<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -234,13 +166,11 @@ VALUES
                     <tr>
                         <td style="padding: 30px 40px;">
                             <div style="background: rgba(0,184,212,0.08); border: 1px solid rgba(0,184,212,0.25); border-radius: 20px; padding: 28px; position: relative; overflow: hidden;">
-                                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(0,184,212,0.15) 0%, transparent 70%);"></div>
-                                
                                 <table style="width: 100%;">
                                     <tr>
                                         <td style="padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                             <p style="color: #00b8d4; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px; font-weight: 600;">Order Number</p>
-                                            <p style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; font-family: ''Courier New'', monospace; letter-spacing: 1px;">{{order_id}}</p>
+                                            <p style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; font-family: monospace; letter-spacing: 1px;">{{order_id}}</p>
                                         </td>
                                     </tr>
                                     <tr>
@@ -330,15 +260,13 @@ VALUES
         </tr>
     </table>
 </body>
-</html>',
-    'Sent when a new order is placed - includes logo, tracking, and WhatsApp',
-    '["customer_name", "order_id", "total", "items"]'::jsonb
-),
-(
-    'product_delivery',
-    'Product Delivery',
-    '🚀 Your {{product_name}} is Ready! - Snippy Mart',
-    '<!DOCTYPE html>
+</html>'
+WHERE template_key = 'order_confirmation';
+
+UPDATE public.email_templates 
+SET 
+    subject = '🚀 Your {{product_name}} is Ready! - Snippy Mart',
+    html_content = '<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -379,7 +307,7 @@ VALUES
                                 Hi <strong style="color: #ffffff;">{{customer_name}}</strong> 👋
                             </p>
                             <p style="color: #a0a0a0; font-size: 15px; line-height: 1.7; margin: 16px 0 0;">
-                                Great news! Your <strong style="color: #00b8d4;">{{product_name}}</strong> subscription has been activated and is ready to use. Here are your login credentials:
+                                Great news! Your <strong style="color: #00b8d4;">{{product_name}}</strong> subscription has been activated.
                             </p>
                         </td>
                     </tr>
@@ -389,10 +317,8 @@ VALUES
                         <td style="padding: 30px 40px;">
                             <div style="background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(22,163,74,0.15)); border: 2px solid rgba(34,197,94,0.4); border-radius: 20px; padding: 28px; position: relative;">
                                 <div style="position: absolute; top: 12px; right: 12px; background: #22c55e; color: #fff; font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 700;">ACTIVE</div>
-                                
                                 <p style="color: #22c55e; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 16px;">🔐 Login Credentials</p>
-                                
-                                <div style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; font-family: ''Courier New'', monospace;">
+                                <div style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; font-family: monospace;">
                                     {{credentials}}
                                 </div>
                             </div>
@@ -402,7 +328,7 @@ VALUES
                     <!-- Validity -->
                     <tr>
                         <td style="padding: 0 40px 20px;">
-                            <div style="background: rgba(0,184,212,0.08); border: 1px solid rgba(0,184,212,0.25); border-radius: 14px; padding: 18px 24px; display: flex; align-items: center;">
+                            <div style="background: rgba(0,184,212,0.08); border: 1px solid rgba(0,184,212,0.25); border-radius: 14px; padding: 18px 24px;">
                                 <p style="color: #e0e0e0; font-size: 14px; margin: 0;">
                                     ⏰ <strong style="color: #ffffff;">Valid Until:</strong> <span style="color: #00b8d4; font-weight: 600;">{{expiry_date}}</span>
                                 </p>
@@ -415,7 +341,7 @@ VALUES
                         <td style="padding: 0 40px 30px;">
                             <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 14px; padding: 18px 24px;">
                                 <p style="color: #fca5a5; font-size: 13px; line-height: 1.6; margin: 0;">
-                                    ⚠️ <strong>Important:</strong> Do not share these credentials with anyone. Sharing may result in account termination without refund.
+                                    ⚠️ <strong>Important:</strong> Do not share these credentials.
                                 </p>
                             </div>
                         </td>
@@ -447,8 +373,7 @@ VALUES
                                             </tr>
                                         </table>
                                         <p style="color: #555; font-size: 11px; margin: 24px 0 0;">
-                                            © 2026 Snippy Mart. All rights reserved.<br>
-                                            Thank you for choosing us! ❤️
+                                            © 2026 Snippy Mart. All rights reserved. ❤️
                                         </p>
                                     </td>
                                 </tr>
@@ -461,15 +386,13 @@ VALUES
         </tr>
     </table>
 </body>
-</html>',
-    'Sent when order is marked as completed with credentials',
-    '["customer_name", "product_name", "credentials", "expiry_date"]'::jsonb
-),
-(
-    'order_status_update',
-    'Order Status Update',
-    '📊 Order Update: #{{order_id}} - Snippy Mart',
-    '<!DOCTYPE html>
+</html>'
+WHERE template_key = 'product_delivery';
+
+UPDATE public.email_templates 
+SET 
+    subject = '📊 Order Update: #{{order_id}} - Snippy Mart',
+    html_content = '<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -499,8 +422,7 @@ VALUES
                             
                             <div style="background: rgba(0,184,212,0.08); border: 1px solid rgba(0,184,212,0.25); border-radius: 20px; padding: 28px;">
                                 <p style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px;">Order ID</p>
-                                <p style="color: #ffffff; font-size: 20px; font-weight: 700; margin: 0 0 24px; font-family: ''Courier New'', monospace;">{{order_id}}</p>
-                                
+                                <p style="color: #ffffff; font-size: 20px; font-weight: 700; margin: 0 0 24px; font-family: monospace;">{{order_id}}</p>
                                 <p style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px;">New Status</p>
                                 <p style="color: #00b8d4; font-size: 24px; font-weight: 800; margin: 0;">{{status}}</p>
                             </div>
@@ -542,34 +464,15 @@ VALUES
         </tr>
     </table>
 </body>
-</html>',
-    'Sent when order status changes',
-    '["order_id", "status", "message"]'::jsonb
-)
-ON CONFLICT (template_key) DO NOTHING;
-
--- =====================================================
--- 6. INSERT DEFAULT EMAIL SETTINGS (empty, to be configured)
--- =====================================================
-INSERT INTO public.email_settings (smtp_host, smtp_port, smtp_user, smtp_password, from_email, from_name, is_configured)
-VALUES ('', 587, '', '', '', 'Snippy Mart', false)
-ON CONFLICT DO NOTHING;
-
--- =====================================================
--- 7. GRANT PERMISSIONS
--- =====================================================
-GRANT ALL ON public.email_settings TO authenticated;
-GRANT ALL ON public.email_templates TO authenticated;
-GRANT ALL ON public.email_logs TO authenticated;
+</html>'
+WHERE template_key = 'order_status_update';
 
 -- =====================================================
 -- SUCCESS MESSAGE
 -- =====================================================
 DO $$
 BEGIN
-    RAISE NOTICE '✅ Email System Migration Complete!';
-    RAISE NOTICE '   - email_settings table created';
-    RAISE NOTICE '   - email_templates table created with 3 premium templates';
-    RAISE NOTICE '   - email_logs table created';
-    RAISE NOTICE '   - customer_email column added to orders';
+    RAISE NOTICE '✅ Email System Fix Complete!';
+    RAISE NOTICE '   - Policies recreated with correct user_roles table';
+    RAISE NOTICE '   - Email templates updated to enhanced versions with logo';
 END $$;

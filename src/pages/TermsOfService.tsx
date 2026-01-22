@@ -62,6 +62,19 @@ const TermsOfService = () => {
             <p>
                 Any claim related to Snippy Mart's Website shall be governed by the laws of Sri Lanka without regards to its conflict of law provisions.
             </p>
+
+            <h2>10. Delivery Policy</h2>
+            <p>
+                All digital subscription products purchased from Snippy Mart will be delivered within <strong>1 to 24 hours</strong> from the time of order confirmation. Delivery is completed when:
+            </p>
+            <ul>
+                <li>Login credentials are sent to your registered WhatsApp number</li>
+                <li>Login credentials are sent to your email address (if provided)</li>
+                <li>Order status is updated to "Completed" in our system</li>
+            </ul>
+            <p>
+                In rare cases of high demand or technical issues, delivery may take up to 48 hours. If you haven't received your credentials within 24 hours, please contact our support team via WhatsApp.
+            </p>
         </PolicyLayout>
     );
 };
