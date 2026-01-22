@@ -1,4 +1,8 @@
--- 1. Create the expanded and redesigned email templates
+-- Redesigned, Premium Email Templates for Snippy Mart
+-- This fixes top spacing, black background, and scrolling issues.
+-- Note: Updated variables column to use JSONB format to match DB schema.
+
+-- 1. Order Confirmation (sent immediately after checkout)
 INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
 VALUES 
 (
@@ -62,9 +66,18 @@ VALUES
 </body>
 </html>',
     'Sent immediately after customer places an order.',
-    ARRAY['customer_name', 'order_id', 'total', 'items'],
+    '["customer_name", "order_id", "total", "items"]'::jsonb,
     true
-),
+)
+ON CONFLICT (template_key) DO UPDATE 
+SET 
+  subject = EXCLUDED.subject,
+  html_content = EXCLUDED.html_content,
+  variables = EXCLUDED.variables;
+
+-- 2. Order Delivered (The Most Important Template - Includes Credentials)
+INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
+VALUES 
 (
     'order_delivered', 
     'Order Delivered', 
@@ -120,9 +133,18 @@ VALUES
 </body>
 </html>',
     'Sent when an order is completed. Includes login credentials.',
-    ARRAY['customer_name', 'order_id', 'product_name', 'credentials', 'message'],
+    '["customer_name", "order_id", "product_name", "credentials", "message"]'::jsonb,
     true
-),
+)
+ON CONFLICT (template_key) DO UPDATE 
+SET 
+  subject = EXCLUDED.subject,
+  html_content = EXCLUDED.html_content,
+  variables = EXCLUDED.variables;
+
+-- 3. Payment Rejected
+INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
+VALUES 
 (
     'payment_rejected', 
     'Payment Rejected', 
@@ -168,24 +190,44 @@ VALUES
 </body>
 </html>',
     'Sent when an order is cancelled or payment verification fails.',
-    ARRAY['customer_name', 'order_id', 'message'],
+    '["customer_name", "order_id", "message"]'::jsonb,
     true
-),
+)
+ON CONFLICT (template_key) DO UPDATE 
+SET 
+  subject = EXCLUDED.subject,
+  html_content = EXCLUDED.html_content,
+  variables = EXCLUDED.variables;
+
+-- 4. Order Status Update (Generic)
+INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
+VALUES 
 (
     'order_status_update', 
     'Order Status Update', 
     'Update regarding your order #{{order_id}}',
     '<!DOCTYPE html>
 <html>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: sans-serif;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; padding: 40px 10px;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status Update</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, Helvetica, Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc;">
         <tr>
-            <td align="center">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <td align="center" style="padding: 20px 10px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <tr>
+                        <td align="center" style="padding: 30px 40px; background: linear-gradient(135deg, #00b8d4 0%, #00838f 100%);">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">Snippy<span style="color: rgba(255,255,255,0.7);">Mart</span></h1>
+                            <p style="margin: 5px 0 0; color: rgba(255,255,255,0.9); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">Status Update</p>
+                        </td>
+                    </tr>
                     <tr>
                         <td style="padding: 40px;">
-                            <h2 style="margin: 0 0 10px; color: #00b8d4;">Status Update</h2>
-                            <p style="color: #64748b; margin-bottom: 30px;">Your order #{{order_id}} has been updated.</p>
+                            <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px; font-weight: 700;">Hello {{customer_name}},</h2>
+                            <p style="margin: 0 0 30px; color: #475569; font-size: 16px; line-height: 24px;">We have an update regarding your order <strong>#{{order_id}}</strong>.</p>
                             
                             <div style="background-color: #f1f5f9; border-radius: 16px; padding: 30px; margin-bottom: 30px;">
                                 <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: bold;">New Status</p>
@@ -193,7 +235,14 @@ VALUES
                                 <p style="margin: 0; font-size: 15px; color: #334155; line-height: 24px;">{{message}}</p>
                             </div>
 
-                            <a href="https://snippymart.com/track-order?orderId={{order_id}}" style="display: block; text-align: center; background-color: #00b8d4; color: #ffffff; padding: 16px; border-radius: 12px; font-weight: bold; text-decoration: none;">View Tracking Detail</a>
+                            <div style="text-align: center;">
+                                <a href="https://snippymart.com/track-order?orderId={{order_id}}" style="display: inline-block; background-color: #00b8d4; color: #ffffff; padding: 18px 36px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 16px;">View Live Tracking</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;">
+                            <p style="margin: 0; color: #94a3b8; font-size: 14px;">Questions? Contact us on <a href="https://wa.me/94787767869" style="color: #00b8d4; text-decoration: none; font-weight: bold;">WhatsApp</a></p>
                         </td>
                     </tr>
                 </table>
@@ -203,7 +252,7 @@ VALUES
 </body>
 </html>',
     'Sent when an order status changes.',
-    ARRAY['customer_name', 'order_id', 'status', 'message'],
+    '["customer_name", "order_id", "status", "message"]'::jsonb,
     true
 )
 ON CONFLICT (template_key) DO UPDATE 
@@ -211,6 +260,3 @@ SET
   subject = EXCLUDED.subject,
   html_content = EXCLUDED.html_content,
   variables = EXCLUDED.variables;
-
--- 2. Enable automated triggers (OPTIONAL: Manual notification UI or DB Webhook)
--- Note: Requires Edge Function ''handle-order-status-change'' to be deployed.
