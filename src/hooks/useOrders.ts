@@ -124,6 +124,9 @@ export const useCreateOrder = () => {
       payment_proof_url?: string;
       binance_id?: string;
       customer_country?: string;
+      customer_email?: string;
+      security_metadata?: any;
+      user_agent?: string;
       items: {
         product_id?: string;
         product_name: string;
@@ -144,8 +147,9 @@ export const useCreateOrder = () => {
           payment_proof_url: orderData.payment_proof_url,
           binance_id: orderData.binance_id,
           customer_country: orderData.customer_country,
-          security_metadata: (orderData as any).security_metadata,
-          user_agent: (orderData as any).user_agent,
+          customer_email: orderData.customer_email,
+          security_metadata: orderData.security_metadata,
+          user_agent: orderData.user_agent,
           items: orderData.items,
         },
       });

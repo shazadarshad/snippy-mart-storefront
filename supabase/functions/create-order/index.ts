@@ -131,20 +131,25 @@ serve(async (req) => {
 
     if (template) {
       // Invoke send-email function
-      // We don't await this to keep the order creation fast
-      supabase.functions.invoke("send-email", {
-        body: {
-          to: body.customer_email,
-          templateId: template.id,
-          orderId: order.id,
-          variables: {
-            customer_name: body.customer_name || 'Customer',
-            order_id: body.order_number,
-            total: order.total_amount.toString(),
-            items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
+      // We await this to ensure the email request is actually sent before the function completes
+      try {
+        await supabase.functions.invoke("send-email", {
+          body: {
+            to: body.customer_email,
+            templateId: template.id,
+            orderId: order.id,
+            variables: {
+              customer_name: body.customer_name || 'Customer',
+              order_id: body.order_number,
+              total: order.total_amount.toString(),
+              items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
+            }
           }
-        }
-      }).catch(err => console.error("[create-order] Failed to trigger email:", err));
+        });
+        console.log(`[create-order] Confirmation email sent successfully to ${body.customer_email}`);
+      } catch (err) {
+        console.error("[create-order] Failed to trigger email:", err);
+      }
     }
   }
 
