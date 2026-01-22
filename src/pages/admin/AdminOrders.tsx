@@ -44,6 +44,9 @@ const AdminOrders = () => {
   const deleteOrder = useDeleteOrder();
   const deleteProof = useDeleteOrderProof();
 
+  const [statusUpdate, setStatusUpdate] = useState<{ order: Order; newStatus: OrderStatus; message: string } | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
   const [paymentProofHref, setPaymentProofHref] = useState<string | null>(null);
   const [isLoadingProof, setIsLoadingProof] = useState(false);
 
@@ -75,18 +78,51 @@ const AdminOrders = () => {
   const refundedCount = orders.filter((o) => o.status === 'refunded').length;
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    setStatusUpdate({
+      order,
+      newStatus,
+      message: newStatus === 'completed'
+        ? 'Your subscription is ready! Check the details below.'
+        : newStatus === 'cancelled'
+          ? 'We are sorry, but your payment could not be verified.'
+          : `Your order status has been updated to ${newStatus}.`
+    });
+  };
+
+  const confirmStatusChange = async () => {
+    if (!statusUpdate) return;
+
+    setIsUpdatingStatus(true);
     try {
-      await updateStatus.mutateAsync({ orderId, status: newStatus });
-      toast({
-        title: 'Status updated',
-        description: `Order status changed to ${newStatus}`,
+      // 1. Update Database
+      await updateStatus.mutateAsync({ orderId: statusUpdate.order.id, status: statusUpdate.newStatus });
+
+      // 2. Trigger Edge Function for Email
+      // We do this manually here for immediate feedback, but it also supports Webhooks
+      await supabase.functions.invoke('handle-order-status-change', {
+        body: {
+          order: { ...statusUpdate.order, status: statusUpdate.newStatus },
+          old_order: statusUpdate.order,
+          custom_message: statusUpdate.message
+        }
       });
+
+      toast({
+        title: 'Status updated & Email sent',
+        description: `Order ${statusUpdate.order.order_number} is now ${statusUpdate.newStatus}.`,
+      });
+      setStatusUpdate(null);
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: 'Error updating status',
         description: error.message || 'Failed to update order status',
         variant: 'destructive',
       });
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
@@ -695,6 +731,48 @@ const AdminOrders = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Status Update Confirmation with Message */}
+      <Dialog open={!!statusUpdate} onOpenChange={() => !isUpdatingStatus && setStatusUpdate(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RefreshCw className={`w-5 h-5 ${isUpdatingStatus ? 'animate-spin' : ''}`} />
+              Confirm Status Change
+            </DialogTitle>
+            <DialogDescription>
+              Update <strong>{statusUpdate?.order.order_number}</strong> to <strong>{statusUpdate?.newStatus}</strong>?
+              This will automatically send a notification email to the customer.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="status-message">Custom message for customer (optional)</Label>
+              <Textarea
+                id="status-message"
+                placeholder="Type a message to include in the email..."
+                value={statusUpdate?.message || ''}
+                onChange={(e) => setStatusUpdate(prev => prev ? { ...prev, message: e.target.value } : null)}
+                className="min-h-[100px] bg-secondary/30"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setStatusUpdate(null)} disabled={isUpdatingStatus}>
+              Cancel
+            </Button>
+            <Button
+              variant="hero"
+              onClick={confirmStatusChange}
+              disabled={isUpdatingStatus}
+            >
+              {isUpdatingStatus ? 'Updating...' : 'Update & Send Email'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
