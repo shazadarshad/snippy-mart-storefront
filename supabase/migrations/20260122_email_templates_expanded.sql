@@ -1,5 +1,5 @@
--- Premium Email Templates for Snippy Mart - FINAL VERSION
--- Features: Darker cyan branding, logo header, social footer, copyright notice
+-- Premium Email Templates for Snippy Mart - FINAL VERSION v2
+-- Features: Darker cyan (#0891b2), professional icon-based footer, 100% mobile responsive
 
 -- 1. Order Confirmation
 INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
@@ -20,7 +20,7 @@ VALUES
         <tr>
             <td align="center" style="padding: 20px 10px;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <!-- Header with Logo -->
+                    <!-- Header -->
                     <tr>
                         <td align="center" style="padding: 40px 40px 30px; background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);">
                             <h1 style="margin: 0 0 8px; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">SnippyMart</h1>
@@ -55,29 +55,37 @@ VALUES
                             </div>
                         </td>
                     </tr>
-                    <!-- Social Footer -->
+                    <!-- Professional Footer -->
                     <tr>
-                        <td style="padding: 30px 40px 20px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <!-- Social Icons Row -->
                                 <tr>
-                                    <td align="center" style="padding-bottom: 15px;">
-                                        <p style="margin: 0 0 12px; color: #64748b; font-size: 13px; font-weight: 600;">Connect with us</p>
+                                    <td align="center" style="padding-bottom: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://wa.me/94787767869" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">WhatsApp</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://snippymart.com" style="display: inline-block; width: 36px; height: 36px; background-color: #0891b2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">🌐</a>
                                                 </td>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; background-color: #E4405F; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">Instagram</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://wa.me/94787767869" style="display: inline-block; width: 36px; height: 36px; background-color: #25D366; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">💬</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">📷</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://facebook.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background-color: #1877F2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">f</a>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
+                                <!-- Company Info -->
                                 <tr>
-                                    <td align="center" style="padding-top: 15px; border-top: 1px solid #e2e8f0;">
-                                        <p style="margin: 0; color: #94a3b8; font-size: 12px;">&copy; 2026 SnippyMart. All rights reserved.</p>
-                                        <p style="margin: 5px 0 0; color: #cbd5e1; font-size: 11px;">Premium Digital Subscriptions</p>
+                                    <td align="center" style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                                        <p style="margin: 0 0 8px; color: #64748b; font-size: 13px; font-weight: 600;">SnippyMart</p>
+                                        <p style="margin: 0 0 4px; color: #94a3b8; font-size: 12px;">Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #cbd5e1; font-size: 11px;">&copy; 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>
@@ -99,7 +107,7 @@ SET
   html_content = EXCLUDED.html_content,
   variables = EXCLUDED.variables;
 
--- 2. Order Delivered (with credentials)
+-- 2. Order Delivered
 INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
 VALUES 
 (
@@ -147,29 +155,35 @@ VALUES
                             </div>
                         </td>
                     </tr>
-                    <!-- Social Footer -->
+                    <!-- Professional Footer -->
                     <tr>
-                        <td style="padding: 30px 40px 20px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
-                                    <td align="center" style="padding-bottom: 15px;">
-                                        <p style="margin: 0 0 12px; color: #64748b; font-size: 13px; font-weight: 600;">Connect with us</p>
+                                    <td align="center" style="padding-bottom: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://wa.me/94787767869" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">WhatsApp</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://snippymart.com" style="display: inline-block; width: 36px; height: 36px; background-color: #0891b2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">🌐</a>
                                                 </td>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; background-color: #E4405F; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">Instagram</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://wa.me/94787767869" style="display: inline-block; width: 36px; height: 36px; background-color: #25D366; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">💬</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">📷</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://facebook.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background-color: #1877F2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">f</a>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td align="center" style="padding-top: 15px; border-top: 1px solid #e2e8f0;">
-                                        <p style="margin: 0; color: #94a3b8; font-size: 12px;">&copy; 2026 SnippyMart. All rights reserved.</p>
-                                        <p style="margin: 5px 0 0; color: #cbd5e1; font-size: 11px;">Premium Digital Subscriptions</p>
+                                    <td align="center" style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                                        <p style="margin: 0 0 8px; color: #64748b; font-size: 13px; font-weight: 600;">SnippyMart</p>
+                                        <p style="margin: 0 0 4px; color: #94a3b8; font-size: 12px;">Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #cbd5e1; font-size: 11px;">&copy; 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>
@@ -237,29 +251,35 @@ VALUES
                             </div>
                         </td>
                     </tr>
-                    <!-- Social Footer -->
+                    <!-- Professional Footer -->
                     <tr>
-                        <td style="padding: 30px 40px 20px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
-                                    <td align="center" style="padding-bottom: 15px;">
-                                        <p style="margin: 0 0 12px; color: #64748b; font-size: 13px; font-weight: 600;">Connect with us</p>
+                                    <td align="center" style="padding-bottom: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://wa.me/94787767869" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">WhatsApp</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://snippymart.com" style="display: inline-block; width: 36px; height: 36px; background-color: #0891b2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">🌐</a>
                                                 </td>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; background-color: #E4405F; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">Instagram</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://wa.me/94787767869" style="display: inline-block; width: 36px; height: 36px; background-color: #25D366; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">💬</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">📷</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://facebook.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background-color: #1877F2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">f</a>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td align="center" style="padding-top: 15px; border-top: 1px solid #e2e8f0;">
-                                        <p style="margin: 0; color: #94a3b8; font-size: 12px;">&copy; 2026 SnippyMart. All rights reserved.</p>
-                                        <p style="margin: 5px 0 0; color: #cbd5e1; font-size: 11px;">Premium Digital Subscriptions</p>
+                                    <td align="center" style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                                        <p style="margin: 0 0 8px; color: #64748b; font-size: 13px; font-weight: 600;">SnippyMart</p>
+                                        <p style="margin: 0 0 4px; color: #94a3b8; font-size: 12px;">Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #cbd5e1; font-size: 11px;">&copy; 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>
@@ -324,29 +344,35 @@ VALUES
                             </div>
                         </td>
                     </tr>
-                    <!-- Social Footer -->
+                    <!-- Professional Footer -->
                     <tr>
-                        <td style="padding: 30px 40px 20px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
-                                    <td align="center" style="padding-bottom: 15px;">
-                                        <p style="margin: 0 0 12px; color: #64748b; font-size: 13px; font-weight: 600;">Connect with us</p>
+                                    <td align="center" style="padding-bottom: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://wa.me/94787767869" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">WhatsApp</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://snippymart.com" style="display: inline-block; width: 36px; height: 36px; background-color: #0891b2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">🌐</a>
                                                 </td>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; background-color: #E4405F; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold;">Instagram</a>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://wa.me/94787767869" style="display: inline-block; width: 36px; height: 36px; background-color: #25D366; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">💬</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px;">📷</a>
+                                                </td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://facebook.com/snippymart" style="display: inline-block; width: 36px; height: 36px; background-color: #1877F2; border-radius: 50%; text-align: center; line-height: 36px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: bold;">f</a>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td align="center" style="padding-top: 15px; border-top: 1px solid #e2e8f0;">
-                                        <p style="margin: 0; color: #94a3b8; font-size: 12px;">&copy; 2026 SnippyMart. All rights reserved.</p>
-                                        <p style="margin: 5px 0 0; color: #cbd5e1; font-size: 11px;">Premium Digital Subscriptions</p>
+                                    <td align="center" style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                                        <p style="margin: 0 0 8px; color: #64748b; font-size: 13px; font-weight: 600;">SnippyMart</p>
+                                        <p style="margin: 0 0 4px; color: #94a3b8; font-size: 12px;">Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #cbd5e1; font-size: 11px;">&copy; 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>
