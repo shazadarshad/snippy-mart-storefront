@@ -1,7 +1,7 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SNIPPY MART - COMPLETE EMAIL TEMPLATE SUITE
 -- Modern React Email • Lucide Icons • Glassmorphism • Mobile Responsive
--- Generated: 2026-01-24T09:04:34.712Z
+-- Generated: 2026-01-24T09:06:12.845Z
 -- ═══════════════════════════════════════════════════════════════════════════
 
 
