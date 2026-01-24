@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCartStore, generateOrderId } from '@/lib/store';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
-import { useCreateOrder } from '@/hooks/useOrders';
+import { useCreateOrder, useUpdateExistingOrder } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import PaymentMethodSelector, { type PaymentMethod } from '@/components/checkout/PaymentMethodSelector';
 import { getCountry } from '@/lib/utils';
@@ -19,6 +19,7 @@ const CheckoutPage = () => {
   const { items, getTotal, clearCart } = useCartStore();
   const { toast } = useToast();
   const createOrder = useCreateOrder();
+  const updateOrder = useUpdateExistingOrder();
 
   const [formData, setFormData] = useState({
     whatsapp: '',
@@ -30,15 +31,135 @@ const CheckoutPage = () => {
   const [binanceId, setBinanceId] = useState('');
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPreRegistering, setIsPreRegistering] = useState(false);
+
+  // Track if we have already pre-registered an order in this session
+  const [existingOrderId, setExistingOrderId] = useState<string | null>(null);
 
   const orderIdRef = useRef<string>(generateOrderId());
-  const orderId = orderIdRef.current;
+  // If we have an existing order ID from pre-registration, use it. Otherwise use the generated one.
+  const orderId = existingOrderId || orderIdRef.current;
+
+  // Restore state from session storage on mount
+  useState(() => {
+    const savedOrder = sessionStorage.getItem('pendingOrder');
+    if (savedOrder) {
+      try {
+        const parsed = JSON.parse(savedOrder);
+        // Only restore if it's recent (last 30 mins)
+        const created = new Date(parsed.timestamp).getTime();
+        if (Date.now() - created < 30 * 60 * 1000) {
+          setExistingOrderId(parsed.orderId);
+          setFormData(prev => ({ ...prev, whatsapp: parsed.whatsapp || '' }));
+        } else {
+          sessionStorage.removeItem('pendingOrder');
+        }
+      } catch (e) {
+        sessionStorage.removeItem('pendingOrder');
+      }
+    }
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
+  };
+
+  const getSecurityMetadata = () => ({
+    screen_resolution: `${window.screen.width}x${window.screen.height}`,
+    language: navigator.language,
+    platform: (navigator as any).platform || 'unknown',
+    hardware_concurrency: navigator.hardwareConcurrency,
+    device_memory: (navigator as any).deviceMemory || 'unknown',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    referrer: document.referrer || 'direct',
+    timestamp: new Date().toISOString()
+  });
+
+  const getOrderPayload = async () => {
+    // Detect country
+    const customerCountry = await getCountry();
+    const securityMetadata = getSecurityMetadata();
+
+    return {
+      order_number: orderId,
+      customer_name: formData.name || 'Customer',
+      customer_whatsapp: formData.whatsapp,
+      total_amount: getTotal(),
+      notes: formData.notes || undefined,
+      payment_method: paymentMethod as PaymentMethod, // Will be 'card' for pre-registration
+      customer_country: customerCountry,
+      customer_email: formData.email || undefined,
+      security_metadata: securityMetadata,
+      user_agent: navigator.userAgent,
+      currency_code: currency,
+      currency_symbol: currencyInfo.symbol,
+      items: items.map((item) => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        plan_name: item.product.plan_name,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        total_price: item.product.price * item.quantity,
+      })),
+      status: 'pending' as const // Explicitly set as pending
+    };
+  };
+
+  const handlePreRegister = async () => {
+    // 1. Validate WhatsApp
+    const whatsappRegex = /^\+?[\d\s-]{10,}$/;
+    if (!formData.whatsapp || !whatsappRegex.test(formData.whatsapp)) {
+      toast({
+        title: "Required",
+        description: "Please enter your WhatsApp number first so we can send the link.",
+        variant: "destructive",
+      });
+      // Scroll to top to see error/input
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // 2. Prevent re-registration if already done
+    if (existingOrderId) {
+      return;
+    }
+
+    setIsPreRegistering(true);
+
+    try {
+      const payload = await getOrderPayload();
+      // Force payment method to 'card' for this flow
+      payload.payment_method = 'card';
+
+      // 3. Create Order
+      await createOrder.mutateAsync(payload);
+
+      // 4. Save state
+      setExistingOrderId(orderId);
+      sessionStorage.setItem('pendingOrder', JSON.stringify({
+        orderId,
+        whatsapp: formData.whatsapp,
+        timestamp: new Date().toISOString()
+      }));
+
+      toast({
+        title: "Order Initiated",
+        description: "We've created a pending order. Please contact us on WhatsApp.",
+      });
+
+    } catch (error) {
+      console.error('Pre-registration failed:', error);
+      toast({
+        title: "Connection Error",
+        description: "Could not create pending order, but you can still contact us manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPreRegistering(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,51 +229,45 @@ const CheckoutPage = () => {
       // Store the uploaded file path (bucket is private)
       const paymentProofPath = fileName;
 
-      // Create order in database
+      // Create or Update order
       const invalid = items.find((i) => i.product.id.length !== 36);
       if (invalid) {
         throw new Error('Your cart has an invalid item (old cached data). Please clear the cart and add items again.');
       }
 
-      // Detect country
-      const customerCountry = await getCountry();
-
-      // Collect Enterprise-Grade Security Metadata
-      const securityMetadata = {
-        screen_resolution: `${window.screen.width}x${window.screen.height}`,
-        language: navigator.language,
-        platform: (navigator as any).platform || 'unknown',
-        hardware_concurrency: navigator.hardwareConcurrency,
-        device_memory: (navigator as any).deviceMemory || 'unknown',
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        referrer: document.referrer || 'direct',
-        timestamp: new Date().toISOString()
-      };
-
-      await createOrder.mutateAsync({
-        order_number: orderId,
+      const commonOrderData = {
+        payment_proof_url: paymentProofPath,
+        notes: formData.notes || undefined,
+        binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
+        // Update customer details just in case they changed them after pre-registering
         customer_name: formData.name || 'Customer',
         customer_whatsapp: formData.whatsapp,
-        total_amount: getTotal(),
-        notes: formData.notes || undefined,
-        payment_method: paymentMethod,
-        payment_proof_url: paymentProofPath,
-        binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
-        customer_country: customerCountry,
         customer_email: formData.email || undefined,
-        security_metadata: securityMetadata,
-        user_agent: navigator.userAgent,
-        currency_code: currency,
-        currency_symbol: currencyInfo.symbol,
-        items: items.map((item) => ({
-          product_id: item.product.id,
-          product_name: item.product.name,
-          plan_name: item.product.plan_name,
-          quantity: item.quantity,
-          unit_price: item.product.price,
-          total_price: item.product.price * item.quantity,
-        })),
-      });
+      };
+
+      if (existingOrderId) {
+        console.log("Updating existing pre-registered order:", existingOrderId);
+        // UPDATE existing order
+        await updateOrder.mutateAsync({
+          orderId: existingOrderId,
+          updates: {
+            ...commonOrderData,
+            status: 'pending', // Keeps it pending until admin approves payment
+            payment_method: paymentMethod, // Ensure correct method is set
+          }
+        });
+      } else {
+        // CREATE new order (Standard Flow)
+        const payload = await getOrderPayload();
+        // Add specific submit-time fields
+        Object.assign(payload, {
+          payment_proof_url: paymentProofPath,
+          binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
+          payment_method: paymentMethod,
+        });
+
+        await createOrder.mutateAsync(payload);
+      }
 
       // Store order data for success page
       const orderData = {
@@ -172,6 +287,9 @@ const CheckoutPage = () => {
       };
 
       sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+
+      // Clear pending order session as it's now completed
+      sessionStorage.removeItem('pendingOrder');
 
       clearCart();
       navigate('/order-success');
@@ -316,6 +434,8 @@ const CheckoutPage = () => {
                   proofFile={proofFile}
                   onProofFileChange={setProofFile}
                   orderId={orderId}
+                  onPreRegister={handlePreRegister}
+                  isPreRegistering={isPreRegistering}
                 />
               </div>
 

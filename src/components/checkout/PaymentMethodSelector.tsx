@@ -17,6 +17,8 @@ interface PaymentMethodSelectorProps {
   proofFile: File | null;
   onProofFileChange: (file: File | null) => void;
   orderId: string;
+  onPreRegister: () => Promise<void>;
+  isPreRegistering: boolean;
 }
 
 const PaymentMethodSelector = ({
@@ -27,6 +29,8 @@ const PaymentMethodSelector = ({
   proofFile,
   onProofFileChange,
   orderId,
+  onPreRegister,
+  isPreRegistering,
 }: PaymentMethodSelectorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -38,6 +42,16 @@ const PaymentMethodSelector = ({
       title: 'Copied!',
       description: `${label} copied to clipboard`,
     });
+  };
+
+  const handleWhatsAppClick = async () => {
+    // 1. Create order (Pre-register)
+    await onPreRegister();
+
+    // 2. Open WhatsApp
+    const message = `Hi! I'd like to pay by card for Order ${orderId}. Please send me the payment link.`;
+    const whatsappUrl = `https://wa.me/${settings?.whatsapp_number || '94787767869'}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -492,15 +506,24 @@ const PaymentMethodSelector = ({
                 </div>
               </div>
 
-              <a
-                href={`https://wa.me/${settings?.whatsapp_number || '94787767869'}?text=${encodeURIComponent(`Hi! I'd like to pay by card for Order ${orderId}. Please send me the payment link.`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl font-bold transition-all shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/40 hover:-translate-y-0.5 active:scale-[0.98]"
+              <button
+                type="button"
+                onClick={handleWhatsAppClick}
+                disabled={isPreRegistering}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl font-bold transition-all shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/40 hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <MessageCircle className="w-4 h-4" />
-                <span>Contact on WhatsApp</span>
-              </a>
+                {isPreRegistering ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Connecting...</span>
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Contact on WhatsApp</span>
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Order ID Display */}

@@ -182,6 +182,27 @@ export const useCreateOrder = () => {
   });
 };
 
+export const useUpdateExistingOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ orderId, updates }: { orderId: string; updates: Partial<Order> }) => {
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('order_number', orderId) // Assuming we use order_number for tracking
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
 
