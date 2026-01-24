@@ -60,6 +60,8 @@ const AdminEmailTemplates = () => {
     const handlePreview = (template: EmailTemplate) => {
         // Replace variables with sample data for preview
         let html = template.html_content;
+
+        // Common variables
         html = html.replace(/\{\{customer_name\}\}/g, 'John Doe');
         html = html.replace(/\{\{order_id\}\}/g, 'ORD-12345678');
         html = html.replace(/\{\{total\}\}/g, '$29.99');
@@ -69,6 +71,19 @@ const AdminEmailTemplates = () => {
         html = html.replace(/\{\{expiry_date\}\}/g, 'February 22, 2026');
         html = html.replace(/\{\{status\}\}/g, 'Processing');
         html = html.replace(/\{\{message\}\}/g, 'Your order is being processed and will be delivered shortly.');
+        html = html.replace(/\{\{payment_method\}\}/g, 'Bank Transfer 🏦');
+
+        // New template variables
+        html = html.replace(/\{\{delivery_date\}\}/g, 'January 24, 2026');
+        html = html.replace(/\{\{delivery_address\}\}/g, '123 Main Street, Colombo, Sri Lanka');
+        html = html.replace(/\{\{tracking_number\}\}/g, 'TRK-12345678');
+        html = html.replace(/\{\{current_status\}\}/g, 'Processing');
+        html = html.replace(/\{\{status_message\}\}/g, 'Your order is being prepared for shipment');
+        html = html.replace(/\{\{estimated_delivery\}\}/g, 'January 29, 2026');
+        html = html.replace(/\{\{tracking_url\}\}/g, 'https://snippymart.com/track?order=ORD-12345678');
+        html = html.replace(/\{\{rejection_reason\}\}/g, 'Insufficient funds');
+        html = html.replace(/\{\{order_total\}\}/g, '$29.99');
+        html = html.replace(/\{\{retry_url\}\}/g, 'https://snippymart.com/checkout?retry=ORD-12345678');
 
         setPreviewHtml(html);
         setShowPreview(true);
@@ -93,11 +108,17 @@ const AdminEmailTemplates = () => {
     const getTemplateIcon = (key: string) => {
         switch (key) {
             case 'order_confirmation':
-                return '📦';
+                return '✅'; // Green checkmark for confirmation
+            case 'order_delivered':
+                return '🎉'; // Party for delivery
+            case 'payment_rejected':
+                return '⚠️'; // Warning for payment issues
+            case 'status_update':
+                return '📦'; // Package for status updates
             case 'product_delivery':
-                return '🚀';
+                return '🚀'; // Legacy template
             case 'order_status_update':
-                return '📊';
+                return '📊'; // Legacy template
             default:
                 return '📧';
         }
@@ -285,6 +306,17 @@ const AdminEmailTemplates = () => {
                                         .replace(/\{\{expiry_date\}\}/g, 'February 22, 2026')
                                         .replace(/\{\{status\}\}/g, 'Processing')
                                         .replace(/\{\{message\}\}/g, 'Your order is being processed.')
+                                        .replace(/\{\{payment_method\}\}/g, 'Bank Transfer 🏦')
+                                        .replace(/\{\{delivery_date\}\}/g, 'January 24, 2026')
+                                        .replace(/\{\{delivery_address\}\}/g, '123 Main Street, Colombo, Sri Lanka')
+                                        .replace(/\{\{tracking_number\}\}/g, 'TRK-12345678')
+                                        .replace(/\{\{current_status\}\}/g, 'Processing')
+                                        .replace(/\{\{status_message\}\}/g, 'Your order is being prepared for shipment')
+                                        .replace(/\{\{estimated_delivery\}\}/g, 'January 29, 2026')
+                                        .replace(/\{\{tracking_url\}\}/g, 'https://snippymart.com/track?order=ORD-12345678')
+                                        .replace(/\{\{rejection_reason\}\}/g, 'Insufficient funds')
+                                        .replace(/\{\{order_total\}\}/g, '$29.99')
+                                        .replace(/\{\{retry_url\}\}/g, 'https://snippymart.com/checkout?retry=ORD-12345678')
                                     }
                                     className="w-full h-[500px] bg-white"
                                     title="Email Preview"
