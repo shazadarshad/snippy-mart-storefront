@@ -86,7 +86,11 @@ async function buildAllTemplates() {
 
     for (const template of templates) {
         console.log(`📧 Rendering ${template.name}...`);
-        const html = await render(template.component);
+        let html = await render(template.component);
+
+        // Strip invisible unicode characters that cause SQL errors
+        html = html.replace(/[\u200B-\u200D\u2060\uFEFF]/g, ''); // Zero-width spaces
+        html = html.replace(/[\u0000-\u001F\u007F-\u009F]/g, ''); // Control characters
 
         // Use dollar-quoted strings to avoid escaping issues
         sqlStatements += `
