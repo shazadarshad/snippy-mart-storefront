@@ -28,7 +28,7 @@ async function buildAllTemplates() {
                 paymentMethod: '{{payment_method}}',
             }),
             description: 'Sent immediately after customer places an order',
-            variables: '["customer_name", "order_id", "total", "items", "payment_method"]',
+            variables: '["customer_name", "order_id", "total", "items", "payment_method", "logo_url"]',
         },
         {
             key: 'order_delivered',
@@ -42,7 +42,7 @@ async function buildAllTemplates() {
                 trackingNumber: '{{tracking_number}}',
             }),
             description: 'Sent when order status changes to completed/delivered',
-            variables: '["customer_name", "order_id", "delivery_date", "delivery_address", "tracking_number"]',
+            variables: '["customer_name", "order_id", "delivery_date", "delivery_address", "tracking_number", "logo_url"]',
         },
         {
             key: 'payment_rejected',
@@ -56,7 +56,7 @@ async function buildAllTemplates() {
                 retryUrl: '{{retry_url}}',
             }),
             description: 'Sent when payment is declined or rejected',
-            variables: '["customer_name", "order_id", "rejection_reason", "order_total", "retry_url"]',
+            variables: '["customer_name", "order_id", "rejection_reason", "order_total", "retry_url", "logo_url"]',
         },
         {
             key: 'status_update',
@@ -71,7 +71,7 @@ async function buildAllTemplates() {
                 trackingUrl: '{{tracking_url}}',
             }),
             description: 'Sent when order status changes (processing, shipped, etc)',
-            variables: '["customer_name", "order_id", "current_status", "status_message", "estimated_delivery", "tracking_url"]',
+            variables: '["customer_name", "order_id", "current_status", "status_message", "estimated_delivery", "tracking_url", "logo_url"]',
         },
     ];
 

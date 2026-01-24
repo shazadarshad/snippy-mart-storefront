@@ -6,11 +6,12 @@ import {
     Html,
     Section,
     Text,
+    Img,
     Row,
     Column,
 } from '@react-email/components';
 import * as React from 'react';
-import { ShoppingBagIcon } from './icons';
+// Icon import removed as we use logo image now
 
 export type EmailTheme = 'green' | 'purple' | 'red' | 'blue' | 'cyan' | 'orange';
 
@@ -71,24 +72,24 @@ export const EmailLayout = ({ children, theme, previewText }: EmailLayoutProps) 
 
                         {/* Logo Header */}
                         <Section style={header}>
-                            <Row>
-                                <Column style={{ width: '48px', paddingRight: '12px' }}>
-                                    <div style={{
-                                        ...iconBox,
-                                        background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`,
-                                        boxShadow: `0 8px 24px ${colors.shadow}`,
-                                    }}>
-                                        <div style={{ color: '#ffffff' }}>
-                                            <ShoppingBagIcon size={24} />
-                                        </div>
-                                    </div>
-                                </Column>
-                                <Column>
-                                    <Heading style={logo}>
-                                        Snippy <span style={{ color: colors.primary }}>Mart</span>
-                                    </Heading>
-                                </Column>
-                            </Row>
+                            <table align="center" border={0} cellPadding={0} cellSpacing={0} role="presentation">
+                                <tr>
+                                    <td style={{ paddingRight: '12px' }}>
+                                        <Img
+                                            src="{{logo_url}}"
+                                            width="48"
+                                            height="48"
+                                            alt="Snippy Mart"
+                                            style={{ borderRadius: '12px', objectFit: 'contain' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <Heading style={{ ...logoText, margin: 0 }}>
+                                            Snippy <span style={{ color: colors.primary }}>Mart</span>
+                                        </Heading>
+                                    </td>
+                                </tr>
+                            </table>
                         </Section>
 
                         {/* Content */}
@@ -134,7 +135,7 @@ export const EmailLayout = ({ children, theme, previewText }: EmailLayoutProps) 
 
 // Styles
 const main = {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     padding: '20px 0',
 };
@@ -157,13 +158,19 @@ const header = {
     textAlign: 'center' as const,
 };
 
-const iconBox = {
-    width: '48px',
+const logoImage = {
+    margin: '0 auto 12px',
     height: '48px',
+    display: 'block',
     borderRadius: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+};
+
+const logoText = {
+    margin: '0',
+    color: '#ffffff',
+    fontSize: '26px',
+    fontWeight: '800',
+    letterSpacing: '-0.5px',
 };
 
 const logo = {

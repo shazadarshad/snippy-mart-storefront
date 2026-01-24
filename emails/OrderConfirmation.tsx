@@ -1,17 +1,13 @@
 import {
-    Body,
-    Container,
-    Head,
-    Heading,
-    Html,
-    Preview,
     Section,
     Text,
     Link,
     Row,
     Column,
+    Heading,
 } from '@react-email/components';
 import * as React from 'react';
+import { EmailLayout } from './components/EmailLayout';
 
 interface OrderConfirmationEmailProps {
     customerName: string;
@@ -21,15 +17,7 @@ interface OrderConfirmationEmailProps {
     paymentMethod: string;
 }
 
-// Lucide-style SVG Icons (inline for email compatibility)
-const ShoppingBagIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-        <line x1="3" y1="6" x2="21" y2="6" />
-        <path d="M16 10a4 4 0 0 1-8 0" />
-    </svg>
-);
-
+// Icons (keep existing icons)
 const CheckCircleIcon = () => (
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -90,218 +78,142 @@ export const OrderConfirmationEmail = ({
     paymentMethod = 'Card Payment 💳',
 }: OrderConfirmationEmailProps) => {
     return (
-        <Html>
-            <Head />
-            <Preview>Your order #{orderId} has been confirmed! 🎉</Preview>
-            <Body style={main}>
-                <Container style={container}>
-                    {/* Main Card with Glassmorphism */}
-                    <Section style={card}>
+        <EmailLayout
+            theme="green"
+            previewText={`Your order #${orderId} has been confirmed! 🎉`}
+        >
+            {/* Success Badge */}
+            <Section style={successBadge}>
+                <Row>
+                    <Column style={{ width: '40px', paddingRight: '12px' }}>
+                        <div style={{ color: '#ffffff' }}>
+                            <CheckCircleIcon />
+                        </div>
+                    </Column>
+                    <Column>
+                        <Heading style={successText}>Order Confirmed!</Heading>
+                    </Column>
+                </Row>
+            </Section>
 
-                        {/* Logo Header */}
-                        <Section style={header}>
-                            <Row>
-                                <Column style={{ width: '48px', paddingRight: '12px' }}>
-                                    <div style={iconBox}>
-                                        <div style={{ color: '#ffffff' }}>
-                                            <ShoppingBagIcon />
-                                        </div>
-                                    </div>
-                                </Column>
-                                <Column>
-                                    <Heading style={logo}>
-                                        Snippy <span style={{ color: '#10b981' }}>Mart</span>
-                                    </Heading>
-                                </Column>
-                            </Row>
-                        </Section>
+            {/* Greeting */}
+            <Section style={section}>
+                <Text style={greeting}>
+                    Hey <strong style={{ color: '#ffffff' }}>{customerName}</strong>! 👋
+                </Text>
+                <Text style={paragraph}>
+                    Thank you for your purchase. We've received your order and our team is preparing your subscription. You'll receive your login details shortly!
+                </Text>
+            </Section>
 
-                        {/* Success Badge */}
-                        <Section style={successBadge}>
-                            <Row>
-                                <Column style={{ width: '40px', paddingRight: '12px' }}>
-                                    <div style={{ color: '#ffffff' }}>
-                                        <CheckCircleIcon />
-                                    </div>
-                                </Column>
-                                <Column>
-                                    <Heading style={successText}>Order Confirmed!</Heading>
-                                </Column>
-                            </Row>
-                        </Section>
+            {/* Order Details Card */}
+            <Section style={section}>
+                <div style={detailsCard}>
 
-                        {/* Greeting */}
-                        <Section style={section}>
-                            <Text style={greeting}>
-                                Hey <strong style={{ color: '#ffffff' }}>{customerName}</strong>! 👋
-                            </Text>
-                            <Text style={paragraph}>
-                                Thank you for your purchase. We've received your order and our team is preparing your subscription. You'll receive your login details shortly!
-                            </Text>
-                        </Section>
-
-                        {/* Order Details Card */}
-                        <Section style={section}>
-                            <div style={detailsCard}>
-
-                                {/* Order Number */}
-                                <div style={detailRow}>
-                                    <Row>
-                                        <Column style={{ width: '20px', paddingRight: '8px' }}>
-                                            <div style={{ color: '#94a3b8' }}>
-                                                <PackageIcon />
-                                            </div>
-                                        </Column>
-                                        <Column>
-                                            <Text style={label}>Order Number</Text>
-                                            <Text style={value}>#{orderId}</Text>
-                                        </Column>
-                                    </Row>
+                    {/* Order Number */}
+                    <div style={detailRow}>
+                        <Row>
+                            <Column style={{ width: '20px', paddingRight: '8px' }}>
+                                <div style={{ color: '#94a3b8' }}>
+                                    <PackageIcon />
                                 </div>
+                            </Column>
+                            <Column>
+                                <Text style={label}>Order Number</Text>
+                                <Text style={value}>#{orderId}</Text>
+                            </Column>
+                        </Row>
+                    </div>
 
-                                {/* Items */}
-                                <div style={detailRow}>
-                                    <Row>
-                                        <Column style={{ width: '20px', paddingRight: '8px' }}>
-                                            <div style={{ color: '#94a3b8' }}>
-                                                <ShoppingCartIcon />
-                                            </div>
-                                        </Column>
-                                        <Column>
-                                            <Text style={label}>Items Purchased</Text>
-                                            <Text style={itemsText}>{items}</Text>
-                                        </Column>
-                                    </Row>
+                    {/* Items */}
+                    <div style={detailRow}>
+                        <Row>
+                            <Column style={{ width: '20px', paddingRight: '8px' }}>
+                                <div style={{ color: '#94a3b8' }}>
+                                    <ShoppingCartIcon />
                                 </div>
+                            </Column>
+                            <Column>
+                                <Text style={label}>Items Purchased</Text>
+                                <Text style={itemsText}>{items}</Text>
+                            </Column>
+                        </Row>
+                    </div>
 
-                                {/* Total & Payment */}
-                                <div style={detailRow}>
-                                    <Row>
-                                        <Column style={{ width: '50%', verticalAlign: 'top' }}>
-                                            <Row>
-                                                <Column style={{ width: '20px', paddingRight: '8px' }}>
-                                                    <div style={{ color: '#94a3b8' }}>
-                                                        <DollarIcon />
-                                                    </div>
-                                                </Column>
-                                                <Column>
-                                                    <Text style={label}>Total Amount</Text>
-                                                    <Text style={totalAmount}>{total}</Text>
-                                                </Column>
-                                            </Row>
-                                        </Column>
-                                        <Column style={{ width: '50%', verticalAlign: 'top', textAlign: 'right' }}>
-                                            <Row>
-                                                <Column style={{ width: '20px', paddingRight: '8px' }}>
-                                                    <div style={{ color: '#94a3b8' }}>
-                                                        <CreditCardIcon />
-                                                    </div>
-                                                </Column>
-                                                <Column>
-                                                    <Text style={label}>Payment</Text>
-                                                    <Text style={paymentText}>{paymentMethod}</Text>
-                                                </Column>
-                                            </Row>
-                                        </Column>
-                                    </Row>
-                                </div>
-
-                                {/* Status */}
-                                <div style={{ paddingTop: '15px' }}>
-                                    <Row>
-                                        <Column style={{ width: '20px', paddingRight: '8px' }}>
-                                            <div style={{ color: '#94a3b8' }}>
-                                                <ClockIcon />
-                                            </div>
-                                        </Column>
-                                        <Column>
-                                            <Text style={label}>Status</Text>
-                                            <span style={statusBadge}>Processing</span>
-                                        </Column>
-                                    </Row>
-                                </div>
-
-                            </div>
-                        </Section>
-
-                        {/* CTA Button */}
-                        <Section style={buttonSection}>
-                            <Link href={`https://snippymart.com/track-order?orderId=${orderId}`} style={button}>
+                    {/* Total & Payment */}
+                    <div style={detailRow}>
+                        <Row>
+                            <Column style={{ width: '50%', verticalAlign: 'top' }}>
                                 <Row>
-                                    <Column style={{ paddingRight: '8px' }}>
-                                        Track Your Order
-                                    </Column>
-                                    <Column style={{ width: '20px' }}>
-                                        <div style={{ color: '#ffffff' }}>
-                                            <ArrowRightIcon />
+                                    <Column style={{ width: '20px', paddingRight: '8px' }}>
+                                        <div style={{ color: '#94a3b8' }}>
+                                            <DollarIcon />
                                         </div>
+                                    </Column>
+                                    <Column>
+                                        <Text style={label}>Total Amount</Text>
+                                        <Text style={totalAmount}>{total}</Text>
                                     </Column>
                                 </Row>
-                            </Link>
-                        </Section>
+                            </Column>
+                            <Column style={{ width: '50%', verticalAlign: 'top', textAlign: 'right' }}>
+                                <Row>
+                                    <Column style={{ width: '20px', paddingRight: '8px' }}>
+                                        <div style={{ color: '#94a3b8' }}>
+                                            <CreditCardIcon />
+                                        </div>
+                                    </Column>
+                                    <Column>
+                                        <Text style={label}>Payment</Text>
+                                        <Text style={paymentText}>{paymentMethod}</Text>
+                                    </Column>
+                                </Row>
+                            </Column>
+                        </Row>
+                    </div>
 
-                        {/* Footer */}
-                        <Section style={footer}>
-                            <Text style={footerText}>
-                                Snippy Mart • Premium Digital Subscriptions
-                            </Text>
-                            <Text style={copyright}>
-                                © 2026 All rights reserved
-                            </Text>
-                        </Section>
+                    {/* Status */}
+                    <div style={{ paddingTop: '15px' }}>
+                        <Row>
+                            <Column style={{ width: '20px', paddingRight: '8px' }}>
+                                <div style={{ color: '#94a3b8' }}>
+                                    <ClockIcon />
+                                </div>
+                            </Column>
+                            <Column>
+                                <Text style={label}>Status</Text>
+                                <span style={statusBadge}>Processing</span>
+                            </Column>
+                        </Row>
+                    </div>
 
-                    </Section>
-                </Container>
-            </Body>
-        </Html>
+                </div>
+            </Section>
+
+            {/* CTA Button */}
+            <Section style={buttonSection}>
+                <Link href={`https://snippymart.com/track-order?orderId=${orderId}`} style={button}>
+                    <Row>
+                        <Column style={{ paddingRight: '8px' }}>
+                            Track Your Order
+                        </Column>
+                        <Column style={{ width: '20px' }}>
+                            <div style={{ color: '#ffffff' }}>
+                                <ArrowRightIcon />
+                            </div>
+                        </Column>
+                    </Row>
+                </Link>
+            </Section>
+
+        </EmailLayout>
     );
 };
 
 export default OrderConfirmationEmail;
 
 // Styles with Glassmorphism & Modern Design
-const main = {
-    backgroundColor: '#f5f5f5',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    padding: '20px 0',
-};
-
-const container = {
-    margin: '0 auto',
-    padding: '0 10px',
-    maxWidth: '600px',
-};
-
-const card = {
-    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-    borderRadius: '20px',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-    overflow: 'hidden',
-};
-
-const header = {
-    padding: '32px 24px 24px',
-    textAlign: 'center' as const,
-};
-
-const iconBox = {
-    width: '48px',
-    height: '48px',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    borderRadius: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.3)',
-};
-
-const logo = {
-    margin: '0',
-    color: '#ffffff',
-    fontSize: '26px',
-    fontWeight: '800',
-    letterSpacing: '-0.5px',
-};
+// Styles with Glassmorphism & Modern Design
 
 const successBadge = {
     padding: '0 24px 28px',
@@ -415,21 +327,4 @@ const button = {
     border: '1px solid rgba(255, 255, 255, 0.1)',
 };
 
-const footer = {
-    padding: '28px 24px',
-    background: 'rgba(15, 23, 42, 0.5)',
-    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-    textAlign: 'center' as const,
-};
 
-const footerText = {
-    margin: '0 0 6px',
-    color: '#94a3b8',
-    fontSize: '12px',
-};
-
-const copyright = {
-    margin: '0',
-    color: '#64748b',
-    fontSize: '11px',
-};

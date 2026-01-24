@@ -46,11 +46,39 @@ serve(async (req: Request) => {
 
         console.log(`[Status Change] Order #${order.order_number}: ${oldOrder?.status || 'N/A'} -> ${order.status}`);
 
+        // Fetch site settings for logo
+        const { data: settings } = await supabase
+            .from('site_settings')
+            .select('logo_url')
+            .maybeSingle();
+
+        const logoUrl = settings?.logo_url || 'https://snippymart.com/logo.png';
+
+        // Helper to format payment method
+        const formatPaymentMethod = (method: string) => {
+            if (!method) return 'Pending Payment';
+            switch (method) {
+                case 'bank_transfer': return 'Bank Transfer 🏦';
+                case 'binance_usdt': return 'Binance USDT ₿';
+                case 'card': return 'Credit/Debit Card 💳';
+                default: return method.replace(/_/g, ' ').toUpperCase();
+            }
+        };
+
+        const formattedPaymentMethod = formatPaymentMethod(order.payment_method);
+
+        // Common variables
+        const commonVariables = {
+            logo_url: logoUrl,
+            payment_method: formattedPaymentMethod,
+            customer_name: order.customer_name || 'Customer',
+            order_id: order.order_number,
+        };
+
         // Determine which template to use based on status
         let templateKey = "status_update"; // Default to status update
         let variables: Record<string, string> = {
-            customer_name: order.customer_name || 'Customer',
-            order_id: order.order_number,
+            ...commonVariables,
             current_status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
             status_message: custom_message || `Your order status has been updated to ${order.status}.`,
             estimated_delivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
@@ -80,8 +108,7 @@ serve(async (req: Request) => {
                 .maybeSingle();
 
             variables = {
-                customer_name: order.customer_name || 'Customer',
-                order_id: order.order_number,
+                ...commonVariables,
                 delivery_date: new Date().toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -103,8 +130,7 @@ serve(async (req: Request) => {
             const total = order.total ? order.total.toFixed(order.currency_code === 'LKR' || order.currency_code === 'INR' ? 0 : 2) : '0.00';
 
             variables = {
-                customer_name: order.customer_name || 'Customer',
-                order_id: order.order_number,
+                ...commonVariables,
                 rejection_reason: custom_message || (order.status === 'cancelled' ? 'Order cancelled' : 'Payment verification failed'),
                 order_total: `${currencySymbol}${total}`,
                 retry_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/checkout?retry=${order.order_number}`,
@@ -118,8 +144,7 @@ serve(async (req: Request) => {
             };
 
             variables = {
-                customer_name: order.customer_name || 'Customer',
-                order_id: order.order_number,
+                ...commonVariables,
                 current_status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
                 status_message: custom_message || statusMessages[order.status] || 'Your order status has been updated',
                 estimated_delivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
