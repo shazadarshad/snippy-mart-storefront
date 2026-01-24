@@ -88,6 +88,7 @@ async function buildAllTemplates() {
         console.log(`📧 Rendering ${template.name}...`);
         const html = await render(template.component);
 
+        // Use dollar-quoted strings to avoid escaping issues
         sqlStatements += `
 -- ${template.name.toUpperCase()}
 INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
@@ -96,7 +97,7 @@ VALUES
     '${template.key}', 
     '${template.name}', 
     '${template.subject}',
-    '${html.replace(/'/g, "''")}',
+    $$${html}$$,
     '${template.description}',
     '${template.variables}'::jsonb,
     true
