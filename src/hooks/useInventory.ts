@@ -127,3 +127,44 @@ export const useDeleteInventoryAccount = () => {
         },
     });
 };
+
+export const useInventoryAccounts = (serviceType?: string) => {
+    return useQuery({
+        queryKey: ['inventory_accounts', 'available', serviceType],
+        queryFn: async () => {
+            let query = (supabase as any)
+                .from('inventory_accounts')
+                .select('*')
+                .neq('status', 'banned'); // Don't show banned usually
+
+            if (serviceType) {
+                query = query.ilike('service_type', `%${serviceType}%`);
+            }
+
+            const { data, error } = await query.order('current_users', { ascending: true }); // Show emptiest first
+            if (error) throw error;
+            return data as InventoryAccount[];
+        }
+    });
+};
+
+export const useManualAssignOrder = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ orderId, accountId }: { orderId: string, accountId: string }) => {
+            const { data, error } = await supabase
+                .rpc('admin_manual_assign_account', {
+                    p_order_id: orderId,
+                    p_account_id: accountId
+                });
+
+            if (error) throw error;
+            if (data && !data.success) throw new Error(data.message);
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['inventory_accounts'] });
+        }
+    });
+};

@@ -41,7 +41,7 @@ const OrderSuccessPage = () => {
 
   // Fetch live order details to check for auto-fulfillment
   const { data: liveOrder, isLoading: isLiveOrderLoading } = useTrackOrder(sessionOrder?.orderId || '');
-  const automation = useOrderAutomation(liveOrder?.id);
+  const { assignment, isLoading: isAutomationLoading } = useOrderAutomation(liveOrder?.id);
 
   const copyToClipboard = (text: string, label: string = 'ID') => {
     navigator.clipboard.writeText(text);
@@ -51,13 +51,19 @@ const OrderSuccessPage = () => {
     });
   };
 
-  if (!sessionOrder && !liveOrder) {
-    return null;
+  if ((!sessionOrder && !liveOrder) || isLiveOrderLoading) {
+    return (
+      <div className="min-h-screen pt-24 pb-20 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
   }
 
   const orderId = liveOrder?.order_number || sessionOrder?.orderId || '';
   const total = liveOrder?.total_amount || sessionOrder?.total || 0;
+  // Consider 'processing' as well, as sometimes status updates lag slightly behind assignment in UI
   const isCompleted = liveOrder?.status === 'completed' || liveOrder?.status === 'delivered';
+  const showAutomation = assignment && (isCompleted || liveOrder?.status === 'processing');
 
   const getWhatsAppLink = () => {
     const number = settings?.whatsapp_number || '94787767869';
@@ -95,21 +101,26 @@ const OrderSuccessPage = () => {
           </h1>
           <p className="text-lg text-muted-foreground mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             Success! Your order <span className="text-primary font-mono font-black">{orderId}</span> has been locked in.
+            {liveOrder?.status === 'pending' && <span className="block text-sm text-amber-500 mt-2 font-bold">(Waiting for Payment Confirmation)</span>}
           </p>
 
           {/* AUTO-DELIVERY CARD: Show if automation exists */}
-          {isCompleted && automation?.assignment ? (
+          {isAutomationLoading ? (
+            <div className="h-40 rounded-2xl bg-secondary/50 animate-pulse mb-8 flex items-center justify-center">
+              <span className="text-muted-foreground text-sm font-medium">Checking available inventory...</span>
+            </div>
+          ) : showAutomation ? (
             <div className="text-left mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <div className="bg-card border-2 border-primary/20 p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl" />
 
                 <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border/50">
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl">
-                    {getServiceIcon(automation.assignment.service_type || 'default')}
+                    {getServiceIcon(assignment.service_type || 'default')}
                   </div>
                   <div>
                     <h3 className="text-lg font-black uppercase tracking-wide text-foreground">
-                      {automation.assignment.service_type || 'Account'} Access
+                      {assignment.service_type || 'Account'} Access
                     </h3>
                     <p className="text-sm text-green-500 font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -122,8 +133,8 @@ const OrderSuccessPage = () => {
                   <div className="p-4 rounded-2xl bg-secondary/50 border border-border">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Username / Email</p>
                     <div className="flex items-center justify-between">
-                      <p className="font-mono font-bold text-foreground">{automation.assignment.email}</p>
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(automation.assignment.email, 'Email')}>
+                      <p className="font-mono font-bold text-foreground">{assignment.email}</p>
+                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(assignment.email, 'Email')}>
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
@@ -132,20 +143,20 @@ const OrderSuccessPage = () => {
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Password</p>
                     <div className="flex items-center justify-between">
                       <p className="font-mono font-bold text-foreground">••••••••</p>
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(automation.assignment.password, 'Password')}>
+                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(assignment.password, 'Password')}>
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
                 </div>
 
-                {automation.assignment.rules_template && (
+                {assignment.rules_template && (
                   <div className="mt-4 p-4 rounded-2xl bg-orange-500/5 border border-orange-500/10">
                     <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2 flex items-center gap-2">
                       <ShieldCheck className="w-3 h-3" /> Important Rules
                     </p>
                     <div className="text-sm text-muted-foreground">
-                      <FormattedDescription description={automation.assignment.rules_template} />
+                      <FormattedDescription description={assignment.rules_template} />
                     </div>
                   </div>
                 )}

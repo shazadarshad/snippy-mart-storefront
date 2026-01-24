@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,6 +33,65 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOrders, useUpdateOrderStatus, useDeleteOrder, useDeleteOrderProof, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateTime } from '@/lib/utils';
+import { useInventoryAccounts, useManualAssignOrder } from '@/hooks/useInventory';
+
+// Sub-component for Manual Assignment
+const ManualAssignmentPanel = ({ order }: { order: Order }) => {
+  // Try to guess service type from order items
+  const initialServiceType = order.order_items?.[0]?.product_name.split(' ')[0] || '';
+  const [serviceFilter, setServiceFilter] = useState(initialServiceType);
+  const { data: accounts = [], isLoading } = useInventoryAccounts(serviceFilter);
+  const assignMutation = useManualAssignOrder();
+  const { toast } = useToast();
+
+  const handleAssign = async (accountId: string) => {
+    if (!confirm('Confirm assignment? This will mark order as completed and send credentials.')) return;
+
+    try {
+      await assignMutation.mutateAsync({ orderId: order.id, accountId });
+      toast({ title: "Assigned Successfully", description: "Order marked as completed." });
+    } catch (e: any) {
+      toast({ title: "Failed", description: e.message, variant: "destructive" });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <Input
+          placeholder="Filter Service (e.g. Cursor, Netflix)"
+          value={serviceFilter}
+          onChange={(e) => setServiceFilter(e.target.value)}
+          className="h-9 bg-background"
+        />
+      </div>
+
+      <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+        {isLoading ? (
+          <div className="py-4 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" /></div>
+        ) : accounts.length === 0 ? (
+          <div className="py-4 text-center text-sm text-muted-foreground">No available accounts found matching "{serviceFilter}"</div>
+        ) : (
+          accounts.map(acc => (
+            <div key={acc.id} className="p-3 rounded-xl bg-background border border-border flex items-center justify-between hover:border-primary/50 transition-colors">
+              <div className="overflow-hidden">
+                <p className="text-sm font-bold text-foreground truncate">{acc.email}</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="uppercase">{acc.service_type}</span>
+                  <span>•</span>
+                  <span>{acc.current_users}/{acc.max_users} Users</span>
+                </div>
+              </div>
+              <Button size="sm" variant="hero" onClick={() => handleAssign(acc.id)} disabled={assignMutation.isPending}>
+                {assignMutation.isPending ? '...' : 'Assign'}
+              </Button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
 
 const AdminOrders = () => {
   const { formatPrice } = useCurrency();
@@ -650,6 +709,42 @@ const AdminOrders = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Section: Fulfillment Console (Manual Assignment) */}
+                <div className="bg-secondary/10 p-6 rounded-2xl border border-border">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Package className="w-5 h-5 text-primary" />
+                    <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Fulfillment Console</h3>
+                  </div>
+
+                  {/* Check if already assigned or completed */}
+                  {selectedOrder.status === 'completed' || selectedOrder.status === 'delivered' ? (
+                    <div className="p-4 rounded-xl bg-success/10 border border-success/20 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-success" />
+                        <div>
+                          <p className="text-sm font-bold text-success">Order Fulfilled</p>
+                          <p className="text-xs text-muted-foreground">Credentials have been assigned.</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 gap-2"
+                        onClick={() => {
+                          const link = `${window.location.origin}/track-order?ref=${selectedOrder.id}`;
+                          navigator.clipboard.writeText(link);
+                          toast({ title: "Secure Link Copied", description: "Send this link to the customer." });
+                        }}
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copy Secure Link
+                      </Button>
+                    </div>
+                  ) : (
+                    <ManualAssignmentPanel order={selectedOrder} />
+                  )}
                 </div>
 
                 {/* Section: Assets & Communications */}

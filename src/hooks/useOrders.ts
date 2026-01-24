@@ -272,14 +272,15 @@ export const useDeleteOrderProof = () => {
   });
 };
 
-export const useTrackOrder = (orderNumber: string) => {
-  return useQuery({
-    queryKey: ['orders', 'track', orderNumber],
-    queryFn: async () => {
-      if (!orderNumber) return null;
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
+queryKey: ['orders', 'track', query],
+  queryFn: async () => {
+    if (!query) return null;
+
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
+
+    let queryBuilder = supabase
+      .from('orders')
+      .select(`
           id,
           order_number,
           customer_name,
@@ -288,13 +289,19 @@ export const useTrackOrder = (orderNumber: string) => {
           created_at,
           payment_method,
           order_items (*)
-        `)
-        .eq('order_number', orderNumber)
-        .maybeSingle();
+        `);
 
-      if (error) throw error;
-      return data as Order | null;
-    },
-    enabled: !!orderNumber,
+    if (isUUID) {
+      queryBuilder = queryBuilder.eq('id', query);
+    } else {
+      queryBuilder = queryBuilder.eq('order_number', query);
+    }
+
+    const { data, error } = await queryBuilder.maybeSingle();
+
+    if (error) throw error;
+    return data as Order | null;
+  },
+    enabled: !!query,
   });
 };
