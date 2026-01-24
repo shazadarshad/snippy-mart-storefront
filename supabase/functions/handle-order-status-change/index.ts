@@ -24,27 +24,41 @@ serve(async (req: Request) => {
         const oldOrder = old_record || payload.old_order;
 
         if (!order) {
-            return new Response(JSON.stringify({ error: "No order data provided" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return new Response(JSON.stringify({ error: "No order data provided" }), {
+                status: 400,
+                headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
         }
 
         // Only proceed if status has changed (if we have an old record)
         if (oldOrder && order.status === oldOrder.status && !custom_message) {
-            return new Response(JSON.stringify({ message: "Status unchanged" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return new Response(JSON.stringify({ message: "Status unchanged" }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
         }
 
         // Only proceed if user has an email
         if (!order.customer_email) {
-            return new Response(JSON.stringify({ message: "No customer email" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return new Response(JSON.stringify({ message: "No customer email" }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
         }
 
         console.log(`[Status Change] Order #${order.order_number}: ${oldOrder?.status || 'N/A'} -> ${order.status}`);
 
-        let templateKey = "order_status_update";
+        // Determine which template to use based on status
+        let templateKey = "status_update"; // Default to status update
         let variables: Record<string, string> = {
             customer_name: order.customer_name || 'Customer',
             order_id: order.order_number,
-            status: order.status,
-            message: custom_message || `Your order status has been updated to ${order.status}.`
+            current_status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+            status_message: custom_message || `Your order status has been updated to ${order.status}.`,
+            estimated_delivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            }),
+            tracking_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/track?order=${order.order_number}`,
         };
 
         // Custom logic for specific statuses
@@ -65,30 +79,70 @@ serve(async (req: Request) => {
                 .eq('order_id', order.id)
                 .maybeSingle();
 
+            variables = {
+                customer_name: order.customer_name || 'Customer',
+                order_id: order.order_number,
+                delivery_date: new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                }),
+                delivery_address: order.delivery_address || 'Your registered address',
+                tracking_number: `TRK-${order.order_number.substring(0, 8).toUpperCase()}`,
+            };
+
             if (assignment && (assignment as any).inventory_accounts) {
                 const acc = (assignment as any).inventory_accounts;
-                variables.product_name = acc.service_type || 'Subscription';
-                variables.credentials = `<p style="margin: 0; font-family: monospace; font-size: 14px;"><strong>Email:</strong> ${acc.email}</p><p style="margin: 10px 0 0; font-family: monospace; font-size: 14px;"><strong>Password:</strong> ${acc.password}</p>`;
-                variables.message = custom_message || acc.rules_template || 'Please follow all usage rules provided on the tracking page.';
-            } else {
-                variables.product_name = 'Subscription';
-                variables.credentials = '<p>Your account access details are ready! You can view them on your live tracking page.</p>';
-                variables.message = custom_message || 'Please check the tracking page for usage rules.';
+                // Add credentials info to the message
+                variables.delivery_address = `${acc.service_type || 'Subscription'} - Credentials sent separately`;
             }
         }
-        else if (order.status === 'cancelled' || order.status === 'refunded') {
+        else if (order.status === 'cancelled' || order.status === 'refunded' || order.status === 'rejected') {
             templateKey = "payment_rejected";
-            variables.message = custom_message || "We were unable to verify your payment or the request was cancelled. If this was a mistake, please contact support.";
+            const currencySymbol = order.currency_symbol || '$';
+            const total = order.total ? order.total.toFixed(order.currency_code === 'LKR' || order.currency_code === 'INR' ? 0 : 2) : '0.00';
+
+            variables = {
+                customer_name: order.customer_name || 'Customer',
+                order_id: order.order_number,
+                rejection_reason: custom_message || (order.status === 'cancelled' ? 'Order cancelled' : 'Payment verification failed'),
+                order_total: `${currencySymbol}${total}`,
+                retry_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/checkout?retry=${order.order_number}`,
+            };
+        }
+        else if (order.status === 'processing' || order.status === 'shipped') {
+            templateKey = "status_update";
+            const statusMessages: Record<string, string> = {
+                processing: 'Your order is being prepared for shipment',
+                shipped: 'Your order is on its way to you!',
+            };
+
+            variables = {
+                customer_name: order.customer_name || 'Customer',
+                order_id: order.order_number,
+                current_status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+                status_message: custom_message || statusMessages[order.status] || 'Your order status has been updated',
+                estimated_delivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                }),
+                tracking_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/track?order=${order.order_number}`,
+            };
         }
 
-        // Fetch template ID
+        console.log(`[Email] Using template: ${templateKey} for order ${order.order_number}`);
+
+        // Fetch template ID using the new template keys
         const { data: template } = await supabase
             .from("email_templates")
             .select("id")
             .eq("template_key", templateKey)
+            .eq("is_active", true)
             .single();
 
         if (template) {
+            console.log(`[Email] Sending email to ${order.customer_email} with template ${templateKey}`);
             await supabase.functions.invoke("send-email", {
                 body: {
                     to: order.customer_email,
@@ -97,11 +151,23 @@ serve(async (req: Request) => {
                     variables: variables
                 }
             });
+            console.log(`[Email] Email sent successfully`);
+        } else {
+            console.error(`[Email] Template not found: ${templateKey}`);
         }
 
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({
+            success: true,
+            template: templateKey,
+            email_sent: !!template
+        }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
     } catch (error: any) {
         console.error("Status handler error:", error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
     }
 });
