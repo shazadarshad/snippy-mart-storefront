@@ -155,6 +155,15 @@ serve(async (req) => {
         const currencyCode = (body as any).currency_code || 'USD';
         const totalFormatted = `${currencySymbol}${order.total_amount.toFixed(currencyCode === 'LKR' || currencyCode === 'INR' ? 0 : 2)}`;
 
+        // Format payment method for display
+        const paymentMethodDisplay = body.payment_method === 'bank_transfer'
+          ? 'Bank Transfer 🏦'
+          : body.payment_method === 'binance_usdt'
+            ? 'Binance USDT ₿'
+            : body.payment_method === 'card'
+              ? 'Card Payment 💳'
+              : 'Pending';
+
         const emailPayload = {
           to: body.customer_email,
           templateId: template.id,
@@ -163,7 +172,8 @@ serve(async (req) => {
             customer_name: body.customer_name || 'Customer',
             order_id: body.order_number,
             total: totalFormatted,
-            items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
+            items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', '),
+            payment_method: paymentMethodDisplay
           }
         };
 
