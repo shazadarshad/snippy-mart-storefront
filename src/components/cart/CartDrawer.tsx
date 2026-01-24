@@ -1,7 +1,8 @@
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useCartStore, formatPrice } from '@/lib/store';
+import { useCartStore } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 
@@ -12,6 +13,7 @@ interface CartDrawerProps {
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   const { items, removeItem, updateQuantity, getTotal } = useCartStore();
+  const { formatPrice } = useCurrency();
 
   // Handle body scroll locking
   useEffect(() => {

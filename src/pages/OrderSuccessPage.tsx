@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2, MessageCircle, Home, Package, Loader2, Search, ArrowRight, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatPrice } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,6 +19,7 @@ interface OrderData {
 }
 
 const OrderSuccessPage = () => {
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [orderData, setOrderData] = useState<OrderData | null>(null);

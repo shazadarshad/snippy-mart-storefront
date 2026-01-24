@@ -151,16 +151,8 @@ export const useCartStore = create<CartStore>()(
   )
 );
 
-// Currency configuration
-export const CURRENCY = {
-  code: 'LKR',
-  symbol: 'Rs.',
-  locale: 'en-LK',
-};
-
-export const formatPrice = (amount: number) => {
-  return `${CURRENCY.symbol} ${amount.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
+// Note: formatPrice and CURRENCY have been moved to useCurrency hook 
+// for dynamic location-based currency conversion.
 
 // Sample products data (prices in LKR)
 export const products: Product[] = [

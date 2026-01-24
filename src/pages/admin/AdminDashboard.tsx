@@ -9,12 +9,13 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatPrice } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useOrderStats, useRecentOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
+  const { formatPrice } = useCurrency();
   const { data: orderStats, isLoading: statsLoading } = useOrderStats();
   const { data: recentOrders = [], isLoading: ordersLoading } = useRecentOrders(5);
   const { data: products = [] } = useProducts(true);

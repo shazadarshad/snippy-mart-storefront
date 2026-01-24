@@ -3,7 +3,7 @@ import { Search, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useSearchAutocomplete } from '@/hooks/useSearchAutocomplete';
-import { formatPrice } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 
 interface SearchAutocompleteProps {
@@ -19,6 +19,7 @@ const SearchAutocomplete = ({
     className,
     compact = false,
 }: SearchAutocompleteProps) => {
+    const { formatPrice } = useCurrency();
     const { data: products = [] } = useProducts();
     const { query, results, search, clearSearch, hasResults, isSearching } = useSearchAutocomplete({
         products,

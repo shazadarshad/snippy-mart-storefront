@@ -3,7 +3,8 @@ import { X, ShoppingCart, Zap, Check, Share2, Copy, MessageCircle, ChevronLeft, 
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useCartStore, formatPrice } from '@/lib/store';
+import { useCartStore } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { usePricingPlans, type PricingPlan } from '@/hooks/usePricingPlans';
 import { useProductImages } from '@/hooks/useProductImages';
@@ -65,6 +66,7 @@ const StockIndicator = ({ status }: { status?: string }) => {
 };
 
 const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProps) => {
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const { toast } = useToast();

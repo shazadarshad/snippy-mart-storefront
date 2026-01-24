@@ -4,7 +4,7 @@ import { Search, Package, Clock, CheckCircle2, AlertCircle, ShoppingBag, Globe, 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTrackOrder, type OrderStatus } from '@/hooks/useOrders';
-import { formatPrice } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { formatDateTime, cn } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/seo/SEO';
 
 const TrackOrderPage = () => {
+    const { formatPrice } = useCurrency();
     const [searchParams] = useSearchParams();
     const [orderId, setOrderId] = useState(searchParams.get('orderId') || '');
     const [searchId, setSearchId] = useState(searchParams.get('orderId') || '');

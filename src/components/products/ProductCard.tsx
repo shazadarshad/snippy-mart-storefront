@@ -1,6 +1,6 @@
 import { Eye, Star, Package, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatPrice } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/hooks/useProducts';
 
@@ -36,6 +36,7 @@ const StockBadge = ({ status }: { status?: string }) => {
 };
 
 const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) => {
+  const { formatPrice } = useCurrency();
   const discount = product.old_price
     ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
     : 0;

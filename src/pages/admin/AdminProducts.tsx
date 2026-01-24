@@ -46,7 +46,7 @@ import {
   useAddProductImage,
   useDeleteProductImage,
 } from '@/hooks/useProductImages';
-import { formatPrice } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 
 interface PricingPlanInput {
@@ -64,6 +64,7 @@ interface GalleryImageInput {
 }
 
 const AdminProducts = () => {
+  const { formatPrice } = useCurrency();
   const { data: products = [], isLoading } = useProducts(true); // Include inactive
   const { data: allPricingPlans = [] } = useAllPricingPlans();
   const { data: allProductImages = [] } = useAllProductImages();

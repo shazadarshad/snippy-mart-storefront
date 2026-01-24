@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- SNIPPY MART - PREMIUM EMAIL TEMPLATES v3.0
--- Dark Glassmorphism Theme • Modern Design • Mobile Responsive
+-- SNIPPY MART - PREMIUM EMAIL TEMPLATES v3.1
+-- Dark Glassmorphism Container • White Outer Background • Mobile Responsive
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- 1. ORDER CONFIRMATION (Green Success Theme)
@@ -17,12 +17,12 @@ VALUES
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmed</title>
 </head>
-<body style="margin: 0; padding: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif; min-height: 100vh;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
         <tr>
             <td align="center" style="padding: 40px 15px;">
-                <!-- Main Container with Glassmorphism -->
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+                <!-- Main Container with Dark Glassmorphism -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.15);">
                     
                     <!-- Logo Header -->
                     <tr>
@@ -30,7 +30,7 @@ VALUES
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="padding-right: 12px;">
-                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; text-align: center; line-height: 48px;">
                                             <span style="font-size: 24px;">🛒</span>
                                         </div>
                                     </td>
@@ -126,32 +126,23 @@ VALUES
                     <!-- Footer -->
                     <tr>
                         <td style="padding: 30px 40px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255,255,255,0.08);">
-                            <!-- Social Icons -->
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td align="center" style="padding-bottom: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0">
                                             <tr>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://snippymart.com" style="display: inline-block; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">🌐</a>
-                                                </td>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://wa.me/94787767869" style="display: inline-block; width: 40px; height: 40px; background: rgba(37, 211, 102, 0.2); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">💬</a>
-                                                </td>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://instagram.com/snippymart" style="display: inline-block; width: 40px; height: 40px; background: rgba(228, 64, 95, 0.2); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">📸</a>
-                                                </td>
-                                                <td style="padding: 0 8px;">
-                                                    <a href="https://facebook.com/snippymart" style="display: inline-block; width: 40px; height: 40px; background: rgba(24, 119, 242, 0.2); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">👤</a>
-                                                </td>
+                                                <td style="padding: 0 8px;"><a href="https://snippymart.com" style="display: inline-block; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">🌐</a></td>
+                                                <td style="padding: 0 8px;"><a href="https://wa.me/94787767869" style="display: inline-block; width: 40px; height: 40px; background: rgba(37, 211, 102, 0.2); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">💬</a></td>
+                                                <td style="padding: 0 8px;"><a href="https://instagram.com/snippymart" style="display: inline-block; width: 40px; height: 40px; background: rgba(228, 64, 95, 0.2); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">📸</a></td>
+                                                <td style="padding: 0 8px;"><a href="https://facebook.com/snippymart" style="display: inline-block; width: 40px; height: 40px; background: rgba(24, 119, 242, 0.2); border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none; font-size: 18px;">👤</a></td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td align="center">
-                                        <p style="margin: 0 0 5px; color: #64748b; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
-                                        <p style="margin: 0; color: #475569; font-size: 11px;">© 2026 All rights reserved</p>
+                                        <p style="margin: 0 0 5px; color: #94a3b8; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #64748b; font-size: 11px;">© 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>
@@ -172,7 +163,7 @@ ON CONFLICT (template_key) DO UPDATE
 SET subject = EXCLUDED.subject, html_content = EXCLUDED.html_content, variables = EXCLUDED.variables;
 
 
--- 2. ORDER DELIVERED (Credentials + Access)
+-- 2. ORDER DELIVERED (Purple Access Theme)
 INSERT INTO email_templates (template_key, name, subject, html_content, description, variables, is_active)
 VALUES 
 (
@@ -186,11 +177,11 @@ VALUES
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Access Ready</title>
 </head>
-<body style="margin: 0; padding: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
         <tr>
             <td align="center" style="padding: 40px 15px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.15);">
                     
                     <!-- Logo Header -->
                     <tr>
@@ -198,7 +189,9 @@ VALUES
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="padding-right: 12px;">
-                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 12px;"></div>
+                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 12px; text-align: center; line-height: 48px;">
+                                            <span style="font-size: 24px;">🛒</span>
+                                        </div>
                                     </td>
                                     <td>
                                         <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800;">Snippy <span style="color: #a78bfa;">Mart</span></h1>
@@ -277,8 +270,8 @@ VALUES
                                 </tr>
                                 <tr>
                                     <td align="center">
-                                        <p style="margin: 0 0 5px; color: #64748b; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
-                                        <p style="margin: 0; color: #475569; font-size: 11px;">© 2026 All rights reserved</p>
+                                        <p style="margin: 0 0 5px; color: #94a3b8; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #64748b; font-size: 11px;">© 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>
@@ -313,11 +306,11 @@ VALUES
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Issue</title>
 </head>
-<body style="margin: 0; padding: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
         <tr>
             <td align="center" style="padding: 40px 15px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-radius: 24px; overflow: hidden; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 24px; overflow: hidden; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.15);">
                     
                     <!-- Logo Header -->
                     <tr>
@@ -325,7 +318,9 @@ VALUES
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="padding-right: 12px;">
-                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px;"></div>
+                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; text-align: center; line-height: 48px;">
+                                            <span style="font-size: 24px;">🛒</span>
+                                        </div>
                                     </td>
                                     <td>
                                         <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800;">Snippy <span style="color: #f87171;">Mart</span></h1>
@@ -401,8 +396,8 @@ VALUES
                                 </tr>
                                 <tr>
                                     <td align="center">
-                                        <p style="margin: 0 0 5px; color: #64748b; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
-                                        <p style="margin: 0; color: #475569; font-size: 11px;">© 2026 All rights reserved</p>
+                                        <p style="margin: 0 0 5px; color: #94a3b8; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #64748b; font-size: 11px;">© 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>
@@ -437,11 +432,11 @@ VALUES
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Status Update</title>
 </head>
-<body style="margin: 0; padding: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, ''Segoe UI'', Roboto, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
         <tr>
             <td align="center" style="padding: 40px 15px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.15);">
                     
                     <!-- Logo Header -->
                     <tr>
@@ -449,7 +444,9 @@ VALUES
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="padding-right: 12px;">
-                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 12px;"></div>
+                                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 48px;">
+                                            <span style="font-size: 24px;">🛒</span>
+                                        </div>
                                     </td>
                                     <td>
                                         <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800;">Snippy <span style="color: #60a5fa;">Mart</span></h1>
@@ -517,8 +514,8 @@ VALUES
                                 </tr>
                                 <tr>
                                     <td align="center">
-                                        <p style="margin: 0 0 5px; color: #64748b; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
-                                        <p style="margin: 0; color: #475569; font-size: 11px;">© 2026 All rights reserved</p>
+                                        <p style="margin: 0 0 5px; color: #94a3b8; font-size: 12px;">Snippy Mart • Premium Digital Subscriptions</p>
+                                        <p style="margin: 0; color: #64748b; font-size: 11px;">© 2026 All rights reserved</p>
                                     </td>
                                 </tr>
                             </table>

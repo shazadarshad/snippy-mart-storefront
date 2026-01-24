@@ -6,6 +6,7 @@ import { useCartStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from '@/components/ThemeToggle';
+import { CurrencySelector } from '@/components/CurrencySelector';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 interface NavbarProps {
   onCartOpen: () => void;
@@ -97,6 +98,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
 
           {/* Right Side */}
           <div className="flex items-center gap-1">
+            <CurrencySelector className="mr-1 hidden sm:flex" />
             <ThemeToggle />
 
             <Button
@@ -157,6 +159,10 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
                     </Link>
                   </motion.div>
                 ))}
+                <div className="px-4 py-4 pt-6 border-t border-border mt-4 flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">Currency</span>
+                  <CurrencySelector />
+                </div>
               </div>
             </motion.div>
           )}

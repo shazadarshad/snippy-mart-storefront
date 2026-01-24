@@ -1,100 +1,138 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type Currency = 'USD' | 'LKR' | 'EUR' | 'GBP' | 'INR';
+export type Currency = string;
 
-interface CurrencyInfo {
-    code: Currency;
+export interface CurrencyItem {
+    code: string;
     symbol: string;
     name: string;
     flag: string;
-    rate: number; // Rate relative to USD
 }
 
-export const CURRENCIES: Record<Currency, CurrencyInfo> = {
-    USD: { code: 'USD', symbol: '$', name: 'US Dollar', flag: '🇺🇸', rate: 1 },
-    LKR: { code: 'LKR', symbol: 'Rs.', name: 'Sri Lankan Rupee', flag: '🇱🇰', rate: 320 },
-    EUR: { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺', rate: 0.92 },
-    GBP: { code: 'GBP', symbol: '£', name: 'British Pound', flag: '🇬🇧', rate: 0.79 },
-    INR: { code: 'INR', symbol: '₹', name: 'Indian Rupee', flag: '🇮🇳', rate: 83 },
+export const CURRENCIES: Record<string, CurrencyItem> = {
+    USD: { code: 'USD', symbol: '$', name: 'US Dollar', flag: '🇺🇸' },
+    LKR: { code: 'LKR', symbol: 'Rs.', name: 'Sri Lankan Rupee', flag: '🇱🇰' },
+    INR: { code: 'INR', symbol: '₹', name: 'Indian Rupee', flag: '🇮🇳' },
+    EUR: { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺' },
+    GBP: { code: 'GBP', symbol: '£', name: 'British Pound', flag: '🇬🇧' },
+    AUD: { code: 'AUD', symbol: 'A$', name: 'Australian Dollar', flag: '🇦🇺' },
+    EUR_UAE: { code: 'AED', symbol: 'AED', name: 'UAE Dirham', flag: '🇦🇪' }, // Manual override for AED
 };
 
+// Aliases for better mapping
+const CURRENCY_MAP: Record<string, string> = {
+    'AED': 'AED',
+    'PKR': 'PKR',
+    'BDT': 'BDT',
+    'CAD': 'CAD',
+    'SGD': 'SGD',
+};
+
+interface CurrencyInfo {
+    code: string;
+    symbol: string;
+    name: string;
+    flag: string;
+    rate: number; // Rate relative to LKR
+}
+
 interface CurrencyContextType {
-    currency: Currency;
+    currency: string;
     currencyInfo: CurrencyInfo;
-    setCurrency: (currency: Currency) => void;
-    convertPrice: (priceInUSD: number) => number;
-    formatPrice: (priceInUSD: number) => string;
+    setCurrency: (currency: string) => void;
+    convertPrice: (priceInLKR: number) => number;
+    formatPrice: (priceInLKR: number) => string;
+    isLoading: boolean;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
-    const [currency, setCurrencyState] = useState<Currency>(() => {
+    const [currency, setCurrencyState] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('preferred-currency');
-            if (saved && saved in CURRENCIES) {
-                return saved as Currency;
-            }
+            return saved || 'LKR';
         }
-        return 'USD';
+        return 'LKR';
     });
 
-    const currencyInfo = CURRENCIES[currency];
+    const [rates, setRates] = useState<Record<string, number>>({ LKR: 1 });
+    const [isLoading, setIsLoading] = useState(true);
 
-    const setCurrency = (newCurrency: Currency) => {
+    const currencyInfo: CurrencyInfo = {
+        code: currency,
+        symbol: CURRENCIES[currency]?.symbol || currency,
+        name: CURRENCIES[currency]?.name || currency,
+        flag: CURRENCIES[currency]?.flag || '🌐',
+        rate: rates[currency] || 1,
+    };
+
+    const setCurrency = (newCurrency: string) => {
         setCurrencyState(newCurrency);
         localStorage.setItem('preferred-currency', newCurrency);
     };
 
-    const convertPrice = (priceInUSD: number): number => {
-        return priceInUSD * currencyInfo.rate;
+    const convertPrice = (priceInLKR: number): number => {
+        return priceInLKR * (rates[currency] || 1);
     };
 
-    const formatPrice = (priceInUSD: number): string => {
-        const converted = convertPrice(priceInUSD);
-
-        // Format based on currency
-        if (currency === 'LKR' || currency === 'INR') {
-            // Use Indian/Lankan number formatting
-            return `${currencyInfo.symbol}${converted.toLocaleString('en-IN', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            })}`;
-        }
-
-        return `${currencyInfo.symbol}${converted.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}`;
-    };
-
-    // Auto-detect currency based on timezone (simple approach)
-    useEffect(() => {
-        const saved = localStorage.getItem('preferred-currency');
-        if (saved) return; // User has already set preference
+    const formatPrice = (priceInLKR: number): string => {
+        const converted = convertPrice(priceInLKR);
 
         try {
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-            if (timezone.includes('Colombo')) {
-                setCurrency('LKR');
-            } else if (timezone.includes('London')) {
-                setCurrency('GBP');
-            } else if (timezone.includes('Kolkata') || timezone.includes('Mumbai')) {
-                setCurrency('INR');
-            } else if (timezone.includes('Paris') || timezone.includes('Berlin') || timezone.includes('Rome')) {
-                setCurrency('EUR');
-            }
+            // Check if currency code exists in Intl
+            return new Intl.NumberFormat(undefined, {
+                style: 'currency',
+                currency: currency,
+                // Adjust fractions for certain currencies
+                ...((currency === 'LKR' || currency === 'INR') ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {})
+            }).format(converted);
         } catch (e) {
-            // Fallback to USD
+            // Fallback
+            const symbol = currencyInfo.symbol;
+            return `${symbol} ${converted.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`;
         }
+    };
+
+    useEffect(() => {
+        const initializeCurrency = async () => {
+            setIsLoading(true);
+            try {
+                // 1. Fetch exchange rates relative to LKR
+                const ratesResponse = await fetch('https://open.er-api.com/v6/latest/LKR');
+                const ratesData = await ratesResponse.json();
+
+                if (ratesData.result === 'success') {
+                    setRates(ratesData.rates);
+                }
+
+                // 2. Auto-detect location if no preference exists
+                const saved = localStorage.getItem('preferred-currency');
+                if (!saved) {
+                    const geoResponse = await fetch('https://ipapi.co/json/');
+                    const geoData = await geoResponse.json();
+
+                    if (geoData.currency && ratesData.rates[geoData.currency]) {
+                        setCurrency(geoData.currency);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to initialize currency/rates:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeCurrency();
     }, []);
 
     return (
-        <CurrencyContext.Provider value= {{ currency, currencyInfo, setCurrency, convertPrice, formatPrice }
-}>
-    { children }
-    </CurrencyContext.Provider>
+        <CurrencyContext.Provider value={{ currency, currencyInfo, setCurrency, convertPrice, formatPrice, isLoading }}>
+            {children}
+        </CurrencyContext.Provider>
     );
 };
 

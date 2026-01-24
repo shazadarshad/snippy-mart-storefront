@@ -21,11 +21,12 @@ import {
     Bar,
 } from 'recharts';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { formatPrice } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const COLORS = ['#00b8d4', '#a855f7', '#f97316', '#22c55e', '#ef4444', '#3b82f6'];
 
 const AdminAnalytics = () => {
+    const { formatPrice, currencyInfo } = useCurrency();
     const [timeRange, setTimeRange] = useState<7 | 14 | 30>(30);
     const {
         dailyRevenue,
@@ -143,7 +144,7 @@ const AdminAnalytics = () => {
                                         tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                         className="text-xs"
                                     />
-                                    <YAxis tickFormatter={(value) => `$${value}`} className="text-xs" />
+                                    <YAxis tickFormatter={(value) => `${currencyInfo.symbol}${value}`} className="text-xs" />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Line
                                         type="monotone"
@@ -212,7 +213,7 @@ const AdminAnalytics = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={topProducts} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                                <XAxis type="number" tickFormatter={(value) => `$${value}`} />
+                                <XAxis type="number" tickFormatter={(value) => `${currencyInfo.symbol}${value}`} />
                                 <YAxis
                                     dataKey="name"
                                     type="category"

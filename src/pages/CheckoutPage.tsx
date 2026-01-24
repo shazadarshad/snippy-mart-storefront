@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useCartStore, generateOrderId, formatPrice } from '@/lib/store';
+import { useCartStore, generateOrderId } from '@/lib/store';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,7 @@ import PaymentMethodSelector, { type PaymentMethod } from '@/components/checkout
 import { getCountry } from '@/lib/utils';
 
 const CheckoutPage = () => {
+  const { formatPrice, currency, currencyInfo } = useCurrency();
   const navigate = useNavigate();
   const { items, getTotal, clearCart } = useCartStore();
   const { toast } = useToast();
@@ -156,6 +158,8 @@ const CheckoutPage = () => {
         whatsapp: formData.whatsapp,
         name: formData.name,
         notes: formData.notes,
+        currency: currency,
+        rate: currencyInfo.rate,
         items: items.map((item) => ({
           name: item.product.name,
           price: item.product.price,
