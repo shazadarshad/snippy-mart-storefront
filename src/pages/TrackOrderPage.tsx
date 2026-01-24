@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Search, Package, Clock, CheckCircle2, AlertCircle, ShoppingBag, Globe, MessageCircle, ArrowLeft, RefreshCw, MoreVertical, CreditCard, User, Truck, ShieldCheck, Loader2 } from 'lucide-react';
+import { Search, Package, Clock, CheckCircle2, AlertCircle, ShoppingBag, Globe, MessageCircle, ArrowLeft, RefreshCw, MoreVertical, CreditCard, User, Truck, ShieldCheck, Loader2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTrackOrder, type OrderStatus } from '@/hooks/useOrders';
@@ -10,6 +10,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
 import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/seo/SEO';
+import { FormattedDescription } from '@/components/products/FormattedDescription';
 
 const TrackOrderPage = () => {
     const { formatPrice } = useCurrency();
@@ -48,9 +49,16 @@ const TrackOrderPage = () => {
         }
     };
 
-    const getWhatsAppLink = () => {
-        const number = settings?.whatsapp_number || '94787767869';
-        return `https://wa.me/${number.replace(/\D/g, '')}`;
+    const getServiceIcon = (type: string) => {
+        const t = type.toLowerCase();
+        if (t.includes('netflix')) return '🍿';
+        if (t.includes('prime')) return '📦';
+        if (t.includes('spotify')) return '🎵';
+        if (t.includes('youtube')) return '📺';
+        if (t.includes('adobe')) return '🎨';
+        if (t.includes('canva')) return '🎨';
+        if (t.includes('cursor')) return '🖱️';
+        return '🔑';
     };
 
     return (
@@ -123,7 +131,7 @@ const TrackOrderPage = () => {
 
                                 <div className="flex items-center justify-between mb-8 md:mb-12 relative z-10">
                                     <div className="flex items-center gap-3 md:gap-4">
-                                        <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center border-2 ${getStatusInfo(order.status).color} bg-white shadow-xl`}>
+                                        <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center border-2 ${getStatusInfo(order.status as OrderStatus).color} bg-white shadow-xl`}>
                                             <Package className="w-5 h-5 md:w-7 md:h-7" />
                                         </div>
                                         <div>
@@ -133,7 +141,7 @@ const TrackOrderPage = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Progress</p>
-                                        <p className="text-base md:text-lg font-bold text-primary">Stage {getStatusInfo(order.status).step}/4</p>
+                                        <p className="text-base md:text-lg font-bold text-primary">Stage {getStatusInfo(order.status as OrderStatus).step}/4</p>
                                     </div>
                                 </div>
 
@@ -141,7 +149,7 @@ const TrackOrderPage = () => {
                                     <div className="absolute top-[1.2rem] md:top-[1.35rem] left-0 w-full h-1 md:h-1.5 bg-secondary rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-primary transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(var(--primary),0.5)]"
-                                            style={{ width: `${(getStatusInfo(order.status).step / 4) * 100}%` }}
+                                            style={{ width: `${(getStatusInfo(order.status as OrderStatus).step / 4) * 100}%` }}
                                         />
                                     </div>
 
@@ -155,13 +163,13 @@ const TrackOrderPage = () => {
                                             <div key={i} className="flex flex-col items-center gap-3 md:gap-4 relative z-10">
                                                 <div className={cn(
                                                     "w-8 h-8 md:w-10 md:h-10 rounded-full border-[3px] md:border-4 flex items-center justify-center transition-all duration-500 bg-white",
-                                                    getStatusInfo(order.status).step >= p.step ? "border-primary text-primary scale-110 shadow-lg" : "border-secondary text-muted-foreground"
+                                                    getStatusInfo(order.status as OrderStatus).step >= p.step ? "border-primary text-primary scale-110 shadow-lg" : "border-secondary text-muted-foreground"
                                                 )}>
                                                     <p.icon className="w-3 h-3 md:w-4 md:h-4" />
                                                 </div>
                                                 <p className={cn(
                                                     "text-[8px] md:text-[10px] font-black uppercase tracking-widest",
-                                                    getStatusInfo(order.status).step >= p.step ? "text-primary" : "text-muted-foreground opacity-50"
+                                                    getStatusInfo(order.status as OrderStatus).step >= p.step ? "text-primary" : "text-muted-foreground opacity-50"
                                                 )}>{p.label}</p>
                                             </div>
                                         ))}
@@ -180,10 +188,12 @@ const TrackOrderPage = () => {
                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
 
                                                 <div className="flex items-center gap-3 mb-6 md:mb-8 pb-5 md:pb-6 border-b border-border/50">
-                                                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                                        <User className="w-5 h-5" />
+                                                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl">
+                                                        {getServiceIcon(automation.assignment.service_type || 'default')}
                                                     </div>
-                                                    <h3 className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">Account Credentials</h3>
+                                                    <h3 className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">
+                                                        {automation.assignment.service_type || 'Account'} Credentials
+                                                    </h3>
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -221,8 +231,8 @@ const TrackOrderPage = () => {
                                                             <AlertCircle className="w-4 h-4 text-primary" />
                                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-colors">Usage Rules & Guidelines</span>
                                                         </div>
-                                                        <div className="p-5 md:p-6 rounded-2xl bg-secondary/20 border border-border/50 whitespace-pre-wrap text-sm md:text-base leading-relaxed text-muted-foreground font-medium">
-                                                            {automation.assignment.rules_template}
+                                                        <div className="p-5 md:p-6 rounded-2xl bg-secondary/20 border border-border/50 text-sm md:text-base leading-relaxed text-muted-foreground font-medium">
+                                                            <FormattedDescription description={automation.assignment.rules_template} />
                                                         </div>
                                                     </div>
                                                 )}

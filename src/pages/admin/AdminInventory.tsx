@@ -107,6 +107,9 @@ const AdminInventory = () => {
         if (t.includes('prime')) return '📦';
         if (t.includes('spotify')) return '🎵';
         if (t.includes('youtube')) return '📺';
+        if (t.includes('adobe')) return '🎨';
+        if (t.includes('canva')) return '🎨';
+        if (t.includes('cursor')) return '🖱️';
         return '🔑';
     };
 
@@ -312,6 +315,7 @@ const AdminInventory = () => {
                                             <SelectItem value="youtube">YouTube</SelectItem>
                                             <SelectItem value="adobe">Adobe CC</SelectItem>
                                             <SelectItem value="canva">Canva Pro</SelectItem>
+                                            <SelectItem value="cursor">Cursor AI</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

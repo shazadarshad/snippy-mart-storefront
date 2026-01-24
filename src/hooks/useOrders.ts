@@ -280,6 +280,7 @@ export const useTrackOrder = (orderNumber: string) => {
       const { data, error } = await supabase
         .from('orders')
         .select(`
+          id,
           order_number,
           customer_name,
           total_amount,
@@ -292,7 +293,7 @@ export const useTrackOrder = (orderNumber: string) => {
         .maybeSingle();
 
       if (error) throw error;
-      return data;
+      return data as Order | null;
     },
     enabled: !!orderNumber,
   });
