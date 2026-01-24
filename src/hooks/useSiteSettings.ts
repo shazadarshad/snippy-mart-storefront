@@ -37,8 +37,7 @@ export const useUpdateSiteSetting = () => {
     mutationFn: async ({ key, value }: { key: string; value: string | null }) => {
       const { data, error } = await supabase
         .from('site_settings')
-        .update({ value })
-        .eq('key', key)
+        .upsert({ key, value }, { onConflict: 'key' })
         .select()
         .single();
 
@@ -74,8 +73,7 @@ export const useUploadLogo = () => {
       // Update site settings
       const { error: updateError } = await supabase
         .from('site_settings')
-        .update({ value: publicUrl })
-        .eq('key', 'logo_url');
+        .upsert({ key: 'logo_url', value: publicUrl }, { onConflict: 'key' });
 
       if (updateError) throw updateError;
 
