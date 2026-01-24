@@ -23,7 +23,7 @@ export interface Order {
   total_amount: number;
   status: OrderStatus;
   notes: string | null;
-  payment_method: 'bank_transfer' | 'binance_usdt' | null;
+  payment_method: 'bank_transfer' | 'binance_usdt' | 'card' | null;
   payment_proof_url: string | null;
   binance_id: string | null;
   customer_country: string | null;
@@ -120,13 +120,15 @@ export const useCreateOrder = () => {
       total_amount: number;
       status?: OrderStatus;
       notes?: string;
-      payment_method?: 'bank_transfer' | 'binance_usdt';
+      payment_method?: 'bank_transfer' | 'binance_usdt' | 'card';
       payment_proof_url?: string;
       binance_id?: string;
       customer_country?: string;
       customer_email?: string;
       security_metadata?: any;
       user_agent?: string;
+      currency_code?: string;
+      currency_symbol?: string;
       items: {
         product_id?: string;
         product_name: string;

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Building2, Bitcoin, ChevronDown, Upload, X, FileText, Image as ImageIcon, Check, Copy, CreditCard } from 'lucide-react';
+import { Building2, Bitcoin, ChevronDown, Upload, X, FileText, Image as ImageIcon, Check, Copy, CreditCard, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -431,7 +431,7 @@ const PaymentMethodSelector = ({
         </div>
       </div>
 
-      {/* Card Payment Option (Coming Soon) */}
+      {/* Card Payment Option */}
       <div
         className={cn(
           "border rounded-xl overflow-hidden transition-all duration-300 ease-out",
@@ -460,9 +460,11 @@ const PaymentMethodSelector = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary text-muted-foreground uppercase tracking-wider">
-              Soon
-            </span>
+            {selectedMethod === 'card' && (
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <Check className="w-3 h-3 text-primary-foreground" />
+              </div>
+            )}
             <ChevronDown className={cn(
               "w-5 h-5 text-muted-foreground transition-transform duration-300",
               selectedMethod === 'card' && "rotate-180"
@@ -473,15 +475,100 @@ const PaymentMethodSelector = ({
         {/* Expanded Content for Card Payment */}
         <div className={cn(
           "overflow-hidden transition-all duration-300",
-          selectedMethod === 'card' ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+          selectedMethod === 'card' ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
         )}>
-          <div className="p-6 pt-0 text-center">
-            <div className="p-4 rounded-xl bg-secondary/50 border border-border border-dashed">
-              <CreditCard className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-              <p className="text-sm font-medium text-foreground">Card payment is currently unavailable</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                We are working hard to bring VISA and Mastercard payments to Snippy Mart soon!
+          <div className="p-4 pt-0 space-y-4">
+            {/* WhatsApp Contact Section */}
+            <div className="p-4 rounded-lg bg-gradient-to-br from-[#25D366]/10 to-[#128C7E]/10 border border-[#25D366]/20">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-foreground mb-1">Step 1: Get Card Payment Link</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Contact us on WhatsApp to receive your secure card payment link. We'll send you a personalized checkout link for this order.
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href={`https://wa.me/${settings?.whatsapp_number || '94787767869'}?text=${encodeURIComponent(`Hi! I'd like to pay by card for Order ${orderId}. Please send me the payment link.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl font-bold transition-all shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/40 hover:-translate-y-0.5 active:scale-[0.98]"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Contact on WhatsApp</span>
+              </a>
+            </div>
+
+            {/* Order ID Display */}
+            <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-muted-foreground">Your Order ID:</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => copyToClipboard(orderId, 'Order ID')}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+              <p className="text-sm font-mono font-bold text-primary">{orderId}</p>
+              <p className="text-xs text-primary/80 mt-1">
+                ⚡ Share this ID when contacting us
               </p>
+            </div>
+
+            {/* Upload Proof Section */}
+            <div>
+              <Label className="text-sm text-foreground">
+                Step 2: Upload Payment Confirmation <span className="text-destructive">*</span>
+              </Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                After completing the card payment, upload a screenshot of your confirmation
+              </p>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              {!proofFile ? (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full p-6 border-2 border-dashed border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-colors flex flex-col items-center gap-2"
+                >
+                  <Upload className="w-8 h-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Click to upload confirmation</p>
+                </button>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
+                  {getFileIcon()}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{proofFile.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(proofFile.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="flex-shrink-0"
+                    onClick={removeFile}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

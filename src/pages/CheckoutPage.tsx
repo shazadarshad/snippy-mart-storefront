@@ -142,6 +142,8 @@ const CheckoutPage = () => {
         customer_email: formData.email || undefined,
         security_metadata: securityMetadata,
         user_agent: navigator.userAgent,
+        currency_code: currency,
+        currency_symbol: currencyInfo.symbol,
         items: items.map((item) => ({
           product_id: item.product.id,
           product_name: item.product.name,

@@ -149,6 +149,12 @@ serve(async (req) => {
       // We await this to ensure the email request is actually sent before the function completes
       try {
         console.log(`[create-order] Invoking send-email function...`);
+
+        // Format price with currency info if provided
+        const currencySymbol = (body as any).currency_symbol || '$';
+        const currencyCode = (body as any).currency_code || 'USD';
+        const totalFormatted = `${currencySymbol}${order.total_amount.toFixed(currencyCode === 'LKR' || currencyCode === 'INR' ? 0 : 2)}`;
+
         const emailPayload = {
           to: body.customer_email,
           templateId: template.id,
@@ -156,7 +162,7 @@ serve(async (req) => {
           variables: {
             customer_name: body.customer_name || 'Customer',
             order_id: body.order_number,
-            total: `$${order.total_amount.toFixed(2)}`,
+            total: totalFormatted,
             items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
           }
         };
