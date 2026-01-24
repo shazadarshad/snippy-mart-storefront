@@ -75,6 +75,35 @@ const AdminOrders = () => {
     }
   };
 
+  const getCountryFlag = (country: string | null) => {
+    if (!country) return '🌍';
+    const countryLower = country.toLowerCase();
+    const flagMap: Record<string, string> = {
+      'united states': '🇺🇸',
+      'usa': '🇺🇸',
+      'us': '🇺🇸',
+      'sri lanka': '🇱🇰',
+      'india': '🇮🇳',
+      'united kingdom': '🇬🇧',
+      'uk': '🇬🇧',
+      'canada': '🇨🇦',
+      'australia': '🇦🇺',
+      'germany': '🇩🇪',
+      'france': '🇫🇷',
+      'japan': '🇯🇵',
+      'china': '🇨🇳',
+      'pakistan': '🇵🇰',
+      'bangladesh': '🇧🇩',
+      'uae': '🇦🇪',
+      'saudi arabia': '🇸🇦',
+      'singapore': '🇸🇬',
+      'malaysia': '🇲🇾',
+      'unknown': '🌍',
+    };
+    return flagMap[countryLower] || '🌍';
+  };
+
+
   const pendingCount = orders.filter((o) => o.status === 'pending').length;
   const completedCount = orders.filter((o) => o.status === 'completed').length;
   const cancelledCount = orders.filter((o) => o.status === 'cancelled').length;
@@ -351,7 +380,7 @@ const AdminOrders = () => {
                             {order.customer_name}
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Globe className="w-3 h-3" />
+                            <span className="text-base">{getCountryFlag(order.customer_country)}</span>
                             {order.customer_country || 'Unknown'}
                           </div>
                         </div>
@@ -387,8 +416,9 @@ const AdminOrders = () => {
                       <div className="flex items-center gap-1 mt-1">
                         {order.payment_method === 'bank_transfer' && <Building2 className="w-3 h-3 text-primary" />}
                         {order.payment_method === 'binance_usdt' && <Bitcoin className="w-3 h-3 text-[#F0B90B]" />}
+                        {order.payment_method === 'card' && <CreditCard className="w-3 h-3 text-purple-500" />}
                         <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                          {order.payment_method?.replace('_', ' ') || 'UNPAID'}
+                          {order.payment_method === 'card' ? 'CARD' : order.payment_method?.replace('_', ' ') || 'UNPAID'}
                         </span>
                       </div>
                     </td>
@@ -420,7 +450,10 @@ const AdminOrders = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-mono text-sm font-bold text-foreground">{order.order_number}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{order.customer_name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                      <span>{getCountryFlag(order.customer_country)}</span>
+                      {order.customer_name}
+                    </p>
                     <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-muted-foreground uppercase opacity-70">
                       <Clock className="w-3 h-3" />
                       {formatDateTime(order.created_at)}
@@ -502,8 +535,8 @@ const AdminOrders = () => {
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-bold">Origin Country</p>
                           <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                            <Globe className="w-3.5 h-3.5 text-primary" />
-                            {selectedOrder.customer_country || 'Manual Entry'}
+                            <span className="text-xl">{getCountryFlag(selectedOrder.customer_country)}</span>
+                            {selectedOrder.customer_country || 'Unknown'}
                           </p>
                         </div>
                       </div>
@@ -530,6 +563,10 @@ const AdminOrders = () => {
                             {selectedOrder.payment_method === 'binance_usdt' ? (
                               <div className="flex items-center gap-2 text-sm font-bold text-[#F0B90B]">
                                 <Bitcoin className="w-4 h-4" /> Binance USDT
+                              </div>
+                            ) : selectedOrder.payment_method === 'card' ? (
+                              <div className="flex items-center gap-2 text-sm font-bold text-purple-500">
+                                <CreditCard className="w-4 h-4" /> Card Payment
                               </div>
                             ) : (
                               <div className="flex items-center gap-2 text-sm font-bold text-primary">
