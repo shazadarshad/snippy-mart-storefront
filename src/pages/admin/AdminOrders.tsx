@@ -542,6 +542,32 @@ const AdminOrders = () => {
                       </div>
                     </div>
 
+                    {/* Customer Notes Section - Secure Display */}
+                    {selectedOrder.notes && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-3 text-warning">
+                          <FileText className="w-4 h-4" />
+                          <h3 className="text-xs font-black uppercase tracking-wider">Customer Notes</h3>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-warning/5 border border-warning/20 border-dashed">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center text-warning flex-shrink-0">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-[10px] text-warning uppercase font-bold mb-2">⚠️ Sensitive Information</p>
+                              <p className="text-sm text-foreground whitespace-pre-wrap break-words font-medium leading-relaxed">
+                                {selectedOrder.notes}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground mt-3 italic">
+                                This may contain account credentials or personal information. Handle securely.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div>
                       <div className="flex items-center gap-2 mb-3 text-primary">
                         <CreditCard className="w-4 h-4" />
