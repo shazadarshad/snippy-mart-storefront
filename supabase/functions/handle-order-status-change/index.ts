@@ -49,10 +49,11 @@ serve(async (req: Request) => {
         // Fetch site settings for logo
         const { data: settings } = await supabase
             .from('site_settings')
-            .select('logo_url')
+            .select('value')
+            .eq('key', 'logo_url')
             .maybeSingle();
 
-        const logoUrl = settings?.logo_url || 'https://snippymart.com/logo.png';
+        const logoUrl = settings?.value || 'https://snippymart.com/logo.png';
 
         // Helper to format payment method
         const formatPaymentMethod = (method: string) => {
