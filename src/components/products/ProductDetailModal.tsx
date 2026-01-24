@@ -186,14 +186,15 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
             onClick={onClose}
           />
 
-          {/* Modal Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+          {/* Modal Container - Fixed positioning to prevent background scroll */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none overflow-y-auto">
             <motion.div
               variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] flex flex-col bg-card border border-border/50 rounded-3xl shadow-2xl overflow-hidden relative pointer-events-auto"
+              className="w-full max-w-4xl max-h-[85vh] sm:max-h-[90vh] my-auto flex flex-col bg-card border border-border/50 rounded-3xl shadow-2xl overflow-hidden relative pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
               <button
