@@ -272,15 +272,17 @@ export const useDeleteOrderProof = () => {
   });
 };
 
-queryKey: ['orders', 'track', query],
-  queryFn: async () => {
-    if (!query) return null;
+export const useTrackOrder = (query: string) => {
+  return useQuery({
+    queryKey: ['orders', 'track', query],
+    queryFn: async () => {
+      if (!query) return null;
 
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
 
-    let queryBuilder = supabase
-      .from('orders')
-      .select(`
+      let queryBuilder = supabase
+        .from('orders')
+        .select(`
           id,
           order_number,
           customer_name,
@@ -291,17 +293,17 @@ queryKey: ['orders', 'track', query],
           order_items (*)
         `);
 
-    if (isUUID) {
-      queryBuilder = queryBuilder.eq('id', query);
-    } else {
-      queryBuilder = queryBuilder.eq('order_number', query);
-    }
+      if (isUUID) {
+        queryBuilder = queryBuilder.eq('id', query);
+      } else {
+        queryBuilder = queryBuilder.eq('order_number', query);
+      }
 
-    const { data, error } = await queryBuilder.maybeSingle();
+      const { data, error } = await queryBuilder.maybeSingle();
 
-    if (error) throw error;
-    return data as Order | null;
-  },
+      if (error) throw error;
+      return data as Order | null;
+    },
     enabled: !!query,
   });
 };
