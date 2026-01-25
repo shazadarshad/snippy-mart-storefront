@@ -13,6 +13,7 @@ export interface OrderItem {
   unit_price: number;
   total_price: number;
   created_at: string;
+  customer_credentials?: any | null;
 }
 
 export interface Order {
@@ -140,6 +141,7 @@ export const useCreateOrder = () => {
         quantity: number;
         unit_price: number;
         total_price: number;
+        customer_credentials?: any;
       }[];
     }) => {
       const { data, error } = await supabase.functions.invoke('create-order', {

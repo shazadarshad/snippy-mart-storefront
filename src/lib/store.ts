@@ -14,6 +14,12 @@ export interface Product {
   /** Optional pricing plan selection */
   plan_id?: string;
   plan_name?: string;
+
+  requirements?: {
+    require_email?: boolean;
+    require_password?: boolean;
+    require_username?: boolean;
+  } | null;
 }
 
 export interface CartItem {

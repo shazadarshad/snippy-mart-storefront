@@ -4,6 +4,12 @@ import { useToast } from '@/hooks/use-toast';
 
 export type StockStatus = 'in_stock' | 'limited' | 'out_of_stock';
 
+export interface ProductRequirements {
+  require_email?: boolean;
+  require_password?: boolean;
+  require_username?: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -15,6 +21,7 @@ export interface Product {
   is_active?: boolean;
   is_featured?: boolean;
   stock_status?: StockStatus;
+  requirements?: ProductRequirements | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -29,6 +36,7 @@ export interface ProductFormData {
   is_active?: boolean;
   is_featured?: boolean;
   stock_status?: StockStatus;
+  requirements?: ProductRequirements | null;
 }
 
 // Fetch all products (active only for public, all for admin)

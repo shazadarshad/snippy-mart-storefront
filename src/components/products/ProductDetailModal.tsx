@@ -129,6 +129,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     category: product.category,
     plan_id: selectedPlan?.id,
     plan_name: selectedPlan?.name,
+    requirements: product.requirements,
   };
 
   const handleAddToCart = () => {

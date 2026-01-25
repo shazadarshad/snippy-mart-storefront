@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Info, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Info, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,7 @@ const CheckoutPage = () => {
     email: '',
     notes: '',
   });
+  const [customerCredentials, setCustomerCredentials] = useState<Record<string, { email?: string; password?: string }>>({});
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [binanceId, setBinanceId] = useState('');
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -104,6 +105,7 @@ const CheckoutPage = () => {
         quantity: item.quantity,
         unit_price: item.product.price,
         total_price: item.product.price * item.quantity,
+        customer_credentials: customerCredentials[item.product.id] || null,
       })),
       status: 'pending' as const // Explicitly set as pending
     };
@@ -210,6 +212,30 @@ const CheckoutPage = () => {
         variant: "destructive",
       });
       return;
+    }
+
+
+
+    // Validate required credentials
+    for (const item of items) {
+      if (item.product.requirements?.require_email && !customerCredentials[item.product.id]?.email) {
+        toast({
+          title: "Missing Details",
+          description: `Please enter the account email for ${item.product.name}`,
+          variant: "destructive",
+        });
+        window.scrollTo({ top: 400, behavior: 'smooth' }); // Approximate scroll
+        return;
+      }
+      if (item.product.requirements?.require_password && !customerCredentials[item.product.id]?.password) {
+        toast({
+          title: "Missing Details",
+          description: `Please enter the account password for ${item.product.name}`,
+          variant: "destructive",
+        });
+        window.scrollTo({ top: 400, behavior: 'smooth' });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -421,6 +447,68 @@ const CheckoutPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Account Setup for Specific Products */}
+              {items.some(item => item.product.requirements?.require_email || item.product.requirements?.require_password) && (
+                <div className="p-6 rounded-2xl bg-card border border-border">
+                  <h2 className="text-lg font-semibold text-foreground mb-4">
+                    Account Setup
+                  </h2>
+                  <div className="space-y-6">
+                    {items.map((item) => {
+                      if (!item.product.requirements?.require_email && !item.product.requirements?.require_password) return null;
+                      return (
+                        <div key={item.id} className="p-4 rounded-xl bg-secondary/30 border border-border space-y-4">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 rounded bg-muted overflow-hidden">
+                              <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm">{item.product.name}</p>
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                                <span>Secure Account Setup</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {item.product.requirements.require_email && (
+                            <div>
+                              <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 block">Account Email</Label>
+                              <Input
+                                type="email"
+                                placeholder={`Email for ${item.product.name}`}
+                                value={customerCredentials[item.product.id]?.email || ''}
+                                onChange={(e) => setCustomerCredentials(prev => ({
+                                  ...prev,
+                                  [item.product.id]: { ...prev[item.product.id], email: e.target.value }
+                                }))}
+                                className="bg-background border-border"
+                              />
+                            </div>
+                          )}
+
+                          {item.product.requirements.require_password && (
+                            <div>
+                              <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 block">Account Password</Label>
+                              <Input
+                                type="text"
+                                placeholder={`Password for ${item.product.name}`}
+                                value={customerCredentials[item.product.id]?.password || ''}
+                                onChange={(e) => setCustomerCredentials(prev => ({
+                                  ...prev,
+                                  [item.product.id]: { ...prev[item.product.id], password: e.target.value }
+                                }))}
+                                className="bg-background border-border"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Payment Method Selection */}
               <div className="p-6 rounded-2xl bg-card border border-border">

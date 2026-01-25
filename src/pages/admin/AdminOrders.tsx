@@ -692,15 +692,36 @@ const AdminOrders = () => {
                       </div>
                       <div className="space-y-2">
                         {selectedOrder.order_items?.map((item) => (
-                          <div key={item.id} className="p-3 rounded-xl bg-secondary/30 border border-border flex justify-between items-center group hover:border-primary/50 transition-colors">
-                            <div>
-                              <p className="text-xs font-black text-foreground">{item.product_name}</p>
-                              <p className="text-[10px] font-bold text-primary">{item.plan_name}</p>
+                          <div key={item.id} className="p-3 rounded-xl bg-secondary/30 border border-border flex flex-col gap-2 group hover:border-primary/50 transition-colors">
+                            <div className="flex justify-between items-center w-full">
+                              <div>
+                                <p className="text-xs font-black text-foreground">{item.product_name}</p>
+                                <p className="text-[10px] font-bold text-primary">{item.plan_name}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-black text-foreground">x{item.quantity}</p>
+                                <p className="text-[10px] text-muted-foreground">{formatPrice(item.unit_price)}</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <p className="text-xs font-black text-foreground">x{item.quantity}</p>
-                              <p className="text-[10px] text-muted-foreground">{formatPrice(item.unit_price)}</p>
-                            </div>
+
+                            {/* Display Customer Credentials if any */}
+                            {item.customer_credentials && (
+                              <div className="w-full pt-2 mt-1 border-t border-border/50 grid grid-cols-1 gap-2">
+                                <p className="text-[10px] font-bold uppercase text-muted-foreground">Customer Provided Details:</p>
+                                {item.customer_credentials.email && (
+                                  <div className="bg-background/50 p-2 rounded border border-border/50 flex flex-col">
+                                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground">Email / Login</span>
+                                    <span className="font-mono text-xs select-all">{item.customer_credentials.email}</span>
+                                  </div>
+                                )}
+                                {item.customer_credentials.password && (
+                                  <div className="bg-background/50 p-2 rounded border border-border/50 flex flex-col">
+                                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground">Password</span>
+                                    <span className="font-mono text-xs select-all text-foreground">{item.customer_credentials.password}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>

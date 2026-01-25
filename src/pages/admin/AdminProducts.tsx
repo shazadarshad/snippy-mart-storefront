@@ -90,6 +90,7 @@ const AdminProducts = () => {
     is_active: true,
     is_featured: false,
     stock_status: 'in_stock',
+    requirements: { require_email: false, require_password: false },
   });
   const [pricingPlans, setPricingPlans] = useState<PricingPlanInput[]>([]);
   const [existingPlanIds, setExistingPlanIds] = useState<string[]>([]);
@@ -157,6 +158,7 @@ const AdminProducts = () => {
         is_active: product.is_active ?? true,
         is_featured: product.is_featured ?? false,
         stock_status: product.stock_status ?? 'in_stock',
+        requirements: product.requirements ?? { require_email: false, require_password: false },
       });
       setPricingPlans(productPlans.map(p => ({
         id: p.id,
@@ -183,7 +185,9 @@ const AdminProducts = () => {
         image_url: '/placeholder.svg',
         is_active: true,
         is_featured: false,
+
         stock_status: 'in_stock',
+        requirements: { require_email: false, require_password: false },
       });
       setPricingPlans([]);
       setExistingPlanIds([]);
@@ -436,6 +440,39 @@ const AdminProducts = () => {
                       <SelectItem value="out_of_stock">Out of Stock</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Customer Input Requirements */}
+              <div className="border p-4 rounded-lg bg-secondary/30 border-border">
+                <Label className="text-foreground mb-3 block">Customer Input Requirements</Label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="require_email"
+                      checked={formData.requirements?.require_email ?? false}
+                      onCheckedChange={(checked) => setFormData(prev => ({
+                        ...prev,
+                        requirements: { ...prev.requirements, require_email: checked }
+                      }))}
+                    />
+                    <Label htmlFor="require_email" className="text-foreground cursor-pointer font-normal">
+                      Require Customer Email (e.g. for account upgrade)
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="require_password"
+                      checked={formData.requirements?.require_password ?? false}
+                      onCheckedChange={(checked) => setFormData(prev => ({
+                        ...prev,
+                        requirements: { ...prev.requirements, require_password: checked }
+                      }))}
+                    />
+                    <Label htmlFor="require_password" className="text-foreground cursor-pointer font-normal">
+                      Require Customer Password
+                    </Label>
+                  </div>
                 </div>
               </div>
 
