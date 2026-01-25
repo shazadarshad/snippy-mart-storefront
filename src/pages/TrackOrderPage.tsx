@@ -67,6 +67,11 @@ const TrackOrderPage = () => {
         return '🔑';
     };
 
+    const getWhatsAppLink = () => {
+        const phone = settings?.whatsapp_number || '+94771234567';
+        return `https://wa.me/${phone.replace(/[^0-9]/g, '')}`;
+    };
+
     return (
         <div className="min-h-screen pt-24 pb-20">
             <SEO
