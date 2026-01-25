@@ -192,7 +192,7 @@ const TrackOrderPage = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div className="lg:col-span-2 space-y-8">
                                     {/* Automated Delivery Section */}
-                                    {order.status === 'delivered' && automation?.assignment && (
+                                    {(order.status === 'delivered' || order.status === 'completed') && automation?.assignment && (
                                         <div className="space-y-8">
                                             {/* Credentials & Rules */}
                                             <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">

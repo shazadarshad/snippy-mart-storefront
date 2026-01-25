@@ -28,28 +28,13 @@ export const useOrderAutomation = (orderId: string | undefined) => {
         queryFn: async () => {
             if (!orderId) return null;
 
-            const { data, error } = await (supabase as any)
-                .from('account_assignments')
-                .select(`
-                    assigned_at,
-                    inventory_accounts (
-                        email,
-                        password,
-                        rules_template,
-                        region,
-                        duration_months,
-                        service_type
-                    )
-                `)
-                .eq('order_id', orderId)
-                .single();
+            // Use Secure RPC to bypass RLS for this specific order
+            const { data, error } = await supabase
+                .rpc('get_order_credentials', { p_order_id: orderId });
 
-            if (error) return null;
+            if (error || !data) return null;
 
-            return {
-                ...data.inventory_accounts,
-                assigned_at: data.assigned_at
-            } as AutomatedAssignment;
+            return data as AutomatedAssignment;
         },
         enabled: !!orderId,
     });
