@@ -96,6 +96,7 @@ const CheckoutPage = () => {
       user_agent: navigator.userAgent,
       currency_code: currency,
       currency_symbol: currencyInfo.symbol,
+      currency_rate: currencyInfo.rate,
       items: items.map((item) => ({
         product_id: item.product.id,
         product_name: item.product.name,

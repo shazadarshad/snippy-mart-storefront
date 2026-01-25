@@ -89,6 +89,9 @@ serve(async (req) => {
         binance_id: body.binance_id ?? null,
         customer_country: body.customer_country ?? 'Unknown',
         customer_email: body.customer_email ?? null,
+        currency_code: (body as any).currency_code ?? 'LKR',
+        currency_symbol: (body as any).currency_symbol ?? 'Rs.',
+        currency_rate: (body as any).currency_rate ?? 1,
       },
     ])
     .select()

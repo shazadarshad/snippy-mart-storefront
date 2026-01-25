@@ -319,7 +319,17 @@ const TrackOrderPage = () => {
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-lg font-black text-foreground">{formatPrice(item.total_price)}</p>
+                                                        <p className="text-lg font-black text-foreground">
+                                                            {order.currency_code && order.currency_rate
+                                                                ? new Intl.NumberFormat(undefined, {
+                                                                    style: 'currency',
+                                                                    currency: order.currency_code,
+                                                                    minimumFractionDigits: (order.currency_code === 'LKR' || order.currency_code === 'INR') ? 0 : 2,
+                                                                    maximumFractionDigits: (order.currency_code === 'LKR' || order.currency_code === 'INR') ? 0 : 2
+                                                                }).format(item.total_price * order.currency_rate)
+                                                                : formatPrice(item.total_price)
+                                                            }
+                                                        </p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -327,7 +337,17 @@ const TrackOrderPage = () => {
 
                                         <div className="mt-8 md:mt-10 p-5 md:p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
                                             <span className="text-[10px] md:text-sm font-black text-muted-foreground uppercase tracking-widest">Global Total</span>
-                                            <span className="text-2xl md:text-3xl font-display font-black gradient-text">{formatPrice(order.total_amount)}</span>
+                                            <span className="text-2xl md:text-3xl font-display font-black gradient-text">
+                                                {order.currency_code && order.currency_rate
+                                                    ? new Intl.NumberFormat(undefined, {
+                                                        style: 'currency',
+                                                        currency: order.currency_code,
+                                                        minimumFractionDigits: (order.currency_code === 'LKR' || order.currency_code === 'INR') ? 0 : 2,
+                                                        maximumFractionDigits: (order.currency_code === 'LKR' || order.currency_code === 'INR') ? 0 : 2
+                                                    }).format(order.total_amount * order.currency_rate)
+                                                    : formatPrice(order.total_amount)
+                                                }
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

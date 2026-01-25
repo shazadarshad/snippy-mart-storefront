@@ -471,7 +471,17 @@ const AdminOrders = () => {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <p className="font-bold text-foreground">{formatPrice(order.total_amount)}</p>
+                      <p className="font-bold text-foreground">
+                        {order.currency_code && order.currency_rate
+                          ? new Intl.NumberFormat(undefined, {
+                            style: 'currency',
+                            currency: order.currency_code,
+                            minimumFractionDigits: (order.currency_code === 'LKR' || order.currency_code === 'INR') ? 0 : 2,
+                            maximumFractionDigits: (order.currency_code === 'LKR' || order.currency_code === 'INR') ? 0 : 2
+                          }).format(order.total_amount * order.currency_rate)
+                          : formatPrice(order.total_amount)
+                        }
+                      </p>
                       <div className="flex items-center gap-1 mt-1">
                         {order.payment_method === 'bank_transfer' && <Building2 className="w-3 h-3 text-primary" />}
                         {order.payment_method === 'binance_usdt' && <Bitcoin className="w-3 h-3 text-[#F0B90B]" />}
@@ -636,7 +646,17 @@ const AdminOrders = () => {
                         <div className="flex justify-between items-end">
                           <div>
                             <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Payload</p>
-                            <p className="text-xl font-black text-foreground">{formatPrice(selectedOrder.total_amount)}</p>
+                            <p className="text-xl font-black text-foreground">
+                              {selectedOrder.currency_code && selectedOrder.currency_rate
+                                ? new Intl.NumberFormat(undefined, {
+                                  style: 'currency',
+                                  currency: selectedOrder.currency_code,
+                                  minimumFractionDigits: (selectedOrder.currency_code === 'LKR' || selectedOrder.currency_code === 'INR') ? 0 : 2,
+                                  maximumFractionDigits: (selectedOrder.currency_code === 'LKR' || selectedOrder.currency_code === 'INR') ? 0 : 2
+                                }).format(selectedOrder.total_amount * selectedOrder.currency_rate)
+                                : formatPrice(selectedOrder.total_amount)
+                              }
+                            </p>
                           </div>
                           <div className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedOrder.status === 'completed' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'}`}>
                             {selectedOrder.status === 'completed' ? 'Success' : 'Pending'}

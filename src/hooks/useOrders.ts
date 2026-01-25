@@ -27,6 +27,9 @@ export interface Order {
   payment_proof_url: string | null;
   binance_id: string | null;
   customer_country: string | null;
+  currency_code?: string;
+  currency_symbol?: string;
+  currency_rate?: number;
   security_metadata: any | null;
   user_agent: string | null;
   client_ip: string | null;
@@ -129,6 +132,7 @@ export const useCreateOrder = () => {
       user_agent?: string;
       currency_code?: string;
       currency_symbol?: string;
+      currency_rate?: number;
       items: {
         product_id?: string;
         product_name: string;
@@ -152,6 +156,9 @@ export const useCreateOrder = () => {
           customer_email: orderData.customer_email,
           security_metadata: orderData.security_metadata,
           user_agent: orderData.user_agent,
+          currency_code: orderData.currency_code,
+          currency_symbol: orderData.currency_symbol,
+          currency_rate: orderData.currency_rate,
           items: orderData.items,
         },
       });
