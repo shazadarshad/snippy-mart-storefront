@@ -197,5 +197,66 @@ serve(async (req) => {
     console.log(`[create-order] No customer email provided - skipping confirmation email`);
   }
 
+  // --- ADMIN NOTIFICATION ---
+  try {
+    console.log(`[create-order] Sending admin notification to shazad.arshad199@gmail.com...`);
+
+    // Format variables (re-using headers if possible, or re-declaring)
+    const currencySymbol = (body as any).currency_symbol || '$';
+    const currencyCode = (body as any).currency_code || 'USD';
+    const totalFormatted = `${currencySymbol}${order.total_amount.toFixed(currencyCode === 'LKR' || currencyCode === 'INR' ? 0 : 2)}`;
+
+    const paymentMethodDisplay = body.payment_method === 'bank_transfer'
+      ? 'Bank Transfer'
+      : body.payment_method === 'binance_usdt'
+        ? 'Binance USDT'
+        : body.payment_method === 'card'
+          ? 'Card Payment'
+          : 'Pending/Other';
+
+    const itemsListHtml = body.items.map(i =>
+      `<li>${i.product_name} x${i.quantity} - ${currencySymbol}${i.total_price}</li>`
+    ).join('');
+
+    const adminEmailHtml = `
+      <h2>New Order Received! 🚀</h2>
+      <p><strong>Order ID:</strong> ${body.order_number}</p>
+      <p><strong>Customer:</strong> ${body.customer_name || 'Guest'}</p>
+      <p><strong>WhatsApp:</strong> ${body.customer_whatsapp}</p>
+      <p><strong>Email:</strong> ${body.customer_email || 'Not provided'}</p>
+      <p><strong>Total Amount:</strong> ${totalFormatted}</p>
+      <p><strong>Payment Method:</strong> ${paymentMethodDisplay}</p>
+      
+      <h3>Order Items:</h3>
+      <ul>${itemsListHtml}</ul>
+      
+      <p><strong>Notes:</strong> ${body.notes || 'None'}</p>
+      
+      <hr />
+      <p><a href="https://snippy-mart-storefront.vercel.app/admin/orders">View in Admin Panel</a></p>
+    `;
+
+    const adminEmailPayload = {
+      to: 'shazad.arshad199@gmail.com',
+      subject: `New Order: ${body.order_number} (${totalFormatted})`,
+      html: adminEmailHtml,
+      orderId: order.id
+    };
+
+    const { error: adminEmailError } = await supabase.functions.invoke("send-email", {
+      body: adminEmailPayload
+    });
+
+    if (adminEmailError) {
+      console.error(`[create-order] Admin email failed:`, adminEmailError);
+    } else {
+      console.log(`[create-order] ✅ Admin notification sent.`);
+    }
+
+  } catch (err) {
+    console.error(`[create-order] Exception sending admin email:`, err);
+  }
+  // --------------------------
+
   return json({ order });
 });
