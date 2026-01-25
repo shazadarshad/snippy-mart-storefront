@@ -23,9 +23,14 @@ const TrackOrderPage = () => {
 
     useEffect(() => {
         const id = searchParams.get('orderId');
+        const ref = searchParams.get('ref');
+
         if (id) {
             setOrderId(id);
             setSearchId(id);
+        } else if (ref) {
+            setOrderId(ref);
+            setSearchId(ref);
         }
     }, [searchParams]);
 
