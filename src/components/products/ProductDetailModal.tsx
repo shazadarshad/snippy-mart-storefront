@@ -175,7 +175,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-fit min-h-[50vh] p-0 gap-0 overflow-hidden bg-card border-border/50 rounded-[2rem] shadow-2xl">
+      <DialogContent className="max-w-5xl h-[90vh] min-h-[50vh] p-0 gap-0 overflow-hidden bg-card border-border/50 rounded-[2rem] shadow-2xl">
         <DialogTitle className="sr-only">{product.name}</DialogTitle>
 
         {/* Content Wrapper */}
@@ -229,7 +229,10 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
           {/* Details Section */}
           <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-card">
-            <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 md:p-8 pt-12 md:pt-8 custom-scrollbar">
+            <div
+              data-lenis-prevent
+              className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 md:p-8 pt-12 md:pt-8 custom-scrollbar"
+            >
 
               {/* Mobile Image Gallery */}
               <div className="md:hidden relative aspect-square bg-muted rounded-2xl mb-6 overflow-hidden">
