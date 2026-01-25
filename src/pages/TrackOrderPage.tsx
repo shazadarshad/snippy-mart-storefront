@@ -49,7 +49,8 @@ const TrackOrderPage = () => {
         }
     };
 
-    const getServiceIcon = (type: string) => {
+    const getServiceIcon = (type?: string | null) => {
+        if (!type) return '🔑';
         const t = type.toLowerCase();
         if (t.includes('netflix')) return '🍿';
         if (t.includes('prime')) return '📦';
