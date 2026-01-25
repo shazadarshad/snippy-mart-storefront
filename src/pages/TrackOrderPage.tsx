@@ -236,73 +236,80 @@ const TrackOrderPage = () => {
                                                 </div>
 
                                                 {/* Security Rules */}
-                                                {automation.assignment.rules_template && (
+                                                {(automation.assignment.rules_template || automation.assignment.service_type?.toLowerCase().includes('cursor')) && (
                                                     <div className="space-y-4">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <AlertCircle className="w-4 h-4 text-primary" />
                                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-colors">Usage Rules & Guidelines</span>
                                                         </div>
                                                         <div className="p-5 md:p-6 rounded-2xl bg-secondary/20 border border-border/50 text-sm md:text-base leading-relaxed text-muted-foreground font-medium">
-                                                            <FormattedDescription description={automation.assignment.rules_template} />
+                                                            <FormattedDescription description={
+                                                                (automation.assignment.rules_template || '') +
+                                                                (automation.assignment.service_type?.toLowerCase().includes('cursor')
+                                                                    ? "\n\n⚠️ **Troubleshooting:** If a verification code is asked during login, please **Go Back** and **Retry Login**. Do not request a code."
+                                                                    : "")
+                                                            } />
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {/* Live Verification Code Hub */}
-                                            <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
-                                                <div className="flex items-center justify-between mb-8 pb-5 md:pb-6 border-b border-border/50">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 relative">
-                                                            <Globe className="w-5 h-5" />
-                                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-ping" />
-                                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border border-white" />
+                                            {/* Live Verification Code Hub - Hidden for Cursor */}
+                                            {!automation.assignment.service_type?.toLowerCase().includes('cursor') && (
+                                                <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
+                                                    <div className="flex items-center justify-between mb-8 pb-5 md:pb-6 border-b border-border/50">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 relative">
+                                                                <Globe className="w-5 h-5" />
+                                                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-ping" />
+                                                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border border-white" />
+                                                            </div>
+                                                            <h3 className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground transition-colors">Live Verification Hub</h3>
                                                         </div>
-                                                        <h3 className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground transition-colors">Live Verification Hub</h3>
+                                                        <Badge variant="secondary" className="px-3 py-1 text-[9px] font-black uppercase tracking-[0.15em] border-orange-500/20 text-orange-500 bg-orange-500/5">Monitoring Live</Badge>
                                                     </div>
-                                                    <Badge variant="secondary" className="px-3 py-1 text-[9px] font-black uppercase tracking-[0.15em] border-orange-500/20 text-orange-500 bg-orange-500/5">Monitoring Live</Badge>
-                                                </div>
 
-                                                <div className="space-y-4">
-                                                    {automation.codes.length > 0 ? (
-                                                        automation.codes.map((codeInfo, idx) => (
-                                                            <div key={codeInfo.id} className={cn(
-                                                                "group p-5 rounded-2xl border transition-all flex items-center justify-between",
-                                                                idx === 0 ? "bg-orange-500/5 border-orange-500/30 shadow-lg shadow-orange-500/10" : "bg-secondary/30 border-border"
-                                                            )}>
-                                                                <div className="flex items-center gap-4">
-                                                                    <div className={cn(
-                                                                        "w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black",
-                                                                        idx === 0 ? "bg-orange-500 text-white shadow-xl" : "bg-secondary text-muted-foreground"
-                                                                    )}>
-                                                                        {codeInfo.code}
+                                                    <div className="space-y-4">
+                                                        {automation.codes.length > 0 ? (
+                                                            automation.codes.map((codeInfo, idx) => (
+                                                                <div key={codeInfo.id} className={cn(
+                                                                    "group p-5 rounded-2xl border transition-all flex items-center justify-between",
+                                                                    idx === 0 ? "bg-orange-500/5 border-orange-500/30 shadow-lg shadow-orange-500/10" : "bg-secondary/30 border-border"
+                                                                )}>
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className={cn(
+                                                                            "w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black",
+                                                                            idx === 0 ? "bg-orange-500 text-white shadow-xl" : "bg-secondary text-muted-foreground"
+                                                                        )}>
+                                                                            {codeInfo.code}
+                                                                        </div>
+                                                                        <div className="text-left">
+                                                                            <p className={cn("font-black", idx === 0 ? "text-foreground" : "text-muted-foreground")}>Sign-in Code Detected</p>
+                                                                            <p className="text-[10px] font-bold text-muted-foreground opacity-70 tracking-widest uppercase">
+                                                                                {new Date(codeInfo.received_at).toLocaleTimeString()} • Expires in {Math.max(0, Math.floor((new Date(codeInfo.expires_at).getTime() - new Date().getTime()) / 60000))}m
+                                                                            </p>
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="text-left">
-                                                                        <p className={cn("font-black", idx === 0 ? "text-foreground" : "text-muted-foreground")}>Sign-in Code Detected</p>
-                                                                        <p className="text-[10px] font-bold text-muted-foreground opacity-70 tracking-widest uppercase">
-                                                                            {new Date(codeInfo.received_at).toLocaleTimeString()} • Expires in {Math.max(0, Math.floor((new Date(codeInfo.expires_at).getTime() - new Date().getTime()) / 60000))}m
-                                                                        </p>
-                                                                    </div>
+                                                                    <Button variant={idx === 0 ? "hero" : "ghost"} size="sm" className="h-10 rounded-xl" onClick={() => navigator.clipboard.writeText(codeInfo.code)}>
+                                                                        <Copy className="w-4 h-4 mr-2" />
+                                                                        Copy
+                                                                    </Button>
                                                                 </div>
-                                                                <Button variant={idx === 0 ? "hero" : "ghost"} size="sm" className="h-10 rounded-xl" onClick={() => navigator.clipboard.writeText(codeInfo.code)}>
-                                                                    <Copy className="w-4 h-4 mr-2" />
-                                                                    Copy
-                                                                </Button>
+                                                            ))
+                                                        ) : (
+                                                            <div className="p-12 text-center border-2 border-dashed border-border rounded-[2rem] space-y-4">
+                                                                <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mx-auto text-muted-foreground/30">
+                                                                    <Globe className="w-8 h-8" />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <p className="font-black text-foreground uppercase tracking-widest text-xs">Waiting for Code</p>
+                                                                    <p className="text-sm text-muted-foreground max-w-[200px] mx-auto">Click 'Send Code' on your login screen. The code will appear here instantly.</p>
+                                                                </div>
                                                             </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="p-12 text-center border-2 border-dashed border-border rounded-[2rem] space-y-4">
-                                                            <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mx-auto text-muted-foreground/30">
-                                                                <Globe className="w-8 h-8" />
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                <p className="font-black text-foreground uppercase tracking-widest text-xs">Waiting for Code</p>
-                                                                <p className="text-sm text-muted-foreground max-w-[200px] mx-auto">Click 'Send Code' on your login screen. The code will appear here instantly.</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     )}
 
