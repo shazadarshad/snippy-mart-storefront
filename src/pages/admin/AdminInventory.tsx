@@ -272,7 +272,7 @@ const AdminInventory = () => {
 
             {/* Add/Edit Dialog */}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogContent className="max-w-2xl sm:max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl sm:max-h-[90vh] overflow-y-auto custom-scrollbar bg-card border-border">
                     <DialogHeader>
                         <DialogTitle>{editingAccount ? 'Edit Account' : 'Add New Account'}</DialogTitle>
                         <DialogDescription>

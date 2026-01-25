@@ -339,7 +339,7 @@ const AdminProducts = () => {
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border custom-scrollbar">
             <DialogHeader>
               <DialogTitle className="text-foreground">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}

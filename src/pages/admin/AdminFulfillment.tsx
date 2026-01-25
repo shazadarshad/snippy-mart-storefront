@@ -213,7 +213,7 @@ const AdminFulfillment = () => {
             </div>
 
             <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar bg-card border-border">
                     <DialogHeader>
                         <DialogTitle>Manual Fulfillment</DialogTitle>
                         <DialogDescription>Assign a secure account to this order.</DialogDescription>

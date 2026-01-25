@@ -125,7 +125,7 @@ const AdminTestimonials = () => {
                             Add Testimonial
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md bg-card border-border">
+                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar bg-card border-border">
                         <DialogHeader>
                             <DialogTitle className="text-foreground">
                                 {editingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial'}
