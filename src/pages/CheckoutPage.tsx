@@ -272,29 +272,19 @@ const CheckoutPage = () => {
         customer_email: formData.email || undefined,
       };
 
-      if (existingOrderId) {
-        console.log("Updating existing pre-registered order:", existingOrderId);
-        // UPDATE existing order
-        await updateOrder.mutateAsync({
-          orderId: existingOrderId,
-          updates: {
-            ...commonOrderData,
-            status: 'pending', // Keeps it pending until admin approves payment
-            payment_method: paymentMethod, // Ensure correct method is set
-          }
-        });
-      } else {
-        // CREATE new order (Standard Flow)
-        const payload = await getOrderPayload();
-        // Add specific submit-time fields
-        Object.assign(payload, {
-          payment_proof_url: paymentProofPath,
-          binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
-          payment_method: paymentMethod,
-        });
+      // Create final payload
+      const payload = await getOrderPayload();
 
-        await createOrder.mutateAsync(payload);
-      }
+      // Add submit-time fields
+      Object.assign(payload, {
+        payment_proof_url: paymentProofPath,
+        binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
+        payment_method: paymentMethod,
+      });
+
+      // We always use createOrder (which is our create-order Edge Function)
+      // because it handles upserting by order_number and bypassing guest RLS limitations.
+      await createOrder.mutateAsync(payload);
 
       // Store order data for success page
       const orderData = {

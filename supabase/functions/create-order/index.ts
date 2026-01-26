@@ -26,6 +26,7 @@ type CreateOrderBody = {
     quantity: number;
     unit_price: number;
     total_price: number;
+    customer_credentials?: any;
   }>;
 };
 
@@ -72,34 +73,50 @@ serve(async (req) => {
     return json({ error: "Missing required fields" }, 400);
   }
 
-  console.log(`[create-order] Creating order ${body.order_number} items=${body.items.length}`);
+  console.log(`[create-order] Processing order ${body.order_number} items=${body.items.length}`);
 
+  // Create or Update order (Upsert by order_number)
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .insert([
-      {
-        order_number: body.order_number,
-        customer_name: body.customer_name || "Customer",
-        customer_whatsapp: body.customer_whatsapp,
-        total_amount: body.total_amount,
-        status: "pending",
-        notes: body.notes ?? null,
-        payment_method: body.payment_method ?? null,
-        payment_proof_url: body.payment_proof_url ?? null,
-        binance_id: body.binance_id ?? null,
-        customer_country: body.customer_country ?? 'Unknown',
-        customer_email: body.customer_email ?? null,
-        currency_code: (body as any).currency_code ?? 'LKR',
-        currency_symbol: (body as any).currency_symbol ?? 'Rs.',
-        currency_rate: (body as any).currency_rate ?? 1,
-      },
-    ])
+    .upsert(
+      [
+        {
+          order_number: body.order_number,
+          customer_name: body.customer_name || "Customer",
+          customer_whatsapp: body.customer_whatsapp,
+          total_amount: body.total_amount,
+          status: "pending", // Always set back to pending on "submission" or "pre-register"
+          notes: body.notes ?? null,
+          payment_method: body.payment_method ?? null,
+          payment_proof_url: body.payment_proof_url ?? null,
+          binance_id: body.binance_id ?? null,
+          customer_country: body.customer_country ?? 'Unknown',
+          customer_email: body.customer_email ?? null,
+          currency_code: (body as any).currency_code ?? 'LKR',
+          currency_symbol: (body as any).currency_symbol ?? 'Rs.',
+          currency_rate: (body as any).currency_rate ?? 1,
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      { onConflict: 'order_number' }
+    )
     .select()
     .single();
 
   if (orderError || !order) {
-    console.error("[create-order] Failed to create order", orderError);
-    return json({ error: orderError?.message ?? "Failed to create order" }, 400);
+    console.error("[create-order] Failed to upsert order", orderError);
+    return json({ error: orderError?.message ?? "Failed to save order" }, 400);
+  }
+
+  // Delete existing items to avoid duplicates on update
+  const { error: deleteError } = await supabase
+    .from("order_items")
+    .delete()
+    .eq("order_id", order.id);
+
+  if (deleteError) {
+    console.error("[create-order] Failed to clear old items", deleteError);
+    // Continue anyway, insertion might fail if primary key conflicts but we use auto-id so it's fine
   }
 
   const itemsPayload = body.items.map((item) => ({
@@ -110,6 +127,7 @@ serve(async (req) => {
     quantity: item.quantity,
     unit_price: item.unit_price,
     total_price: item.total_price,
+    customer_credentials: item.customer_credentials ?? null,
   }));
 
   const { error: itemsError } = await supabase.from("order_items").insert(itemsPayload);
