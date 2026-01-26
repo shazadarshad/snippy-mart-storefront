@@ -56,7 +56,7 @@ export const useAnalytics = (days: number = 30): AnalyticsData => {
         }
 
         completedOrders.forEach((order) => {
-            const dateStr = order.created_at.split('T')[0];
+            const dateStr = new Date(order.created_at).toISOString().split('T')[0];
             if (dailyMap.has(dateStr)) {
                 const current = dailyMap.get(dateStr)!;
                 dailyMap.set(dateStr, {
@@ -75,11 +75,11 @@ export const useAnalytics = (days: number = 30): AnalyticsData => {
         // Category revenue
         const categoryMap = new Map<string, number>();
         completedOrders.forEach((order) => {
-            order.items.forEach((item) => {
+            order.order_items?.forEach((item) => {
                 const product = products.find((p) => p.id === item.product_id);
                 if (product) {
                     const current = categoryMap.get(product.category) || 0;
-                    categoryMap.set(product.category, current + item.subtotal);
+                    categoryMap.set(product.category, current + item.total_price);
                 }
             });
         });
@@ -96,11 +96,12 @@ export const useAnalytics = (days: number = 30): AnalyticsData => {
         // Top products
         const productSalesMap = new Map<string, { sold: number; revenue: number }>();
         completedOrders.forEach((order) => {
-            order.items.forEach((item) => {
+            order.order_items?.forEach((item) => {
+                if (!item.product_id) return;
                 const current = productSalesMap.get(item.product_id) || { sold: 0, revenue: 0 };
                 productSalesMap.set(item.product_id, {
                     sold: current.sold + item.quantity,
-                    revenue: current.revenue + item.subtotal,
+                    revenue: current.revenue + item.total_price,
                 });
             });
         });

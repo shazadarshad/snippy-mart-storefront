@@ -79,28 +79,27 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening with your store.</p>
+      <div>
+        <h1 className="text-xl md:text-3xl font-display font-black text-foreground">Dashboard</h1>
+        <p className="text-[11px] md:text-sm text-muted-foreground uppercase tracking-widest font-bold opacity-70">Commerce Intelligence Overview</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="bg-card border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+          <Card key={index} className="bg-card border-border shadow-sm overflow-hidden group hover:border-primary/50 transition-colors">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-2xl ${stat.bgColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
-                <TrendingUp className="w-4 h-4 text-success" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.title}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.subtitle}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xl md:text-2xl font-black text-foreground truncate">{stat.value}</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground font-black uppercase tracking-tighter">{stat.title}</p>
+                </div>
+                <TrendingUp className="w-4 h-4 text-success shrink-0 opacity-40" />
               </div>
             </CardContent>
           </Card>
@@ -109,22 +108,22 @@ const AdminDashboard = () => {
 
       {/* Order Status Summary */}
       {!statsLoading && orderStats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="p-4 rounded-xl bg-warning/10 border border-warning/20">
-            <p className="text-2xl font-bold text-warning">{orderStats.pendingOrders}</p>
-            <p className="text-sm text-muted-foreground">Pending</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+          <div className="p-3 md:p-4 rounded-2xl bg-warning/10 border border-warning/20 flex flex-col items-center justify-center text-center">
+            <p className="text-xl md:text-2xl font-black text-warning leading-none">{orderStats.pendingOrders}</p>
+            <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Pending</p>
           </div>
-          <div className="p-4 rounded-xl bg-success/10 border border-success/20">
-            <p className="text-2xl font-bold text-success">{orderStats.completedOrders}</p>
-            <p className="text-sm text-muted-foreground">Completed</p>
+          <div className="p-3 md:p-4 rounded-2xl bg-success/10 border border-success/20 flex flex-col items-center justify-center text-center">
+            <p className="text-xl md:text-2xl font-black text-success leading-none">{orderStats.completedOrders}</p>
+            <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Completed</p>
           </div>
-          <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-            <p className="text-2xl font-bold text-destructive">{orderStats.cancelledOrders}</p>
-            <p className="text-sm text-muted-foreground">Cancelled</p>
+          <div className="p-3 md:p-4 rounded-2xl bg-destructive/10 border border-destructive/20 flex flex-col items-center justify-center text-center">
+            <p className="text-xl md:text-2xl font-black text-destructive leading-none">{orderStats.cancelledOrders}</p>
+            <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Cancelled</p>
           </div>
-          <div className="p-4 rounded-xl bg-muted border border-border">
-            <p className="text-2xl font-bold text-muted-foreground">{orderStats.refundedOrders}</p>
-            <p className="text-sm text-muted-foreground">Refunded</p>
+          <div className="p-3 md:p-4 rounded-2xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-center">
+            <p className="text-xl md:text-2xl font-black text-muted-foreground leading-none">{orderStats.refundedOrders}</p>
+            <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Refunded</p>
           </div>
         </div>
       )}

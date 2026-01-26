@@ -512,44 +512,82 @@ const AdminOrders = () => {
             </table>
           </div>
 
-          {/* Mobile View (Card List) */}
-          <div className="md:hidden space-y-px bg-border">
+          {/* Mobile View (Enhanced Card List) */}
+          <div className="md:hidden space-y-4 p-4">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="bg-card p-4 space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-mono text-sm font-bold text-foreground">{order.order_number}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                      <span>{getCountryFlag(order.customer_country)}</span>
-                      {order.customer_name}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-muted-foreground uppercase opacity-70">
-                      <Clock className="w-3 h-3" />
-                      {formatDateTime(order.created_at)}
+              <div key={order.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                <div className="p-4 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-sm font-black text-foreground">{order.order_number}</span>
+                        <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(order.status)}`}>
+                          {order.status}
+                        </div>
+                      </div>
+                      <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <span className="text-sm">{getCountryFlag(order.customer_country)}</span>
+                        {order.customer_name}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-muted-foreground uppercase opacity-60">
+                        <Clock className="w-3 h-3" />
+                        {formatDateTime(order.created_at)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-primary text-sm">
+                        {order.currency_code && order.currency_rate
+                          ? new Intl.NumberFormat(undefined, {
+                            style: 'currency',
+                            currency: order.currency_code,
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                          }).format(order.total_amount * order.currency_rate)
+                          : formatPrice(order.total_amount)
+                        }
+                      </p>
+                      <div className="flex items-center justify-end gap-1 mt-1 opacity-60">
+                        {order.payment_method === 'card' ? <CreditCard className="w-3 h-3 text-purple-500" /> : <Building2 className="w-3 h-3 text-primary" />}
+                        <span className="text-[9px] font-black uppercase">{order.payment_method?.replace('_', ' ') || 'UNPAID'}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-primary">{formatPrice(order.total_amount)}</p>
-                    <div className={`mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </div>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 text-xs h-9" onClick={() => setSelectedOrder(order)}>
-                    <Eye className="w-3.5 h-3.5 mr-1.5" />
-                    Details
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1 text-xs h-9 text-success" asChild>
-                    <a href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
-                      WhatsApp
-                    </a>
-                  </Button>
-                  <Button variant="ghost" size="icon" className="w-9 h-9 text-destructive" onClick={() => setOrderToDelete(order)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {/* Mobile Quick Status & Actions */}
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
+                    <Select
+                      value={order.status}
+                      onValueChange={(value) => handleStatusChange(order.id, value as OrderStatus)}
+                    >
+                      <SelectTrigger className={`h-9 text-[10px] font-black uppercase tracking-wider ${getStatusColor(order.status)} bg-opacity-10`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="shipping">Shipping</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="on_hold">On Hold</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectItem value="refunded">Refunded</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 h-9 text-[10px] font-bold" onClick={() => setSelectedOrder(order)}>
+                        <Eye className="w-3.5 h-3.5 mr-1" />
+                        INSPECT
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-9 h-9 p-0 text-success border-success/20 bg-success/5" asChild>
+                        <a href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="w-4 h-4" />
+                        </a>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="w-9 h-9 p-0 text-destructive" onClick={() => setOrderToDelete(order)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -563,26 +601,26 @@ const AdminOrders = () => {
 
       {/* Super Detailed Order Inspector */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-none sm:rounded-3xl shadow-2xl">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-none sm:rounded-3xl shadow-2xl w-[95vw] sm:w-full">
           {selectedOrder && (
             <div className="flex flex-col max-h-[90vh]">
               {/* Modal Header */}
-              <div className="bg-primary p-6 md:p-8 text-primary-foreground relative">
-                <div className="flex items-center gap-3 mb-2 opacity-80">
-                  <ShieldCheck className="w-5 h-5 text-primary-foreground" />
-                  <span className="text-xs font-bold uppercase tracking-[0.2em]">Internal Audit Report</span>
+              <div className="bg-primary p-5 md:p-8 text-primary-foreground relative">
+                <div className="flex items-center gap-2 mb-2 opacity-80">
+                  <ShieldCheck className="w-4 h-4 text-primary-foreground shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Audit Report</span>
                 </div>
-                <h2 className="text-3xl font-display font-black mb-1">{selectedOrder.order_number}</h2>
-                <p className="text-primary-foreground/60 text-sm font-medium">Secured Order Entry • System Verified</p>
-                <div className={`absolute top-6 right-6 px-4 py-1.5 rounded-full text-xs font-black uppercase border-2 ${getStatusColor(selectedOrder.status)} bg-white shadow-xl`}>
+                <h2 className="text-xl md:text-3xl font-display font-black mb-1 truncate pr-20">{selectedOrder.order_number}</h2>
+                <p className="text-primary-foreground/60 text-[10px] md:text-sm font-medium">Secured Entry • Verified System</p>
+                <div className={`absolute top-4 right-4 md:top-6 md:right-6 px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-xs font-black uppercase border-2 ${getStatusColor(selectedOrder.status)} bg-white shadow-xl`}>
                   {selectedOrder.status}
                 </div>
               </div>
 
               {/* Modal Content */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
                 {/* Section: Customer Intelligence */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   <div className="space-y-6">
                     <div>
                       <div className="flex items-center gap-2 mb-3 text-primary">
