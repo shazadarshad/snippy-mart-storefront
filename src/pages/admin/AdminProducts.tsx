@@ -91,6 +91,7 @@ const AdminProducts = () => {
     is_featured: false,
     stock_status: 'in_stock',
     requirements: { require_email: false, require_password: false },
+    manual_fulfillment: true,
   });
   const [pricingPlans, setPricingPlans] = useState<PricingPlanInput[]>([]);
   const [existingPlanIds, setExistingPlanIds] = useState<string[]>([]);
@@ -159,6 +160,7 @@ const AdminProducts = () => {
         is_featured: product.is_featured ?? false,
         stock_status: product.stock_status ?? 'in_stock',
         requirements: product.requirements ?? { require_email: false, require_password: false },
+        manual_fulfillment: product.manual_fulfillment ?? true,
       });
       setPricingPlans(productPlans.map(p => ({
         id: p.id,
@@ -188,6 +190,7 @@ const AdminProducts = () => {
 
         stock_status: 'in_stock',
         requirements: { require_email: false, require_password: false },
+        manual_fulfillment: true,
       });
       setPricingPlans([]);
       setExistingPlanIds([]);
@@ -473,6 +476,23 @@ const AdminProducts = () => {
                       Require Customer Password
                     </Label>
                   </div>
+                </div>
+              </div>
+
+              {/* Fulfillment Type */}
+              <div className="border p-4 rounded-lg bg-primary/5 border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-foreground font-bold">Manual Fulfillment Console</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Enable this to assign accounts manually using the inventory console.
+                      Disable for direct activation/emails.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.manual_fulfillment}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, manual_fulfillment: checked }))}
+                  />
                 </div>
               </div>
 

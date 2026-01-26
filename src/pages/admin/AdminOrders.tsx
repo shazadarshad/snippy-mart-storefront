@@ -753,40 +753,62 @@ const AdminOrders = () => {
                 </div>
 
                 {/* Section: Fulfillment Console (Manual Assignment) */}
-                <div className="bg-secondary/10 p-6 rounded-2xl border border-border">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Package className="w-5 h-5 text-primary" />
-                    <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Fulfillment Console</h3>
-                  </div>
+                {(() => {
+                  const needsManualFulfillment = selectedOrder.order_items?.some(
+                    item => item.products?.manual_fulfillment !== false
+                  );
 
-                  {/* Check if already assigned or completed */}
-                  {selectedOrder.status === 'completed' || selectedOrder.status === 'delivered' ? (
-                    <div className="p-4 rounded-xl bg-success/10 border border-success/20 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-success" />
-                        <div>
-                          <p className="text-sm font-bold text-success">Order Fulfilled</p>
-                          <p className="text-xs text-muted-foreground">Credentials have been assigned.</p>
+                  if (!needsManualFulfillment) {
+                    return (
+                      <div className="bg-secondary/5 p-6 rounded-2xl border border-border border-dashed">
+                        <div className="flex items-center gap-3 text-muted-foreground opacity-60">
+                          <ShieldAlert className="w-5 h-5" />
+                          <div>
+                            <p className="text-sm font-bold">Direct Activation Service</p>
+                            <p className="text-xs">No manual inventory assignment required for this product type.</p>
+                          </div>
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 gap-2"
-                        onClick={() => {
-                          const link = `${window.location.origin}/track-order?ref=${selectedOrder.id}`;
-                          navigator.clipboard.writeText(link);
-                          toast({ title: "Secure Link Copied", description: "Send this link to the customer." });
-                        }}
-                      >
-                        <Copy className="w-4 h-4" />
-                        Copy Secure Link
-                      </Button>
+                    );
+                  }
+
+                  return (
+                    <div className="bg-secondary/10 p-6 rounded-2xl border border-border">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Package className="w-5 h-5 text-primary" />
+                        <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Fulfillment Console</h3>
+                      </div>
+
+                      {/* Check if already assigned or completed */}
+                      {selectedOrder.status === 'completed' || selectedOrder.status === 'delivered' ? (
+                        <div className="p-4 rounded-xl bg-success/10 border border-success/20 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-success" />
+                            <div>
+                              <p className="text-sm font-bold text-success">Order Fulfilled</p>
+                              <p className="text-xs text-muted-foreground">Credentials have been assigned.</p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 gap-2"
+                            onClick={() => {
+                              const link = `${window.location.origin}/track-order?ref=${selectedOrder.id}`;
+                              navigator.clipboard.writeText(link);
+                              toast({ title: "Secure Link Copied", description: "Send this link to the customer." });
+                            }}
+                          >
+                            <Copy className="w-4 h-4" />
+                            Copy Secure Link
+                          </Button>
+                        </div>
+                      ) : (
+                        <ManualAssignmentPanel order={selectedOrder} />
+                      )}
                     </div>
-                  ) : (
-                    <ManualAssignmentPanel order={selectedOrder} />
-                  )}
-                </div>
+                  );
+                })()}
 
                 {/* Section: Assets & Communications */}
                 <div className="space-y-4">

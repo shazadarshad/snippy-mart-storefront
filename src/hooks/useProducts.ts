@@ -22,6 +22,7 @@ export interface Product {
   is_featured?: boolean;
   stock_status?: StockStatus;
   requirements?: ProductRequirements | null;
+  manual_fulfillment?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -37,6 +38,7 @@ export interface ProductFormData {
   is_featured?: boolean;
   stock_status?: StockStatus;
   requirements?: ProductRequirements | null;
+  manual_fulfillment?: boolean;
 }
 
 // Fetch all products (active only for public, all for admin)

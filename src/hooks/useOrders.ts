@@ -14,6 +14,7 @@ export interface OrderItem {
   total_price: number;
   created_at: string;
   customer_credentials?: any | null;
+  products?: { manual_fulfillment: boolean } | null;
 }
 
 export interface Order {
@@ -56,12 +57,17 @@ export const useOrders = () => {
         .from('orders')
         .select(`
           *,
-          order_items (*)
+          order_items (
+            *,
+            products (
+              manual_fulfillment
+            )
+          )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Order[];
+      return (data as unknown) as Order[];
     },
   });
 };
@@ -74,13 +80,18 @@ export const useRecentOrders = (limit: number = 5) => {
         .from('orders')
         .select(`
           *,
-          order_items (*)
+          order_items (
+            *,
+            products (
+              manual_fulfillment
+            )
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(limit);
 
       if (error) throw error;
-      return data as Order[];
+      return (data as unknown) as Order[];
     },
   });
 };
