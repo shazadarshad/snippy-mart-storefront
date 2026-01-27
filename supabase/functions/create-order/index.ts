@@ -19,6 +19,8 @@ type CreateOrderBody = {
   binance_id?: string;
   customer_country?: string;
   customer_email?: string;
+  applied_coupon_id?: string;
+  discount_amount?: number;
   items: Array<{
     product_id?: string;
     product_name: string;
@@ -92,6 +94,8 @@ serve(async (req) => {
           binance_id: body.binance_id ?? null,
           customer_country: body.customer_country ?? 'Unknown',
           customer_email: body.customer_email ?? null,
+          applied_coupon_id: body.applied_coupon_id ?? null,
+          discount_amount: body.discount_amount ?? 0,
           currency_code: (body as any).currency_code ?? 'LKR',
           currency_symbol: (body as any).currency_symbol ?? 'Rs.',
           currency_rate: (body as any).currency_rate ?? 1,
@@ -140,6 +144,19 @@ serve(async (req) => {
   }
 
   console.log(`[create-order] Order created successfully: ${order.id}`);
+
+  // Increment coupon usage if applied
+  if (body.applied_coupon_id) {
+    console.log(`[create-order] Incrementing usage for coupon: ${body.applied_coupon_id}`);
+    const { error: couponError } = await supabase.rpc('increment_coupon_usage', {
+      coupon_id: body.applied_coupon_id
+    });
+
+    if (couponError) {
+      console.error("[create-order] Failed to increment coupon usage:", couponError);
+      // We don't fail the whole order if coupon increment fails, but we log it
+    }
+  }
 
   // Trigger automated order confirmation email (optional/background)
   if (body.customer_email) {
@@ -240,21 +257,23 @@ serve(async (req) => {
     ).join('');
 
     const adminEmailHtml = `
-      <h2>New Order Received! 🚀</h2>
-      <p><strong>Order ID:</strong> ${body.order_number}</p>
-      <p><strong>Customer:</strong> ${body.customer_name || 'Guest'}</p>
-      <p><strong>WhatsApp:</strong> ${body.customer_whatsapp}</p>
-      <p><strong>Email:</strong> ${body.customer_email || 'Not provided'}</p>
-      <p><strong>Total Amount:</strong> ${totalFormatted}</p>
-      <p><strong>Payment Method:</strong> ${paymentMethodDisplay}</p>
-      
-      <h3>Order Items:</h3>
-      <ul>${itemsListHtml}</ul>
-      
-      <p><strong>Notes:</strong> ${body.notes || 'None'}</p>
-      
-      <hr />
-      <p><a href="https://snippy-mart-storefront.vercel.app/admin/orders">View in Admin Panel</a></p>
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #f9f9f9; padding: 30px; border-radius: 20px;">
+        <h2 style="color: #333; margin-top: 0;">🚀 New Order Received</h2>
+        <div style="background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #eee;">
+          <p><strong>Order:</strong> <span style="font-family: monospace;">${body.order_number}</span></p>
+          <p><strong>Total:</strong> <span style="color: #00b8d4; font-weight: bold;">${totalFormatted}</span></p>
+          <p><strong>Payment:</strong> ${paymentMethodDisplay}</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+          <p><strong>Customer:</strong> ${body.customer_name || 'Guest'}</p>
+          <p><strong>WhatsApp:</strong> ${body.customer_whatsapp}</p>
+          <p><strong>Email:</strong> ${body.customer_email || 'Not provided'}</p>
+        </div>
+        <h3 style="color: #666; font-size: 14px; text-transform: uppercase; margin-top: 25px;">Order Manifest</h3>
+        <ul style="padding-left: 20px; color: #444;">${itemsListHtml}</ul>
+        <div style="margin-top: 30px; text-align: center;">
+          <a href="https://snippymart.com/admin/orders" style="background: #000; color: #fff; text-decoration: none; padding: 12px 25px; border-radius: 10px; font-weight: bold;">VIEW IN PANEL</a>
+        </div>
+      </div>
     `;
 
     const adminEmailPayload = {

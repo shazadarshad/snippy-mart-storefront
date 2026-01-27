@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Info, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { MessageCircle, Info, ShoppingBag, ArrowLeft, ShieldCheck, Plus, Minus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,11 +12,12 @@ import { useCreateOrder, useUpdateExistingOrder } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import PaymentMethodSelector, { type PaymentMethod } from '@/components/checkout/PaymentMethodSelector';
 import { getCountry } from '@/lib/utils';
+import { CouponInput } from '@/components/checkout/CouponInput';
 
 const CheckoutPage = () => {
   const { formatPrice, currency, currencyInfo } = useCurrency();
   const navigate = useNavigate();
-  const { items, getTotal, clearCart } = useCartStore();
+  const { items, getTotal, clearCart, getDiscountAmount, getFinalTotal, appliedCoupon, updateQuantity, removeItem } = useCartStore();
   const { toast } = useToast();
   const createOrder = useCreateOrder();
   const updateOrder = useUpdateExistingOrder();
@@ -88,7 +89,9 @@ const CheckoutPage = () => {
       order_number: orderId,
       customer_name: formData.name || 'Customer',
       customer_whatsapp: formData.whatsapp,
-      total_amount: getTotal(),
+      total_amount: getFinalTotal(),
+      discount_amount: getDiscountAmount(),
+      applied_coupon_id: appliedCoupon?.id || undefined,
       notes: formData.notes || undefined,
       payment_method: paymentMethod as PaymentMethod, // Will be 'card' for pre-registration
       customer_country: customerCountry,
@@ -299,7 +302,8 @@ const CheckoutPage = () => {
           price: item.product.price,
           quantity: item.quantity,
         })),
-        total: getTotal(),
+        total: getFinalTotal(),
+        discount: getDiscountAmount(),
         paymentMethod,
       };
 
@@ -571,44 +575,88 @@ const CheckoutPage = () => {
                 {/* Products */}
                 <div className="py-4 space-y-4 border-b border-border">
                   {items.map((item) => (
-                    <div key={item.product.id} className="flex items-start gap-3 sm:gap-4">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                        <img
-                          src={item.product.image}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-foreground truncate">
-                          {item.product.name}
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          Qty: {item.quantity}
-                        </p>
-                      </div>
-                      <div className="text-sm font-medium text-foreground">
-                        {formatPrice(item.product.price * item.quantity)}
+                    <div key={item.id} className="flex flex-col gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                          <img
+                            src={item.product.image}
+                            alt={item.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-foreground truncate">
+                            {item.product.name}
+                          </h4>
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                                className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-semibold text-foreground">
+                                {formatPrice(item.product.price * item.quantity)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  removeItem(item.id);
+                                  toast({
+                                    title: "Item removed",
+                                    description: `${item.product.name} has been removed from your cart.`,
+                                  });
+                                }}
+                                className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-all"
+                                title="Remove item"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Totals */}
-                <div className="py-4 space-y-2">
+                {/* Coupons */}
+                <div className="py-4 border-b border-white/5">
+                  <CouponInput />
+                </div>
+
+                <div className="py-4 space-y-2 border-b border-border">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span className="text-foreground">{formatPrice(getTotal())}</span>
                   </div>
+                  {getDiscountAmount() > 0 && (
+                    <div className="flex items-center justify-between text-sm animate-fade-in">
+                      <span className="text-muted-foreground">Discount</span>
+                      <span className="text-red-500 font-bold">-{formatPrice(getDiscountAmount())}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Processing Fee</span>
                     <span className="text-success">Free</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border">
+                <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
                   <span className="text-lg font-semibold text-foreground">Total</span>
-                  <span className="text-2xl font-bold gradient-text">{formatPrice(getTotal())}</span>
+                  <span className="text-2xl font-bold gradient-text">{formatPrice(getFinalTotal())}</span>
                 </div>
               </div>
             </div>

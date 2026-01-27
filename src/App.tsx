@@ -41,6 +41,7 @@ const AdminEmailSettings = lazy(() => import("./pages/admin/AdminEmailSettings")
 const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
 const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
 const AdminPolicies = lazy(() => import("./pages/admin/AdminPolicies"));
+const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -87,6 +88,7 @@ const AppContent = () => {
               <Route path="email-settings" element={<AdminEmailSettings />} />
               <Route path="email-templates" element={<AdminEmailTemplates />} />
               <Route path="inventory" element={<AdminInventory />} />
+              <Route path="coupons" element={<AdminCoupons />} />
               <Route path="policies" element={<AdminPolicies />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>

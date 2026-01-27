@@ -22,6 +22,15 @@ export interface Product {
   } | null;
 }
 
+export interface Coupon {
+  id: string;
+  code: string;
+  type: 'fixed' | 'percentage';
+  value: number;
+  min_order_amount?: number;
+  max_discount?: number;
+}
+
 export interface CartItem {
   /** Unique key for cart line item (product + optional plan) */
   id: string;
@@ -31,12 +40,17 @@ export interface CartItem {
 
 interface CartStore {
   items: CartItem[];
+  appliedCoupon: Coupon | null;
   addItem: (product: Product) => void;
   removeItem: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
   clearCart: () => void;
-  getTotal: () => number;
+  getTotal: () => number; // Returns subtotal
   getItemCount: () => number;
+  applyCoupon: (coupon: Coupon) => void;
+  removeCoupon: () => void;
+  getDiscountAmount: () => number;
+  getFinalTotal: () => number;
 }
 
 const getCartItemId = (product: Product) => {
@@ -63,6 +77,7 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      appliedCoupon: null,
       addItem: (product) => {
         const cartItemId = getCartItemId(product);
         set((state) => {
@@ -94,10 +109,33 @@ export const useCartStore = create<CartStore>()(
       getItemCount: () => {
         return get().items.reduce((count, item) => count + item.quantity, 0);
       },
+      applyCoupon: (coupon) => set({ appliedCoupon: coupon }),
+      removeCoupon: () => set({ appliedCoupon: null }),
+      getDiscountAmount: () => {
+        const { items, appliedCoupon } = get();
+        if (!appliedCoupon) return 0;
+
+        const subtotal = items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+
+        if (appliedCoupon.type === 'fixed') {
+          return Math.min(appliedCoupon.value, subtotal);
+        } else {
+          let discount = subtotal * (appliedCoupon.value / 100);
+          if (appliedCoupon.max_discount) {
+            discount = Math.min(discount, appliedCoupon.max_discount);
+          }
+          return discount;
+        }
+      },
+      getFinalTotal: () => {
+        const subtotal = get().getTotal();
+        const discount = get().getDiscountAmount();
+        return Math.max(0, subtotal - discount);
+      },
     }),
     {
       name: 'snippy-cart',
-      version: 2,
+      version: 3,
       migrate: (persistedState: any) => {
         const state = (persistedState?.state ?? persistedState) as any;
         const items = Array.isArray(state?.items) ? state.items : [];

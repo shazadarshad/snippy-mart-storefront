@@ -62,7 +62,7 @@ const ProductsPage = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
+    <div className="min-h-screen pt-20 pb-12 lg:pt-32">
       <SEO
         title="Products"
         description="Browse our collection of premium digital subscriptions. High-quality tools, streaming services, and software at unbeatable prices."
@@ -70,65 +70,48 @@ const ProductsPage = () => {
       />
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
-            All <span className="gradient-text">Products</span>
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl md:text-6xl font-display font-black text-foreground mb-4 tracking-tighter uppercase">
+            Product <span className="gradient-text">Vault.</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Browse our complete collection of premium digital subscriptions at unbeatable prices.
+          <p className="text-xs sm:text-lg text-muted-foreground max-w-2xl mx-auto uppercase tracking-widest font-bold opacity-70">
+            Secure premium access at unmatched pricing.
           </p>
         </div>
 
         {/* Search & Filters */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search for streaming, creative, or AI tools..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 bg-card border-border"
-              />
-            </div>
+        <div className="mb-6 sm:mb-10 space-y-4">
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search for tools, streaming, or AI..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 h-12 sm:h-14 glass-sm border-white/5 text-sm sm:text-base rounded-2xl"
+            />
+          </div>
 
-            <div className="flex gap-2">
+          <div className="flex overflow-x-auto pb-4 gap-2 no-scrollbar justify-start sm:justify-center px-1">
+            <Button
+              variant={selectedCategory === null ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(null)}
+              className="px-4 h-9 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest flex-shrink-0"
+            >
+              All Access
+            </Button>
+            {categories.map((category) => (
               <Button
-                variant="outline"
-                className="md:hidden"
-                onClick={() => setShowFilters(!showFilters)}
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category)}
+                className="px-4 h-9 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest flex-shrink-0"
               >
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-                <ChevronDown className={cn("w-4 h-4 ml-2 transition-transform", showFilters && "rotate-180")} />
+                {category}
               </Button>
-
-              <div className={cn(
-                "flex flex-wrap gap-2 w-full md:w-auto",
-                !showFilters && "hidden md:flex"
-              )}>
-                <Button
-                  variant={selectedCategory === null ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(null)}
-                  className="flex-shrink-0"
-                >
-                  All
-                </Button>
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(category)}
-                    className="flex-shrink-0"
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 

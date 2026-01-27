@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, MessageCircle, Home, Package, Loader2, Search, ArrowRight, Copy, Check, User, ShieldCheck, Mail, Key } from 'lucide-react';
+import { MessageCircle, CheckCircle2, Package, Search, Home, ExternalLink, Users, Loader2, Copy, ShieldCheck, Mail, Key, ArrowRight, Check, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -18,6 +18,7 @@ interface OrderData {
     quantity: number;
   }[];
   total: number;
+  discount?: number;
 }
 
 const OrderSuccessPage = () => {
@@ -101,6 +102,7 @@ const OrderSuccessPage = () => {
           </h1>
           <p className="text-lg text-muted-foreground mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             Success! Your order <span className="text-primary font-mono font-black">{orderId}</span> has been locked in.
+            {liveOrder?.discount_amount > 0 && <span className="block text-sm text-green-500 mt-1 font-bold">You saved {formatPrice(liveOrder.discount_amount)}! 🎉</span>}
             {liveOrder?.status === 'pending' && <span className="block text-sm text-amber-500 mt-2 font-bold">(Waiting for Payment Confirmation)</span>}
           </p>
 
@@ -200,6 +202,35 @@ const OrderSuccessPage = () => {
                   <Home className="w-5 h-5 md:w-6 md:h-6 mr-3" />
                   Home
                 </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* WhatsApp Community Invite */}
+          <div className="mb-12 p-6 md:p-8 rounded-[2rem] bg-gradient-to-br from-[#25D366]/10 to-transparent border border-[#25D366]/20 relative overflow-hidden group animate-fade-in" style={{ animationDelay: '0.35s' }}>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Users className="w-24 h-24 text-[#25D366]" />
+            </div>
+            <div className="relative z-10 text-left">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg shadow-[#25D366]/20">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Join Our Community</h3>
+              </div>
+              <p className="text-muted-foreground mb-6 max-w-md leading-relaxed">
+                Join our exclusive WhatsApp community to get instant updates on new products, flash sales, and premium support from our team.
+              </p>
+              <Button
+                variant="whatsapp"
+                size="lg"
+                className="rounded-2xl font-bold px-8 shadow-xl hover:scale-105 active:scale-95 transition-all"
+                asChild
+              >
+                <a href="https://chat.whatsapp.com/J5lBGUiobiKIPpUYGMorec" target="_blank" rel="noopener noreferrer">
+                  Join Group Now
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                </a>
               </Button>
             </div>
           </div>

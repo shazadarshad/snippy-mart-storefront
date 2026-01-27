@@ -46,21 +46,21 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-navbar">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="flex items-center justify-between h-14 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt={storeName}
-                className="h-10 w-auto object-contain transition-transform group-hover:scale-110"
+                className="h-8 sm:h-10 w-auto object-contain transition-transform group-hover:scale-110"
               />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center transition-transform group-hover:scale-110">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-primary/20">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
               </div>
             )}
-            <span className="text-xl font-display font-bold text-foreground">
+            <span className="text-sm sm:text-xl font-display font-black text-foreground uppercase tracking-tight">
               {storeName.includes(' ') ? (
                 <>
                   {storeName.split(' ')[0]}<span className="gradient-text">{storeName.split(' ').slice(1).join(' ')}</span>
@@ -78,20 +78,13 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
                 key={link.path}
                 to={link.path}
                 className={cn(
-                  "relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "relative px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200",
                   isActive(link.path)
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 )}
               >
                 {link.name}
-                {isActive(link.path) && (
-                  <motion.div
-                    layoutId="nav-active"
-                    className="absolute -bottom-1 left-4 right-4 h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
               </Link>
             ))}
           </div>
@@ -104,12 +97,12 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative w-9 h-9 sm:w-10 sm:h-10"
               onClick={onCartOpen}
             >
-              <ShoppingCart className="w-5 h-5" />
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center animate-scale-in">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-black flex items-center justify-center animate-scale-in">
                   {itemCount}
                 </span>
               )}
@@ -119,7 +112,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden w-9 h-9"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -135,9 +128,9 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="md:hidden overflow-hidden"
+              className="md:hidden overflow-hidden glass-premium mt-2 mb-4"
             >
-              <div className="py-4 border-t border-border mt-2 space-y-1">
+              <div className="p-4 space-y-1">
                 {navLinks.map((link, idx) => (
                   <motion.div
                     key={link.path}
@@ -149,18 +142,18 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
                       to={link.path}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "block px-4 py-3 rounded-xl text-base font-semibold transition-all duration-200",
+                        "block px-4 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-200",
                         isActive(link.path)
-                          ? "bg-primary/10 text-primary pl-6"
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                       )}
                     >
                       {link.name}
                     </Link>
                   </motion.div>
                 ))}
-                <div className="px-4 py-4 pt-6 border-t border-border mt-4 flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">Currency</span>
+                <div className="px-4 py-4 pt-6 mt-4 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Region Currency</span>
                   <CurrencySelector />
                 </div>
               </div>
