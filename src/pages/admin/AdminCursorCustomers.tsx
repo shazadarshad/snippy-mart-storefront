@@ -186,31 +186,13 @@ const AdminCursorCustomers = () => {
     toast({ title: "Emails copied to clipboard", description: `${filteredCustomers.length} emails copied.` });
 };
 
-const handleExportCSV = () => {
-    const headers = ['Email', 'Team', 'Purchase Date', 'Duration', 'End Date', 'Notes'];
-    const csvContent = [
-        headers.join(','),
-        ...filteredCustomers.map(c => [
-            c.email,
-            c.cursor_teams?.name || 'No Team',
-            format(parseISO(c.purchase_date), 'yyyy-MM-dd'),
-            c.duration_days,
-            c.end_date ? format(parseISO(c.end_date), 'yyyy-MM-dd') : '',
-            `"${(c.notes || '').replace(/"/g, '""')}"`
-        ].join(','))
-    ].join('\n');
+    };
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `cursor_customers_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+const handleShareLink = () => {
+    // Generate a simple link (In real app, we might want a token, but here strict security isn't requested, just a link)
+    const url = `${window.location.origin}/shared/cursor-view/supplier-access`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Supplier link copied!", description: "Share this link with your supplier." });
 };
 
 return (
@@ -317,6 +299,10 @@ return (
             <Button variant="outline" onClick={handleExportCSV} className="gap-2">
                 <Download className="w-4 h-4" />
                 Export CSV
+            </Button>
+            <Button variant="default" onClick={handleShareLink} className="gap-2 bg-purple-600 hover:bg-purple-700 text-white">
+                <Briefcase className="w-4 h-4" />
+                Share with Supplier
             </Button>
         </div>
 

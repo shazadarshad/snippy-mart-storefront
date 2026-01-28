@@ -43,6 +43,7 @@ const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
 const AdminPolicies = lazy(() => import("./pages/admin/AdminPolicies"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const AdminCursorCustomers = lazy(() => import("./pages/admin/AdminCursorCustomers"));
+const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -74,7 +75,11 @@ const AppContent = () => {
             <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
             <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
             <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+
             <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
+
+            {/* Shared View (Supplier) */}
+            <Route path="/shared/cursor-view/:token" element={<SharedCursorView />} />
 
             {/* Admin Routes */}
             <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />
