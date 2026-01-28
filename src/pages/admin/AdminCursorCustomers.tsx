@@ -60,6 +60,7 @@ const AdminCursorCustomers = () => {
 
     // Edit States
     const [editingTeam, setEditingTeam] = useState<CursorTeam | null>(null);
+    const [editingCustomer, setEditingCustomer] = useState<CursorCustomer | null>(null);
 
     // Filtered Copy State
     const [isCopied, setIsCopied] = useState(false);
@@ -96,6 +97,22 @@ const AdminCursorCustomers = () => {
             queryClient.invalidateQueries({ queryKey: ['cursor-customers'] });
             toast({ title: "Customer added successfully" });
             setIsAddUserOpen(false);
+        }
+    });
+
+    const updateCustomerMutation = useMutation({
+        mutationFn: async (payload: any) => {
+            const { id, ...updates } = payload;
+            const { error } = await supabase
+                .from('cursor_customers')
+                .update(updates)
+                .eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cursor-customers'] });
+            toast({ title: "Customer updated successfully" });
+            setEditingCustomer(null);
         }
     });
 
@@ -195,9 +212,19 @@ const AdminCursorCustomers = () => {
                                 <Plus className="w-4 h-4 mr-2" /> Add Customer
                             </Button>
                         </DialogTrigger>
-                        <AddCustomerDialog
+                        <CustomerFormDialog
                             teams={teams}
-                            onAdd={(data) => addCustomerMutation.mutate(data)}
+                            mode="create"
+                            onSave={(data) => addCustomerMutation.mutate(data)}
+                        />
+                    </Dialog>
+
+                    <Dialog open={!!editingCustomer} onOpenChange={(open) => !open && setEditingCustomer(null)}>
+                        <CustomerFormDialog
+                            teams={teams}
+                            mode="edit"
+                            initialData={editingCustomer}
+                            onSave={(data) => updateCustomerMutation.mutate({ id: editingCustomer?.id, ...data })}
                         />
                     </Dialog>
                 </div>
@@ -301,7 +328,12 @@ const AdminCursorCustomers = () => {
                                             )}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setEditingCustomer(customer)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
                                                 <Edit className="w-4 h-4 text-muted-foreground" />
                                             </Button>
                                         </TableCell>
@@ -365,19 +397,28 @@ const TeamManagerDialog = ({ teams, onSave }: { teams: CursorTeam[], onSave: (t:
     );
 };
 
-const AddCustomerDialog = ({ teams, onAdd }: { teams: CursorTeam[], onAdd: (data: any) => void }) => {
+const CustomerFormDialog = ({ teams, mode, initialData, onSave }: {
+    teams: CursorTeam[],
+    mode: 'create' | 'edit',
+    initialData?: CursorCustomer | null,
+    onSave: (data: any) => void
+}) => {
+    // Initialize state with default or initial data
     const [data, setData] = useState({
-        email: '',
-        team_id: '',
-        purchase_date: format(new Date(), 'yyyy-MM-dd'),
-        duration_days: 30,
-        notes: ''
+        email: initialData?.email || '',
+        team_id: initialData?.team_id || '',
+        purchase_date: initialData?.purchase_date ? format(parseISO(initialData.purchase_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+        duration_days: initialData?.duration_days || 30,
+        notes: initialData?.notes || ''
     });
+
+    // Reset data when dialog opens/closes or switches mode (handled by key or effect in parent ideally, but here we can just rely on mount)
+    // Actually, simple way is to use key={editingCustomer?.id} in parent to force re-mount
 
     return (
         <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-                <DialogTitle>Add New Customer</DialogTitle>
+                <DialogTitle>{mode === 'create' ? 'Add New Customer' : 'Edit Customer'}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="space-y-2">
@@ -391,7 +432,7 @@ const AddCustomerDialog = ({ teams, onAdd }: { teams: CursorTeam[], onAdd: (data
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Team</Label>
-                        <Select onValueChange={v => setData({ ...data, team_id: v })} value={data.team_id}>
+                        <Select onValueChange={v => setData({ ...data, team_id: v })} value={data.team_id || ''}>
                             <SelectTrigger><SelectValue placeholder="Select Team" /></SelectTrigger>
                             <SelectContent>
                                 {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
@@ -422,10 +463,18 @@ const AddCustomerDialog = ({ teams, onAdd }: { teams: CursorTeam[], onAdd: (data
                         onChange={e => setData({ ...data, notes: e.target.value })}
                     />
                 </div>
+
+                {/* Expiry Preview */}
+                <div className="p-3 bg-secondary/50 rounded-lg text-sm flex items-center justify-between">
+                    <span className="text-muted-foreground">Calculated Expiry:</span>
+                    <span className="font-bold font-mono">
+                        {data.purchase_date && format(addDays(new Date(data.purchase_date), data.duration_days), 'MMM dd, yyyy')}
+                    </span>
+                </div>
             </div>
             <DialogFooter>
-                <Button onClick={() => onAdd({ ...data, purchase_date: new Date(data.purchase_date).toISOString() })}>
-                    Create Customer
+                <Button onClick={() => onSave({ ...data, purchase_date: new Date(data.purchase_date).toISOString() })}>
+                    {mode === 'create' ? 'Create Customer' : 'Update Customer'}
                 </Button>
             </DialogFooter>
         </DialogContent>
