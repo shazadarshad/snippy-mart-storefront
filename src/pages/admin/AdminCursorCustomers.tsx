@@ -141,11 +141,29 @@ const AdminCursorCustomers = () => {
 
             const { error } = await supabase.from('cursor_customers').insert(customers);
             if (error) throw error;
-        },
-        onSuccess: (data, vars) => {
-            queryClient.invalidateQueries({ queryKey: ['cursor-customers'] });
-            toast({ title: `Imported ${vars.emails.length} customers successfully` });
             setIsBulkImportOpen(false);
+        }
+    });
+
+    const deleteCustomerMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from('cursor_customers').delete().eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cursor-customers'] });
+            toast({ title: "Customer removed successfully" });
+        }
+    });
+
+    const deleteTeamMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from('cursor_teams').delete().eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cursor-teams'] });
+            toast({ title: "Team removed successfully" });
         }
     });
 
@@ -165,187 +183,227 @@ const AdminCursorCustomers = () => {
     }).length;
 
     // HANDLERS
-    const handleCopyEmails = () => {
-        const emails = filteredCustomers.map(c => c.email).join(', ');
-        navigator.clipboard.writeText(emails);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-        toast({ title: "Emails copied to clipboard", description: `${filteredCustomers.length} emails copied.` });
-    };
+    toast({ title: "Emails copied to clipboard", description: `${filteredCustomers.length} emails copied.` });
+};
 
-    return (
-        <div className="space-y-8 animate-fade-in">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-display font-black text-foreground mb-1">Cursor Management</h1>
-                    <p className="text-muted-foreground">Manage subscriptions, teams, and bulk access.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Dialog open={isTeamParamsOpen} onOpenChange={setIsTeamParamsOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" className="font-bold">
-                                <Briefcase className="w-4 h-4 mr-2" /> Manage Teams
-                            </Button>
-                        </DialogTrigger>
-                        <TeamManagerDialog
-                            teams={teams}
-                            onSave={(team) => addTeamMutation.mutate(team)}
-                        />
-                    </Dialog>
+const handleExportCSV = () => {
+    const headers = ['Email', 'Team', 'Purchase Date', 'Duration', 'End Date', 'Notes'];
+    const csvContent = [
+        headers.join(','),
+        ...filteredCustomers.map(c => [
+            c.email,
+            c.cursor_teams?.name || 'No Team',
+            format(parseISO(c.purchase_date), 'yyyy-MM-dd'),
+            c.duration_days,
+            c.end_date ? format(parseISO(c.end_date), 'yyyy-MM-dd') : '',
+            `"${(c.notes || '').replace(/"/g, '""')}"`
+        ].join(','))
+    ].join('\n');
 
-                    <Dialog open={isBulkImportOpen} onOpenChange={setIsBulkImportOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="secondary" className="font-bold">
-                                <Upload className="w-4 h-4 mr-2" /> Bulk Import
-                            </Button>
-                        </DialogTrigger>
-                        <BulkImportDialog
-                            teams={teams}
-                            onImport={(data) => bulkImportMutation.mutate(data)}
-                        />
-                    </Dialog>
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `cursor_customers_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+};
 
-                    <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="font-bold">
-                                <Plus className="w-4 h-4 mr-2" /> Add Customer
-                            </Button>
-                        </DialogTrigger>
-                        <CustomerFormDialog
-                            teams={teams}
-                            mode="create"
-                            onSave={(data) => addCustomerMutation.mutate(data)}
-                        />
-                    </Dialog>
-
-                    <Dialog open={!!editingCustomer} onOpenChange={(open) => !open && setEditingCustomer(null)}>
-                        <CustomerFormDialog
-                            teams={teams}
-                            mode="edit"
-                            initialData={editingCustomer}
-                            onSave={(data) => updateCustomerMutation.mutate({ id: editingCustomer?.id, ...data })}
-                        />
-                    </Dialog>
-                </div>
+return (
+    <div className="space-y-8 animate-fade-in">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 className="text-3xl font-display font-black text-foreground mb-1">Cursor Management</h1>
+                <p className="text-muted-foreground">Manage subscriptions, teams, and bulk access.</p>
             </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatsCard title="Total Customers" value={customers.length} icon={Users} color="text-blue-500" bg="bg-blue-500/10" />
-                <StatsCard title="Active Subscriptions" value={activeSubscriptions} icon={CheckCircle2} color="text-green-500" bg="bg-green-500/10" />
-                <StatsCard title="Active Teams" value={teams.length} icon={Briefcase} color="text-purple-500" bg="bg-purple-500/10" />
-            </div>
-
-            {/* Filters & Actions */}
-            <div className="flex flex-col md:flex-row gap-4 p-4 rounded-2xl bg-card border border-border">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search emails, teams..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 bg-background"
+            <div className="flex gap-2">
+                <Dialog open={isTeamParamsOpen} onOpenChange={setIsTeamParamsOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="font-bold">
+                            <Briefcase className="w-4 h-4 mr-2" /> Manage Teams
+                        </Button>
+                    </DialogTrigger>
+                    <TeamManagerDialog
+                        teams={teams}
+                        onSave={(team) => addTeamMutation.mutate(team)}
+                        onDelete={(id) => deleteTeamMutation.mutate(id)}
                     />
-                </div>
-                <div className="w-full md:w-64">
-                    <Select value={selectedTeamFilter} onValueChange={setSelectedTeamFilter}>
-                        <SelectTrigger className="bg-background">
-                            <SelectValue placeholder="Filter by Team" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Teams</SelectItem>
-                            {teams.map(t => (
-                                <SelectItem key={t.id} value={t.id}>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
-                                        {t.name}
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                {(selectedTeamFilter !== 'all' || searchQuery) && (
-                    <Button variant="outline" onClick={handleCopyEmails} className="gap-2">
-                        {isCopied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                        Copy Emails
-                    </Button>
-                )}
-            </div>
+                </Dialog>
 
-            {/* Filtered Data Table */}
-            <div className="rounded-2xl border border-border bg-card overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-muted/50">
-                            <TableHead>Email</TableHead>
-                            <TableHead>Team</TableHead>
-                            <TableHead>Purchase Date</TableHead>
-                            <TableHead>Expiry</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredCustomers.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                                    No customers found matching your filters.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredCustomers.map(customer => {
-                                const isValid = customer.end_date && new Date(customer.end_date) > new Date();
-                                return (
-                                    <TableRow key={customer.id} className="group hover:bg-muted/50">
-                                        <TableCell className="font-medium">{customer.email}</TableCell>
-                                        <TableCell>
-                                            {customer.cursor_teams ? (
-                                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-secondary" style={{ color: customer.cursor_teams.color }}>
-                                                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: customer.cursor_teams.color }} />
-                                                    {customer.cursor_teams.name}
-                                                </div>
-                                            ) : (
-                                                <span className="text-muted-foreground text-xs italic">No Team</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground text-sm">
-                                            {format(parseISO(customer.purchase_date), 'MMM dd, yyyy')}
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground text-sm">
-                                            {customer.end_date ? format(parseISO(customer.end_date), 'MMM dd, yyyy') : '-'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {isValid ? (
-                                                <span className="inline-flex items-center gap-1 text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">
-                                                    Active
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 text-xs font-bold text-destructive bg-destructive/10 px-2 py-1 rounded-md">
-                                                    Expired
-                                                </span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => setEditingCustomer(customer)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <Edit className="w-4 h-4 text-muted-foreground" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        )}
-                    </TableBody>
-                </Table>
+                <Dialog open={isBulkImportOpen} onOpenChange={setIsBulkImportOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" className="font-bold">
+                            <Upload className="w-4 h-4 mr-2" /> Bulk Import
+                        </Button>
+                    </DialogTrigger>
+                    <BulkImportDialog
+                        teams={teams}
+                        onImport={(data) => bulkImportMutation.mutate(data)}
+                    />
+                </Dialog>
+
+                <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="font-bold">
+                            <Plus className="w-4 h-4 mr-2" /> Add Customer
+                        </Button>
+                    </DialogTrigger>
+                    <CustomerFormDialog
+                        teams={teams}
+                        mode="create"
+                        onSave={(data) => addCustomerMutation.mutate(data)}
+                    />
+                </Dialog>
+
+                <Dialog open={!!editingCustomer} onOpenChange={(open) => !open && setEditingCustomer(null)}>
+                    <CustomerFormDialog
+                        teams={teams}
+                        mode="edit"
+                        initialData={editingCustomer}
+                        onSave={(data) => updateCustomerMutation.mutate({ id: editingCustomer?.id, ...data })}
+                    />
+                </Dialog>
             </div>
         </div>
-    );
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatsCard title="Total Customers" value={customers.length} icon={Users} color="text-blue-500" bg="bg-blue-500/10" />
+            <StatsCard title="Active Subscriptions" value={activeSubscriptions} icon={CheckCircle2} color="text-green-500" bg="bg-green-500/10" />
+            <StatsCard title="Active Teams" value={teams.length} icon={Briefcase} color="text-purple-500" bg="bg-purple-500/10" />
+        </div>
+
+        {/* Filters & Actions */}
+        <div className="flex flex-col md:flex-row gap-4 p-4 rounded-2xl bg-card border border-border">
+            <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search emails, teams..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 bg-background"
+                />
+            </div>
+            <div className="w-full md:w-64">
+                <Select value={selectedTeamFilter} onValueChange={setSelectedTeamFilter}>
+                    <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Filter by Team" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Teams</SelectItem>
+                        {teams.map(t => (
+                            <SelectItem key={t.id} value={t.id}>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
+                                    {t.name}
+                                </div>
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            {(selectedTeamFilter !== 'all' || searchQuery) && (
+                <Button variant="outline" onClick={handleCopyEmails} className="gap-2">
+                    {isCopied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    Copy Emails
+                </Button>
+            )}
+
+            <Button variant="outline" onClick={handleExportCSV} className="gap-2">
+                <Download className="w-4 h-4" />
+                Export CSV
+            </Button>
+        </div>
+
+        {/* Filtered Data Table */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <Table>
+                <TableHeader>
+                    <TableRow className="bg-muted/50">
+                        <TableHead>Email</TableHead>
+                        <TableHead>Team</TableHead>
+                        <TableHead>Purchase Date</TableHead>
+                        <TableHead>Expiry</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredCustomers.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                                No customers found matching your filters.
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        filteredCustomers.map(customer => {
+                            const isValid = customer.end_date && new Date(customer.end_date) > new Date();
+                            return (
+                                <TableRow key={customer.id} className="group hover:bg-muted/50">
+                                    <TableCell className="font-medium">{customer.email}</TableCell>
+                                    <TableCell>
+                                        {customer.cursor_teams ? (
+                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-secondary" style={{ color: customer.cursor_teams.color }}>
+                                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: customer.cursor_teams.color }} />
+                                                {customer.cursor_teams.name}
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted-foreground text-xs italic">No Team</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">
+                                        {format(parseISO(customer.purchase_date), 'MMM dd, yyyy')}
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">
+                                        {customer.end_date ? format(parseISO(customer.end_date), 'MMM dd, yyyy') : '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                        {isValid ? (
+                                            <span className="inline-flex items-center gap-1 text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">
+                                                Active
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 text-xs font-bold text-destructive bg-destructive/10 px-2 py-1 rounded-md">
+                                                Expired
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setEditingCustomer(customer)}
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <Edit className="w-4 h-4 text-muted-foreground" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                                if (confirm('Are you sure you want to delete this customer?')) {
+                                                    deleteCustomerMutation.mutate(customer.id);
+                                                }
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })
+                    )}
+                </TableBody>
+            </Table>
+        </div>
+    </div>
+);
 };
 
 // --- Sub-Components ---
@@ -364,7 +422,7 @@ const StatsCard = ({ title, value, icon: Icon, color, bg }: any) => (
     </Card>
 );
 
-const TeamManagerDialog = ({ teams, onSave }: { teams: CursorTeam[], onSave: (t: any) => void }) => {
+const TeamManagerDialog = ({ teams, onSave, onDelete }: { teams: CursorTeam[], onSave: (t: any) => void, onDelete: (id: string) => void }) => {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#3b82f6');
 
@@ -376,11 +434,23 @@ const TeamManagerDialog = ({ teams, onSave }: { teams: CursorTeam[], onSave: (t:
             <div className="grid gap-4 py-4">
                 <div className="space-y-4 max-h-[200px] overflow-y-auto mb-4 custom-scrollbar">
                     {teams.map(t => (
-                        <div key={t.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50">
+                        <div key={t.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50 group">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }} />
                                 <span className="font-semibold">{t.name}</span>
                             </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    if (confirm('Delete this team? All assigned customers will be unassigned.')) {
+                                        onDelete(t.id);
+                                    }
+                                }}
+                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                            >
+                                <Trash2 className="w-3 h-3" />
+                            </Button>
                         </div>
                     ))}
                 </div>
