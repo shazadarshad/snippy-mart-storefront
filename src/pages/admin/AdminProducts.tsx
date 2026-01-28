@@ -50,10 +50,18 @@ import {
   usePricingPlanVariants,
   useAddPricingPlanVariant,
   useDeletePricingPlanVariant,
-  type PricingPlanVariantInput
 } from "@/hooks/usePricingPlans";
 import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
+
+interface PricingPlanVariantInput {
+  id?: string;
+  name: string;
+  price: number;
+  old_price?: number | null;
+  is_active: boolean;
+  stock_status: string;
+}
 
 interface PricingPlanInput {
   id?: string;
@@ -65,14 +73,7 @@ interface PricingPlanInput {
   variants?: PricingPlanVariantInput[];
 }
 
-interface PricingPlanVariantInput {
-  id?: string;
-  name: string;
-  price: number;
-  old_price: number | null;
-  is_active: boolean;
-  stock_status: string;
-}
+
 
 interface GalleryImageInput {
   id?: string;
@@ -86,7 +87,7 @@ const AdminProducts = () => {
   const { data: allProductImages = [] } = useAllProductImages();
   const addProduct = useAddProduct();
   const { data: allPricingPlanVariants = [], isLoading: variantsLoading } = usePricingPlanVariants();
-  const addProduct = useAddProduct();
+
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const uploadImage = useUploadProductImage();
@@ -346,701 +347,707 @@ const AdminProducts = () => {
     for (const plan of pricingPlans) {
       let currentPlanId: string;
       if (!plan.id) {
-        is_default: plan.is_default,
+        const newPlan = await addPricingPlan.mutateAsync({
+          product_id: productId,
+          name: plan.name,
+          duration: plan.duration,
+          price: plan.price,
+          old_price: plan.old_price,
+          is_default: plan.is_default,
         });
-      currentPlanId = newPlan.id;
-    } else {
-      currentPlanId = plan.id!;
-    }
-
-    // Handle Variants for this plan
-    if (plan.variants) {
-      const originalVariants = getPricingPlanVariants(currentPlanId);
-      const currentVariantIds = plan.variants.filter(v => v.id).map(v => v.id!);
-
-      // Delete removed variants
-      const variantsToDelete = originalVariants.filter(ov => !currentVariantIds.includes(ov.id));
-      for (const v of variantsToDelete) {
-        await deletePricingPlanVariant.mutateAsync(v.id);
+        currentPlanId = newPlan.id;
+      } else {
+        currentPlanId = plan.id!;
       }
 
-      // Add new variants
-      for (const variant of plan.variants) {
-        if (!variant.id) {
-          await addPricingPlanVariant.mutateAsync({
-            plan_id: currentPlanId,
-            name: variant.name,
-            price: variant.price,
-            old_price: variant.old_price,
-            is_active: variant.is_active,
-            stock_status: variant.stock_status,
-          });
+      // Handle Variants for this plan
+      if (plan.variants) {
+        const originalVariants = getPricingPlanVariants(currentPlanId);
+        const currentVariantIds = plan.variants.filter(v => v.id).map(v => v.id!);
+
+        // Delete removed variants
+        const variantsToDelete = originalVariants.filter(ov => !currentVariantIds.includes(ov.id));
+        for (const v of variantsToDelete) {
+          await deletePricingPlanVariant.mutateAsync(v.id);
+        }
+
+        // Add new variants
+        for (const variant of plan.variants) {
+          if (!variant.id) {
+            await addPricingPlanVariant.mutateAsync({
+              plan_id: currentPlanId,
+              name: variant.name,
+              price: variant.price,
+              old_price: variant.old_price,
+              is_active: variant.is_active,
+              stock_status: variant.stock_status,
+            });
+          }
         }
       }
     }
-  }
-}
 
-// Add new gallery images
-for (let i = 0; i < galleryImages.length; i++) {
-  const img = galleryImages[i];
-  if (!img.id) {
-    await addProductImage.mutateAsync({
-      product_id: productId,
-      image_url: img.image_url,
-      sort_order: i,
-    });
-  }
-}
 
-setIsDialogOpen(false);
+    // Add new gallery images
+    for (let i = 0; i < galleryImages.length; i++) {
+      const img = galleryImages[i];
+      if (!img.id) {
+        await addProductImage.mutateAsync({
+          product_id: productId,
+          image_url: img.image_url,
+          sort_order: i,
+        });
+      }
+    }
+
+    setIsDialogOpen(false);
   };
 
-const handleDelete = async (productId: string) => {
-  await deleteProduct.mutateAsync(productId);
-};
+  const handleDelete = async (productId: string) => {
+    await deleteProduct.mutateAsync(productId);
+  };
 
-const handleToggleActive = async (product: Product) => {
-  await updateProduct.mutateAsync({
-    id: product.id,
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    old_price: product.old_price,
-    category: product.category,
-    image_url: product.image_url,
-    is_active: !product.is_active,
-    is_featured: product.is_featured,
-    stock_status: product.stock_status,
-  });
-};
+  const handleToggleActive = async (product: Product) => {
+    await updateProduct.mutateAsync({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      old_price: product.old_price,
+      category: product.category,
+      image_url: product.image_url,
+      is_active: !product.is_active,
+      is_featured: product.is_featured,
+      stock_status: product.stock_status,
+    });
+  };
 
-const handleToggleFeatured = async (product: Product) => {
-  await updateProduct.mutateAsync({
-    id: product.id,
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    old_price: product.old_price,
-    category: product.category,
-    image_url: product.image_url,
-    is_active: product.is_active,
-    is_featured: !product.is_featured,
-    stock_status: product.stock_status,
-  });
-};
+  const handleToggleFeatured = async (product: Product) => {
+    await updateProduct.mutateAsync({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      old_price: product.old_price,
+      category: product.category,
+      image_url: product.image_url,
+      is_active: product.is_active,
+      is_featured: !product.is_featured,
+      stock_status: product.stock_status,
+    });
+  };
 
-const isSubmitting = addProduct.isPending || updateProduct.isPending || addPricingPlan.isPending || addProductImage.isPending || addPricingPlanVariant.isPending;
+  const isSubmitting = addProduct.isPending || updateProduct.isPending || addPricingPlan.isPending || addProductImage.isPending || addPricingPlanVariant.isPending;
 
-return (
-  <div>
-    {/* Header */}
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Products</h1>
-        <p className="text-muted-foreground">Manage your product catalog</p>
-      </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="hero" onClick={() => handleOpenDialog()}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Product
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border custom-scrollbar">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">
-              {editingProduct ? 'Edit Product' : 'Add New Product'}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <div>
-              <Label htmlFor="name" className="text-foreground">Product Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="mt-1.5 bg-secondary/50 border-border"
-                required
-              />
-            </div>
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Products</h1>
+          <p className="text-muted-foreground">Manage your product catalog</p>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="hero" onClick={() => handleOpenDialog()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Product
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border custom-scrollbar">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">
+                {editingProduct ? 'Edit Product' : 'Add New Product'}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+              <div>
+                <Label htmlFor="name" className="text-foreground">Product Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="mt-1.5 bg-secondary/50 border-border"
+                  required
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="description" className="text-foreground">Description</Label>
-              <Tabs defaultValue="write" className="mt-1.5">
-                <TabsList className="bg-secondary/50 border border-border">
-                  <TabsTrigger value="write">Write</TabsTrigger>
-                  <TabsTrigger value="preview">Live Preview</TabsTrigger>
-                </TabsList>
-                <TabsContent value="write">
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
+              <div>
+                <Label htmlFor="description" className="text-foreground">Description</Label>
+                <Tabs defaultValue="write" className="mt-1.5">
+                  <TabsList className="bg-secondary/50 border border-border">
+                    <TabsTrigger value="write">Write</TabsTrigger>
+                    <TabsTrigger value="preview">Live Preview</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="write">
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      className="bg-secondary/50 border-border min-h-[150px] font-mono text-sm"
+                      placeholder="Use emoji headers and bullet points for best formatting&#10;&#10;🚀 PRODUCT TITLE&#10;&#10;✨ What's Included:&#10;✅ Feature 1&#10;✅ Feature 2&#10;✅ Feature 3"
+                      required
+                    />
+                  </TabsContent>
+                  <TabsContent value="preview" className="bg-secondary/30 border border-border rounded-lg p-4 min-h-[150px]">
+                    <FormattedDescription description={formData.description} />
+                    {!formData.description && (
+                      <p className="text-sm text-muted-foreground italic">Type something in the 'Write' tab to see a preview...</p>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="price" className="text-foreground">Base Price (Rs.)</Label>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
                     onChange={handleInputChange}
-                    className="bg-secondary/50 border-border min-h-[150px] font-mono text-sm"
-                    placeholder="Use emoji headers and bullet points for best formatting&#10;&#10;🚀 PRODUCT TITLE&#10;&#10;✨ What's Included:&#10;✅ Feature 1&#10;✅ Feature 2&#10;✅ Feature 3"
+                    className="mt-1.5 bg-secondary/50 border-border"
                     required
                   />
-                </TabsContent>
-                <TabsContent value="preview" className="bg-secondary/30 border border-border rounded-lg p-4 min-h-[150px]">
-                  <FormattedDescription description={formData.description} />
-                  {!formData.description && (
-                    <p className="text-sm text-muted-foreground italic">Type something in the 'Write' tab to see a preview...</p>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </div>
+                </div>
+                <div>
+                  <Label htmlFor="old_price" className="text-foreground">Old Price (Rs.)</Label>
+                  <Input
+                    id="old_price"
+                    name="old_price"
+                    type="number"
+                    step="0.01"
+                    value={formData.old_price ?? ''}
+                    onChange={handleInputChange}
+                    className="mt-1.5 bg-secondary/50 border-border"
+                  />
+                </div>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="price" className="text-foreground">Base Price (Rs.)</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  className="mt-1.5 bg-secondary/50 border-border"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="category" className="text-foreground">Category</Label>
+                  <Input
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="mt-1.5 bg-secondary/50 border-border"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="text-foreground">Stock Status</Label>
+                  <Select
+                    value={formData.stock_status}
+                    onValueChange={(value: StockStatus) => setFormData(prev => ({ ...prev, stock_status: value }))}
+                  >
+                    <SelectTrigger className="mt-1.5 bg-secondary/50 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      <SelectItem value="in_stock">In Stock</SelectItem>
+                      <SelectItem value="limited">Limited</SelectItem>
+                      <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="old_price" className="text-foreground">Old Price (Rs.)</Label>
-                <Input
-                  id="old_price"
-                  name="old_price"
-                  type="number"
-                  step="0.01"
-                  value={formData.old_price ?? ''}
-                  onChange={handleInputChange}
-                  className="mt-1.5 bg-secondary/50 border-border"
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="category" className="text-foreground">Category</Label>
-                <Input
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="mt-1.5 bg-secondary/50 border-border"
-                  required
-                />
+              {/* Customer Input Requirements */}
+              <div className="border p-4 rounded-lg bg-secondary/30 border-border">
+                <Label className="text-foreground mb-3 block">Customer Input Requirements</Label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="require_email"
+                      checked={formData.requirements?.require_email ?? false}
+                      onCheckedChange={(checked) => setFormData(prev => ({
+                        ...prev,
+                        requirements: { ...prev.requirements, require_email: checked }
+                      }))}
+                    />
+                    <Label htmlFor="require_email" className="text-foreground cursor-pointer font-normal">
+                      Require Customer Email (e.g. for account upgrade)
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="require_password"
+                      checked={formData.requirements?.require_password ?? false}
+                      onCheckedChange={(checked) => setFormData(prev => ({
+                        ...prev,
+                        requirements: { ...prev.requirements, require_password: checked }
+                      }))}
+                    />
+                    <Label htmlFor="require_password" className="text-foreground cursor-pointer font-normal">
+                      Require Customer Password
+                    </Label>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label className="text-foreground">Stock Status</Label>
-                <Select
-                  value={formData.stock_status}
-                  onValueChange={(value: StockStatus) => setFormData(prev => ({ ...prev, stock_status: value }))}
-                >
-                  <SelectTrigger className="mt-1.5 bg-secondary/50 border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="in_stock">In Stock</SelectItem>
-                    <SelectItem value="limited">Limited</SelectItem>
-                    <SelectItem value="out_of_stock">Out of Stock</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            {/* Customer Input Requirements */}
-            <div className="border p-4 rounded-lg bg-secondary/30 border-border">
-              <Label className="text-foreground mb-3 block">Customer Input Requirements</Label>
-              <div className="flex flex-col gap-3">
+              {/* Fulfillment Type */}
+              <div className="border p-4 rounded-lg bg-primary/5 border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-foreground font-bold">Manual Fulfillment Console</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Enable this to assign accounts manually using the inventory console.
+                      Disable for direct activation/emails.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.manual_fulfillment}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, manual_fulfillment: checked }))}
+                  />
+                </div>
+              </div>
+
+              {/* Status Toggles */}
+              <div className="flex flex-wrap gap-6 py-2">
                 <div className="flex items-center gap-3">
                   <Switch
-                    id="require_email"
-                    checked={formData.requirements?.require_email ?? false}
-                    onCheckedChange={(checked) => setFormData(prev => ({
-                      ...prev,
-                      requirements: { ...prev.requirements, require_email: checked }
-                    }))}
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                   />
-                  <Label htmlFor="require_email" className="text-foreground cursor-pointer font-normal">
-                    Require Customer Email (e.g. for account upgrade)
+                  <Label htmlFor="is_active" className="text-foreground cursor-pointer">
+                    Active (visible to customers)
                   </Label>
                 </div>
                 <div className="flex items-center gap-3">
                   <Switch
-                    id="require_password"
-                    checked={formData.requirements?.require_password ?? false}
-                    onCheckedChange={(checked) => setFormData(prev => ({
-                      ...prev,
-                      requirements: { ...prev.requirements, require_password: checked }
-                    }))}
+                    id="is_featured"
+                    checked={formData.is_featured}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
                   />
-                  <Label htmlFor="require_password" className="text-foreground cursor-pointer font-normal">
-                    Require Customer Password
+                  <Label htmlFor="is_featured" className="text-foreground cursor-pointer">
+                    Featured on homepage
                   </Label>
                 </div>
               </div>
-            </div>
 
-            {/* Fulfillment Type */}
-            <div className="border p-4 rounded-lg bg-primary/5 border-primary/20">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-foreground font-bold">Manual Fulfillment Console</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Enable this to assign accounts manually using the inventory console.
-                    Disable for direct activation/emails.
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.manual_fulfillment}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, manual_fulfillment: checked }))}
-                />
-              </div>
-            </div>
-
-            {/* Status Toggles */}
-            <div className="flex flex-wrap gap-6 py-2">
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                />
-                <Label htmlFor="is_active" className="text-foreground cursor-pointer">
-                  Active (visible to customers)
-                </Label>
-              </div>
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="is_featured"
-                  checked={formData.is_featured}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
-                />
-                <Label htmlFor="is_featured" className="text-foreground cursor-pointer">
-                  Featured on homepage
-                </Label>
-              </div>
-            </div>
-
-            {/* Main Image */}
-            <div>
-              <Label className="text-foreground">Main Product Image</Label>
-              <div className="mt-1.5 flex items-center gap-4">
-                <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden">
-                  <img
-                    src={formData.image_url}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadImage.isPending}
-                >
-                  {uploadImage.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4 mr-2" />
-                  )}
-                  Upload
-                </Button>
-              </div>
-            </div>
-
-            {/* Gallery Images */}
-            <div>
-              <Label className="text-foreground">Gallery Images (optional)</Label>
-              <p className="text-xs text-muted-foreground mb-2">Add additional images for the product gallery</p>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {galleryImages.map((img, idx) => (
-                  <div key={idx} className="relative w-16 h-16 rounded-lg bg-muted overflow-hidden group">
+              {/* Main Image */}
+              <div>
+                <Label className="text-foreground">Main Product Image</Label>
+                <div className="mt-1.5 flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden">
                     <img
-                      src={img.image_url}
-                      alt={`Gallery ${idx + 1}`}
+                      src={formData.image_url}
+                      alt="Preview"
                       className="w-full h-full object-cover"
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveGalleryImage(idx)}
-                      className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-4 h-4 text-white" />
-                    </button>
                   </div>
-                ))}
-                <input
-                  ref={galleryInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleGalleryUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => galleryInputRef.current?.click()}
-                  disabled={uploadImage.isPending}
-                  className="w-16 h-16 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <ImageIcon className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Pricing Plans Section */}
-            <div className="border-t border-border pt-4">
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-foreground text-base font-semibold">Pricing Plans</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddPricingPlan}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Plan
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Add multiple pricing options (e.g., 1 Month, 1 Year)
-              </p>
-
-              {pricingPlans.length === 0 ? (
-                <div className="text-center py-6 border border-dashed border-border rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    No pricing plans added. The base price will be used.
-                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadImage.isPending}
+                  >
+                    {uploadImage.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-2" />
+                    )}
+                    Upload
+                  </Button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {pricingPlans.map((plan, index) => (
-                    <div key={index} className="relative p-4 rounded-lg bg-secondary/30 border border-border">
+              </div>
+
+              {/* Gallery Images */}
+              <div>
+                <Label className="text-foreground">Gallery Images (optional)</Label>
+                <p className="text-xs text-muted-foreground mb-2">Add additional images for the product gallery</p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {galleryImages.map((img, idx) => (
+                    <div key={idx} className="relative w-16 h-16 rounded-lg bg-muted overflow-hidden group">
+                      <img
+                        src={img.image_url}
+                        alt={`Gallery ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
                       <button
                         type="button"
-                        onClick={() => handleRemovePricingPlan(index)}
-                        className="absolute top-2 right-2 p-1 rounded-full hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                        onClick={() => handleRemoveGalleryImage(idx)}
+                        className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-4 h-4 text-white" />
                       </button>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Plan Name</Label>
-                          <Input
-                            value={plan.name}
-                            onChange={(e) => handlePricingPlanChange(index, 'name', e.target.value)}
-                            placeholder="e.g., 1 Month"
-                            className="mt-1 h-9 bg-background border-border"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Duration</Label>
-                          <Input
-                            value={plan.duration}
-                            onChange={(e) => handlePricingPlanChange(index, 'duration', e.target.value)}
-                            placeholder="e.g., 30 days"
-                            className="mt-1 h-9 bg-background border-border"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Price (Rs.)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={plan.price}
-                            onChange={(e) => handlePricingPlanChange(index, 'price', parseFloat(e.target.value) || 0)}
-                            className="mt-1 h-9 bg-background border-border"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Old Price (Rs.)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={plan.old_price ?? ''}
-                            onChange={(e) => handlePricingPlanChange(index, 'old_price', e.target.value === '' ? null : parseFloat(e.target.value))}
-                            className="mt-1 h-9 bg-background border-border"
-                          />
-                        </div>
-                      </div>
-                      <label className="flex items-center gap-2 mt-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={plan.is_default}
-                          onChange={(e) => handlePricingPlanChange(index, 'is_default', e.target.checked)}
-                          className="rounded border-border"
-                        />
-                        <span className="text-sm text-muted-foreground">Default plan</span>
-                      </label>
-
-                      {/* Sub-Plans (Variants) Section */}
-                      <div className="mt-4 pt-4 border-t border-border/50">
-                        <div className="flex items-center justify-between mb-2">
-                          <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Sub-Plans (Optional)</Label>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs"
-                            onClick={() => handleAddVariant(index)}
-                          >
-                            <Plus className="w-3 h-3 mr-1" /> Add Sub-Plan
-                          </Button>
-                        </div>
-
-                        {plan.variants && plan.variants.length > 0 && (
-                          <div className="space-y-2">
-                            {plan.variants.map((variant, vIndex) => (
-                              <div key={vIndex} className="flex flex-wrap items-end gap-2 p-2 rounded bg-background/50 border border-border/50">
-                                <div className="flex-1 min-w-[120px]">
-                                  <Label className="text-[10px] text-muted-foreground">Name</Label>
-                                  <Input
-                                    value={variant.name}
-                                    onChange={(e) => handleVariantChange(index, vIndex, 'name', e.target.value)}
-                                    placeholder="Shared/Private"
-                                    className="h-7 text-xs"
-                                  />
-                                </div>
-                                <div className="w-[80px]">
-                                  <Label className="text-[10px] text-muted-foreground">Price</Label>
-                                  <Input
-                                    type="number"
-                                    value={variant.price}
-                                    onChange={(e) => handleVariantChange(index, vIndex, 'price', parseFloat(e.target.value) || 0)}
-                                    className="h-7 text-xs"
-                                  />
-                                </div>
-                                <div className="w-[100px]">
-                                  <Label className="text-[10px] text-muted-foreground">Stock</Label>
-                                  <Select
-                                    value={variant.stock_status}
-                                    onValueChange={(val) => handleVariantChange(index, vIndex, 'stock_status', val)}
-                                  >
-                                    <SelectTrigger className="h-7 text-xs">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="in_stock">In Stock</SelectItem>
-                                      <SelectItem value="limited">Limited</SelectItem>
-                                      <SelectItem value="out_of_stock">Out</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                                  onClick={() => handleRemoveVariant(index, vIndex)}
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
                     </div>
                   ))}
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGalleryUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    disabled={uploadImage.isPending}
+                    className="w-16 h-16 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" variant="hero" className="flex-1" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {editingProduct ? 'Update' : 'Add'} Product
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+              {/* Pricing Plans Section */}
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-foreground text-base font-semibold">Pricing Plans</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddPricingPlan}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Plan
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add multiple pricing options (e.g., 1 Month, 1 Year)
+                </p>
 
-    {/* Search */}
-    <div className="relative max-w-md mb-6">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-      <Input
-        type="text"
-        placeholder="Search products..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="pl-10 h-12 bg-card border-border"
-      />
-    </div>
-
-    {/* Loading State */}
-    {isLoading ? (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    ) : (
-      <>
-        {/* Products Table */}
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-secondary/50">
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Product</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Category</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Price</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Status</th>
-                  <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Plans</th>
-                  <th className="text-right text-sm font-medium text-muted-foreground py-4 px-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((product) => {
-                  const productPlans = getProductPricingPlans(product.id);
-                  const productImages = getProductGalleryImages(product.id);
-                  return (
-                    <tr key={product.id} className={cn("border-t border-border", !product.is_active && "opacity-60")}>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                            <img
-                              src={product.image_url}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
+                {pricingPlans.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed border-border rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      No pricing plans added. The base price will be used.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {pricingPlans.map((plan, index) => (
+                      <div key={index} className="relative p-4 rounded-lg bg-secondary/30 border border-border">
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePricingPlan(index)}
+                          className="absolute top-2 right-2 p-1 rounded-full hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Plan Name</Label>
+                            <Input
+                              value={plan.name}
+                              onChange={(e) => handlePricingPlanChange(index, 'name', e.target.value)}
+                              placeholder="e.g., 1 Month"
+                              className="mt-1 h-9 bg-background border-border"
                             />
-                            {productImages.length > 0 && (
-                              <div className="absolute bottom-0 right-0 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center rounded-tl">
-                                +{productImages.length}
-                              </div>
-                            )}
                           </div>
                           <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-foreground">{product.name}</p>
-                              {product.is_featured && (
-                                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <Label className="text-xs text-muted-foreground">Duration</Label>
+                            <Input
+                              value={plan.duration}
+                              onChange={(e) => handlePricingPlanChange(index, 'duration', e.target.value)}
+                              placeholder="e.g., 30 days"
+                              className="mt-1 h-9 bg-background border-border"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Price (Rs.)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={plan.price}
+                              onChange={(e) => handlePricingPlanChange(index, 'price', parseFloat(e.target.value) || 0)}
+                              className="mt-1 h-9 bg-background border-border"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Old Price (Rs.)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={plan.old_price ?? ''}
+                              onChange={(e) => handlePricingPlanChange(index, 'old_price', e.target.value === '' ? null : parseFloat(e.target.value))}
+                              className="mt-1 h-9 bg-background border-border"
+                            />
+                          </div>
+                        </div>
+                        <label className="flex items-center gap-2 mt-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={plan.is_default}
+                            onChange={(e) => handlePricingPlanChange(index, 'is_default', e.target.checked)}
+                            className="rounded border-border"
+                          />
+                          <span className="text-sm text-muted-foreground">Default plan</span>
+                        </label>
+
+                        {/* Sub-Plans (Variants) Section */}
+                        <div className="mt-4 pt-4 border-t border-border/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Sub-Plans (Optional)</Label>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-xs"
+                              onClick={() => handleAddVariant(index)}
+                            >
+                              <Plus className="w-3 h-3 mr-1" /> Add Sub-Plan
+                            </Button>
+                          </div>
+
+                          {plan.variants && plan.variants.length > 0 && (
+                            <div className="space-y-2">
+                              {plan.variants.map((variant, vIndex) => (
+                                <div key={vIndex} className="flex flex-wrap items-end gap-2 p-2 rounded bg-background/50 border border-border/50">
+                                  <div className="flex-1 min-w-[120px]">
+                                    <Label className="text-[10px] text-muted-foreground">Name</Label>
+                                    <Input
+                                      value={variant.name}
+                                      onChange={(e) => handleVariantChange(index, vIndex, 'name', e.target.value)}
+                                      placeholder="Shared/Private"
+                                      className="h-7 text-xs"
+                                    />
+                                  </div>
+                                  <div className="w-[80px]">
+                                    <Label className="text-[10px] text-muted-foreground">Price</Label>
+                                    <Input
+                                      type="number"
+                                      value={variant.price}
+                                      onChange={(e) => handleVariantChange(index, vIndex, 'price', parseFloat(e.target.value) || 0)}
+                                      className="h-7 text-xs"
+                                    />
+                                  </div>
+                                  <div className="w-[100px]">
+                                    <Label className="text-[10px] text-muted-foreground">Stock</Label>
+                                    <Select
+                                      value={variant.stock_status}
+                                      onValueChange={(val) => handleVariantChange(index, vIndex, 'stock_status', val)}
+                                    >
+                                      <SelectTrigger className="h-7 text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="in_stock">In Stock</SelectItem>
+                                        <SelectItem value="limited">Limited</SelectItem>
+                                        <SelectItem value="out_of_stock">Out</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                                    onClick={() => handleRemoveVariant(index, vIndex)}
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="hero" className="flex-1" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {editingProduct ? 'Update' : 'Add'} Product
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Search */}
+      <div className="relative max-w-md mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 h-12 bg-card border-border"
+        />
+      </div>
+
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <>
+          {/* Products Table */}
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-secondary/50">
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Product</th>
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Category</th>
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Price</th>
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Status</th>
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Plans</th>
+                    <th className="text-right text-sm font-medium text-muted-foreground py-4 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => {
+                    const productPlans = getProductPricingPlans(product.id);
+                    const productImages = getProductGalleryImages(product.id);
+                    return (
+                      <tr key={product.id} className={cn("border-t border-border", !product.is_active && "opacity-60")}>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="relative w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                              {productImages.length > 0 && (
+                                <div className="absolute bottom-0 right-0 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center rounded-tl">
+                                  +{productImages.length}
+                                </div>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-foreground">{product.name}</p>
+                                {product.is_featured && (
+                                  <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                          {product.category}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 font-medium text-foreground">
-                        {formatPrice(product.price)}
-                        {product.old_price && (
-                          <span className="ml-2 text-sm text-muted-foreground line-through">
-                            {formatPrice(product.old_price)}
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                            {product.category}
                           </span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex flex-col gap-1">
-                          <span className={cn(
-                            "px-2 py-0.5 rounded text-xs font-medium w-fit",
-                            product.is_active ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
-                          )}>
-                            {product.is_active ? 'Active' : 'Inactive'}
-                          </span>
-                          <span className={cn(
-                            "px-2 py-0.5 rounded text-xs w-fit",
-                            product.stock_status === 'in_stock' ? "bg-green-500/10 text-green-500" :
-                              product.stock_status === 'limited' ? "bg-amber-500/10 text-amber-500" :
-                                "bg-red-500/10 text-red-500"
-                          )}>
-                            {product.stock_status === 'in_stock' ? 'In Stock' :
-                              product.stock_status === 'limited' ? 'Limited' : 'Out of Stock'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        {productPlans.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {productPlans.map(plan => (
-                              <span
-                                key={plan.id}
-                                className="px-2 py-0.5 rounded text-xs bg-secondary text-muted-foreground"
-                              >
-                                {plan.name}
-                              </span>
-                            ))}
+                        </td>
+                        <td className="py-4 px-4 font-medium text-foreground">
+                          {formatPrice(product.price)}
+                          {product.old_price && (
+                            <span className="ml-2 text-sm text-muted-foreground line-through">
+                              {formatPrice(product.old_price)}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1">
+                            <span className={cn(
+                              "px-2 py-0.5 rounded text-xs font-medium w-fit",
+                              product.is_active ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                            )}>
+                              {product.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                            <span className={cn(
+                              "px-2 py-0.5 rounded text-xs w-fit",
+                              product.stock_status === 'in_stock' ? "bg-green-500/10 text-green-500" :
+                                product.stock_status === 'limited' ? "bg-amber-500/10 text-amber-500" :
+                                  "bg-red-500/10 text-red-500"
+                            )}>
+                              {product.stock_status === 'in_stock' ? 'In Stock' :
+                                product.stock_status === 'limited' ? 'Limited' : 'Out of Stock'}
+                            </span>
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleToggleActive(product)}
-                            title={product.is_active ? 'Deactivate' : 'Activate'}
-                          >
-                            {product.is_active ? (
-                              <Eye className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <EyeOff className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleToggleFeatured(product)}
-                            title={product.is_featured ? 'Remove from featured' : 'Add to featured'}
-                          >
-                            <Star className={cn(
-                              "w-4 h-4",
-                              product.is_featured ? "text-amber-500 fill-amber-500" : "text-muted-foreground"
-                            )} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenDialog(product)}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(product.id)}
-                            disabled={deleteProduct.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="py-4 px-4">
+                          {productPlans.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {productPlans.map(plan => (
+                                <span
+                                  key={plan.id}
+                                  className="px-2 py-0.5 rounded text-xs bg-secondary text-muted-foreground"
+                                >
+                                  {plan.name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleToggleActive(product)}
+                              title={product.is_active ? 'Deactivate' : 'Activate'}
+                            >
+                              {product.is_active ? (
+                                <Eye className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <EyeOff className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleToggleFeatured(product)}
+                              title={product.is_featured ? 'Remove from featured' : 'Add to featured'}
+                            >
+                              <Star className={cn(
+                                "w-4 h-4",
+                                product.is_featured ? "text-amber-500 fill-amber-500" : "text-muted-foreground"
+                              )} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenDialog(product)}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => handleDelete(product.id)}
+                              disabled={deleteProduct.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
 
-        <p className="text-sm text-muted-foreground mt-4">
-          Showing {filteredProducts.length} of {products.length} products
-        </p>
-      </>
-    )}
-  </div>
-);
+          <p className="text-sm text-muted-foreground mt-4">
+            Showing {filteredProducts.length} of {products.length} products
+          </p>
+        </>
+      )}
+    </div>
+  );
 };
 
 export default AdminProducts;

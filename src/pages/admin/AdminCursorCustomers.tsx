@@ -422,177 +422,178 @@ const AdminCursorCustomers = () => {
                     </Table>
                 </div>
             </div>
-            );
+        </div>
+    );
 };
 
-            // --- Sub-Components ---
+// --- Sub-Components ---
 
-            const StatsCard = ({title, value, icon: Icon, color, bg }: any) => (
-            <Card className="border-border">
-                <CardContent className="p-6 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-                        <div className="text-2xl font-bold">{value}</div>
-                    </div>
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
-                        <Icon className={`w-6 h-6 ${color}`} />
-                    </div>
-                </CardContent>
-            </Card>
-            );
+const StatsCard = ({ title, value, icon: Icon, color, bg }: any) => (
+    <Card className="border-border">
+        <CardContent className="p-6 flex items-center justify-between">
+            <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+                <div className="text-2xl font-bold">{value}</div>
+            </div>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
+                <Icon className={`w-6 h-6 ${color}`} />
+            </div>
+        </CardContent>
+    </Card>
+);
 
-            const TeamManagerDialog = ({teams, onSave, onDelete}: {teams: CursorTeam[], onSave: (t: any) => void, onDelete: (id: string) => void }) => {
+const TeamManagerDialog = ({ teams, onSave, onDelete }: { teams: CursorTeam[], onSave: (t: any) => void, onDelete: (id: string) => void }) => {
     const [name, setName] = useState('');
-            const [color, setColor] = useState('#3b82f6');
+    const [color, setColor] = useState('#3b82f6');
 
-            return (
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Manage Teams</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="space-y-4 max-h-[200px] overflow-y-auto mb-4 custom-scrollbar">
-                        {teams.map(t => (
-                            <div key={t.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50 group">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }} />
-                                    <span className="font-semibold">{t.name}</span>
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                        if (confirm('Delete this team? All assigned customers will be unassigned.')) {
-                                            onDelete(t.id);
-                                        }
-                                    }}
-                                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                                >
-                                    <Trash2 className="w-3 h-3" />
-                                </Button>
+    return (
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Manage Teams</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="space-y-4 max-h-[200px] overflow-y-auto mb-4 custom-scrollbar">
+                    {teams.map(t => (
+                        <div key={t.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50 group">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }} />
+                                <span className="font-semibold">{t.name}</span>
                             </div>
-                        ))}
-                    </div>
-                    <div className="border-t pt-4">
-                        <Label className="mb-2 block">Create New Team</Label>
-                        <div className="flex gap-2">
-                            <Input placeholder="Team Name" value={name} onChange={e => setName(e.target.value)} />
-                            <Input type="color" className="w-12 p-1" value={color} onChange={e => setColor(e.target.value)} />
-                            <Button onClick={() => { onSave({ name, color }); setName(''); }}>Add</Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    if (confirm('Delete this team? All assigned customers will be unassigned.')) {
+                                        onDelete(t.id);
+                                    }
+                                }}
+                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                            >
+                                <Trash2 className="w-3 h-3" />
+                            </Button>
                         </div>
+                    ))}
+                </div>
+                <div className="border-t pt-4">
+                    <Label className="mb-2 block">Create New Team</Label>
+                    <div className="flex gap-2">
+                        <Input placeholder="Team Name" value={name} onChange={e => setName(e.target.value)} />
+                        <Input type="color" className="w-12 p-1" value={color} onChange={e => setColor(e.target.value)} />
+                        <Button onClick={() => { onSave({ name, color }); setName(''); }}>Add</Button>
                     </div>
                 </div>
-            </DialogContent>
-            );
+            </div>
+        </DialogContent>
+    );
 };
 
-            const CustomerFormDialog = ({teams, mode, initialData, onSave}: {
-                teams: CursorTeam[],
-            mode: 'create' | 'edit',
-            initialData?: CursorCustomer | null,
+const CustomerFormDialog = ({ teams, mode, initialData, onSave }: {
+    teams: CursorTeam[],
+    mode: 'create' | 'edit',
+    initialData?: CursorCustomer | null,
     onSave: (data: any) => void
 }) => {
     // Initialize state
     const [data, setData] = useState({
-                email: initialData?.email || '',
-            team_id: initialData?.team_id || '',
-            purchase_date: initialData?.purchase_date ? format(parseISO(initialData.purchase_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-            duration_days: initialData?.duration_days || 30,
-            notes: initialData?.notes || ''
+        email: initialData?.email || '',
+        team_id: initialData?.team_id || '',
+        purchase_date: initialData?.purchase_date ? format(parseISO(initialData.purchase_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+        duration_days: initialData?.duration_days || 30,
+        notes: initialData?.notes || ''
     });
 
     // Update state when initialData changes (Fix for form not populating)
     useEffect(() => {
         if (initialData) {
-                setData({
-                    email: initialData.email,
-                    team_id: initialData.team_id || '',
-                    purchase_date: format(parseISO(initialData.purchase_date), 'yyyy-MM-dd'),
-                    duration_days: initialData.duration_days,
-                    notes: initialData.notes || ''
-                });
+            setData({
+                email: initialData.email,
+                team_id: initialData.team_id || '',
+                purchase_date: format(parseISO(initialData.purchase_date), 'yyyy-MM-dd'),
+                duration_days: initialData.duration_days,
+                notes: initialData.notes || ''
+            });
         } else {
-                // Reset if switching to create mode
-                setData({
-                    email: '',
-                    team_id: '',
-                    purchase_date: format(new Date(), 'yyyy-MM-dd'),
-                    duration_days: 30,
-                    notes: ''
-                });
+            // Reset if switching to create mode
+            setData({
+                email: '',
+                team_id: '',
+                purchase_date: format(new Date(), 'yyyy-MM-dd'),
+                duration_days: 30,
+                notes: ''
+            });
         }
     }, [initialData, mode]);
 
-            return (
-            <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                    <DialogTitle>{mode === 'create' ? 'Add New Customer' : 'Edit Customer'}</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
+    return (
+        <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+                <DialogTitle>{mode === 'create' ? 'Add New Customer' : 'Edit Customer'}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                    <Label>Email Address</Label>
+                    <Input
+                        value={data.email}
+                        onChange={e => setData({ ...data, email: e.target.value })}
+                        placeholder="customer@example.com"
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Email Address</Label>
+                        <Label>Team</Label>
+                        <Select onValueChange={v => setData({ ...data, team_id: v })} value={data.team_id || ''}>
+                            <SelectTrigger><SelectValue placeholder="Select Team" /></SelectTrigger>
+                            <SelectContent>
+                                {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Duration (Days)</Label>
                         <Input
-                            value={data.email}
-                            onChange={e => setData({ ...data, email: e.target.value })}
-                            placeholder="customer@example.com"
+                            type="number"
+                            value={data.duration_days}
+                            onChange={e => setData({ ...data, duration_days: parseInt(e.target.value) })}
                         />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Team</Label>
-                            <Select onValueChange={v => setData({ ...data, team_id: v })} value={data.team_id || ''}>
-                                <SelectTrigger><SelectValue placeholder="Select Team" /></SelectTrigger>
-                                <SelectContent>
-                                    {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Duration (Days)</Label>
-                            <Input
-                                type="number"
-                                value={data.duration_days}
-                                onChange={e => setData({ ...data, duration_days: parseInt(e.target.value) })}
-                            />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Purchase Date</Label>
-                        <Input
-                            type="date"
-                            value={data.purchase_date}
-                            onChange={e => setData({ ...data, purchase_date: e.target.value })}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Notes (Optional)</Label>
-                        <Textarea
-                            value={data.notes}
-                            onChange={e => setData({ ...data, notes: e.target.value })}
-                        />
-                    </div>
-
-                    {/* Expiry Preview */}
-                    <div className="p-3 bg-secondary/50 rounded-lg text-sm flex items-center justify-between">
-                        <span className="text-muted-foreground">Calculated Expiry:</span>
-                        <span className="font-bold font-mono">
-                            {data.purchase_date && format(addDays(new Date(data.purchase_date), data.duration_days), 'MMM dd, yyyy')}
-                        </span>
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button onClick={() => onSave({ ...data, purchase_date: new Date(data.purchase_date).toISOString() })}>
-                        {mode === 'create' ? 'Create Customer' : 'Update Customer'}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-            );
+                <div className="space-y-2">
+                    <Label>Purchase Date</Label>
+                    <Input
+                        type="date"
+                        value={data.purchase_date}
+                        onChange={e => setData({ ...data, purchase_date: e.target.value })}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label>Notes (Optional)</Label>
+                    <Textarea
+                        value={data.notes}
+                        onChange={e => setData({ ...data, notes: e.target.value })}
+                    />
+                </div>
+
+                {/* Expiry Preview */}
+                <div className="p-3 bg-secondary/50 rounded-lg text-sm flex items-center justify-between">
+                    <span className="text-muted-foreground">Calculated Expiry:</span>
+                    <span className="font-bold font-mono">
+                        {data.purchase_date && format(addDays(new Date(data.purchase_date), data.duration_days), 'MMM dd, yyyy')}
+                    </span>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button onClick={() => onSave({ ...data, purchase_date: new Date(data.purchase_date).toISOString() })}>
+                    {mode === 'create' ? 'Create Customer' : 'Update Customer'}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    );
 };
 
-            const BulkImportDialog = ({teams, onImport}: {teams: CursorTeam[], onImport: (data: any) => void }) => {
+const BulkImportDialog = ({ teams, onImport }: { teams: CursorTeam[], onImport: (data: any) => void }) => {
     const [text, setText] = useState('');
-            const [teamId, setTeamId] = useState('');
-            const [duration, setDuration] = useState(30);
+    const [teamId, setTeamId] = useState('');
+    const [duration, setDuration] = useState(30);
 
     const parseEmails = () => {
         // Simple regex to extract emails from messy text
@@ -601,60 +602,60 @@ const AdminCursorCustomers = () => {
 
     const handleImport = () => {
         const emails = parseEmails();
-            if (emails.length === 0 || !teamId) return;
-            onImport({emails, team_id: teamId, duration });
+        if (emails.length === 0 || !teamId) return;
+        onImport({ emails, team_id: teamId, duration });
     };
 
-            return (
-            <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                    <DialogTitle>Bulk Import Customers</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Assign to Team</Label>
-                            <Select onValueChange={setTeamId} value={teamId}>
-                                <SelectTrigger><SelectValue placeholder="Select Team" /></SelectTrigger>
-                                <SelectContent>
-                                    {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Duration (Days)</Label>
-                            <Input
-                                type="number"
-                                value={duration}
-                                onChange={e => setDuration(parseInt(e.target.value))}
-                            />
-                        </div>
-                    </div>
-
+    return (
+        <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+                <DialogTitle>Bulk Import Customers</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Paste Emails</Label>
-                        <p className="text-xs text-muted-foreground">Paste a list of emails. We'll automatically extract valid email addresses.</p>
-                        <Textarea
-                            value={text}
-                            onChange={e => setText(e.target.value)}
-                            placeholder={"user1@gmail.com\nuser2@gmail.com\nRandom text with user3@gmail.com inside"}
-                            className="h-40 font-mono text-sm"
+                        <Label>Assign to Team</Label>
+                        <Select onValueChange={setTeamId} value={teamId}>
+                            <SelectTrigger><SelectValue placeholder="Select Team" /></SelectTrigger>
+                            <SelectContent>
+                                {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Duration (Days)</Label>
+                        <Input
+                            type="number"
+                            value={duration}
+                            onChange={e => setDuration(parseInt(e.target.value))}
                         />
                     </div>
-
-                    {text && (
-                        <div className="p-3 bg-secondary/50 rounded-lg text-sm">
-                            <span className="font-bold text-primary">{parseEmails().length}</span> valid emails found.
-                        </div>
-                    )}
                 </div>
-                <DialogFooter>
-                    <Button onClick={handleImport} disabled={!teamId || parseEmails().length === 0}>
-                        Import {parseEmails().length > 0 && `(${parseEmails().length})`} Users
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-            );
+
+                <div className="space-y-2">
+                    <Label>Paste Emails</Label>
+                    <p className="text-xs text-muted-foreground">Paste a list of emails. We'll automatically extract valid email addresses.</p>
+                    <Textarea
+                        value={text}
+                        onChange={e => setText(e.target.value)}
+                        placeholder={"user1@gmail.com\nuser2@gmail.com\nRandom text with user3@gmail.com inside"}
+                        className="h-40 font-mono text-sm"
+                    />
+                </div>
+
+                {text && (
+                    <div className="p-3 bg-secondary/50 rounded-lg text-sm">
+                        <span className="font-bold text-primary">{parseEmails().length}</span> valid emails found.
+                    </div>
+                )}
+            </div>
+            <DialogFooter>
+                <Button onClick={handleImport} disabled={!teamId || parseEmails().length === 0}>
+                    Import {parseEmails().length > 0 && `(${parseEmails().length})`} Users
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    );
 };
 
-            export default AdminCursorCustomers;
+export default AdminCursorCustomers;
