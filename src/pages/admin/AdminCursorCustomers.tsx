@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -403,7 +403,7 @@ const CustomerFormDialog = ({ teams, mode, initialData, onSave }: {
     initialData?: CursorCustomer | null,
     onSave: (data: any) => void
 }) => {
-    // Initialize state with default or initial data
+    // Initialize state
     const [data, setData] = useState({
         email: initialData?.email || '',
         team_id: initialData?.team_id || '',
@@ -412,8 +412,27 @@ const CustomerFormDialog = ({ teams, mode, initialData, onSave }: {
         notes: initialData?.notes || ''
     });
 
-    // Reset data when dialog opens/closes or switches mode (handled by key or effect in parent ideally, but here we can just rely on mount)
-    // Actually, simple way is to use key={editingCustomer?.id} in parent to force re-mount
+    // Update state when initialData changes (Fix for form not populating)
+    useEffect(() => {
+        if (initialData) {
+            setData({
+                email: initialData.email,
+                team_id: initialData.team_id || '',
+                purchase_date: format(parseISO(initialData.purchase_date), 'yyyy-MM-dd'),
+                duration_days: initialData.duration_days,
+                notes: initialData.notes || ''
+            });
+        } else {
+            // Reset if switching to create mode
+            setData({
+                email: '',
+                team_id: '',
+                purchase_date: format(new Date(), 'yyyy-MM-dd'),
+                duration_days: 30,
+                notes: ''
+            });
+        }
+    }, [initialData, mode]);
 
     return (
         <DialogContent className="sm:max-w-[500px]">
