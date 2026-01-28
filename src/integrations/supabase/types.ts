@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      cursor_customers: {
+        Row: {
+          created_at: string
+          duration_days: number
+          email: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          purchase_date: string
+          team_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_days?: number
+          email: string
+          end_date?: never
+          id?: string
+          notes?: string | null
+          purchase_date?: string
+          team_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_days?: number
+          email?: string
+          end_date?: never
+          id?: string
+          notes?: string | null
+          purchase_date?: string
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cursor_customers_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "cursor_teams"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      cursor_teams: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
