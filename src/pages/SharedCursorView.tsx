@@ -259,21 +259,22 @@ const SharedCursorView = () => {
                     </div>
                 </div>
             </div>
-            );
+        </div>
+    );
 };
 
-            const StatsCard = ({title, value, icon: Icon, color, bg }: any) => (
-            <Card className="border-border">
-                <CardContent className="p-6 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-                        <div className="text-2xl font-bold">{value}</div>
-                    </div>
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
-                        <Icon className={`w-6 h-6 ${color}`} />
-                    </div>
-                </CardContent>
-            </Card>
-            );
+const StatsCard = ({ title, value, icon: Icon, color, bg }: any) => (
+    <Card className="border-border">
+        <CardContent className="p-6 flex items-center justify-between">
+            <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+                <div className="text-2xl font-bold">{value}</div>
+            </div>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
+                <Icon className={`w-6 h-6 ${color}`} />
+            </div>
+        </CardContent>
+    </Card>
+);
 
-            export default SharedCursorView;
+export default SharedCursorView;

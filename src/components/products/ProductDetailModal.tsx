@@ -365,109 +365,107 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 </div>
               )}
 
+
+
+              {/* Sub-Plans (Variants) Selector */}
+              {activeVariants.length > 0 && (
+                <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="text-sm font-medium text-foreground mb-3">Select Option:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {activeVariants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={cn(
+                          "relative flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-200 group text-left",
+                          selectedVariant?.id === variant.id
+                            ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)]"
+                            : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50"
+                        )}
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-foreground">{variant.name}</span>
+                          {variant.stock_status !== 'in_stock' && (
+                            <span className={cn(
+                              "text-[10px] font-medium mt-1",
+                              variant.stock_status === 'limited' ? "text-amber-500" : "text-red-500"
+                            )}>
+                              {variant.stock_status === 'limited' ? 'Limited Stock' : 'Out of Stock'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-foreground">
+                            {formatPrice(variant.price)}
+                          </div>
+                          {variant.old_price && (
+                            <div className="text-[10px] text-muted-foreground line-through">
+                              {formatPrice(variant.old_price)}
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+
+            {/* Actions Footer */}
+            <div className="flex-shrink-0 p-4 sm:p-6 md:p-8 pt-0 border-t border-border bg-card pb-6 md:pb-8">
+              {/* Selected Plan Summary */}
+              {selectedPlan && (
+                <div className="flex items-center justify-between mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-secondary/50">
+                  <div>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Selected:</p>
+                    <div className="flex flex-wrap gap-1 items-center">
+                      <p className="text-sm sm:text-base font-semibold text-foreground">{selectedPlan.name}</p>
+                      {selectedVariant && (
+                        <>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="text-sm sm:text-base font-semibold text-primary">{selectedVariant.name}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg sm:text-2xl font-bold text-foreground">
+                      {formatPrice(currentPrice)}
+                    </p>
+                    {currentOldPrice && (
+                      <p className="text-xs sm:text-sm text-muted-foreground line-through">
+                        {formatPrice(currentOldPrice)}
+                      </p>
+                    )}
+                  </div>
+                </div>
               )}
 
-          {/* Sub-Plans (Variants) Selector */}
-          {activeVariants.length > 0 && (
-            <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-              <p className="text-sm font-medium text-foreground mb-3">Select Option:</p>
-              <div className="grid grid-cols-2 gap-2">
-                {activeVariants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={cn(
-                      "relative flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-200 group text-left",
-                      selectedVariant?.id === variant.id
-                        ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)]"
-                        : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50"
-                    )}
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-foreground">{variant.name}</span>
-                      {variant.stock_status !== 'in_stock' && (
-                        <span className={cn(
-                          "text-[10px] font-medium mt-1",
-                          variant.stock_status === 'limited' ? "text-amber-500" : "text-red-500"
-                        )}>
-                          {variant.stock_status === 'limited' ? 'Limited Stock' : 'Out of Stock'}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-foreground">
-                        {formatPrice(variant.price)}
-                      </div>
-                      {variant.old_price && (
-                        <div className="text-[10px] text-muted-foreground line-through">
-                          {formatPrice(variant.old_price)}
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:flex-1 h-12 rounded-xl border-2 font-bold hover:bg-secondary/80 active:scale-95 transition-all"
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock}
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                </Button>
+                <Button
+                  variant="hero"
+                  size="lg"
+                  className="w-full sm:flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all"
+                  onClick={handleBuyNow}
+                  disabled={isOutOfStock}
+                >
+                  <Zap className="w-5 h-5 mr-2 fill-current" />
+                  {isOutOfStock ? 'Unavailable' : 'Buy Now'}
+                </Button>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Actions Footer */}
-        <div className="flex-shrink-0 p-4 sm:p-6 md:p-8 pt-0 border-t border-border bg-card pb-6 md:pb-8">
-          {/* Selected Plan Summary */}
-          {selectedPlan && (
-            <div className="flex items-center justify-between mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-secondary/50">
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Selected:</p>
-                <div className="flex flex-wrap gap-1 items-center">
-                  <p className="text-sm sm:text-base font-semibold text-foreground">{selectedPlan.name}</p>
-                  {selectedVariant && (
-                    <>
-                      <span className="text-muted-foreground">/</span>
-                      <span className="text-sm sm:text-base font-semibold text-primary">{selectedVariant.name}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-lg sm:text-2xl font-bold text-foreground">
-                  {formatPrice(currentPrice)}
-                </p>
-                {currentOldPrice && (
-                  <p className="text-xs sm:text-sm text-muted-foreground line-through">
-                    {formatPrice(currentOldPrice)}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full sm:flex-1 h-12 rounded-xl border-2 font-bold hover:bg-secondary/80 active:scale-95 transition-all"
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-            >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-            </Button>
-            <Button
-              variant="hero"
-              size="lg"
-              className="w-full sm:flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all"
-              onClick={handleBuyNow}
-              disabled={isOutOfStock}
-            >
-              <Zap className="w-5 h-5 mr-2 fill-current" />
-              {isOutOfStock ? 'Unavailable' : 'Buy Now'}
-            </Button>
           </div>
         </div>
-      </div>
-    </div>
       </DialogContent >
     </Dialog >
   );
