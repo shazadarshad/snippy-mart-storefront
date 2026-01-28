@@ -87,41 +87,40 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {stats.map((stat, index) => (
           <Card key={index} className="bg-card border-border shadow-sm overflow-hidden group hover:border-primary/50 transition-colors">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl ${stat.bgColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+            <CardContent className="p-3 md:p-6">
+              <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl ${stat.bgColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                  <stat.icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl md:text-2xl font-black text-foreground truncate">{stat.value}</p>
-                  <p className="text-[10px] md:text-xs text-muted-foreground font-black uppercase tracking-tighter">{stat.title}</p>
+                  <p className="text-lg md:text-2xl font-black text-foreground truncate">{stat.value}</p>
+                  <p className="text-[9px] md:text-xs text-muted-foreground font-black uppercase tracking-tighter truncate">{stat.title}</p>
                 </div>
-                <TrendingUp className="w-4 h-4 text-success shrink-0 opacity-40" />
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Order Status Summary */}
+      {/* Order Status Summary - Scrollable on mobile for better fit or Grid 2x2 */}
       {!statsLoading && orderStats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
-          <div className="p-3 md:p-4 rounded-2xl bg-warning/10 border border-warning/20 flex flex-col items-center justify-center text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-4">
+          <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-warning/10 border border-warning/20 flex flex-col items-center justify-center text-center">
             <p className="text-xl md:text-2xl font-black text-warning leading-none">{orderStats.pendingOrders}</p>
             <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Pending</p>
           </div>
-          <div className="p-3 md:p-4 rounded-2xl bg-success/10 border border-success/20 flex flex-col items-center justify-center text-center">
+          <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-success/10 border border-success/20 flex flex-col items-center justify-center text-center">
             <p className="text-xl md:text-2xl font-black text-success leading-none">{orderStats.completedOrders}</p>
             <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Completed</p>
           </div>
-          <div className="p-3 md:p-4 rounded-2xl bg-destructive/10 border border-destructive/20 flex flex-col items-center justify-center text-center">
+          <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-destructive/10 border border-destructive/20 flex flex-col items-center justify-center text-center">
             <p className="text-xl md:text-2xl font-black text-destructive leading-none">{orderStats.cancelledOrders}</p>
             <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Cancelled</p>
           </div>
-          <div className="p-3 md:p-4 rounded-2xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-center">
+          <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-center">
             <p className="text-xl md:text-2xl font-black text-muted-foreground leading-none">{orderStats.refundedOrders}</p>
             <p className="text-[9px] md:text-xs font-black text-muted-foreground uppercase mt-1 tracking-wider">Refunded</p>
           </div>
