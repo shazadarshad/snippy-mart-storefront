@@ -15,6 +15,10 @@ export interface Product {
   plan_id?: string;
   plan_name?: string;
 
+  /** Optional variant selection (sub-plan) */
+  variant_id?: string;
+  variant_name?: string;
+
   requirements?: {
     require_email?: boolean;
     require_password?: boolean;
@@ -54,8 +58,8 @@ interface CartStore {
 }
 
 const getCartItemId = (product: Product) => {
-  // Keep base product UUID intact; include plan_id if present.
-  return `${product.id}${product.plan_id ? `:${product.plan_id}` : ''}`;
+  // Keep base product UUID intact; include plan_id and variant_id if present.
+  return `${product.id}${product.plan_id ? `:${product.plan_id}` : ''}${product.variant_id ? `:${product.variant_id}` : ''}`;
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -147,6 +151,8 @@ export const useCartStore = create<CartStore>()(
           let baseId = String(legacyProduct.id ?? '');
           let plan_id: string | undefined = legacyProduct.plan_id;
           let plan_name: string | undefined = legacyProduct.plan_name;
+          let variant_id: string | undefined = legacyProduct.variant_id;
+          let variant_name: string | undefined = legacyProduct.variant_name;
           let name: string = String(legacyProduct.name ?? '');
 
           if (baseId.length > 36 && baseId[36] === '-') {
@@ -176,6 +182,8 @@ export const useCartStore = create<CartStore>()(
             category: String(legacyProduct.category ?? ''),
             plan_id,
             plan_name,
+            variant_id,
+            variant_name,
           };
 
           const id = getCartItemId(product);

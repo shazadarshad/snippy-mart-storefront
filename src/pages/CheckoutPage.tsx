@@ -105,6 +105,8 @@ const CheckoutPage = () => {
         product_id: item.product.id,
         product_name: item.product.name,
         plan_name: item.product.plan_name,
+        variant_id: item.product.variant_id,
+        variant_name: item.product.variant_name,
         quantity: item.quantity,
         unit_price: item.product.price,
         total_price: item.product.price * item.quantity,

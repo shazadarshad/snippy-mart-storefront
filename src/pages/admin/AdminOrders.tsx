@@ -734,7 +734,10 @@ const AdminOrders = () => {
                             <div className="flex justify-between items-center w-full">
                               <div>
                                 <p className="text-xs font-black text-foreground">{item.product_name}</p>
-                                <p className="text-[10px] font-bold text-primary">{item.plan_name}</p>
+                                <p className="text-[10px] font-bold text-primary">
+                                  {item.plan_name}
+                                  {item.variant_name && <span className="text-muted-foreground opacity-80"> / {item.variant_name}</span>}
+                                </p>
                               </div>
                               <div className="text-right">
                                 <p className="text-xs font-black text-foreground">x{item.quantity}</p>

@@ -9,6 +9,8 @@ export interface OrderItem {
   product_id: string | null;
   product_name: string;
   plan_name: string | null;
+  variant_id?: string | null;
+  variant_name?: string | null;
   quantity: number;
   unit_price: number;
   total_price: number;
@@ -149,6 +151,8 @@ export const useCreateOrder = () => {
         product_id?: string;
         product_name: string;
         plan_name?: string;
+        variant_id?: string;
+        variant_name?: string;
         quantity: number;
         unit_price: number;
         total_price: number;

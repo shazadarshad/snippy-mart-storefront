@@ -138,3 +138,91 @@ export const useDeletePricingPlan = () => {
     },
   });
 };
+
+// --- Pricing Plan Variants (Sub-Plans) ---
+
+export interface PricingPlanVariant {
+  id: string;
+  plan_id: string;
+  name: string;
+  price: number;
+  old_price?: number | null;
+  is_active: boolean;
+  stock_status: string;
+}
+
+export interface PricingPlanVariantFormData {
+  plan_id: string;
+  name: string;
+  price: number;
+  old_price?: number | null;
+  is_active?: boolean;
+  stock_status?: string;
+}
+
+// Fetch variants for all plans (can filter by plan_id in component)
+export const usePricingPlanVariants = () => {
+  return useQuery({
+    queryKey: ['pricing-plan-variants', 'all'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_pricing_plan_variants')
+        .select('*')
+        .order('price', { ascending: true });
+
+      if (error) throw error;
+      return data as PricingPlanVariant[];
+    },
+  });
+};
+
+// Add a variant
+export const useAddPricingPlanVariant = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (variant: PricingPlanVariantFormData) => {
+      const { data, error } = await supabase
+        .from('product_pricing_plan_variants')
+        .insert([variant])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-plan-variants'] });
+      toast({ title: 'Sub-plan added', description: `${data.name} has been added.` });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+};
+
+// Delete a variant
+export const useDeletePricingPlanVariant = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('product_pricing_plan_variants')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-plan-variants'] });
+      toast({ title: 'Sub-plan deleted', description: 'The sub-plan has been removed.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+};
