@@ -42,7 +42,7 @@ const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates
 const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
 const AdminPolicies = lazy(() => import("./pages/admin/AdminPolicies"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
-const AdminCursorCustomers = lazy(() => import("./pages/admin/AdminCursorCustomers"));
+const AdminCursorSystem = lazy(() => import("./pages/admin/cursor/AdminCursorSystem"));
 const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -95,7 +95,7 @@ const AppContent = () => {
               <Route path="email-templates" element={<AdminEmailTemplates />} />
               <Route path="inventory" element={<AdminInventory />} />
               <Route path="coupons" element={<AdminCoupons />} />
-              <Route path="cursor-customers" element={<AdminCursorCustomers />} />
+              <Route path="cursor-system" element={<AdminCursorSystem />} />
               <Route path="policies" element={<AdminPolicies />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>

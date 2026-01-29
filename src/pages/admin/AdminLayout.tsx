@@ -44,7 +44,7 @@ const AdminLayout = () => {
     { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquare },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { name: 'Inventory', path: '/admin/inventory', icon: Package },
-    { name: 'Cursor Users', path: '/admin/cursor-customers', icon: Users },
+    { name: 'Cursor System', path: '/admin/cursor-system', icon: Users },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag },
     { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
     { name: 'Email Templates', path: '/admin/email-templates', icon: FileText },
