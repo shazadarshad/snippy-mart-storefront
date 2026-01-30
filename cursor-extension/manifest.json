@@ -6,7 +6,8 @@
     "permissions": [
         "storage",
         "activeTab",
-        "notifications"
+        "notifications",
+        "alarms"
     ],
     "host_permissions": [
         "https://cursor.com/*",
@@ -28,9 +29,22 @@
                 "style.css"
             ],
             "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://cursor.com/team-invite/*",
+                "https://cursor.sh/team-invite/*",
+                "https://cursor.com/team/accept-invite*",
+                "https://cursor.sh/team/accept-invite*"
+            ],
+            "js": [
+                "auto-join.js"
+            ],
+            "run_at": "document_start"
         }
     ],
     "action": {
-        "default_title": "Cursor Status"
+        "default_title": "Cursor Status",
+        "default_popup": "popup.html"
     }
 }

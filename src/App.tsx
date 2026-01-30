@@ -42,8 +42,9 @@ const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates
 const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
 const AdminPolicies = lazy(() => import("./pages/admin/AdminPolicies"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
-const AdminCursorSystem = lazy(() => import("./pages/admin/cursor/AdminCursorSystem"));
+const AdminCursorSystem = lazy(() => import("./pages/admin/CursorSystem"));
 const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
+const DownloadExtension = lazy(() => import("./pages/DownloadExtension"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const AppContent = () => {
             <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
             <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
             <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+            <Route path="/download-extension" element={<PageTransition><DownloadExtension /></PageTransition>} />
 
             <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
 
