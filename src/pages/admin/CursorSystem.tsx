@@ -177,6 +177,25 @@ const CursorSystem = () => {
     });
 
 
+    const uploadExtensionMutation = useMutation({
+        mutationFn: async (file: File) => {
+            const { error: uploadError } = await supabase.storage
+                .from('extension-artifacts')
+                .upload('latest.zip', file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // Also upload updates.xml if present (optional, but good for completeness)
+            // For now just zip is enough for manual download.
+        },
+        onSuccess: () => {
+            toast.success('Extension Release Updated!');
+        },
+        onError: (error) => {
+            toast.error('Upload failed: ' + error.message);
+        }
+    });
+
     // --- UI HELPERS ---
 
     const getStatusBadge = (status: string) => {
@@ -272,13 +291,13 @@ const CursorSystem = () => {
 
             {/* Main Content Tabs */}
             <div className="flex items-center gap-4 border-b border-border mb-6 overflow-x-auto">
-                {['teams', 'customers', 'invites', 'settings'].map(tab => (
+                {['teams', 'customers', 'invites', 'settings', 'release'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab as any)}
                         className={`px-4 py-3 text-sm font-bold uppercase tracking-wide border-b-2 transition-all whitespace-nowrap ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
-                        {tab === 'settings' ? 'System Settings' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {tab === 'release' ? 'Release Manager' : (tab === 'settings' ? 'System Settings' : tab.charAt(0).toUpperCase() + tab.slice(1))}
                     </button>
                 ))}
             </div>
@@ -499,6 +518,37 @@ const CursorSystem = () => {
                                     </div>
                                 </div>
                             ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* TAB: RELEASE */}
+            {activeTab === 'release' && (
+                <div className="space-y-6">
+                    <Card className="border-primary/50 bg-primary/5">
+                        <CardHeader>
+                            <CardTitle>Release Management</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="border-2 border-dashed border-primary/20 rounded-xl p-12 text-center hover:bg-primary/10 transition-colors">
+                                <h3 className="text-lg font-bold mb-2">Upload Obfuscated Extension</h3>
+                                <p className="text-sm text-muted-foreground mb-6">
+                                    Drag and drop your <code>dist/cursor-smart-recovery-secure.zip</code> here to publish.
+                                    <br />
+                                    This will instantly update the public download link.
+                                </p>
+                                <Input
+                                    type="file"
+                                    accept=".zip"
+                                    className="max-w-sm mx-auto file:text-primary file:font-bold"
+                                    onChange={(e) => {
+                                        if (e.target.files?.[0]) {
+                                            uploadExtensionMutation.mutate(e.target.files[0]);
+                                        }
+                                    }}
+                                />
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

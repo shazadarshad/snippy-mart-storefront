@@ -1,127 +1,148 @@
-import React from 'react';
-import { Download, FolderOpen, Puzzle, ToggleRight, Play, Pin, ExternalLink } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { Download, ShieldCheck, Zap, Terminal } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const DownloadExtension = () => {
+    const [downloadUrl, setDownloadUrl] = useState<string>('');
+
+    useEffect(() => {
+        const { data } = supabase.storage
+            .from('extension-artifacts')
+            .getPublicUrl('latest.zip');
+        setDownloadUrl(data.publicUrl);
+    }, []);
+
     return (
-        <div className="min-h-screen bg-background pt-24 pb-16">
-            <div className="container px-4 mx-auto max-w-4xl">
+        <div className="min-h-screen bg-black text-white selection:bg-white/20 overflow-hidden font-display relative">
+            {/* Background Gradients */}
+            <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-purple-900/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-20%] right-[-20%] w-[800px] h-[800px] bg-blue-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-                {/* Header Section */}
-                <div className="text-center mb-16 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-primary/10 text-primary mb-4">
-                        <Puzzle className="w-8 h-8" />
+            <div className="container mx-auto px-4 py-20 relative z-10 flex flex-col items-center justify-center min-h-screen">
+
+                {/* Hero Section */}
+                <div className="text-center space-y-6 max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-4 shadow-xl">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        <span className="text-sm font-mono tracking-wide text-gray-300">SYSTEM OPERATIONAL v1.0.0</span>
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-display font-black tracking-tight text-foreground">
-                        Cursor Smart <span className="gradient-text">Recovery</span>
+
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 pb-4">
+                        Cursor Smart Recovery.
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                        The ultimate companion for your team. Restore access in one click, monitor health, and never get locked out again.
+                    <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                        The automated guardian for your development workflow. <br />
+                        Instantly restores team access, limits velocity, and keeps you coding.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                        <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-transform" onClick={() => window.open('/extension.zip', '_blank')}>
-                            <Download className="w-5 h-5 mr-2" />
-                            Download v1.0
+                    <div className="pt-8 flex flex-col md:flex-row gap-4 justify-center items-center">
+                        <Button
+                            size="lg"
+                            className="h-14 px-8 text-lg rounded-full bg-white text-black hover:bg-gray-200 transition-all hover:scale-105 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] font-bold group"
+                            onClick={() => window.location.href = downloadUrl}
+                        >
+                            <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+                            Download Extension
                         </Button>
-                        <Button variant="outline" size="lg" className="h-14 px-8 text-lg rounded-full" onClick={() => document.getElementById('steps')?.scrollIntoView({ behavior: 'smooth' })}>
-                            How to Install
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            className="h-14 px-8 text-lg rounded-full border-white/20 bg-white/5 backdrop-blur hover:bg-white/10 transition-all font-bold"
+                            onClick={() => document.getElementById('install-guide')?.scrollIntoView({ behavior: 'smooth' })}
+                        >
+                            Installation Guide
                         </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold opacity-60">
-                        Requires Google Chrome / Brave / Edge
-                    </p>
                 </div>
 
-                {/* Steps Section */}
-                <div id="steps" className="grid gap-12 relative">
-                    {/* Connector Line */}
-                    <div className="hidden md:block absolute left-[29px] top-8 bottom-8 w-0.5 bg-border/50 -z-10"></div>
 
-                    <Step
-                        number="1"
-                        title="Download & Extract"
-                        desc="Download the zip file and extract the contents to a folder. Keep this folder purely for the extension."
-                        icon={FolderOpen}
-                    />
 
-                    <Step
-                        number="2"
-                        title="Open Extensions Page"
-                        desc="In your browser, navigate to the extensions management page."
-                        icon={Puzzle}
-                        action={
-                            <div className="mt-4 p-3 bg-secondary/50 rounded-lg font-mono text-sm text-muted-foreground flex items-center justify-between border border-border/50">
-                                <span>chrome://extensions</span>
-                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => navigator.clipboard.writeText('chrome://extensions')}>
-                                    <span className="sr-only">Copy</span>
-                                    <ExternalLink className="w-3 h-3" />
-                                </Button>
-                            </div>
-                        }
-                    />
-
-                    <Step
-                        number="3"
-                        title="Enable Developer Mode"
-                        desc="Toggle the switch in the top-right corner to enable advanced installation options."
-                        icon={ToggleRight}
-                    />
-
-                    <Step
-                        number="4"
-                        title="Load Unpacked"
-                        desc="Click the 'Load Unpacked' button and select the folder you extracted in Step 1."
-                        icon={Play}
-                    />
-
-                    <Step
-                        number="5"
-                        title="Login & Pin"
-                        desc="Click the puzzle icon in your toolbar, pin 'Cursor Smart Recovery', and enter your email."
-                        icon={Pin}
-                        isLast
-                    />
-
-                </div>
-
-                {/* Support Section */}
-                <Card className="mt-16 bg-card border-border overflow-hidden">
-                    <CardContent className="p-8 text-center space-y-4">
-                        <h3 className="text-2xl font-bold font-display">Need Help?</h3>
-                        <p className="text-muted-foreground">
-                            If you encounter any issues or the extension behaves unexpectedly, please contact support.
+                {/* Expanded Features Section */}
+                <div className="mt-32 w-full max-w-6xl">
+                    <div className="text-center mb-16 space-y-4">
+                        <h2 className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+                            Uninterrupted Coding Flow.
+                        </h2>
+                        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                            Stop worrying about access limits. The system handles the logistics while you focus on shipping code.
                         </p>
-                        <div className="flex justify-center gap-2">
-                            <span className="px-3 py-1 bg-secondary rounded-md text-xs font-mono">support@snippymart.com</span>
-                        </div>
-                    </CardContent>
-                </Card>
+                    </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-purple-500/30 transition-all group">
+                            <div className="h-12 w-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <Zap className="w-6 h-6 text-purple-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3">Instant Resurrection</h3>
+                            <p className="text-gray-400 leading-relaxed">
+                                The moment you are removed from a team, the extension detects it and instantly invites you to a fresh, healthy team. typically in under 2 seconds.
+                            </p>
+                        </div>
+
+                        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group">
+                            <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <ShieldCheck className="w-6 h-6 text-blue-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3">Intelligent Stealth</h3>
+                            <p className="text-gray-400 leading-relaxed">
+                                We don't just spam invites. The system "heals" teams, manages velocity limits (users/24h), and adds random delays to mimic human behavior and avoid detection.
+                            </p>
+                        </div>
+
+                        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-green-500/30 transition-all group">
+                            <div className="h-12 w-12 rounded-xl bg-green-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <Terminal className="w-6 h-6 text-green-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3">Zero Config Required</h3>
+                            <p className="text-gray-400 leading-relaxed">
+                                Install it and forget it. It runs silently in the background. No toggles to flip, no settings to manage. It just works when you need it most.
+                            </p>
+                        </div>
+
+                        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-yellow-500/30 transition-all group">
+                            <div className="h-12 w-12 rounded-xl bg-yellow-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <Download className="w-6 h-6 text-yellow-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3">Auto-Updating Core</h3>
+                            <p className="text-gray-400 leading-relaxed">
+                                Security patches and new evasion logic are pushed automatically. Your extension stays ahead of the curve without manual re-installs.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Installation Guide */}
+                <div id="install-guide" className="mt-32 max-w-4xl w-full animate-in fade-in duration-1000">
+                    <h2 className="text-3xl font-bold text-center mb-12">Installation in 3 Steps</h2>
+                    <div className="space-y-4">
+                        {[
+                            { step: "01", title: "Download & Extract", desc: "Download the zip file above and extract it to a folder (e.g., Downloads/cursor-extension)." },
+                            { step: "02", title: "Open Extensions Page", desc: "Go to chrome://extensions in your browser and enable 'Developer Mode' (top right)." },
+                            { step: "03", title: "Load Unpacked", desc: "Click 'Load Unpacked' and select the folder you just extracted. Pin the extension!" }
+                        ].map((step, i) => (
+                            <div key={i} className="flex flex-col md:flex-row items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                                <span className="text-6xl font-black text-white/5 font-mono">{step.step}</span>
+                                <div className="flex-1 text-center md:text-left">
+                                    <h3 className="text-xl font-bold text-white mb-1">{step.title}</h3>
+                                    <p className="text-gray-400">{step.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="mt-20 text-center text-gray-500 text-sm">
+                    © 2026 Snippy Mart. Secure Distribution Channel.
+                </div>
             </div>
         </div>
     );
 };
-
-const Step = ({ number, title, desc, icon: Icon, action, isLast }: { number: string, title: string, desc: string, icon: any, action?: React.ReactNode, isLast?: boolean }) => (
-    <div className="flex gap-6 md:gap-10 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both" style={{ animationDelay: `${parseInt(number) * 100}ms` }}>
-        <div className="flex-shrink-0 relative">
-            <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-xl font-black shadow-lg z-10 relative border-4 border-background ${isLast ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground'}`}>
-                {number}
-            </div>
-        </div>
-        <div className="pt-2 pb-8 flex-1">
-            <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-secondary/50 rounded-lg text-primary">
-                    <Icon className="w-5 h-5" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold font-display">{title}</h3>
-            </div>
-            <p className="text-muted-foreground text-base md:text-lg leading-relaxed">{desc}</p>
-            {action}
-        </div>
-    </div>
-);
 
 export default DownloadExtension;
