@@ -188,10 +188,14 @@ declare
     v_user_status text;
     v_current_team_id uuid;
     v_auto_restore boolean;
+    v_max_velocity int;
 begin
     -- 1. Configuration & User Check
     select value::int into v_cooldown_sec from public.cursor_system_settings where key = 'team_cooldown_seconds';
     if v_cooldown_sec is null then v_cooldown_sec := 60; end if;
+
+    select value::int into v_max_velocity from public.cursor_system_settings where key = 'team_max_velocity_24h';
+    if v_max_velocity is null then v_max_velocity := 10; end if;
 
     select id, status, current_team_id, auto_restore_enabled 
     into v_user_id, v_user_status, v_current_team_id, v_auto_restore
@@ -213,20 +217,33 @@ begin
     -- Prioritize:
     -- 1. Stability Score (Healthy Teams First)
     -- 2. Emptiness (Load Balancing)
-    -- Check Cooldowns.
+    -- Check Cooldowns AND Velocity.
     select id, team_name into v_team_id, v_team_name
-    from public.cursor_teams
+    from public.cursor_teams t
     where status = 'active'
       and current_users < max_users
       and (last_assigned_at is null OR last_assigned_at < now() - (v_cooldown_sec || ' seconds')::interval)
+      -- VELOCITY CHECK: Count joins in last 24h
+      and (
+          select count(*) from public.cursor_events 
+          where team_id = t.id 
+          and event_type = 'joined' 
+          and created_at > now() - interval '24 hours'
+      ) < v_max_velocity
     order by stability_score desc, current_users asc 
     limit 1;
 
     if v_team_id is null then
-        -- Fallback: Risky Teams?
+        -- Fallback: Risky Teams? (Still respect velocity to prevent total burnout)
         select id, team_name into v_team_id, v_team_name
-        from public.cursor_teams
+        from public.cursor_teams t
         where status = 'risky' and current_users < max_users
+        and (
+          select count(*) from public.cursor_events 
+          where team_id = t.id 
+          and event_type = 'joined' 
+          and created_at > now() - interval '24 hours'
+        ) < v_max_velocity
         order by stability_score desc
         limit 1;
         
@@ -381,5 +398,48 @@ begin
    end if;
    
    return json_build_object('success', true);
+end;
+$$ language plpgsql security definer;
+
+
+-- FAILURE HANDLER (Expired / Revoked)
+create or replace function public.handle_invite_failure_transaction(user_email text, reason text)
+returns json as $$
+declare
+    v_user_id uuid;
+    v_team_id uuid;
+    v_invite_id uuid;
+begin
+    select id into v_user_id from public.cursor_customers where email = user_email;
+
+    -- Find the problematic invite
+    select id, team_id into v_invite_id, v_team_id
+    from public.cursor_invites
+    where assigned_to = v_user_id and status = 'assigned'
+    order by used_at desc limit 1;
+
+    if v_invite_id is not null then
+        -- 1. Mark Invite as Dead
+        update public.cursor_invites 
+        set status = 'expired', notes = reason 
+        where id = v_invite_id;
+
+        -- 2. Revert Team Count
+        if v_team_id is not null then
+            update public.cursor_teams 
+            set current_users = greatest(0, current_users - 1)
+            where id = v_team_id;
+        end if;
+    end if;
+
+    -- 3. Reset User to Removed (so they can try again)
+    update public.cursor_customers
+    set status = 'removed', current_team_id = null
+    where id = v_user_id;
+
+    insert into public.cursor_events (user_id, team_id, event_type)
+    values (v_user_id, v_team_id, 'invite_failed_' || reason);
+
+    return json_build_object('success', true);
 end;
 $$ language plpgsql security definer;

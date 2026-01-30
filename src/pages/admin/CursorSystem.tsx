@@ -94,6 +94,16 @@ const CursorSystem = () => {
     });
 
 
+    // 5. System Settings
+    const { data: systemSettings = [], isLoading: loadingSettings } = useQuery({
+        queryKey: ['cursor_system_settings'],
+        queryFn: async () => {
+            const { data, error } = await supabase.from('cursor_system_settings').select('*').order('key');
+            if (error) throw error;
+            return data;
+        }
+    });
+
     // --- MUTATIONS ---
 
     const createTeamMutation = useMutation({
@@ -104,6 +114,43 @@ const CursorSystem = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cursor_teams'] });
             toast.success('Team created');
+        }
+    });
+
+    const updateTeamMutation = useMutation({
+        mutationFn: async ({ id, updates }: { id: string, updates: any }) => {
+            const { error } = await supabase.from('cursor_teams').update(updates).eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cursor_teams'] });
+            toast.success('Team updated');
+        }
+    });
+
+    const resetTeamMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from('cursor_teams').update({
+                stability_score: 100,
+                status: 'active',
+                last_assigned_at: null // Optional: clear cooldown
+            }).eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cursor_teams'] });
+            toast.success('Team status reset');
+        }
+    });
+
+    const updateSystemSettingMutation = useMutation({
+        mutationFn: async ({ key, value }: { key: string, value: string }) => {
+            const { error } = await supabase.from('cursor_system_settings').update({ value }).eq('key', key);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cursor_system_settings'] });
+            toast.success('Setting saved');
         }
     });
 
@@ -224,25 +271,16 @@ const CursorSystem = () => {
             </div>
 
             {/* Main Content Tabs */}
-            <div className="flex items-center gap-4 border-b border-border">
-                <button
-                    onClick={() => setActiveTab('teams')}
-                    className={`px-4 py-3 text-sm font-bold uppercase tracking-wide border-b-2 transition-all ${activeTab === 'teams' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                >
-                    Teams & Slots
-                </button>
-                <button
-                    onClick={() => setActiveTab('customers')}
-                    className={`px-4 py-3 text-sm font-bold uppercase tracking-wide border-b-2 transition-all ${activeTab === 'customers' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                >
-                    Users & Security
-                </button>
-                <button
-                    onClick={() => setActiveTab('invites')}
-                    className={`px-4 py-3 text-sm font-bold uppercase tracking-wide border-b-2 transition-all ${activeTab === 'invites' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                >
-                    Invite Repository
-                </button>
+            <div className="flex items-center gap-4 border-b border-border mb-6 overflow-x-auto">
+                {['teams', 'customers', 'invites', 'settings'].map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab as any)}
+                        className={`px-4 py-3 text-sm font-bold uppercase tracking-wide border-b-2 transition-all whitespace-nowrap ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        {tab === 'settings' ? 'System Settings' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                ))}
             </div>
 
             {/* TAB: TEAMS */}
@@ -251,20 +289,37 @@ const CursorSystem = () => {
                     {teams.map(team => (
                         <Card key={team.id} className="overflow-hidden border-l-4" style={{ borderLeftColor: team.status === 'active' ? '#4ade80' : '#ef4444' }}>
                             <div className="p-6 flex flex-col md:flex-row justify-between gap-6">
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     <div className="flex items-center gap-3">
                                         <h3 className="text-xl font-bold">{team.team_name}</h3>
                                         {getStatusBadge(team.status)}
-                                        <span className="text-xs font-mono text-muted-foreground px-2 py-1 bg-secondary rounded">
-                                            Score: {team.stability_score.toFixed(1)}%
+                                        <span className={`text-xs font-mono px-2 py-1 rounded ${team.stability_score < 50 ? 'bg-red-500/20 text-red-500' : 'bg-secondary text-muted-foreground'}`}>
+                                            Stability: {team.stability_score.toFixed(1)}%
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        <span>Capacity: <strong className="text-foreground">{team.current_users} / {team.max_users}</strong></span>
+                                        <div className="flex items-center gap-2">
+                                            <span>Capacity: <strong className="text-foreground">{team.current_users} / {team.max_users}</strong></span>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                                                const newLimit = prompt("New Max Users for " + team.team_name, team.max_users.toString());
+                                                if (newLimit && !isNaN(parseInt(newLimit))) {
+                                                    updateTeamMutation.mutate({ id: team.id, updates: { max_users: parseInt(newLimit) } });
+                                                }
+                                            }}>
+                                                <Settings className="w-3 h-3" />
+                                            </Button>
+                                        </div>
                                         <span>Last assigned: {team.last_assigned_at ? format(new Date(team.last_assigned_at), 'PPP p') : 'Never'}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    {team.status !== 'active' && (
+                                        <Button variant="outline" size="sm" className="border-green-500/50 hover:bg-green-500/10 text-green-500" onClick={() => {
+                                            if (confirm(`Reset ${team.team_name} to 100% Stability & Active?`)) resetTeamMutation.mutate(team.id);
+                                        }}>
+                                            <RefreshCw className="w-4 h-4 mr-2" /> Reset & Heal
+                                        </Button>
+                                    )}
                                     <Button variant="outline" size="sm" onClick={() => {
                                         const link = prompt("Add Invite Link for " + team.team_name);
                                         if (link) addInviteMutation.mutate({ teamId: team.id, link });
@@ -337,6 +392,115 @@ const CursorSystem = () => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            )}
+
+            {/* TAB: INVITES (Repo) */}
+            {activeTab === 'invites' && (
+                <div className="space-y-4">
+                    <div className="bg-card rounded-xl border border-border overflow-hidden p-6">
+                        <h3 className="text-lg font-bold mb-4">All Invites</h3>
+                        <div className="grid gap-2">
+                            {invites.map(i => (
+                                <div key={i.id} className="flex items-center justify-between p-3 border rounded bg-background/50">
+                                    <div className="flex items-center gap-3">
+                                        <code className="bg-secondary px-2 py-1 rounded">{i.invite_link}</code>
+                                        <span className="text-xs text-muted-foreground">for {i.cursor_teams?.team_name}</span>
+                                    </div>
+                                    <Badge variant="outline">{i.status}</Badge>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TAB: SETTINGS */}
+            {activeTab === 'settings' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-yellow-500" />
+                                Velocity Control
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Limit how many users can join a single team within 24 hours. Prevents spam detection.
+                            </p>
+                            {systemSettings.filter(s => s.key === 'team_max_velocity_24h').map(setting => (
+                                <div key={setting.key} className="flex items-center gap-4">
+                                    <Input
+                                        defaultValue={setting.value}
+                                        className="font-mono text-lg"
+                                        id="velocity-input"
+                                    />
+                                    <Button onClick={() => {
+                                        const val = (document.getElementById('velocity-input') as HTMLInputElement).value;
+                                        updateSystemSettingMutation.mutate({ key: setting.key, value: val });
+                                    }}>Save</Button>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <History className="w-5 h-5 text-blue-500" />
+                                Cooldown Period
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Seconds to wait before assigning another user to the SAME team.
+                            </p>
+                            {systemSettings.filter(s => s.key === 'team_cooldown_seconds').map(setting => (
+                                <div key={setting.key} className="flex items-center gap-4">
+                                    <Input
+                                        defaultValue={setting.value}
+                                        className="font-mono text-lg"
+                                        id="cooldown-input"
+                                    />
+                                    <Button onClick={() => {
+                                        const val = (document.getElementById('cooldown-input') as HTMLInputElement).value;
+                                        updateSystemSettingMutation.mutate({ key: setting.key, value: val });
+                                    }}>Save</Button>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="md:col-span-2 border-destructive/20 bg-destructive/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-destructive">
+                                <Lock className="w-5 h-5" />
+                                Emergency Controls
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {systemSettings.filter(s => s.key === 'system_enabled').map(setting => (
+                                <div key={setting.key} className="flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <p className="font-bold">System Master Switch</p>
+                                        <p className="text-sm text-muted-foreground">Enable or Disable ALL automated invites.</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`font-black uppercase ${setting.value === 'true' ? 'text-green-500' : 'text-red-500'}`}>
+                                            {setting.value === 'true' ? 'ENABLED' : 'DISABLED'}
+                                        </span>
+                                        <Button variant={setting.value === 'true' ? "destructive" : "default"} onClick={() => {
+                                            const newVal = setting.value === 'true' ? 'false' : 'true';
+                                            updateSystemSettingMutation.mutate({ key: setting.key, value: newVal });
+                                        }}>
+                                            {setting.value === 'true' ? 'DISABLE SYSTEM' : 'ENABLE SYSTEM'}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
                 </div>
             )}
 

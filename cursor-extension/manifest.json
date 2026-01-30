@@ -1,13 +1,14 @@
 {
     "manifest_version": 3,
     "name": "Cursor Smart Recovery",
-    "version": "1.0",
+    "version": "1.0.0",
     "description": "Automated Cursor team recovery system for Snippy Mart.",
     "permissions": [
         "storage",
         "activeTab",
         "notifications",
-        "alarms"
+        "alarms",
+        "scripting"
     ],
     "host_permissions": [
         "https://cursor.com/*",

@@ -56,9 +56,56 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ received: true });
         return false;
     }
+
+    if (request.type === "INVITE_EXPIRED") {
+        console.log("[Background] Invite Expired:", request.url);
+
+        // 1. Close the tab immediately
+        if (sender.tab && sender.tab.id) {
+            chrome.tabs.remove(sender.tab.id);
+        }
+
+        // 2. Report & Retry
+        chrome.storage.local.get('cursor_recovery_email', (stored) => {
+            const email = stored.cursor_recovery_email;
+            if (email) {
+                handleInviteExpired(email);
+            }
+        });
+
+        sendResponse({ received: true });
+        return false;
+    }
 });
 
 // 4. WORKER FUNCTIONS
+let retryCount = 0;
+
+async function handleInviteExpired(email) {
+    console.log(`[Background] Handling Expired Invite for ${email}. Retry: ${retryCount}`);
+
+    // Safety Break
+    if (retryCount >= 3) {
+        showNotification("Failed to restore access (Invites Expired). Try later.");
+        retryCount = 0;
+        return;
+    }
+    retryCount++;
+
+    // A. Tell Backend "This invite is dead"
+    try {
+        await fetch(`${API_BASE}/failed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, reason: 'invite_expired' })
+        });
+    } catch (e) { console.warn("Failed to report expiry", e); }
+
+    // B. Try Again (Wait 2s to let backend process)
+    setTimeout(() => {
+        performRestore(email);
+    }, 2000);
+}
 async function performRestore(email) {
     try {
         // 60s Timeout for Cold Starts
@@ -84,11 +131,71 @@ async function performRestore(email) {
             // A. Open Tab
             const tab = await chrome.tabs.create({ url: data.invite_link, active: true });
 
-            // B. Flash Window
+            // B. Auto-Click "Accept Invite"
+            // We wait a bit for load, then inject clicker
+            setTimeout(() => {
+                chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    func: () => {
+                        console.log("[Cursor Auto-Join] Script injected. Searching for buttons...");
+
+                        const clicker = setInterval(() => {
+                            // Find all viable clickable elements
+                            const elements = Array.from(document.querySelectorAll('button, a, div[role="button"]'));
+
+                            const target = elements.find(el => {
+                                const text = el.innerText?.toLowerCase() || "";
+                                // Check for keywords
+                                return (text.includes('accept') || text.includes('join') || text.includes('continue'))
+                                    && !text.includes('decline')
+                                    && !text.includes('cancel');
+                            });
+
+                            if (target) {
+                                // Check if disabled
+                                if (target.disabled || target.getAttribute('aria-disabled') === 'true') {
+                                    console.log("[Cursor Auto-Join] Button found but DISABLED. Waiting...");
+                                    return; // Skip this iteration, keep waiting
+                                }
+
+                                console.log("[Cursor Auto-Join] Clicking element:", target);
+
+                                // FORCE CLICK
+                                target.focus();
+                                target.click();
+
+                                // Double-tap safety for hydration issues
+                                setTimeout(() => target.click(), 200);
+
+                                clearInterval(clicker);
+                            }
+                        }, 500); // Check every 500ms
+
+                        // Stop trying after 30 seconds
+                        setTimeout(() => {
+                            clearInterval(clicker);
+                            console.log("[Cursor Auto-Join] Stopped searching.");
+                        }, 30000);
+                    }
+                }).catch(() => { }); // Ignore if tab closed
+            }, 1000);
+
+            // C. Flash Window
             chrome.windows.update(tab.windowId, { focused: true, drawAttention: true });
 
-            // C. Notify
+            // D. Notify
             showNotification(`Restoring Access: Joining ${data.team_name || 'Team'}...`);
+
+            // E. Auto-Reload Dashboard (The "Refresh" Logic)
+            // Wait 5 seconds for the accept to process, then reload all cursor tabs
+            setTimeout(() => {
+                chrome.tabs.query({ url: "*://*.cursor.com/*" }, (tabs) => {
+                    tabs.forEach(t => {
+                        console.log("[Background] Reloading tab:", t.id);
+                        chrome.tabs.reload(t.id);
+                    });
+                });
+            }, 6000); // 6s to be safe (2s load + click + process)
 
             return { success: true, team_name: data.team_name };
         } else if (data.error === 'already_active') {

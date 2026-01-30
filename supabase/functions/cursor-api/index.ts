@@ -96,6 +96,19 @@ serve(async (req) => {
             result = data
         }
 
+        // Route: /failed (Invites Expired/Revoked)
+        else if (url.pathname.includes('/failed')) {
+            let reason = 'unknown';
+            try {
+                const body = await req.json();
+                if (body.reason) reason = body.reason;
+            } catch (e) { }
+
+            const { data, error } = await supabase.rpc('handle_invite_failure_transaction', { user_email: email, reason: reason })
+            if (error) throw error
+            result = data
+        }
+
         // Route: /status
         else if (url.pathname.includes('/status')) {
             const { data, error } = await supabase.rpc('get_cursor_user_details', { user_email: email })

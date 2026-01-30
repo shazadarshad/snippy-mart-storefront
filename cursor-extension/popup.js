@@ -140,8 +140,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     'last_known_status': response.data.status,
                     'last_team': response.data.team_name
                 });
+
+                // USER GUIDANCE: If not active, Prompt Restoration
+                if (response.data.status !== 'active') {
+                    messageEl.textContent = "Status: " + response.data.status.toUpperCase() + ". Click FIX IT to restore.";
+                    messageEl.style.color = '#eab308'; // Warning Yellow
+                } else {
+                    messageEl.textContent = "You are active & safe.";
+                    messageEl.style.color = '#4ade80'; // Success Green
+                }
+
             } else {
-                messageEl.textContent = "Check failed.";
+                messageEl.textContent = "Check failed. Is email correct?";
+                messageEl.style.color = '#ef4444';
             }
         });
     });

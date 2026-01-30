@@ -11,46 +11,131 @@ const getEmailFromStorage = async () => {
     return stored[STORAGE_KEY];
 };
 
-// 2. Overlay UI
+// 2. In-Page Shadow DOM Notification (Modern UI)
 const createOverlay = () => {
-    if (document.getElementById('cursor-recovery-overlay')) return;
+    // ID Check to prevent duplicates
+    if (document.getElementById('cursor-recovery-host')) return;
 
-    const overlay = document.createElement('div');
-    overlay.id = 'cursor-recovery-overlay';
-    overlay.innerHTML = `
-    <div class="cr-container">
-      <div class="cr-icon">⚠️</div>
-      <div class="cr-content">
-        <h3>Cursor Access Lost</h3>
-        <p>You have been removed from your team.</p>
-      </div>
-      <button id="cr-restore-btn">Restore Access (1-Click)</button>
-    </div>
-  `;
-    document.body.appendChild(overlay);
+    // Create Host
+    const host = document.createElement('div');
+    host.id = 'cursor-recovery-host';
+    document.body.appendChild(host);
 
-    const btn = document.getElementById('cr-restore-btn');
+    // Attach Shadow DOM
+    const shadow = host.attachShadow({ mode: 'open' });
+
+    // Styles (Injected directly to be self-contained)
+    const style = document.createElement('style');
+    style.textContent = `
+        .cr-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            z-index: 999999;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            animation: slideIn 0.3s ease-out;
+            max-width: 350px;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .cr-icon-box {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .cr-content {
+            flex: 1;
+        }
+        .cr-title {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+        .cr-desc {
+            color: #a1a1aa;
+            font-size: 12px;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .cr-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .cr-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .cr-btn:hover { opacity: 0.9; }
+        .cr-btn:disabled { opacity: 0.5; cursor: wait; }
+    `;
+    shadow.appendChild(style);
+
+    // Structure
+    const container = document.createElement('div');
+    container.className = 'cr-toast';
+    container.innerHTML = `
+        <div class="cr-icon-box">⚠️</div>
+        <div class="cr-content">
+            <h3 class="cr-title">Cursor Access Lost</h3>
+            <p class="cr-desc">You are on the Free Plan. restore access now.</p>
+        </div>
+        <div class="cr-actions">
+            <button id="cr-fix-btn" class="cr-btn">FIX IT NOW</button>
+        </div>
+    `;
+    shadow.appendChild(container);
+
+    // Logic
+    const btn = container.querySelector('#cr-fix-btn');
     btn.addEventListener('click', async () => {
         btn.disabled = true;
-        btn.innerText = "Restoring...";
+        btn.innerText = "Processing...";
+
         const email = await getEmailFromStorage();
         if (email) {
             chrome.runtime.sendMessage({ type: "RESTORE_ACCESS", email });
-            // The background script will open the new tab, which auto-joins.
-            // We can close this overlay optimistically or wait.
-            btn.innerText = "Opening Invite...";
-            setTimeout(() => { overlay.remove(); }, 2000);
+            btn.innerText = "Opening...";
+            setTimeout(() => { host.remove(); }, 3000);
         } else {
-            alert("Please set your email in the extension popup first!");
-            btn.disabled = false;
+            alert("Extension error: No email found. Please open extension popup.");
+            host.remove();
         }
     });
+
+    // Auto-Close after 60s to not be annoying? No, user wants notification.
+    // We leave it until they fix.
 };
 
 const hideOverlay = () => {
-    const overlay = document.getElementById('cursor-recovery-overlay');
-    if (overlay) overlay.remove();
+    const host = document.getElementById('cursor-recovery-host');
+    if (host) host.remove();
 };
+
+
 
 // --- Remote Config Logic ---
 let remoteConfig = {
