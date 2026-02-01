@@ -318,13 +318,29 @@ const AdminProducts = () => {
     }));
   };
 
+  // Helper to generate URL-friendly slug from product name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .trim();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Auto-generate slug if not exists
+    const productData = {
+      ...formData,
+      slug: formData.slug || generateSlug(formData.name)
+    };
 
     let productId: string;
 
     if (editingProduct) {
-      await updateProduct.mutateAsync({ id: editingProduct.id, ...formData });
+      await updateProduct.mutateAsync({ id: editingProduct.id, ...productData });
       productId = editingProduct.id;
 
       // Delete removed plans
@@ -341,7 +357,7 @@ const AdminProducts = () => {
         await deleteProductImage.mutateAsync(imageId);
       }
     } else {
-      const newProduct = await addProduct.mutateAsync(formData);
+      const newProduct = await addProduct.mutateAsync(productData);
       productId = newProduct.id;
     }
 

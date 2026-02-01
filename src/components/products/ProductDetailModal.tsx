@@ -189,14 +189,14 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
   };
 
   const handleShareWhatsApp = () => {
-    const url = window.location.origin + '/products';
-    const text = `Check out ${product.name} on Snippy Mart! ${url}`;
+    const productUrl = `${window.location.origin}/product/${product.slug || product.id}`;
+    const text = `Check out ${product.name} on Snippy Mart! ${productUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const handleCopyLink = async () => {
-    const url = window.location.origin + '/products';
-    await navigator.clipboard.writeText(url);
+    const productUrl = `${window.location.origin}/product/${product.slug || product.id}`;
+    await navigator.clipboard.writeText(productUrl);
     toast({
       title: "Link copied",
       description: "Product link has been copied to clipboard.",

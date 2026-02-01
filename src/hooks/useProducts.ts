@@ -13,6 +13,7 @@ export interface ProductRequirements {
 export interface Product {
   id: string;
   name: string;
+  slug?: string; // URL-friendly identifier
   description: string;
   price: number;
   old_price?: number | null;

@@ -20,6 +20,7 @@ import { CurrencyProvider } from "./hooks/useCurrency";
 // Lazy Load Pages for Performance
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
+const ProductPage = lazy(() => import("./pages/ProductPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -69,6 +70,7 @@ const AppContent = () => {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
             <Route path="/products" element={<PageTransition><ProductsPage /></PageTransition>} />
+            <Route path="/product/:slug" element={<PageTransition><ProductPage /></PageTransition>} />
             <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
             <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
             <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
