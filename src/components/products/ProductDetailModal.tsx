@@ -339,27 +339,27 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                   <p className="text-sm font-medium text-foreground mb-3">
                     {product.use_variant_pricing ? 'Select Duration:' : 'Select Plan:'}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                     {pricingPlans.map((plan) => (
                       <button
                         key={plan.id}
                         onClick={() => setSelectedPlan(plan)}
                         className={cn(
-                          "relative px-4 py-3 rounded-xl border transition-all duration-200 text-left group",
+                          "relative px-3 py-3 sm:px-4 rounded-xl border transition-all duration-200 text-left group min-h-[80px] flex flex-col justify-center",
                           selectedPlan?.id === plan.id
                             ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)] scale-[1.02]"
                             : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50"
                         )}
                       >
-                        <div className="text-sm font-semibold text-foreground">
+                        <div className="text-sm sm:text-base font-semibold text-foreground">
                           {plan.name}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-muted-foreground mt-0.5">
                           {plan.duration}
                         </div>
                         {!product.use_variant_pricing && (
-                          <div className="mt-1 flex items-center gap-2">
-                            <span className="text-lg font-bold text-foreground">
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <span className="text-base sm:text-lg font-bold text-foreground">
                               {formatPrice(plan.price)}
                             </span>
                             {plan.old_price && (
@@ -388,42 +388,44 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                   <p className="text-sm font-medium text-foreground mb-3">
                     Select Package:
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     {activeVariants.map((variant) => (
                       <button
                         key={variant.id}
                         onClick={() => setSelectedVariant(variant)}
                         className={cn(
-                          "relative flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-200 group text-left",
+                          "relative flex items-center justify-between px-3 py-3.5 sm:px-4 sm:py-4 rounded-xl border transition-all duration-200 group text-left min-h-[72px]",
                           selectedVariant?.id === variant.id
-                            ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)]"
-                            : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50"
+                            ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)] scale-[1.02]"
+                            : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50 active:scale-[0.98]"
                         )}
                       >
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-foreground">{variant.name}</span>
+                        <div className="flex flex-col flex-1 pr-2">
+                          <span className="text-sm sm:text-base font-semibold text-foreground leading-tight">
+                            {variant.name}
+                          </span>
                           {variant.stock_status !== 'in_stock' && (
                             <span className={cn(
-                              "text-[10px] font-medium mt-1",
+                              "text-[10px] sm:text-xs font-medium mt-1",
                               variant.stock_status === 'limited' ? "text-amber-500" : "text-red-500"
                             )}>
                               {variant.stock_status === 'limited' ? 'Limited Stock' : 'Out of Stock'}
                             </span>
                           )}
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm font-bold text-foreground">
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap">
                             {formatPrice(variant.price)}
                           </div>
                           {variant.old_price && (
-                            <div className="text-[10px] text-muted-foreground line-through">
+                            <div className="text-[10px] sm:text-xs text-muted-foreground line-through">
                               {formatPrice(variant.old_price)}
                             </div>
                           )}
                         </div>
                         {selectedVariant?.id === variant.id && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="w-3 h-3 text-primary-foreground" />
+                          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary flex items-center justify-center shadow-md">
+                            <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary-foreground" />
                           </div>
                         )}
                       </button>

@@ -587,19 +587,19 @@ const CheckoutPage = () => {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-foreground truncate">
+                          <h4 className="text-sm sm:text-base font-medium text-foreground truncate">
                             {item.product.name}
                           </h4>
                           {/* Show Plan and Variant if exists */}
                           {(item.product.plan_name || item.product.variant_name) && (
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-1">
                               {item.product.plan_name && (
                                 <span className="font-medium">{item.product.plan_name}</span>
                               )}
                               {item.product.variant_name && (
                                 <>
                                   {item.product.plan_name && <span className="text-muted-foreground">›</span>}
-                                  <span className="text-primary font-medium">{item.product.variant_name}</span>
+                                  <span className="text-primary font-semibold">{item.product.variant_name}</span>
                                 </>
                               )}
                             </p>

@@ -769,7 +769,7 @@ const AdminProducts = () => {
                         >
                           <X className="w-4 h-4" />
                         </button>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                           <div>
                             <Label className="text-xs text-muted-foreground">Plan Name</Label>
                             <Input
@@ -837,38 +837,38 @@ const AdminProducts = () => {
                           {plan.variants && plan.variants.length > 0 && (
                             <div className="space-y-2">
                               {plan.variants.map((variant, vIndex) => (
-                                <div key={vIndex} className="flex flex-wrap items-end gap-2 p-2 rounded bg-background/50 border border-border/50">
+                                <div key={vIndex} className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-2 p-3 rounded-lg bg-background/50 border border-border/50">
                                   <div className="flex-1 min-w-[120px]">
-                                    <Label className="text-[10px] text-muted-foreground">Name</Label>
+                                    <Label className="text-[10px] sm:text-xs text-muted-foreground">Name</Label>
                                     <Input
                                       value={variant.name}
                                       onChange={(e) => handleVariantChange(index, vIndex, 'name', e.target.value)}
-                                      placeholder="Shared/Private"
-                                      className="h-7 text-xs"
+                                      placeholder="e.g., 100k Credits"
+                                      className="mt-1 h-8 sm:h-9 text-xs sm:text-sm"
                                     />
                                   </div>
-                                  <div className="w-[80px]">
-                                    <Label className="text-[10px] text-muted-foreground">Price</Label>
+                                  <div className="w-full sm:w-[100px]">
+                                    <Label className="text-[10px] sm:text-xs text-muted-foreground">Price</Label>
                                     <Input
                                       type="number"
                                       value={variant.price}
                                       onChange={(e) => handleVariantChange(index, vIndex, 'price', parseFloat(e.target.value) || 0)}
-                                      className="h-7 text-xs"
+                                      className="mt-1 h-8 sm:h-9 text-xs sm:text-sm"
                                     />
                                   </div>
-                                  <div className="w-[100px]">
-                                    <Label className="text-[10px] text-muted-foreground">Stock</Label>
+                                  <div className="w-full sm:w-[120px]">
+                                    <Label className="text-[10px] sm:text-xs text-muted-foreground">Stock Status</Label>
                                     <Select
                                       value={variant.stock_status}
                                       onValueChange={(val) => handleVariantChange(index, vIndex, 'stock_status', val)}
                                     >
-                                      <SelectTrigger className="h-7 text-xs">
+                                      <SelectTrigger className="mt-1 h-8 sm:h-9 text-xs sm:text-sm">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
                                         <SelectItem value="in_stock">In Stock</SelectItem>
                                         <SelectItem value="limited">Limited</SelectItem>
-                                        <SelectItem value="out_of_stock">Out</SelectItem>
+                                        <SelectItem value="out_of_stock">Out of Stock</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
@@ -876,10 +876,10 @@ const AdminProducts = () => {
                                     type="button"
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                                    className="h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:bg-destructive/10 sm:self-center"
                                     onClick={() => handleRemoveVariant(index, vIndex)}
                                   >
-                                    <Trash2 className="w-3 h-3" />
+                                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                   </Button>
                                 </div>
                               ))}
