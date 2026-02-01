@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, Search, Upload, Loader2, X, Eye, EyeOff, Star, Package, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, Loader2, X, Eye, EyeOff, Star, Package, Image as ImageIcon, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,6 +32,7 @@ import {
   useUpdateProduct,
   useDeleteProduct,
   useUploadProductImage,
+  useMoveProduct,
   type Product,
   type ProductFormData,
   type StockStatus,
@@ -91,6 +92,7 @@ const AdminProducts = () => {
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const uploadImage = useUploadProductImage();
+  const moveProduct = useMoveProduct();
   const addPricingPlan = useAddPricingPlan();
   const deletePricingPlan = useDeletePricingPlan();
   const addPricingPlanVariant = useAddPricingPlanVariant();
@@ -1020,6 +1022,24 @@ const AdminProducts = () => {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveProduct.mutate({ productId: product.id, direction: 'up' })}
+                              disabled={moveProduct.isPending || filteredProducts.indexOf(product) === 0}
+                              title="Move up"
+                            >
+                              <ArrowUp className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveProduct.mutate({ productId: product.id, direction: 'down' })}
+                              disabled={moveProduct.isPending || filteredProducts.indexOf(product) === filteredProducts.length - 1}
+                              title="Move down"
+                            >
+                              <ArrowDown className="w-4 h-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"

@@ -17,7 +17,8 @@ export interface Product {
   description: string;
   price: number;
   old_price?: number | null;
-  category: string;
+  category: string; // Legacy single category (kept for compatibility)
+  categories?: string[]; // New: Multiple categories support
   image_url: string;
   is_active?: boolean;
   is_featured?: boolean;
@@ -25,6 +26,7 @@ export interface Product {
   requirements?: ProductRequirements | null;
   manual_fulfillment?: boolean;
   use_variant_pricing?: boolean; // Toggle for showing pricing grid vs simple flow
+  display_order?: number; // Manual sort order (lower = higher priority)
   created_at?: string;
   updated_at?: string;
 }
@@ -35,6 +37,7 @@ export interface ProductFormData {
   price: number;
   old_price?: number | null;
   category: string;
+  categories?: string[];
   image_url: string;
   is_active?: boolean;
   is_featured?: boolean;
@@ -42,6 +45,7 @@ export interface ProductFormData {
   requirements?: ProductRequirements | null;
   manual_fulfillment?: boolean;
   use_variant_pricing?: boolean;
+  display_order?: number;
 }
 
 // Fetch all products (active only for public, all for admin)
@@ -52,6 +56,7 @@ export const useProducts = (includeInactive = false) => {
       let query = supabase
         .from('products')
         .select('*')
+        .order('display_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (!includeInactive) {
@@ -185,6 +190,67 @@ export const useUploadProductImage = () => {
     },
     onError: (error) => {
       toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    },
+  });
+};
+
+// Move product order
+export const useMoveProduct = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ productId, direction }: { productId: string; direction: 'up' | 'down' }) => {
+      // Get all products sorted by display_order
+      const { data: products, error: fetchError } = await supabase
+        .from('products')
+        .select('id, display_order')
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+      if (!products) throw new Error('No products found');
+
+      const currentIndex = products.findIndex(p => p.id === productId);
+      if (currentIndex === -1) throw new Error('Product not found');
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+      // Check bounds
+      if (targetIndex < 0 || targetIndex >= products.length) {
+        throw new Error(`Cannot move ${direction}, already at ${direction === 'up' ? 'top' : 'bottom'}`);
+      }
+
+      const currentProduct = products[currentIndex];
+      const targetProduct = products[targetIndex];
+
+      // Swap display_order values
+      const currentOrder = currentProduct.display_order ?? currentIndex;
+      const targetOrder = targetProduct.display_order ?? targetIndex;
+
+      // Update both products
+      const { error: updateError1 } = await supabase
+        .from('products')
+        .update({ display_order: targetOrder })
+        .eq('id', currentProduct.id);
+
+      if (updateError1) throw updateError1;
+
+      const { error: updateError2 } = await supabase
+        .from('products')
+        .update({ display_order: currentOrder })
+        .eq('id', targetProduct.id);
+
+      if (updateError2) throw updateError2;
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({ title: 'Order updated', description: 'Product order has been changed.' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     },
   });
 };

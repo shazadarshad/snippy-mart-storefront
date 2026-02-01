@@ -413,13 +413,23 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                             </span>
                           )}
                         </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap">
+                        <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
+                          {variant.old_price && (
+                            <div className="text-[11px] sm:text-xs text-muted-foreground/80 line-through font-medium">
+                              {formatPrice(variant.old_price)}
+                            </div>
+                          )}
+                          <div className={cn(
+                            "font-bold whitespace-nowrap",
+                            variant.old_price
+                              ? "text-base sm:text-lg text-primary"
+                              : "text-sm sm:text-base text-foreground"
+                          )}>
                             {formatPrice(variant.price)}
                           </div>
                           {variant.old_price && (
-                            <div className="text-[10px] sm:text-xs text-muted-foreground line-through">
-                              {formatPrice(variant.old_price)}
+                            <div className="text-[10px] sm:text-xs font-semibold text-green-600 dark:text-green-500">
+                              Save {Math.round(((variant.old_price - variant.price) / variant.old_price) * 100)}%
                             </div>
                           )}
                         </div>
