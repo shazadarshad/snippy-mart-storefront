@@ -113,6 +113,7 @@ const AdminProducts = () => {
     stock_status: 'in_stock',
     requirements: { require_email: false, require_password: false },
     manual_fulfillment: true,
+    use_variant_pricing: false,
   });
   const [pricingPlans, setPricingPlans] = useState<PricingPlanInput[]>([]);
   const [existingPlanIds, setExistingPlanIds] = useState<string[]>([]);
@@ -186,6 +187,7 @@ const AdminProducts = () => {
         stock_status: product.stock_status ?? 'in_stock',
         requirements: product.requirements ?? { require_email: false, require_password: false },
         manual_fulfillment: product.manual_fulfillment ?? true,
+        use_variant_pricing: product.use_variant_pricing ?? false,
       });
       setPricingPlans(productPlans.map(p => ({
         id: p.id,
@@ -220,10 +222,10 @@ const AdminProducts = () => {
         image_url: '/placeholder.svg',
         is_active: true,
         is_featured: false,
-
         stock_status: 'in_stock',
         requirements: { require_email: false, require_password: false },
         manual_fulfillment: true,
+        use_variant_pricing: false,
       });
       setPricingPlans([]);
       setExistingPlanIds([]);
@@ -628,6 +630,16 @@ const AdminProducts = () => {
                   />
                   <Label htmlFor="is_featured" className="text-foreground cursor-pointer">
                     Featured on homepage
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="use_variant_pricing"
+                    checked={formData.use_variant_pricing}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, use_variant_pricing: checked }))}
+                  />
+                  <Label htmlFor="use_variant_pricing" className="text-foreground cursor-pointer">
+                    Use Variant Pricing Grid
                   </Label>
                 </div>
               </div>

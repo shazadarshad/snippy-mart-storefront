@@ -23,6 +23,7 @@ export interface Product {
   stock_status?: StockStatus;
   requirements?: ProductRequirements | null;
   manual_fulfillment?: boolean;
+  use_variant_pricing?: boolean; // Toggle for showing pricing grid vs simple flow
   created_at?: string;
   updated_at?: string;
 }
@@ -39,6 +40,7 @@ export interface ProductFormData {
   stock_status?: StockStatus;
   requirements?: ProductRequirements | null;
   manual_fulfillment?: boolean;
+  use_variant_pricing?: boolean;
 }
 
 // Fetch all products (active only for public, all for admin)

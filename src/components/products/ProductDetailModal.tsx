@@ -325,7 +325,9 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               {/* Pricing Plans */}
               {pricingPlans.length > 0 && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-foreground mb-3">Select Plan:</p>
+                  <p className="text-sm font-medium text-foreground mb-3">
+                    {product.use_variant_pricing ? 'Select Duration:' : 'Select Plan:'}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {pricingPlans.map((plan) => (
                       <button
@@ -344,16 +346,18 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                         <div className="text-xs text-muted-foreground">
                           {plan.duration}
                         </div>
-                        <div className="mt-1 flex items-center gap-2">
-                          <span className="text-lg font-bold text-foreground">
-                            {formatPrice(plan.price)}
-                          </span>
-                          {plan.old_price && (
-                            <span className="text-xs text-muted-foreground line-through">
-                              {formatPrice(plan.old_price)}
+                        {!product.use_variant_pricing && (
+                          <div className="mt-1 flex items-center gap-2">
+                            <span className="text-lg font-bold text-foreground">
+                              {formatPrice(plan.price)}
                             </span>
-                          )}
-                        </div>
+                            {plan.old_price && (
+                              <span className="text-xs text-muted-foreground line-through">
+                                {formatPrice(plan.old_price)}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         {selectedPlan?.id === plan.id && (
                           <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                             <Check className="w-3 h-3 text-primary-foreground" />
@@ -367,11 +371,13 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
 
 
-              {/* Sub-Plans (Variants) Selector */}
-              {activeVariants.length > 0 && (
+              {/* Sub-Plans (Variants) Selector - Only show when variant pricing is enabled */}
+              {product.use_variant_pricing && activeVariants.length > 0 && (
                 <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <p className="text-sm font-medium text-foreground mb-3">Select Option:</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <p className="text-sm font-medium text-foreground mb-3">
+                    Select Package:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {activeVariants.map((variant) => (
                       <button
                         key={variant.id}
@@ -404,6 +410,11 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                             </div>
                           )}
                         </div>
+                        {selectedVariant?.id === variant.id && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="w-3 h-3 text-primary-foreground" />
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -422,7 +433,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                       <p className="text-sm sm:text-base font-semibold text-foreground">{selectedPlan.name}</p>
                       {selectedVariant && (
                         <>
-                          <span className="text-muted-foreground">/</span>
+                          <span className="text-muted-foreground">›</span>
                           <span className="text-sm sm:text-base font-semibold text-primary">{selectedVariant.name}</span>
                         </>
                       )}
