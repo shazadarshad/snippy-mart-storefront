@@ -82,9 +82,9 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
   const allImages = product ? [product.image_url, ...additionalImages.map(img => img.image_url)] : [];
 
   // Set default plan when plans load
-  // Set default plan and variants
+  // Set default plan for non-variant-pricing products only
   useEffect(() => {
-    if (pricingPlans.length > 0) {
+    if (pricingPlans.length > 0 && !product?.use_variant_pricing) {
       const defaultPlan = pricingPlans.find(p => p.is_default) || pricingPlans[0];
       setSelectedPlan(defaultPlan);
     } else if (product) {
@@ -92,17 +92,10 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     }
   }, [pricingPlans, product]);
 
-  // Handle plan selection change -> Select default variant if exists
+  // Reset variant when plan changes (don't auto-select)
   useEffect(() => {
-    setSelectedVariant(null); // Reset first
-    if (selectedPlan) {
-      const planVariants = allVariants.filter(v => v.plan_id === selectedPlan.id && v.is_active);
-      if (planVariants.length > 0) {
-        // Auto-select first variant
-        setSelectedVariant(planVariants[0]);
-      }
-    }
-  }, [selectedPlan, allVariants]);
+    setSelectedVariant(null); // Reset when plan changes
+  }, [selectedPlan]);
 
   // Reset image index when product changes
   useEffect(() => {
@@ -162,6 +155,15 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
+    // If variant pricing is enabled, require both plan and variant selection
+    if (product.use_variant_pricing && (!selectedPlan || !selectedVariant)) {
+      toast({
+        title: "Selection required",
+        description: "Please select both duration and package option.",
+        variant: "destructive"
+      });
+      return;
+    }
     addItem(cartProduct);
     toast({
       title: "Added to cart",
@@ -172,6 +174,15 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
+    // If variant pricing is enabled, require both plan and variant selection
+    if (product.use_variant_pricing && (!selectedPlan || !selectedVariant)) {
+      toast({
+        title: "Selection required",
+        description: "Please select both duration and package option.",
+        variant: "destructive"
+      });
+      return;
+    }
     addItem(cartProduct);
     onClose();
     navigate('/checkout');
