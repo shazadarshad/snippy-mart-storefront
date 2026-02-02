@@ -201,47 +201,47 @@ export const useMoveProduct = () => {
 
   return useMutation({
     mutationFn: async ({ productId, direction }: { productId: string; direction: 'up' | 'down' }) => {
-      // Get all products sorted by display_order
-      const { data: products, error: fetchError } = await supabase
+      // Get all products in display order
+      const { data: allProducts, error: fetchError } = await supabase
         .from('products')
         .select('id, display_order')
         .order('display_order', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      if (!products) throw new Error('No products found');
+      if (!allProducts || allProducts.length === 0) throw new Error('No products found');
 
-      const currentIndex = products.findIndex(p => p.id === productId);
+      // Find indices
+      const currentIndex = allProducts.findIndex(p => p.id === productId);
       if (currentIndex === -1) throw new Error('Product not found');
 
       const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
       // Check bounds
-      if (targetIndex < 0 || targetIndex >= products.length) {
-        throw new Error(`Cannot move ${direction}, already at ${direction === 'up' ? 'top' : 'bottom'}`);
-      }
+      if (targetIndex < 0) throw new Error('Already at the top');
+      if (targetIndex >= allProducts.length) throw new Error('Already at the bottom');
 
-      const currentProduct = products[currentIndex];
-      const targetProduct = products[targetIndex];
+      const currentProduct = allProducts[currentIndex];
+      const targetProduct = allProducts[targetIndex];
 
-      // Swap display_order values
-      const currentOrder = currentProduct.display_order ?? currentIndex;
-      const targetOrder = targetProduct.display_order ?? targetIndex;
+      // Simple swap of display_order values
+      const tempOrder = currentProduct.display_order;
 
-      // Update both products
-      const { error: updateError1 } = await supabase
+      // Update current product with target's order
+      const { error: err1 } = await supabase
         .from('products')
-        .update({ display_order: targetOrder })
+        .update({ display_order: targetProduct.display_order })
         .eq('id', currentProduct.id);
 
-      if (updateError1) throw updateError1;
+      if (err1) throw err1;
 
-      const { error: updateError2 } = await supabase
+      // Update target product with current's order
+      const { error: err2 } = await supabase
         .from('products')
-        .update({ display_order: currentOrder })
+        .update({ display_order: tempOrder })
         .eq('id', targetProduct.id);
 
-      if (updateError2) throw updateError2;
+      if (err2) throw err2;
 
       return { success: true };
     },
