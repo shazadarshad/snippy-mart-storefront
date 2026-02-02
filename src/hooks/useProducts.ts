@@ -56,7 +56,7 @@ export const useProducts = (includeInactive = false) => {
       let query = supabase
         .from('products')
         .select('*')
-        .order('display_order', { ascending: true })
+        .order('display_order', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false });
 
       if (!includeInactive) {
@@ -205,7 +205,7 @@ export const useMoveProduct = () => {
       const { data: products, error: fetchError } = await supabase
         .from('products')
         .select('id, display_order')
-        .order('display_order', { ascending: true })
+        .order('display_order', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
@@ -245,11 +245,44 @@ export const useMoveProduct = () => {
 
       return { success: true };
     },
+    // Optimistic update - instant UI feedback
+    onMutate: async ({ productId, direction }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['products', true] });
+
+      // Snapshot previous value
+      const previousProducts = queryClient.getQueryData<Product[]>(['products', true]);
+
+      // Optimistically update
+      if (previousProducts) {
+        const newProducts = [...previousProducts];
+        const currentIndex = newProducts.findIndex(p => p.id === productId);
+
+        if (currentIndex !== -1) {
+          const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+          if (targetIndex >= 0 && targetIndex < newProducts.length) {
+            // Swap items
+            [newProducts[currentIndex], newProducts[targetIndex]] =
+              [newProducts[targetIndex], newProducts[currentIndex]];
+
+            // Update cache
+            queryClient.setQueryData(['products', true], newProducts);
+          }
+        }
+      }
+
+      return { previousProducts };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({ title: 'Order updated', description: 'Product order has been changed.' });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      // Rollback on error
+      if (context?.previousProducts) {
+        queryClient.setQueryData(['products', true], context.previousProducts);
+      }
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     },
   });
