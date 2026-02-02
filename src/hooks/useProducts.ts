@@ -245,43 +245,60 @@ export const useMoveProduct = () => {
 
       return { success: true };
     },
-    // Optimistic update - instant UI feedback
+    // Optimistic update - instant UI feedback for BOTH admin AND frontend
     onMutate: async ({ productId, direction }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['products', true] });
+      // Cancel ALL product queries (admin and frontend)
+      await queryClient.cancelQueries({ queryKey: ['products'] });
 
-      // Snapshot previous value
-      const previousProducts = queryClient.getQueryData<Product[]>(['products', true]);
+      // Snapshot previous values for BOTH caches
+      const previousAdminProducts = queryClient.getQueryData<Product[]>(['products', true]);
+      const previousFrontendProducts = queryClient.getQueryData<Product[]>(['products', false]);
 
-      // Optimistically update
-      if (previousProducts) {
-        const newProducts = [...previousProducts];
+      // Helper function to swap products
+      const swapProducts = (products: Product[] | undefined) => {
+        if (!products) return null;
+
+        const newProducts = [...products];
         const currentIndex = newProducts.findIndex(p => p.id === productId);
 
-        if (currentIndex !== -1) {
-          const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (currentIndex === -1) return null;
 
-          if (targetIndex >= 0 && targetIndex < newProducts.length) {
-            // Swap items
-            [newProducts[currentIndex], newProducts[targetIndex]] =
-              [newProducts[targetIndex], newProducts[currentIndex]];
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-            // Update cache
-            queryClient.setQueryData(['products', true], newProducts);
-          }
-        }
+        if (targetIndex < 0 || targetIndex >= newProducts.length) return null;
+
+        // Swap items
+        [newProducts[currentIndex], newProducts[targetIndex]] =
+          [newProducts[targetIndex], newProducts[currentIndex]];
+
+        return newProducts;
+      };
+
+      // Optimistically update ADMIN cache
+      const newAdminProducts = swapProducts(previousAdminProducts);
+      if (newAdminProducts) {
+        queryClient.setQueryData(['products', true], newAdminProducts);
       }
 
-      return { previousProducts };
+      // Optimistically update FRONTEND cache
+      const newFrontendProducts = swapProducts(previousFrontendProducts);
+      if (newFrontendProducts) {
+        queryClient.setQueryData(['products', false], newFrontendProducts);
+      }
+
+      return { previousAdminProducts, previousFrontendProducts };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({ title: 'Order updated', description: 'Product order has been changed.' });
     },
     onError: (error: Error, variables, context) => {
-      // Rollback on error
-      if (context?.previousProducts) {
-        queryClient.setQueryData(['products', true], context.previousProducts);
+      // Rollback BOTH caches on error
+      if (context?.previousAdminProducts) {
+        queryClient.setQueryData(['products', true], context.previousAdminProducts);
+      }
+      if (context?.previousFrontendProducts) {
+        queryClient.setQueryData(['products', false], context.previousFrontendProducts);
       }
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     },
