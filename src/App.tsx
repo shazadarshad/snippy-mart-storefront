@@ -44,6 +44,9 @@ const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
 const AdminPolicies = lazy(() => import("./pages/admin/AdminPolicies"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const AdminCursorSystem = lazy(() => import("./pages/admin/CursorSystem"));
+const AdminWhatsAppProducts = lazy(() => import("./pages/admin/AdminWhatsAppProducts"));
+const AdminWhatsAppSettings = lazy(() => import("./pages/admin/AdminWhatsAppSettings"));
+const AdminWhatsAppAnalytics = lazy(() => import("./pages/admin/AdminWhatsAppAnalytics"));
 const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
 const DownloadExtension = lazy(() => import("./pages/DownloadExtension"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -101,6 +104,9 @@ const AppContent = () => {
               <Route path="coupons" element={<AdminCoupons />} />
               <Route path="cursor-system" element={<AdminCursorSystem />} />
               <Route path="policies" element={<AdminPolicies />} />
+              <Route path="whatsapp/products" element={<AdminWhatsAppProducts />} />
+              <Route path="whatsapp/settings" element={<AdminWhatsAppSettings />} />
+              <Route path="whatsapp/analytics" element={<AdminWhatsAppAnalytics />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 
