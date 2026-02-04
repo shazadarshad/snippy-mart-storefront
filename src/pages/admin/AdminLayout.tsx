@@ -45,6 +45,9 @@ const AdminLayout = () => {
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { name: 'Inventory', path: '/admin/inventory', icon: Package },
     { name: 'Cursor System', path: '/admin/cursor-system', icon: Users },
+    { name: 'WhatsApp Bot', path: '/admin/whatsapp/products', icon: MessageSquare, badge: 'NEW' },
+    { name: 'WA Settings', path: '/admin/whatsapp/settings', icon: Settings, indent: true },
+    { name: 'WA Analytics', path: '/admin/whatsapp/analytics', icon: BarChart3, indent: true },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag },
     { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
     { name: 'Email Templates', path: '/admin/email-templates', icon: FileText },
@@ -144,13 +147,14 @@ const AdminLayout = () => {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar pb- safe-area-bottom">
-            {menuItems.map((item) => (
+            {menuItems.map((item: any) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-200 uppercase tracking-wide group",
+                  item.indent && "ml-6",
                   isActive(item.path)
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -158,6 +162,11 @@ const AdminLayout = () => {
               >
                 <item.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive(item.path) ? "opacity-100" : "opacity-70")} />
                 {item.name}
+                {item.badge && !isActive(item.path) && (
+                  <span className="ml-auto px-2 py-0.5 text-[9px] font-black bg-green-500 text-white rounded-full">
+                    {item.badge}
+                  </span>
+                )}
                 {isActive(item.path) && (
                   <ChevronRight className="w-3 h-3 ml-auto opacity-70" />
                 )}
