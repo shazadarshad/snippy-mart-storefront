@@ -60,19 +60,15 @@ export default function AIChatWidget() {
         setIsTyping(true);
 
         try {
-            // Call our AI endpoint
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            // Call Supabase Edge Function directly
+            const { data, error } = await supabase.functions.invoke('ai-chat', {
+                body: {
                     message: input.trim(),
                     history: messages.slice(-6) // Last 6 messages for context
-                })
+                }
             });
 
-            if (!response.ok) throw new Error('Failed to get response');
-
-            const data = await response.json();
+            if (error) throw error;
 
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -165,8 +161,8 @@ export default function AIChatWidget() {
                             >
                                 <div
                                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
-                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                                            : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-md'
+                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                                        : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-md'
                                         }`}
                                 >
                                     <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
