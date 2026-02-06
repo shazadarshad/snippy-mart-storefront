@@ -10,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import CartDrawer from "./components/cart/CartDrawer";
+import AIChatWidget from "./components/AIChatWidget";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import GlobalLoader from "./components/GlobalLoader";
@@ -116,6 +117,7 @@ const AppContent = () => {
       </AnimatePresence>
 
       {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <AIChatWidget />}
     </>
   );
 };
