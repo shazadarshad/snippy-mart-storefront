@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Send, MessageCircle, Minimize2, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../integrations/supabase/client';
 
 interface Message {
     id: string;
