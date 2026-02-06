@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Tag,
   Users,
+  Brain,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,7 @@ const AdminLayout = () => {
     { name: 'WhatsApp Bot', path: '/admin/whatsapp/products', icon: MessageSquare, badge: 'NEW' },
     { name: 'WA Settings', path: '/admin/whatsapp/settings', icon: Settings, indent: true },
     { name: 'WA Analytics', path: '/admin/whatsapp/analytics', icon: BarChart3, indent: true },
+    { name: 'AI Knowledge', path: '/admin/ai-knowledge', icon: Brain, badge: 'AI' },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag },
     { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
     { name: 'Email Templates', path: '/admin/email-templates', icon: FileText },

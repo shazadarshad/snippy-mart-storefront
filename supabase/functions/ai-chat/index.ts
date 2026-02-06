@@ -68,11 +68,34 @@ serve(async (req) => {
         knowledgeBase += `3. If info is missing, say "I don't have that specific detail"\n`;
         knowledgeBase += `4. NEVER guess or hallucinate prices\n\n`;
 
+
         if (products && products.length > 0) {
             products.forEach((product: any) => {
                 knowledgeBase += `## ${product.name}\n\n`;
                 knowledgeBase += `**Category**: ${product.category || 'Digital Services'}\n`;
-                knowledgeBase += `**Product Page**: https://snippymart.com/products/${product.slug}\n\n`;
+                knowledgeBase += `**Product Page**: https://snippymart.com/products/${product.slug}\n`;
+
+                // Stock Status - PROMINENT
+                if (product.stock_status) {
+                    let statusText = '';
+                    let statusEmoji = '';
+
+                    if (product.stock_status === 'in_stock') {
+                        statusEmoji = '✅';
+                        statusText = 'IN STOCK - Available for immediate order';
+                    } else if (product.stock_status === 'limited_stock') {
+                        statusEmoji = '⚠️';
+                        statusText = 'LIMITED STOCK - Order soon!';
+                    } else if (product.stock_status === 'out_of_stock') {
+                        statusEmoji = '❌';
+                        statusText = 'OUT OF STOCK - Currently unavailable';
+                    } else {
+                        statusEmoji = '⏳';
+                        statusText = 'COMING SOON';
+                    }
+
+                    knowledgeBase += `**Availability**: ${statusEmoji} ${statusText}\n\n`;
+                }
 
                 if (product.description) {
                     knowledgeBase += `**Description**: ${product.description}\n\n`;
@@ -108,13 +131,50 @@ serve(async (req) => {
                     knowledgeBase += `\n`;
                 }
 
-                if (product.stock_status) {
-                    const statusEmoji = product.stock_status === 'in_stock' ? '✅' : '⚠️';
-                    knowledgeBase += `**Availability**: ${statusEmoji} ${product.stock_status.replace('_', ' ').toUpperCase()}\n\n`;
-                }
-
                 knowledgeBase += `---\n\n`;
             });
+        }
+
+        // Fetch custom AI knowledge items
+        const { data: customKnowledge } = await supabaseClient
+            .from("ai_knowledge_items")
+            .select("*")
+            .eq("is_active", true)
+            .order("priority", { ascending: false });
+
+        if (customKnowledge && customKnowledge.length > 0) {
+            knowledgeBase += `## Custom Product Knowledge\n\n`;
+
+            // Group by category
+            const productDetails = customKnowledge.filter(k => k.category === 'product_detail');
+            const faqs = customKnowledge.filter(k => k.category === 'faq');
+            const general = customKnowledge.filter(k => k.category === 'general');
+
+            if (productDetails.length > 0) {
+                knowledgeBase += `**Product-Specific Details**:\n`;
+                productDetails.forEach(item => {
+                    knowledgeBase += `• ${item.key}: ${item.value}\n`;
+                });
+                knowledgeBase += `\n`;
+            }
+
+            if (faqs.length > 0) {
+                knowledgeBase += `**Custom FAQs**:\n`;
+                faqs.forEach(item => {
+                    if (item.question && item.answer) {
+                        knowledgeBase += `Q: ${item.question}\n`;
+                        knowledgeBase += `A: ${item.answer}\n\n`;
+                    }
+                });
+            }
+
+            if (general.length > 0) {
+                knowledgeBase += `**Additional Information**:\n`;
+                general.forEach(item => {
+                    knowledgeBase += `• ${item.key}: ${item.value}\n`;
+                });
+                knowledgeBase += `\n`;
+            }
         }
 
         knowledgeBase += `## Store Information\n\n`;
