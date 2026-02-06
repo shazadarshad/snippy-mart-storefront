@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Send, MessageCircle, Minimize2, Loader2 } from 'lucide-react';
+import { X, Send, MessageCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 
 interface Message {
@@ -9,6 +9,47 @@ interface Message {
     timestamp: Date;
 }
 
+// Format message content with markdown-like styling
+const FormattedMessage = ({ content, role }: { content: string; role: 'user' | 'assistant' }) => {
+    const formatText = (text: string) => {
+        // Split by lines
+        const lines = text.split('\n');
+
+        return lines.map((line, index) => {
+            // Bold text: **text** or *text*
+            let formatted = line.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>');
+            formatted = formatted.replace(/\*(.+?)\*/g, '<strong class="font-semibold">$1</strong>');
+
+            // Links: [text](url)
+            formatted = formatted.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:text-blue-600 underline">$1</a>');
+
+            // Bullet points
+            if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
+                return (
+                    <div key={index} className="flex gap-2 my-1">
+                        <span className="text-blue-500 font-bold">•</span>
+                        <span dangerouslySetInnerHTML={{ __html: formatted.replace(/^[•-]\s*/, '') }} />
+                    </div>
+                );
+            }
+
+            // Empty lines
+            if (line.trim() === '') {
+                return <div key={index} className="h-2" />;
+            }
+
+            // Regular lines
+            return <div key={index} dangerouslySetInnerHTML={{ __html: formatted }} />;
+        });
+    };
+
+    return (
+        <div className={`text-sm leading-relaxed ${role === 'user' ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+            {formatText(content)}
+        </div>
+    );
+};
+
 export default function AIChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -16,6 +57,7 @@ export default function AIChatWidget() {
     const [isLoading, setIsLoading] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const scrollToBottom = () => {
@@ -28,11 +70,10 @@ export default function AIChatWidget() {
 
     useEffect(() => {
         if (isOpen && messages.length === 0) {
-            // Welcome message
             setMessages([{
                 id: '1',
                 role: 'assistant',
-                content: "👋 Hi! I'm your Snippy Mart AI assistant. I can help you with:\n\n• Product details & pricing (LKR)\n• Requirements & compatibility\n• How to order\n• Payment methods\n\nWhat would you like to know?",
+                content: "👋 Hi! I'm your Snippy Mart AI assistant.\n\nI can help you with:\n\n• Product details & pricing (LKR)\n• Requirements & compatibility\n• How to order\n• Payment methods\n\nWhat would you like to know?",
                 timestamp: new Date()
             }]);
         }
@@ -60,11 +101,10 @@ export default function AIChatWidget() {
         setIsTyping(true);
 
         try {
-            // Call Supabase Edge Function directly
             const { data, error } = await supabase.functions.invoke('ai-chat', {
                 body: {
                     message: input.trim(),
-                    history: messages.slice(-6) // Last 6 messages for context
+                    history: messages.slice(-6)
                 }
             });
 
@@ -83,7 +123,7 @@ export default function AIChatWidget() {
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: "I'm having trouble right now. Please try again or visit our products page directly at snippymart.com/products 🚀",
+                content: "I'm having trouble right now. Please try again or visit our products page directly at [snippymart.com/products](https://snippymart.com/products) 🚀",
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -106,19 +146,14 @@ export default function AIChatWidget() {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-6 right-6 z-50 group"
+                    className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 group"
                     aria-label="Open AI Chat"
                 >
                     <div className="relative">
-                        {/* Pulse animation */}
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-ping opacity-75" />
-
-                        {/* Main button */}
-                        <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 hover:scale-110">
-                            <MessageCircle className="w-6 h-6" />
+                        <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 sm:p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 hover:scale-110">
+                            <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
-
-                        {/* Badge */}
                         <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
                             AI
                         </div>
@@ -128,18 +163,18 @@ export default function AIChatWidget() {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-3rem)] flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="fixed inset-0 sm:inset-auto sm:bottom-4 sm:right-4 sm:bottom-6 sm:right-6 z-50 sm:w-[420px] sm:max-w-[calc(100vw-2rem)] sm:h-[650px] sm:max-h-[calc(100vh-2rem)] flex flex-col bg-white dark:bg-gray-900 sm:rounded-2xl shadow-2xl border-0 sm:border border-gray-200 dark:border-gray-700 overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex items-center justify-between">
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-5 flex items-center justify-between flex-shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="relative">
-                                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                    <MessageCircle className="w-5 h-5" />
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                    <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                                 </div>
                                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg">Snippy Mart AI</h3>
+                                <h3 className="font-bold text-base sm:text-lg">Snippy Mart AI</h3>
                                 <p className="text-xs text-white/80">Online • Instant answers</p>
                             </div>
                         </div>
@@ -152,21 +187,28 @@ export default function AIChatWidget() {
                         </button>
                     </div>
 
-                    {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800">
+                    {/* Messages - Scrollable Container */}
+                    <div
+                        ref={messagesContainerRef}
+                        className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-800"
+                        style={{
+                            WebkitOverflowScrolling: 'touch',
+                            scrollBehavior: 'smooth'
+                        }}
+                    >
                         {messages.map((message) => (
                             <div
                                 key={message.id}
                                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
-                                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
-                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                                        : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-md'
+                                    className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 ${message.role === 'user'
+                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                                            : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-md'
                                         }`}
                                 >
-                                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                                    <p className={`text-xs mt-1 ${message.role === 'user' ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'
+                                    <FormattedMessage content={message.content} role={message.role} />
+                                    <p className={`text-xs mt-1.5 ${message.role === 'user' ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'
                                         }`}>
                                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
@@ -191,7 +233,7 @@ export default function AIChatWidget() {
                     </div>
 
                     {/* Input */}
-                    <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                    <div className="p-3 sm:p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                         <div className="flex gap-2">
                             <input
                                 ref={inputRef}
@@ -201,18 +243,18 @@ export default function AIChatWidget() {
                                 onKeyPress={handleKeyPress}
                                 placeholder="Ask me anything..."
                                 disabled={isLoading}
-                                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-gray-900 dark:text-white placeholder-gray-500"
+                                className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-gray-900 dark:text-white placeholder-gray-500"
                             />
                             <button
                                 onClick={sendMessage}
                                 disabled={!input.trim() || isLoading}
-                                className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+                                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 flex-shrink-0"
                                 aria-label="Send message"
                             >
                                 {isLoading ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                                 ) : (
-                                    <Send className="w-5 h-5" />
+                                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                                 )}
                             </button>
                         </div>
