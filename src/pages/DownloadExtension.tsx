@@ -29,15 +29,15 @@ const DownloadExtension = () => {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
-                        <span className="text-sm font-mono tracking-wide text-gray-300">SYSTEM OPERATIONAL v1.0.0</span>
+                        <span className="text-sm font-mono tracking-wide text-gray-300">ELITE ACCESS v1.0.0</span>
                     </div>
 
                     <h1 className="text-6xl md:text-8xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 pb-4">
-                        Cursor Smart Recovery.
+                        Elite Auto-Login.
                     </h1>
                     <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                        The automated guardian for your development workflow. <br />
-                        Instantly restores team access, limits velocity, and keeps you coding.
+                        The ultimate access pass for your purchased products. <br />
+                        One click to securely auto-login to all your Snippy Mart services.
                     </p>
 
                     <div className="pt-8 flex flex-col md:flex-row gap-4 justify-center items-center">
@@ -103,9 +103,9 @@ const DownloadExtension = () => {
                             <div className="h-16 w-16 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6 mt-2 group-hover:scale-110 group-hover:bg-green-500/30 transition-all">
                                 <UserPlus className="w-8 h-8 text-green-400" />
                             </div>
-                            <h3 className="text-2xl font-bold mb-3 text-white">Register & Share</h3>
+                            <h3 className="text-2xl font-bold mb-3 text-white">Register & Access</h3>
                             <p className="text-gray-400 leading-relaxed text-sm">
-                                Click the Elite icon in your extensions bar and register with a username.
+                                Click the Elite icon, register your User ID, and auto-login to your purchased products instantly!
                             </p>
                         </div>
                     </div>
