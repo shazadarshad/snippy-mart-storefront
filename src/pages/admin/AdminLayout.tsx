@@ -19,6 +19,7 @@ import {
   Tag,
   Users,
   Brain,
+  Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ const AdminLayout = () => {
     { name: 'WA Settings', path: '/admin/whatsapp/settings', icon: Settings, indent: true },
     { name: 'WA Analytics', path: '/admin/whatsapp/analytics', icon: BarChart3, indent: true },
     { name: 'AI Knowledge', path: '/admin/ai-knowledge', icon: Brain, badge: 'AI' },
+    { name: 'Extension Upload', path: '/admin/extension-upload', icon: Upload },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag },
     { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
     { name: 'Email Templates', path: '/admin/email-templates', icon: FileText },

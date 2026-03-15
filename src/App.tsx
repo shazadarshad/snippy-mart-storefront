@@ -49,6 +49,7 @@ const AdminWhatsAppProducts = lazy(() => import("./pages/admin/AdminWhatsAppProd
 const AdminWhatsAppSettings = lazy(() => import("./pages/admin/AdminWhatsAppSettings"));
 const AdminWhatsAppAnalytics = lazy(() => import("./pages/admin/AdminWhatsAppAnalytics"));
 const AdminAIKnowledge = lazy(() => import("./pages/admin/AdminAIKnowledge"));
+const AdminExtensionUpload = lazy(() => import("./pages/admin/AdminExtensionUpload"));
 const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
 const DownloadExtension = lazy(() => import("./pages/DownloadExtension"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -83,7 +84,7 @@ const AppContent = () => {
             <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
             <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
             <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
-            <Route path="/download-extension" element={<PageTransition><DownloadExtension /></PageTransition>} />
+            <Route path="/download" element={<PageTransition><DownloadExtension /></PageTransition>} />
 
             <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
 
@@ -110,6 +111,7 @@ const AppContent = () => {
               <Route path="whatsapp/settings" element={<AdminWhatsAppSettings />} />
               <Route path="whatsapp/analytics" element={<AdminWhatsAppAnalytics />} />
               <Route path="ai-knowledge" element={<AdminAIKnowledge />} />
+              <Route path="extension-upload" element={<AdminExtensionUpload />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 
