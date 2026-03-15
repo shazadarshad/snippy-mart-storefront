@@ -32,18 +32,18 @@ const DownloadExtension = () => {
                         <span className="text-sm font-mono tracking-wide text-gray-300">ELITE ACCESS v1.0.0</span>
                     </div>
 
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 pb-4">
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 pb-4">
                         Elite Auto-Login.
                     </h1>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                        The ultimate access pass for your purchased products. <br />
+                    <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed px-4">
+                        The ultimate access pass for your purchased products. <br className="hidden md:block" />
                         One click to securely auto-login to all your Snippy Mart services.
                     </p>
 
-                    <div className="pt-8 flex flex-col md:flex-row gap-4 justify-center items-center">
+                    <div className="pt-8 flex flex-col md:flex-row gap-4 justify-center items-center w-full px-4">
                         <Button
                             size="lg"
-                            className="h-14 px-8 text-lg rounded-full bg-white text-black hover:bg-gray-200 transition-all hover:scale-105 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] font-bold group"
+                            className="w-full md:w-auto h-14 px-8 text-lg rounded-full bg-white text-black hover:bg-gray-200 transition-all hover:scale-105 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] font-bold group"
                             onClick={() => window.location.href = downloadUrl}
                         >
                             <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
@@ -52,7 +52,7 @@ const DownloadExtension = () => {
                         <Button
                             variant="outline"
                             size="lg"
-                            className="h-14 px-8 text-lg rounded-full border-white/20 bg-white/5 backdrop-blur hover:bg-white/10 transition-all font-bold"
+                            className="w-full md:w-auto h-14 px-8 text-lg rounded-full border-white/20 bg-white/5 backdrop-blur hover:bg-white/10 transition-all font-bold"
                             onClick={() => document.getElementById('install-guide')?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             Installation Guide
@@ -61,8 +61,8 @@ const DownloadExtension = () => {
                 </div>
 
                 {/* Installation Guide */}
-                <div id="install-guide" className="mt-32 max-w-5xl w-full animate-in fade-in duration-1000">
-                    <h2 className="text-4xl font-black text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                <div id="install-guide" className="mt-32 max-w-5xl w-full px-4 animate-in fade-in duration-1000 scroll-mt-28">
+                    <h2 className="text-3xl md:text-4xl font-black text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
                         Get Started in 3 Steps
                     </h2>
                     
@@ -89,7 +89,7 @@ const DownloadExtension = () => {
                             <div className="h-16 w-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6 mt-2 group-hover:scale-110 group-hover:bg-purple-500/30 transition-all">
                                 <Chrome className="w-8 h-8 text-purple-400" />
                             </div>
-                            <h3 className="text-2xl font-bold mb-3 text-white">Load in Chrome</h3>
+                            <h3 className="text-2xl font-bold mb-3 text-white">Load in Browser</h3>
                             <p className="text-gray-400 leading-relaxed text-sm w-full">
                                 Go to <span className="text-purple-300 bg-purple-500/10 px-1.5 py-0.5 rounded font-mono inline-block break-all">chrome://extensions</span>, turn on Developer mode, click <span className="text-white font-medium">Load unpacked</span>, and select the folder.
                             </p>
@@ -108,6 +108,16 @@ const DownloadExtension = () => {
                                 Click the Elite icon, register your User ID, and auto-login to your purchased products instantly!
                             </p>
                         </div>
+                    </div>
+
+                    {/* Mobile Only Note */}
+                    <div className="mt-12 md:hidden bg-blue-900/20 border border-blue-500/30 rounded-2xl p-6 flex flex-col items-center text-center animate-pulse">
+                        <Chrome className="w-8 h-8 text-blue-400 mb-3" />
+                        <h4 className="text-lg font-bold text-white mb-2">Using an Android Phone?</h4>
+                        <p className="text-gray-400 text-sm">
+                            If you are on mobile, standard Chrome doesn't support extensions. <br/>
+                            Please install the <strong className="text-blue-300">Kiwi Browser</strong> from the Play Store, open this page in Kiwi, and follow the exact same steps above.
+                        </p>
                     </div>
                 </div>
 
