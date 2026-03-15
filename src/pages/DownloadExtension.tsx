@@ -10,7 +10,7 @@ const DownloadExtension = () => {
     useEffect(() => {
         const { data } = supabase.storage
             .from('extension-artifacts')
-            .getPublicUrl('latest.zip');
+            .getPublicUrl('elite-receiver-dist.zip');
         setDownloadUrl(data.publicUrl);
     }, []);
 

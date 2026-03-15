@@ -35,12 +35,12 @@ export default function AdminExtensionUpload() {
         setProgress(10); // Start progress
 
         try {
-            // Upload to Supabase Storage - replace latest.zip
+            // Upload to Supabase Storage - replace elite-receiver-dist.zip
             setProgress(40);
             
             const { data, error } = await supabase.storage
                 .from('extension-artifacts')
-                .upload('latest.zip', file, {
+                .upload('elite-receiver-dist.zip', file, {
                     cacheControl: '3600',
                     upsert: true, // Replace existing file
                 });
@@ -120,7 +120,7 @@ export default function AdminExtensionUpload() {
                                 <h3 className="text-xl font-bold mb-2">Upload Production Build</h3>
                                 <p className="text-muted-foreground max-w-md mx-auto">
                                     Drag and drop your complete extension <span className="font-mono text-sm bg-secondary px-1 py-0.5 rounded">.zip</span> or click to browse. 
-                                    This will overwrite the current <span className="font-mono text-sm">latest.zip</span> available on the download page.
+                                    This will overwrite the current <span className="font-mono text-sm">elite-receiver-dist.zip</span> available on the download page.
                                 </p>
                             </div>
 
