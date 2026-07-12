@@ -1,4 +1,4 @@
-import { Eye, Star, Package, AlertTriangle } from 'lucide-react';
+import { Eye, Star, Package, AlertTriangle, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
@@ -13,24 +13,24 @@ interface ProductCardProps {
 const StockBadge = ({ status }: { status?: string }) => {
   if (!status || status === 'in_stock') {
     return (
-      <span className="flex items-center gap-1 text-xs font-medium text-green-500">
-        <Package className="w-3 h-3" />
-        In Stock
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500">
+        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+        In stock
       </span>
     );
   }
   if (status === 'limited') {
     return (
-      <span className="flex items-center gap-1 text-xs font-medium text-amber-500">
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500">
         <AlertTriangle className="w-3 h-3" />
         Limited
       </span>
     );
   }
   return (
-    <span className="flex items-center gap-1 text-xs font-medium text-red-500">
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500">
       <AlertTriangle className="w-3 h-3" />
-      Out of Stock
+      Sold out
     </span>
   );
 };
@@ -45,94 +45,123 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
 
   const stripFormatting = (text: string) => {
     if (!text) return '';
-    return text.replace(/\*\*/g, '');
+    return text.replace(/\*\*/g, '').replace(/\n+/g, ' ').trim();
+  };
+
+  const open = () => {
+    if (!isOutOfStock) onViewDetails(product);
   };
 
   return (
-    <div
+    <article
+      role="button"
+      tabIndex={isOutOfStock ? -1 : 0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          open();
+        }
+      }}
       className={cn(
-        "group relative rounded-3xl border border-white/5 overflow-hidden card-hover glass-card shadow-2xl shadow-black/20",
-        isOutOfStock && "opacity-75",
+        'group relative flex flex-col rounded-2xl sm:rounded-3xl border border-border/80 overflow-hidden bg-card',
+        'shadow-sm hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        isOutOfStock ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer active:scale-[0.99]',
         className
       )}
     >
       {/* Badges */}
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 ">
+      <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5">
         {product.is_featured && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider shadow-lg">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider shadow-md">
             <Star className="w-2.5 h-2.5 fill-current" />
-            Elite
+            Featured
           </div>
         )}
         {discount > 0 && (
-          <div className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-wider shadow-lg shadow-primary/30">
+          <div className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-wider shadow-md">
             -{discount}%
           </div>
         )}
       </div>
 
-      {/* Image Container with Glow */}
-      <div className="relative aspect-square bg-[#0a0a0f] overflow-hidden">
-        <div className="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-colors z-10" />
+      {/* Image */}
+      <div className="relative aspect-[4/3] sm:aspect-square bg-secondary/40 overflow-hidden">
         <img
-          src={product.image_url}
+          src={product.image_url || '/placeholder.svg'}
           alt={product.name}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-transparent to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-80" />
+        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-background/90 text-[10px] font-bold border border-border backdrop-blur-sm">
+            <Eye className="w-3 h-3" />
+            View
+          </span>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="p-3 sm:p-5 flex flex-col h-full bg-card/10">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[9px] font-black font-mono text-primary uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/5 border border-primary/20">
-            {product.category.toUpperCase()}
+      <div className="p-3 sm:p-4 flex flex-col flex-1 gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[9px] font-black text-primary uppercase tracking-widest px-2 py-0.5 rounded-md bg-primary/10 truncate max-w-[60%]">
+            {product.category || 'Digital'}
           </span>
           <StockBadge status={product.stock_status} />
         </div>
 
-        <h3 className="text-sm sm:text-lg font-black text-foreground mb-3 line-clamp-2 leading-tight group-hover:text-primary transition-colors min-h-[2.5rem]">
+        <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors min-h-[2.5rem]">
           {product.name}
         </h3>
 
-        {/* Price & Action */}
-        <div className="mt-auto space-y-3">
-          <div className="flex flex-col items-start">
-            <span className="text-[8px] sm:text-[10px] uppercase text-muted-foreground font-black tracking-widest mb-0.5">Starting From</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg sm:text-2xl font-display font-black text-foreground">
-                {formatPrice(product.price)}
-              </span>
-              {product.old_price && (
-                <span className="text-[10px] sm:text-xs text-muted-foreground line-through opacity-50">
-                  {formatPrice(product.old_price)}
+        {product.description && (
+          <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2 leading-relaxed hidden sm:block">
+            {stripFormatting(product.description)}
+          </p>
+        )}
+
+        <div className="mt-auto pt-2 space-y-2.5">
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">
+                From
+              </p>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-lg sm:text-xl font-display font-black text-foreground">
+                  {formatPrice(product.price)}
                 </span>
-              )}
+                {product.old_price != null && product.old_price > product.price && (
+                  <span className="text-[11px] text-muted-foreground line-through">
+                    {formatPrice(product.old_price)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
           <Button
             size="sm"
-            className="w-full rounded-2xl font-black text-[10px] uppercase tracking-widest h-10 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all"
+            className="w-full rounded-xl font-bold text-xs h-10 shadow-md shadow-primary/10 group-hover:shadow-primary/25 transition-all"
             onClick={(e) => {
               e.stopPropagation();
-              onViewDetails(product);
+              open();
             }}
             disabled={isOutOfStock}
           >
             {isOutOfStock ? (
-              <span>Sold Out</span>
+              'Sold out'
             ) : (
-              <div className="flex items-center justify-center gap-2">
-                <Eye className="w-3.5 h-3.5" />
-                <span>ACCESS</span>
-              </div>
+              <span className="inline-flex items-center gap-1.5">
+                <ShoppingBag className="w-3.5 h-3.5" />
+                View & buy
+              </span>
             )}
           </Button>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

@@ -1,7 +1,23 @@
-import { useState } from 'react';
-import { Search, Filter, ChevronDown, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Search,
+  X,
+  Package,
+  ArrowUpDown,
+  Star,
+  Zap,
+  LayoutGrid,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import ProductCard from '@/components/products/ProductCard';
 import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
@@ -11,46 +27,91 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '@/components/seo/SEO';
 import ClaudePromo from '@/components/ClaudePromo';
 
+type SortKey = 'featured' | 'price_asc' | 'price_desc' | 'name' | 'newest';
+type StockFilter = 'all' | 'in_stock' | 'limited' | 'out_of_stock';
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-    },
+    transition: { staggerChildren: 0.04 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 14 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 260,
-      damping: 20,
-    },
+    transition: { type: 'spring' as const, stiffness: 280, damping: 22 },
   },
 };
 
 const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('featured');
+  const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: products = [], isLoading } = useProducts();
 
-  const categories = Array.from(new Set(products.map((p) => p.category)));
+  const categoryStats = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of products) {
+      const cat = p.category || 'Other';
+      map.set(cat, (map.get(cat) || 0) + 1);
+    }
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [products]);
 
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const featuredCount = products.filter((p) => p.is_featured).length;
+  const inStockCount = products.filter(
+    (p) => !p.stock_status || p.stock_status === 'in_stock'
+  ).length;
+
+  const filteredProducts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+
+    let list = products.filter((product) => {
+      const hay = `${product.name} ${product.description} ${product.category}`.toLowerCase();
+      const matchesSearch = !q || hay.includes(q);
+      const matchesCategory = !selectedCategory || product.category === selectedCategory;
+      const stock = product.stock_status || 'in_stock';
+      const matchesStock = stockFilter === 'all' || stock === stockFilter;
+      return matchesSearch && matchesCategory && matchesStock;
+    });
+
+    list = [...list].sort((a, b) => {
+      switch (sortKey) {
+        case 'price_asc':
+          return a.price - b.price;
+        case 'price_desc':
+          return b.price - a.price;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'newest':
+          return (
+            new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+          );
+        case 'featured':
+        default: {
+          const af = a.is_featured ? 0 : 1;
+          const bf = b.is_featured ? 0 : 1;
+          if (af !== bf) return af - bf;
+          const ao = a.display_order ?? 9999;
+          const bo = b.display_order ?? 9999;
+          if (ao !== bo) return ao - bo;
+          return a.name.localeCompare(b.name);
+        }
+      }
+    });
+
+    return list;
+  }, [products, searchQuery, selectedCategory, stockFilter, sortKey]);
 
   const handleViewDetails = (product: Product) => {
     setSelectedProduct(product);
@@ -62,103 +123,230 @@ const ProductsPage = () => {
     setTimeout(() => setSelectedProduct(null), 300);
   };
 
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory(null);
+    setStockFilter('all');
+    setSortKey('featured');
+  };
+
+  const hasActiveFilters =
+    !!searchQuery || !!selectedCategory || stockFilter !== 'all' || sortKey !== 'featured';
+
   return (
-    <div className="min-h-screen pt-20 pb-12 lg:pt-32">
+    <div className="min-h-screen pt-20 pb-16 lg:pt-28">
       <SEO
         title="Products"
-        description="Browse our collection of premium digital subscriptions. High-quality tools, streaming services, and software at unbeatable prices."
+        description="Browse premium digital subscriptions — AI tools, streaming, design software. Fair prices, bank checkout, live tracking."
         type="website"
       />
+
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-black text-foreground mb-3 tracking-tighter">
-            Product <span className="gradient-text">vault</span>
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-            Premium digital access at fair prices — or grab Claude Team on its dedicated page.
-          </p>
-        </div>
-
-        <div className="mb-8 max-w-3xl mx-auto">
-          <ClaudePromo variant="banner" />
-        </div>
-
-        {/* Search & Filters */}
-        <div className="mb-6 sm:mb-10 space-y-4">
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search for tools, streaming, or AI..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 sm:h-14 glass-sm border-white/5 text-sm sm:text-base rounded-2xl"
-            />
-          </div>
-
-          <div className="flex overflow-x-auto pb-4 gap-2 no-scrollbar justify-start sm:justify-center px-1">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
+                <LayoutGrid className="w-3 h-3" />
+                Product vault
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black text-foreground tracking-tight mb-2">
+                Shop digital <span className="gradient-text">access</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+                {isLoading
+                  ? 'Loading catalogue…'
+                  : `${products.length} products · ${inStockCount} in stock · ${featuredCount} featured`}
+              </p>
+            </div>
             <Button
-              variant={selectedCategory === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-              className="px-4 h-9 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest flex-shrink-0"
+              className="w-full sm:w-auto h-11 rounded-xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shrink-0"
+              asChild
             >
-              All Access
+              <Link to="/claude">
+                <Zap className="w-4 h-4 mr-2" />
+                Claude Team
+              </Link>
             </Button>
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className="px-4 h-9 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest flex-shrink-0"
-              >
-                {category}
-              </Button>
-            ))}
+          </div>
+
+          <ClaudePromo variant="banner" className="mb-2" />
+        </div>
+
+        {/* Toolbar */}
+        <div className="sticky top-14 lg:top-16 z-30 -mx-4 px-4 py-3 mb-6 bg-background/90 backdrop-blur-xl border-b border-border/60">
+          <div className="flex flex-col gap-3 max-w-[1400px] mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search products, categories, AI, streaming…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10 h-11 sm:h-12 rounded-xl bg-card border-border text-sm sm:text-base"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+              <div className="flex overflow-x-auto gap-1.5 pb-1 sm:pb-0 no-scrollbar -mx-0.5 px-0.5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory(null)}
+                  className={cn(
+                    'px-3 h-9 rounded-full text-[11px] font-bold uppercase tracking-wide shrink-0 border transition-colors',
+                    selectedCategory === null
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-card border-border text-muted-foreground hover:border-primary/40'
+                  )}
+                >
+                  All ({products.length})
+                </button>
+                {categoryStats.map(({ name, count }) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() =>
+                      setSelectedCategory(selectedCategory === name ? null : name)
+                    }
+                    className={cn(
+                      'px-3 h-9 rounded-full text-[11px] font-bold uppercase tracking-wide shrink-0 border transition-colors',
+                      selectedCategory === name
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card border-border text-muted-foreground hover:border-primary/40'
+                    )}
+                  >
+                    {name} ({count})
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-2 shrink-0">
+                <Select
+                  value={stockFilter}
+                  onValueChange={(v) => setStockFilter(v as StockFilter)}
+                >
+                  <SelectTrigger className="h-9 w-[130px] rounded-xl text-xs bg-card">
+                    <Package className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <SelectValue placeholder="Stock" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All stock</SelectItem>
+                    <SelectItem value="in_stock">In stock</SelectItem>
+                    <SelectItem value="limited">Limited</SelectItem>
+                    <SelectItem value="out_of_stock">Sold out</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                  <SelectTrigger className="h-9 w-[140px] rounded-xl text-xs bg-card">
+                    <ArrowUpDown className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="featured">Featured</SelectItem>
+                    <SelectItem value="price_asc">Price: low → high</SelectItem>
+                    <SelectItem value="price_desc">Price: high → low</SelectItem>
+                    <SelectItem value="name">Name A–Z</SelectItem>
+                    <SelectItem value="newest">Newest</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <p className="text-muted-foreground">
+                  <span className="font-bold text-foreground">{filteredProducts.length}</span> result
+                  {filteredProducts.length !== 1 ? 's' : ''}
+                  {selectedCategory && (
+                    <>
+                      {' '}
+                      in <span className="font-semibold text-primary">{selectedCategory}</span>
+                    </>
+                  )}
+                </p>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Grid */}
         {isLoading ? (
           <ProductsGridSkeleton count={8} />
         ) : filteredProducts.length > 0 ? (
-          <motion.div
-            layout
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6"
-          >
-            {filteredProducts.map((product) => (
-              <motion.div key={product.id} variants={itemVariants} layout>
-                <ProductCard
-                  product={product}
-                  onViewDetails={handleViewDetails}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${selectedCategory}-${sortKey}-${stockFilter}-${searchQuery}`}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
+            >
+              {filteredProducts.map((product) => (
+                <motion.div key={product.id} variants={itemVariants}>
+                  <ProductCard product={product} onViewDetails={handleViewDetails} />
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         ) : (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-              <Search className="w-10 h-10 text-muted-foreground" />
+          <div className="text-center py-16 sm:py-20 rounded-3xl border border-dashed border-border bg-card/40">
+            <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">No products found</h3>
-            <p className="text-muted-foreground">
-              Try adjusting your search or filter to find what you're looking for.
+            <h3 className="text-lg font-bold text-foreground mb-2">No products match</h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+              Try another search or category — or check out Claude Team while you&apos;re here.
             </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Button variant="outline" onClick={clearFilters}>
+                Clear filters
+              </Button>
+              <Button
+                className="bg-gradient-to-r from-orange-500 to-amber-500 text-white"
+                asChild
+              >
+                <Link to="/claude">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Get Claude
+                </Link>
+              </Button>
+            </div>
           </div>
         )}
 
-        {/* Results Count */}
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          Showing {filteredProducts.length} of {products.length} products
+        {!isLoading && filteredProducts.length > 0 && (
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground border-t border-border pt-6">
+            <p>
+              Showing <span className="font-bold text-foreground">{filteredProducts.length}</span> of{' '}
+              <span className="font-bold text-foreground">{products.length}</span> products
+            </p>
+            <div className="flex items-center gap-2 text-xs">
+              <Star className="w-3.5 h-3.5 text-amber-500" />
+              Featured items rise to the top when sorted by Featured
+            </div>
+          </div>
+        )}
+
+        {/* Bottom Claude CTA */}
+        <div className="mt-12 max-w-2xl mx-auto">
+          <ClaudePromo variant="compact" />
         </div>
       </div>
 
-      {/* Product Detail Modal */}
       <ProductDetailModal
         product={selectedProduct}
         isOpen={isModalOpen}
