@@ -14,35 +14,31 @@ interface NavbarProps {
 }
 
 const Navbar = ({ onCartOpen }: NavbarProps) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const itemCount = useCartStore((state) => state.getItemCount());
+  const itemCount = useCartStore((s) => s.getItemCount());
   const { data: settings } = useSiteSettings();
 
   useEffect(() => {
-    if (mobileMenuOpen) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'unset';
+    document.body.style.overflow = open ? 'hidden' : 'unset';
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [mobileMenuOpen]);
+  }, [open]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const fn = () => setScrolled(window.scrollY > 12);
+    fn();
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+  useEffect(() => setOpen(false), [location.pathname]);
 
   const logoUrl = settings?.logo_url;
   const storeName = settings?.store_name || 'Snippy Mart';
-
-  const navLinks = [
+  const links = [
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
     { name: 'About', path: '/about' },
@@ -50,67 +46,62 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
     { name: 'Track', path: '/track-order' },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
-
   return (
-    <nav
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        scrolled
-          ? 'bg-background/85 backdrop-blur-2xl border-b border-border/60 shadow-sm'
-          : 'bg-background/50 backdrop-blur-xl border-b border-transparent'
-      )}
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-14 lg:h-16">
-          <Link to="/" className="flex items-center gap-2.5 group min-w-0">
+    <header className="fixed top-0 inset-x-0 z-50 px-3 sm:px-4 pt-3">
+      <div
+        className={cn(
+          'mx-auto max-w-6xl rounded-2xl border transition-all duration-300',
+          scrolled
+            ? 'border-border/70 bg-background/80 backdrop-blur-2xl shadow-lg shadow-black/5'
+            : 'border-border/40 bg-background/50 backdrop-blur-xl'
+        )}
+      >
+        <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-5">
+          <Link to="/" className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={storeName}
-                className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
-              />
+              <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
             ) : (
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/25 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shadow-md shadow-primary/30 shrink-0">
                 <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
             )}
-            <span className="text-sm sm:text-base font-display font-black text-foreground tracking-tight truncate">
-              {storeName.includes(' ') ? (
-                <>
-                  {storeName.split(' ')[0]}{' '}
-                  <span className="gradient-text">{storeName.split(' ').slice(1).join(' ')}</span>
-                </>
-              ) : (
-                storeName
+            <span className="font-display font-bold text-sm sm:text-base tracking-tight truncate">
+              {storeName.split(' ')[0]}
+              {storeName.includes(' ') && (
+                <span className="gradient-text"> {storeName.split(' ').slice(1).join(' ')}</span>
               )}
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center p-1 rounded-full bg-secondary/50 border border-border/60">
-            {navLinks.map((link) => (
+          <nav className="hidden md:flex items-center gap-0.5">
+            {links.map((l) => (
               <Link
-                key={link.path}
-                to={link.path}
+                key={l.path}
+                to={l.path}
                 className={cn(
-                  'px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide transition-all',
-                  isActive(link.path)
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                  'px-3.5 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all',
+                  location.pathname === l.path
+                    ? 'bg-primary/12 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'
                 )}
               >
-                {link.name}
+                {l.name}
               </Link>
             ))}
-          </div>
+          </nav>
 
-          <div className="flex items-center gap-0.5 sm:gap-1">
-            <CurrencySelector className="mr-0.5 hidden sm:flex" />
+          <div className="flex items-center gap-1">
+            <CurrencySelector className="hidden sm:flex" />
             <ThemeToggle />
-            <Button variant="ghost" size="icon" className="relative w-9 h-9 rounded-xl" onClick={onCartOpen}>
-              <ShoppingCart className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative rounded-xl w-10 h-10"
+              onClick={onCartOpen}
+            >
+              <ShoppingCart className="w-[18px] h-[18px]" />
               {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
                   {itemCount}
                 </span>
               )}
@@ -118,39 +109,39 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden w-9 h-9 rounded-xl"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden rounded-xl w-10 h-10"
+              onClick={() => setOpen(!open)}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
 
         <AnimatePresence>
-          {mobileMenuOpen && (
+          {open && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               className="md:hidden overflow-hidden border-t border-border/50"
             >
-              <div className="py-3 space-y-1">
-                {navLinks.map((link) => (
+              <div className="p-3 space-y-1">
+                {links.map((l) => (
                   <Link
-                    key={link.path}
-                    to={link.path}
+                    key={l.path}
+                    to={l.path}
                     className={cn(
-                      'block px-4 py-3 rounded-xl text-sm font-bold transition-colors',
-                      isActive(link.path)
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
+                      'block px-4 py-3 rounded-xl text-sm font-semibold',
+                      location.pathname === l.path
+                        ? 'bg-primary/12 text-primary'
+                        : 'text-muted-foreground hover:bg-secondary'
                     )}
                   >
-                    {link.name}
+                    {l.name}
                   </Link>
                 ))}
-                <div className="px-4 py-3 flex items-center justify-between border-t border-border/50 mt-2">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <div className="flex items-center justify-between px-4 py-3 mt-1 border-t border-border/50">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Currency
                   </span>
                   <CurrencySelector />
@@ -160,7 +151,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
           )}
         </AnimatePresence>
       </div>
-    </nav>
+    </header>
   );
 };
 

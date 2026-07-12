@@ -131,21 +131,21 @@ const ProductsPage = () => {
     !!searchQuery || !!selectedCategory || stockFilter !== 'all' || sortKey !== 'featured';
 
   return (
-    <div className="min-h-screen page-mesh pb-16">
+    <div className="min-h-screen page-mesh pb-20">
       <SEO
         title="Products"
         description="Browse premium digital subscriptions — AI tools, streaming, design software. Fair prices, bank checkout, live tracking."
         type="website"
       />
 
-      <div className="container mx-auto px-4 pt-20 lg:pt-24">
-        <div className="mb-6 sm:mb-8 max-w-2xl">
-          <p className="page-eyebrow mb-3">
-            <LayoutGrid className="w-3 h-3" />
+      <div className="container mx-auto px-4 pt-28 sm:pt-32">
+        <div className="mb-8 max-w-2xl">
+          <p className="page-eyebrow mb-4">
+            <LayoutGrid className="w-3.5 h-3.5" />
             Product vault
           </p>
-          <h1 className="page-title mb-2">
-            Shop digital <span className="gradient-text">access</span>
+          <h1 className="page-title mb-3">
+            Shop the <span className="gradient-text">catalogue</span>
           </h1>
           <p className="page-lead">
             {isLoading
@@ -155,8 +155,8 @@ const ProductsPage = () => {
         </div>
 
         {/* Toolbar */}
-        <div className="sticky top-14 lg:top-16 z-30 -mx-4 px-4 py-3 mb-6 bg-background/90 backdrop-blur-xl border-y border-border/50">
-          <div className="flex flex-col gap-3 max-w-[1400px] mx-auto">
+        <div className="sticky top-20 z-30 mb-8 rounded-2xl border border-border/60 bg-background/80 backdrop-blur-2xl p-3 sm:p-4 shadow-lg shadow-black/5">
+          <div className="flex flex-col gap-3">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -164,7 +164,7 @@ const ProductsPage = () => {
                 placeholder="Search products, categories…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 h-11 sm:h-12 rounded-xl bg-card border-border text-sm sm:text-base"
+                className="pl-10 pr-10 h-11 sm:h-12 rounded-xl bg-card/80 border-border/80 text-sm sm:text-base"
               />
               {searchQuery && (
                 <button

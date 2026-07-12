@@ -61,7 +61,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen page-mesh pb-16 sm:pb-20">
+    <div className="min-h-screen page-mesh pb-20">
       <SEO
         title="Contact Us"
         description="Contact Snippy Mart via WhatsApp or form. FAQs on delivery, payments, tracking, and refunds."

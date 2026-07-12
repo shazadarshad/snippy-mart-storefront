@@ -37,7 +37,7 @@ const AboutPage = () => {
   ];
 
   return (
-    <div className="min-h-screen page-mesh pb-16 sm:pb-20">
+    <div className="min-h-screen page-mesh pb-20">
       <SEO
         title="About Us"
         description="Learn about Snippy Mart — affordable premium digital subscriptions with secure checkout and support."
