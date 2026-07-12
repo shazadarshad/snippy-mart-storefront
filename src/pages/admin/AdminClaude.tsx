@@ -21,6 +21,7 @@ import {
   Eye,
   X,
   Package,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,17 @@ import {
   Dialog,
   DialogContent,
 } from '@/components/ui/dialog';
-import { useOrders, type Order } from '@/hooks/useOrders';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useOrders, useDeleteOrder, type Order } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn, formatDateTime } from '@/lib/utils';
@@ -65,10 +76,13 @@ const STAGE_COLORS: Record<ClaudeWorkflowStage, string> = {
 const AdminClaude = () => {
   const { toast } = useToast();
   const { data: orders = [], isLoading, error, refetch } = useOrders();
+  const deleteOrder = useDeleteOrder();
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<StageFilter>('all');
   const [planFilter, setPlanFilter] = useState<PlanFilter>('all');
   const [selected, setSelected] = useState<Order | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [proofHref, setProofHref] = useState<string | null>(null);
   const [loadingProof, setLoadingProof] = useState(false);
@@ -252,6 +266,34 @@ const AdminClaude = () => {
     toast({ title: 'Copied', description: `${label} copied` });
   };
 
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+    setIsDeleting(true);
+    try {
+      // Best-effort: remove payment proof from storage if path is relative
+      const proof = orderToDelete.payment_proof_url;
+      if (proof && !/^https?:\/\//i.test(proof)) {
+        await supabase.storage.from('payment-proofs').remove([proof]);
+      }
+
+      await deleteOrder.mutateAsync(orderToDelete.id);
+      toast({
+        title: 'Order deleted',
+        description: `${orderToDelete.order_number} has been permanently deleted.`,
+      });
+      if (selected?.id === orderToDelete.id) {
+        setSelected(null);
+      }
+      setOrderToDelete(null);
+      refetch();
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to delete order';
+      toast({ title: 'Delete failed', description: message, variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const selectedInfo = selected ? parseClaudePreOrder(selected) : null;
 
   return (
@@ -418,6 +460,7 @@ const AdminClaude = () => {
               onOpen={() => setSelected(order)}
               onStage={handleStageChange}
               onCopy={copy}
+              onDelete={() => setOrderToDelete(order)}
             />
           ))}
         </div>
@@ -620,21 +663,31 @@ const AdminClaude = () => {
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-2">
-                  <Button variant="whatsapp" className="flex-1 font-bold" asChild>
-                    <a
-                      href={`https://wa.me/${selected.customer_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
-                        `Hi ${selected.customer_name}! Regarding your Claude pre-order ${selected.order_number}:`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      WhatsApp
-                    </a>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link to="/admin/orders">All orders</Link>
+                <div className="flex flex-col gap-2 pt-2">
+                  <div className="flex gap-2">
+                    <Button variant="whatsapp" className="flex-1 font-bold" asChild>
+                      <a
+                        href={`https://wa.me/${selected.customer_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+                          `Hi ${selected.customer_name}! Regarding your Claude pre-order ${selected.order_number}:`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        WhatsApp
+                      </a>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link to="/admin/orders">All orders</Link>
+                    </Button>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    className="w-full font-bold"
+                    onClick={() => setOrderToDelete(selected)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete this order
                   </Button>
                 </div>
               </div>
@@ -642,6 +695,53 @@ const AdminClaude = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!orderToDelete} onOpenChange={() => !isDeleting && setOrderToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Claude order?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                Permanently delete{' '}
+                <strong className="text-foreground font-mono">{orderToDelete?.order_number}</strong>
+                {orderToDelete?.customer_name ? (
+                  <>
+                    {' '}
+                    for <strong className="text-foreground">{orderToDelete.customer_name}</strong>
+                  </>
+                ) : null}
+                ?
+              </span>
+              <span className="block text-destructive/90">
+                This cannot be undone. Order items and linked payment proof (if stored) will be removed.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteOrder();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete order
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
@@ -653,6 +753,7 @@ function ClaudeOrderCard({
   onOpen,
   onStage,
   onCopy,
+  onDelete,
 }: {
   order: Order;
   info: ClaudePreOrderInfo;
@@ -660,6 +761,7 @@ function ClaudeOrderCard({
   onOpen: () => void;
   onStage: (order: Order, stage: ClaudeWorkflowStage) => void;
   onCopy: (text: string, label: string) => void;
+  onDelete: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card hover:border-orange-500/30 transition-colors overflow-hidden">
@@ -790,6 +892,15 @@ function ClaudeOrderCard({
               <AlertTriangle className="w-3 h-3" /> No proof
             </span>
           )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-9 text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto"
+            onClick={onDelete}
+          >
+            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+            Delete
+          </Button>
         </div>
       </div>
     </div>
