@@ -43,10 +43,21 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
 
   const isOutOfStock = product.stock_status === 'out_of_stock';
 
-  const stripFormatting = (text: string) => {
-    if (!text) return '';
-    return text.replace(/\*\*/g, '').replace(/\n+/g, ' ').trim();
-  };
+  /** Short plain teaser only — never dump full product body on the card */
+  const shortTeaser = (() => {
+    if (!product.description) return '';
+    const plain = product.description
+      .replace(/[*_~`#>]/g, ' ')
+      .replace(/[✅⚡♻️✨☁️⚙️•·]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!plain) return '';
+    // First sentence-ish chunk, hard cap
+    const first = plain.split(/(?<=[.!?])\s+/)[0] || plain;
+    const max = 72;
+    if (first.length <= max) return first;
+    return `${first.slice(0, max).trim()}…`;
+  })();
 
   const open = () => {
     if (!isOutOfStock) onViewDetails(product);
@@ -112,15 +123,23 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           <StockBadge status={product.stock_status} />
         </div>
 
-        <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors min-h-[2.5rem]">
+        <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
           {product.name}
         </h3>
 
-        {product.description && (
-          <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2 leading-relaxed hidden sm:block">
-            {stripFormatting(product.description)}
+        {shortTeaser ? (
+          <p
+            className="text-[11px] sm:text-xs text-muted-foreground leading-snug overflow-hidden"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+            title={shortTeaser}
+          >
+            {shortTeaser}
           </p>
-        )}
+        ) : null}
 
         <div className="mt-auto pt-2 space-y-2.5">
           <div className="flex items-end justify-between gap-2">
