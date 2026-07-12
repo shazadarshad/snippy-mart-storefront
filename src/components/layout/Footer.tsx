@@ -11,6 +11,8 @@ const Footer = () => {
   const quickLinks = [
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
+    { name: 'Claude Team', path: '/claude' },
+    { name: 'Track Order', path: '/track-order' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
@@ -53,19 +55,25 @@ const Footer = () => {
                 )}
               </span>
             </Link>
-            <p className="text-muted-foreground max-w-sm text-lg leading-relaxed">
-              Your trusted destination for premium digital subscriptions at unbeatable prices.
-              Instant delivery, reliable service.
+            <p className="text-muted-foreground max-w-sm text-base sm:text-lg leading-relaxed">
+              Premium digital access — Claude Team, AI tools, streaming & more. Bank checkout,
+              live tracking, WhatsApp support.
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                to="/claude"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold hover:opacity-95 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-orange-500/20"
+              >
+                Get Claude
+              </Link>
               <a
                 href="https://wa.me/94787767869"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white font-bold hover:bg-[#22c55e] transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#25d366]/20"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white font-bold hover:bg-[#22c55e] transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#25d366]/20"
               >
                 <MessageCircle className="w-5 h-5" />
-                Chat on WhatsApp
+                WhatsApp
               </a>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '@/components/seo/SEO';
+import ClaudePromo from '@/components/ClaudePromo';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -70,13 +71,17 @@ const ProductsPage = () => {
       />
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl md:text-6xl font-display font-black text-foreground mb-4 tracking-tighter uppercase">
-            Product <span className="gradient-text">Vault.</span>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-black text-foreground mb-3 tracking-tighter">
+            Product <span className="gradient-text">vault</span>
           </h1>
-          <p className="text-xs sm:text-lg text-muted-foreground max-w-2xl mx-auto uppercase tracking-widest font-bold opacity-70">
-            Secure premium access at unmatched pricing.
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+            Premium digital access at fair prices — or grab Claude Team on its dedicated page.
           </p>
+        </div>
+
+        <div className="mb-8 max-w-3xl mx-auto">
+          <ClaudePromo variant="banner" />
         </div>
 
         {/* Search & Filters */}

@@ -699,7 +699,7 @@ const ClaudePage = () => {
       </section>
 
       {/* Plans */}
-      <section ref={plansRef} className="pb-12 sm:pb-16 scroll-mt-20">
+      <section id="plans" ref={plansRef} className="pb-12 sm:pb-16 scroll-mt-20">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-display font-black text-center mb-2">
