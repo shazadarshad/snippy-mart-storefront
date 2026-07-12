@@ -20,6 +20,7 @@ import {
   Users,
   Brain,
   Upload,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -42,6 +43,7 @@ const AdminLayout = () => {
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+    { name: 'Claude', path: '/admin/claude', icon: Zap, badge: 'NEW' },
     { name: 'Fulfillment', path: '/admin/fulfillment', icon: ShieldCheck },
     { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquare },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },

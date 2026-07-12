@@ -28,6 +28,8 @@ interface OrderData {
     remaining: number;
     claudeEmail: string;
     depositRate: number;
+    paymentMode?: 'full' | 'reserve';
+    isFullPayment?: boolean;
   };
 }
 
@@ -130,7 +132,10 @@ const OrderSuccessPage = () => {
                         {sessionOrder.preOrder.service} Pre-Order
                       </h3>
                       <p className="text-sm text-orange-400 font-bold">
-                        {sessionOrder.preOrder.plan} · 30% deposit received
+                        {sessionOrder.preOrder.plan} ·{' '}
+                        {sessionOrder.preOrder.isFullPayment || sessionOrder.preOrder.paymentMode === 'full'
+                          ? 'Full payment received'
+                          : 'Reserve deposit received'}
                       </p>
                     </div>
                   </div>
@@ -141,12 +146,18 @@ const OrderSuccessPage = () => {
                       <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.fullPrice.toLocaleString()}</p>
                     </div>
                     <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Deposit paid</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">
+                        {sessionOrder.preOrder.isFullPayment || sessionOrder.preOrder.paymentMode === 'full'
+                          ? 'Paid now'
+                          : 'Deposit paid'}
+                      </p>
                       <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.deposit.toLocaleString()}</p>
                     </div>
                     <div className="p-3 rounded-2xl bg-secondary/50 border border-border">
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Balance due</p>
-                      <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.remaining.toLocaleString()}</p>
+                      <p className="font-bold text-foreground">
+                        LKR {(sessionOrder.preOrder.remaining ?? 0).toLocaleString()}
+                      </p>
                     </div>
                   </div>
 
@@ -171,9 +182,13 @@ const OrderSuccessPage = () => {
                   </div>
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Save your Order ID. After deposit verification we invite this email to a{' '}
+                    Save your Order ID. After payment verification we invite this email to a{' '}
                     <strong className="text-foreground">private Claude Team workspace</strong> with
-                    Pro/Max access. The remaining 70% is due at activation. Track status anytime below.
+                    Pro/Max access.
+                    {sessionOrder.preOrder.isFullPayment || sessionOrder.preOrder.paymentMode === 'full'
+                      ? ' Full payment means no second transfer.'
+                      : ' Remaining balance is due before activation.'}{' '}
+                    Track status anytime below.
                   </p>
                 </div>
               </div>
@@ -242,8 +257,10 @@ const OrderSuccessPage = () => {
             <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 mb-8 animate-fade-in" style={{ animationDelay: '0.15s' }}>
               <span className="text-2xl">📦</span>
               <div className="text-left">
-                <p className="text-sm font-bold text-orange-400">Pre-order slot reserved</p>
-                <p className="text-xs text-muted-foreground">We verify your deposit, then activate — balance due at activation</p>
+                <p className="text-sm font-bold text-orange-400">Claude order received</p>
+                <p className="text-xs text-muted-foreground">
+                  We verify payment, then send your private workspace invite
+                </p>
               </div>
             </div>
           ) : (

@@ -198,8 +198,10 @@ const AdminOrders = () => {
   const handleClaudeStageChange = async (order: Order, stage: ClaudeWorkflowStage) => {
     setIsUpdatingClaudeStage(true);
     try {
+      const claudeInfo = parseClaudePreOrder(order);
+      const mode = claudeInfo?.paymentMode || 'reserve';
       const nextNotes = applyClaudeWorkflowToNotes(order.notes, stage);
-      const nextStatus = statusForClaudeStage(stage);
+      const nextStatus = statusForClaudeStage(stage, mode);
 
       const updates: Record<string, unknown> = {
         notes: nextNotes,
@@ -233,12 +235,14 @@ const AdminOrders = () => {
               old_order: order,
               custom_message:
                 stage === 'deposit_verified'
-                  ? 'Your Claude pre-order deposit was verified. We will activate soon — balance is due at activation.'
+                  ? mode === 'full'
+                    ? 'Your Claude payment was verified. We will send the private workspace invite soon.'
+                    : 'Your Claude deposit was verified. Remaining balance is due before activation.'
                   : stage === 'balance_paid'
-                    ? 'Balance payment received for your Claude pre-order. Activation is next.'
+                    ? 'Balance payment received for your Claude order. Activation is next.'
                     : stage === 'activated'
-                      ? 'Your Claude Team seat has been activated on your account. Enjoy!'
-                      : `Your Claude pre-order status is now: ${claudeStageLabel(stage)}.`,
+                      ? 'Your Claude Team seat has been activated — check your email for the workspace invite.'
+                      : `Your Claude order status is now: ${claudeStageLabel(stage, mode)}.`,
             },
           });
         } catch (notifyErr) {
@@ -248,7 +252,7 @@ const AdminOrders = () => {
 
       toast({
         title: 'Claude workflow updated',
-        description: `${order.order_number} → ${claudeStageLabel(stage)}`,
+        description: `${order.order_number} → ${claudeStageLabel(stage, mode)}`,
       });
 
       if (selectedOrder?.id === order.id && data) {
@@ -632,8 +636,10 @@ const AdminOrders = () => {
                       </p>
                       {claude ? (
                         <div className="mt-1 space-y-0.5">
-                          <p className="text-[10px] font-bold text-orange-400 uppercase">30% deposit</p>
-                          {claude.remaining != null && (
+                          <p className="text-[10px] font-bold text-orange-400 uppercase">
+                            {claude.isFullPayment ? 'Full pay' : '50% reserve'}
+                          </p>
+                          {!claude.isFullPayment && claude.remaining != null && (
                             <p className="text-[10px] text-muted-foreground">
                               Due: {formatLkrAdmin(claude.remaining)}
                             </p>
@@ -717,7 +723,9 @@ const AdminOrders = () => {
                         }
                       </p>
                       {claude ? (
-                        <p className="text-[9px] font-black uppercase text-orange-400 mt-1">30% deposit</p>
+                        <p className="text-[9px] font-black uppercase text-orange-400 mt-1">
+                          {claude.isFullPayment ? 'Full pay' : '50% reserve'}
+                        </p>
                       ) : (
                         <div className="flex items-center justify-end gap-1 mt-1 opacity-60">
                           {order.payment_method === 'card' ? <CreditCard className="w-3 h-3 text-purple-500" /> : <Building2 className="w-3 h-3 text-primary" />}
@@ -843,14 +851,20 @@ const AdminOrders = () => {
                           <p className="text-sm font-black text-foreground">{formatLkrAdmin(claude.fullPrice)}</p>
                         </div>
                         <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/25">
-                          <p className="text-[9px] font-black uppercase tracking-wider text-orange-400 mb-1">Deposit 30%</p>
+                          <p className="text-[9px] font-black uppercase tracking-wider text-orange-400 mb-1">
+                            {claude.isFullPayment ? 'Paid now' : 'Deposit 50%'}
+                          </p>
                           <p className="text-sm font-black text-foreground">{formatLkrAdmin(claude.deposit)}</p>
                           <p className="text-[9px] text-muted-foreground mt-0.5">Order total paid</p>
                         </div>
                         <div className="p-3 rounded-2xl bg-background/60 border border-border">
-                          <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground mb-1">Balance 70%</p>
+                          <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground mb-1">
+                            {claude.isFullPayment ? 'Balance' : 'Balance 50%'}
+                          </p>
                           <p className="text-sm font-black text-foreground">{formatLkrAdmin(claude.remaining)}</p>
-                          <p className="text-[9px] text-muted-foreground mt-0.5">Due at activation</p>
+                          <p className="text-[9px] text-muted-foreground mt-0.5">
+                            {claude.isFullPayment ? 'None' : 'Due at activation'}
+                          </p>
                         </div>
                       </div>
 

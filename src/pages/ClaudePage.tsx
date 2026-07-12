@@ -46,9 +46,14 @@ import { useCreateOrder } from '@/hooks/useOrders';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  amountDueNow,
+  remainingBalance,
+  type ClaudePaymentMode,
+  CLAUDE_RESERVE_RATE,
+} from '@/lib/claudePreorder';
 import { motion } from 'framer-motion';
 
-const PREORDER_DEPOSIT_RATE = 0.3;
 const WHATSAPP_FALLBACK = '94787767869';
 
 type PlanId = 'pro' | 'max5x';
@@ -110,13 +115,13 @@ const HOW_IT_WORKS = [
   {
     step: '01',
     title: 'Pre-order your seat',
-    text: 'Choose Pro or Max 5X, pay 30% deposit, upload the bank receipt.',
+    text: 'Choose Pro or Max 5X, pick full pay or 50% reserve, upload the bank receipt.',
     icon: Package,
   },
   {
     step: '02',
     title: 'We verify & prepare',
-    text: 'We confirm your deposit and prepare a private Team workspace slot.',
+    text: 'We confirm your payment and prepare a private Team workspace slot.',
     icon: BadgeCheck,
   },
   {
@@ -151,12 +156,12 @@ const FAQ_ITEMS = [
     a: 'Pro Seat is the standard Team Pro experience at LKR 2,599. Max 5X is for heavier usage with higher limits at LKR 4,599. If you hit Pro limits often, choose Max 5X.',
   },
   {
-    q: 'Why only 30% now?',
-    a: 'This is a pre-order to lock your slot. You pay 30% deposit via bank transfer now. The remaining 70% is due when we activate / send the invite. Full prices: Pro LKR 2,599 · Max 5X LKR 4,599.',
+    q: 'Should I pay full or only 50%?',
+    a: 'Pay in full (recommended) if you want the fastest path — one transfer, no balance later, priority when slots open. Choose 50% reserve only if you want to hold a slot now and pay the rest at activation. Full prices: Pro LKR 2,599 · Max 5X LKR 4,599.',
   },
   {
     q: 'How long until I get the invite?',
-    a: 'After deposit verification and when your slot is ready (pre-order timing). We contact you on WhatsApp with your Order ID. Balance is collected at activation, then the invite goes to your Claude email.',
+    a: 'After we verify your bank transfer and when your slot is ready. Full-payment orders are prioritized. We message you on WhatsApp with your Order ID. If you chose 50% reserve, the remaining 50% is due before the workspace invite.',
   },
   {
     q: 'What email should I enter?',
@@ -172,15 +177,12 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Is stock limited?',
-    a: 'Yes. Pre-order slots are limited. Paying the deposit reserves your place — first come, first served.',
+    a: 'Yes. Slots are limited. Full payment or a 50% reserve holds your place — first come, first served. Full pay gets priority when invites go out.',
   },
 ];
 
 const formatLkr = (amount: number) =>
   `LKR ${amount.toLocaleString('en-LK', { maximumFractionDigits: 0 })}`;
-
-const depositOf = (fullPrice: number) => Math.round(fullPrice * PREORDER_DEPOSIT_RATE);
-const remainingOf = (fullPrice: number) => fullPrice - depositOf(fullPrice);
 
 const ClaudePage = () => {
   const navigate = useNavigate();
@@ -195,6 +197,7 @@ const ClaudePage = () => {
   const faqRef = useRef<HTMLDivElement>(null);
 
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId>('max5x');
+  const [paymentMode, setPaymentMode] = useState<ClaudePaymentMode>('full');
   const [formData, setFormData] = useState({
     name: '',
     whatsapp: '',
@@ -211,8 +214,10 @@ const ClaudePage = () => {
     [selectedPlanId]
   );
 
-  const deposit = depositOf(selectedPlan.fullPrice);
-  const remaining = remainingOf(selectedPlan.fullPrice);
+  const amountDue = amountDueNow(selectedPlan.fullPrice, paymentMode);
+  const remaining = remainingBalance(selectedPlan.fullPrice, paymentMode);
+  const isFullPay = paymentMode === 'full';
+  const reservePct = Math.round(CLAUDE_RESERVE_RATE * 100);
 
   const bankName = settings?.bank_name || 'Sampath Bank';
   const bankBranch = settings?.bank_branch || 'Horana';
@@ -300,7 +305,7 @@ const ClaudePage = () => {
     if (!proofFile) {
       toast({
         title: 'Payment proof required',
-        description: `Upload a receipt for the ${formatLkr(deposit)} pre-order deposit.`,
+        description: `Upload a receipt for ${formatLkr(amountDue)}.`,
         variant: 'destructive',
       });
       return;
@@ -321,15 +326,22 @@ const ClaudePage = () => {
 
       const customerCountry = await getCountry();
       const productName = `Claude Team Plan – ${selectedPlan.name}`;
-      const planName = '1 Month · Pre-Order Deposit (30%) · Private Workspace';
+      const planName = isFullPay
+        ? '1 Month · Full payment · Private Workspace'
+        : `1 Month · ${reservePct}% reserve · Private Workspace`;
 
       const notesParts = [
         '=== CLAUDE PRE-ORDER ===',
         `Plan: ${selectedPlan.name}`,
+        `Payment mode: ${isFullPay ? 'Full payment (100%)' : `Reserve (${reservePct}% now)`}`,
         `Delivery: Private Team workspace invite (Pro/Max access)`,
         `Full price: ${formatLkr(selectedPlan.fullPrice)}`,
-        `Deposit paid (30%): ${formatLkr(deposit)}`,
-        `Balance due on activation (70%): ${formatLkr(remaining)}`,
+        isFullPay
+          ? `Amount paid now: ${formatLkr(amountDue)}`
+          : `Deposit paid (${reservePct}%): ${formatLkr(amountDue)}`,
+        isFullPay
+          ? 'Balance due: LKR 0'
+          : `Balance due on activation (${100 - reservePct}%): ${formatLkr(remaining)}`,
         `Claude account email: ${formData.claudeEmail.trim()}`,
         `Order ID: ${orderId}`,
         formData.notes?.trim() ? `Customer notes: ${formData.notes.trim()}` : null,
@@ -340,7 +352,7 @@ const ClaudePage = () => {
         customer_name: formData.name.trim(),
         customer_whatsapp: formData.whatsapp.trim(),
         customer_email: formData.contactEmail.trim() || formData.claudeEmail.trim(),
-        total_amount: deposit,
+        total_amount: amountDue,
         payment_method: 'bank_transfer',
         payment_proof_url: fileName,
         notes: notesParts.join('\n'),
@@ -355,9 +367,10 @@ const ClaudePage = () => {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           product: 'claude_preorder',
           plan_id: selectedPlan.id,
+          payment_mode: paymentMode,
           full_price: selectedPlan.fullPrice,
-          deposit_rate: PREORDER_DEPOSIT_RATE,
-          deposit_amount: deposit,
+          deposit_rate: isFullPay ? 1 : CLAUDE_RESERVE_RATE,
+          deposit_amount: amountDue,
           remaining_amount: remaining,
           claude_email: formData.claudeEmail.trim(),
           delivery: 'private_workspace_invite',
@@ -369,16 +382,18 @@ const ClaudePage = () => {
             plan_name: planName,
             variant_name: selectedPlan.shortLabel,
             quantity: 1,
-            unit_price: deposit,
-            total_price: deposit,
+            unit_price: amountDue,
+            total_price: amountDue,
             customer_credentials: {
               email: formData.claudeEmail.trim(),
               service: 'claude',
               plan: selectedPlan.id,
               preorder: true,
+              payment_mode: paymentMode,
+              full_payment: isFullPay,
               delivery: 'private_workspace_invite',
               full_price: selectedPlan.fullPrice,
-              deposit_amount: deposit,
+              deposit_amount: amountDue,
               remaining_amount: remaining,
             },
           },
@@ -394,22 +409,24 @@ const ClaudePage = () => {
         rate: 1,
         items: [
           {
-            name: `${productName} (Pre-Order 30%)`,
-            price: deposit,
+            name: `${productName} (${isFullPay ? 'Full payment' : `${reservePct}% reserve`})`,
+            price: amountDue,
             quantity: 1,
           },
         ],
-        total: deposit,
+        total: amountDue,
         paymentMethod: 'bank_transfer' as const,
         isPreOrder: true,
         preOrder: {
           service: 'Claude Team',
           plan: selectedPlan.name,
           fullPrice: selectedPlan.fullPrice,
-          deposit,
+          deposit: amountDue,
           remaining,
           claudeEmail: formData.claudeEmail.trim(),
-          depositRate: PREORDER_DEPOSIT_RATE,
+          depositRate: isFullPay ? 1 : CLAUDE_RESERVE_RATE,
+          paymentMode,
+          isFullPayment: isFullPay,
         },
       };
 
@@ -430,7 +447,7 @@ const ClaudePage = () => {
 
   const whatsappPreorderLink = () => {
     const msg = encodeURIComponent(
-      `Hi! I want to pre-order Claude Team (${selectedPlan.name}).\nOrder ID: ${orderId}\nClaude email: ${formData.claudeEmail || '(not filled yet)'}\nDeposit: ${formatLkr(deposit)}\nI understand I'll get a private workspace invite with Pro/Max access.`
+      `Hi! I want Claude Team (${selectedPlan.name}).\nPayment: ${isFullPay ? 'FULL' : `${reservePct}% reserve`}\nAmount now: ${formatLkr(amountDue)}\nOrder ID: ${orderId}\nClaude email: ${formData.claudeEmail || '(not filled yet)'}\nPrivate workspace invite with Pro/Max access.`
     );
     return `https://wa.me/${whatsappNumber}?text=${msg}`;
   };
@@ -439,18 +456,18 @@ const ClaudePage = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <SEO
         title="Claude Team Plan – Private Workspace Invite · 1 Month"
-        description="Pre-order Claude Team Pro or Max 5X. Get invited to a private workspace with Pro/Max access on your own account. Pay only 30% deposit. 20 day warranty."
+        description="Claude Team Pro or Max 5X — private workspace invite on your own account. Pay in full (recommended) or reserve with 50%. 20 day warranty."
         type="product"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Product',
           name: 'Claude Team Plan – Private Workspace · 1 Month',
           description:
-            'Invite to a private Claude Team workspace with Pro or Max 5X seat on your own account. Pre-order with 30% deposit.',
+            'Invite to a private Claude Team workspace with Pro or Max 5X seat on your own account. Full pay or 50% reserve.',
           offers: PLANS.map((p) => ({
             '@type': 'Offer',
             name: p.name,
-            price: depositOf(p.fullPrice),
+            price: p.fullPrice,
             priceCurrency: 'LKR',
             availability: 'https://schema.org/PreOrder',
           })),
@@ -462,9 +479,9 @@ const ClaudePage = () => {
         <div className="flex items-center gap-2 max-w-lg mx-auto">
           <div className="flex-1 min-w-0 pl-1">
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-              {selectedPlan.shortLabel} · 30% deposit
+              {selectedPlan.shortLabel} · {isFullPay ? 'Full pay' : `${reservePct}% now`}
             </p>
-            <p className="text-sm font-black text-foreground">{formatLkr(deposit)}</p>
+            <p className="text-sm font-black text-foreground">{formatLkr(amountDue)}</p>
           </div>
           <Button
             size="sm"
@@ -519,8 +536,9 @@ const ClaudePage = () => {
               You will be{' '}
               <strong className="text-foreground">invited to a private workspace</strong> where you
               get access to a <strong className="text-foreground">Pro or Max plan</strong> seat —
-              on <strong className="text-foreground">your own Claude account</strong>. Pre-order
-              now with only a <strong className="text-orange-400">30% deposit</strong>.
+              on <strong className="text-foreground">your own Claude account</strong>.{' '}
+              <strong className="text-orange-400">Pay in full</strong> for priority, or reserve with{' '}
+              <strong className="text-orange-400">{reservePct}% now</strong>.
             </motion.p>
 
             {/* Hero highlight cards */}
@@ -665,12 +683,13 @@ const ClaudePage = () => {
               Available plans
             </h2>
             <p className="text-center text-muted-foreground mb-6 sm:mb-8 text-sm px-2">
-              Both seats include a private workspace invite · Pre-order deposit is 30%
+              Both seats include a private workspace invite · Full pay recommended · or {reservePct}% reserve
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
               {PLANS.map((plan) => {
-                const planDeposit = depositOf(plan.fullPrice);
+                const planFull = plan.fullPrice;
+                const planReserve = amountDueNow(plan.fullPrice, 'reserve');
                 const selected = selectedPlanId === plan.id;
                 return (
                   <button
@@ -713,19 +732,25 @@ const ClaudePage = () => {
                     </p>
                     <div className="flex flex-wrap items-end gap-2 mb-3 sm:mb-4">
                       <span className="text-2xl sm:text-3xl font-black text-foreground">
-                        {formatLkr(plan.fullPrice)}
+                        {formatLkr(planFull)}
                       </span>
                       <span className="text-sm text-muted-foreground mb-1">full price</span>
                     </div>
-                    <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-secondary/60 border border-border mb-4">
-                      <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Pre-order deposit (30%)
-                      </p>
-                      <p className="text-lg sm:text-xl font-black text-orange-400">
-                        {formatLkr(planDeposit)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Balance {formatLkr(remainingOf(plan.fullPrice))} due on activation
+                    <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-secondary/60 border border-border mb-4 space-y-1.5">
+                      <div className="flex justify-between items-baseline gap-2">
+                        <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-green-500">
+                          Pay full (best)
+                        </span>
+                        <span className="text-sm font-black text-foreground">{formatLkr(planFull)}</span>
+                      </div>
+                      <div className="flex justify-between items-baseline gap-2">
+                        <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-orange-400">
+                          Or reserve {reservePct}%
+                        </span>
+                        <span className="text-sm font-black text-orange-400">{formatLkr(planReserve)}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/60">
+                        Reserve: balance {formatLkr(remainingBalance(plan.fullPrice, 'reserve'))} at activation
                       </p>
                     </div>
                     <ul className="space-y-2">
@@ -782,7 +807,7 @@ const ClaudePage = () => {
               How it works
             </h2>
             <p className="text-center text-muted-foreground text-sm mb-8 max-w-xl mx-auto">
-              From pre-order deposit to private workspace invite
+              From payment to private workspace invite
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {HOW_IT_WORKS.map((item) => (
@@ -814,7 +839,7 @@ const ClaudePage = () => {
                 Pre-order checkout
               </h2>
               <p className="text-muted-foreground text-sm px-2">
-                Details → transfer deposit → upload receipt → get Order ID
+                Details → choose payment → transfer → upload receipt → Order ID
               </p>
             </div>
 
@@ -857,8 +882,9 @@ const ClaudePage = () => {
                   Claude Team · {selectedPlan.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Private workspace · Full {formatLkr(selectedPlan.fullPrice)} · Deposit{' '}
-                  {formatLkr(deposit)}
+                  {isFullPay ? 'Full payment' : `${reservePct}% reserve`} · Pay now{' '}
+                  {formatLkr(amountDue)}
+                  {!isFullPay && ` · later ${formatLkr(remaining)}`}
                 </p>
               </div>
               <div className="sm:text-right">
@@ -985,11 +1011,67 @@ const ClaudePage = () => {
                       >
                         <p className="font-bold text-sm text-foreground">{plan.name}</p>
                         <p className="text-xs text-muted-foreground">{formatLkr(plan.fullPrice)}</p>
-                        <p className="text-xs font-bold text-orange-400 mt-1">
-                          Pay {formatLkr(depositOf(plan.fullPrice))} now
-                        </p>
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">
+                    How do you want to pay? <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode('full')}
+                      className={cn(
+                        'p-4 rounded-2xl border-2 text-left transition-all',
+                        paymentMode === 'full'
+                          ? 'border-green-500 bg-green-500/10'
+                          : 'border-border hover:border-green-500/40'
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-black text-sm text-foreground flex items-center gap-2">
+                            Pay in full
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-500 text-white uppercase tracking-wider">
+                              Recommended
+                            </span>
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                            One transfer · no balance later · priority when slots open
+                          </p>
+                        </div>
+                        <p className="text-base font-black text-foreground shrink-0">
+                          {formatLkr(selectedPlan.fullPrice)}
+                        </p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode('reserve')}
+                      className={cn(
+                        'p-4 rounded-2xl border-2 text-left transition-all',
+                        paymentMode === 'reserve'
+                          ? 'border-orange-500 bg-orange-500/10'
+                          : 'border-border hover:border-orange-500/40'
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-black text-sm text-foreground">
+                            Reserve with {reservePct}% now
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                            Hold your slot · pay remaining {formatLkr(remainingBalance(selectedPlan.fullPrice, 'reserve'))} at activation
+                          </p>
+                        </div>
+                        <p className="text-base font-black text-orange-400 shrink-0">
+                          {formatLkr(amountDueNow(selectedPlan.fullPrice, 'reserve'))}
+                        </p>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -998,7 +1080,7 @@ const ClaudePage = () => {
                   size="lg"
                   className="w-full h-12 sm:h-12 rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white"
                 >
-                  Continue to bank transfer
+                  Continue · pay {formatLkr(amountDue)}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </form>
@@ -1010,22 +1092,32 @@ const ClaudePage = () => {
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-black text-base sm:text-lg flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-primary shrink-0" />
-                    Bank transfer deposit
+                    Bank transfer
                   </h3>
                   <Button type="button" variant="ghost" size="sm" onClick={() => setStep('details')}>
                     Edit
                   </Button>
                 </div>
 
-                <div className="p-4 sm:p-5 rounded-2xl bg-orange-500/10 border border-orange-500/25 text-center">
-                  <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-orange-400 mb-1">
-                    Pay this deposit now (30%)
+                <div className={cn(
+                  'p-4 sm:p-5 rounded-2xl border text-center',
+                  isFullPay
+                    ? 'bg-green-500/10 border-green-500/25'
+                    : 'bg-orange-500/10 border-orange-500/25'
+                )}>
+                  <p className={cn(
+                    'text-[10px] sm:text-xs font-black uppercase tracking-widest mb-1',
+                    isFullPay ? 'text-green-500' : 'text-orange-400'
+                  )}>
+                    {isFullPay ? 'Pay in full now' : `Pay ${reservePct}% reserve now`}
                   </p>
                   <p className="text-3xl sm:text-4xl font-black text-foreground mb-1">
-                    {formatLkr(deposit)}
+                    {formatLkr(amountDue)}
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    of {formatLkr(selectedPlan.fullPrice)} · remaining {formatLkr(remaining)} later
+                    {isFullPay
+                      ? `Full plan price · no balance later`
+                      : `of ${formatLkr(selectedPlan.fullPrice)} · remaining ${formatLkr(remaining)} at activation`}
                   </p>
                 </div>
 
@@ -1105,10 +1197,10 @@ const ClaudePage = () => {
 
                 <div>
                   <Label className="text-sm">
-                    Upload deposit receipt <span className="text-destructive">*</span>
+                    Upload payment receipt <span className="text-destructive">*</span>
                   </Label>
                   <p className="text-xs text-muted-foreground mb-2">
-                    Screenshot of the {formatLkr(deposit)} transfer (JPG, PNG, PDF · max 10MB)
+                    Screenshot of the {formatLkr(amountDue)} transfer (JPG, PNG, PDF · max 10MB)
                   </p>
                   <input
                     ref={fileInputRef}
@@ -1148,13 +1240,23 @@ const ClaudePage = () => {
 
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-sm text-muted-foreground space-y-1">
                   <p className="font-bold text-amber-500 flex items-center gap-2">
-                    <Package className="w-4 h-4" /> Pre-order terms
+                    <Package className="w-4 h-4" /> Order terms
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm">
-                    <li>30% deposit now reserves your private workspace slot.</li>
-                    <li>Remaining 70% is due when we activate / send the invite.</li>
+                    {isFullPay ? (
+                      <>
+                        <li>Full payment now — no second transfer.</li>
+                        <li>Priority processing when workspace slots open.</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>{reservePct}% now holds your private workspace slot.</li>
+                        <li>Remaining {100 - reservePct}% is due before the invite is sent.</li>
+                      </>
+                    )}
                     <li>Invite goes to the Claude email you provided (Pro or Max seat).</li>
                     <li>20 day warranty after activation.</li>
+                    <li>Payment is non-refundable once the invite is sent (contact us for issues covered by warranty).</li>
                   </ul>
                 </div>
 
@@ -1167,11 +1269,11 @@ const ClaudePage = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Submitting pre-order...
+                      Submitting order...
                     </>
                   ) : (
                     <>
-                      Submit pre-order · {formatLkr(deposit)}
+                      Submit order · {formatLkr(amountDue)}
                       <Check className="w-5 h-5 ml-2" />
                     </>
                   )}
