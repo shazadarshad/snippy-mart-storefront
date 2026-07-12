@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy, Zap, Mail, Wallet, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,8 +32,18 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrders, useUpdateOrderStatus, useDeleteOrder, useDeleteOrderProof, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
-import { formatDateTime } from '@/lib/utils';
+import { cn, formatDateTime } from '@/lib/utils';
 import { useInventoryAccounts, useManualAssignOrder } from '@/hooks/useInventory';
+import {
+  applyClaudeWorkflowToNotes,
+  claudeStageLabel,
+  claudeStageOrder,
+  formatLkrAdmin,
+  isClaudePreOrder,
+  parseClaudePreOrder,
+  statusForClaudeStage,
+  type ClaudeWorkflowStage,
+} from '@/lib/claudePreorder';
 
 // Sub-component for Manual Assignment
 const ManualAssignmentPanel = ({ order }: { order: Order }) => {
@@ -98,8 +108,10 @@ const AdminOrders = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'claude' | 'standard'>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isUpdatingClaudeStage, setIsUpdatingClaudeStage] = useState(false);
 
   const { data: orders = [], isLoading, error, refetch } = useOrders();
   const updateStatus = useUpdateOrderStatus();
@@ -113,12 +125,21 @@ const AdminOrders = () => {
   const [isLoadingProof, setIsLoadingProof] = useState(false);
 
   const filteredOrders = orders.filter((order) => {
+    const q = searchQuery.toLowerCase();
+    const claude = parseClaudePreOrder(order);
     const matchesSearch =
-      order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer_whatsapp.includes(searchQuery);
+      order.order_number.toLowerCase().includes(q) ||
+      order.customer_name.toLowerCase().includes(q) ||
+      order.customer_whatsapp.includes(searchQuery) ||
+      (claude?.claudeEmail || '').toLowerCase().includes(q) ||
+      (order.notes || '').toLowerCase().includes(q);
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const isClaude = isClaudePreOrder(order);
+    const matchesType =
+      typeFilter === 'all' ||
+      (typeFilter === 'claude' && isClaude) ||
+      (typeFilter === 'standard' && !isClaude);
+    return matchesSearch && matchesStatus && matchesType;
   });
 
   const getStatusColor = (status: string) => {
@@ -167,6 +188,83 @@ const AdminOrders = () => {
   const completedCount = orders.filter((o) => o.status === 'completed').length;
   const cancelledCount = orders.filter((o) => o.status === 'cancelled').length;
   const refundedCount = orders.filter((o) => o.status === 'refunded').length;
+  const claudeOrders = orders.filter((o) => isClaudePreOrder(o));
+  const claudeCount = claudeOrders.length;
+  const claudeActiveCount = claudeOrders.filter((o) => {
+    const stage = parseClaudePreOrder(o)?.stage;
+    return stage && stage !== 'activated';
+  }).length;
+
+  const handleClaudeStageChange = async (order: Order, stage: ClaudeWorkflowStage) => {
+    setIsUpdatingClaudeStage(true);
+    try {
+      const nextNotes = applyClaudeWorkflowToNotes(order.notes, stage);
+      const nextStatus = statusForClaudeStage(stage);
+
+      const updates: Record<string, unknown> = {
+        notes: nextNotes,
+        updated_at: new Date().toISOString(),
+      };
+      if (nextStatus) updates.status = nextStatus;
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', order.id)
+        .select(`
+          *,
+          order_items (
+            *,
+            products (
+              manual_fulfillment
+            )
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+
+      // Notify customer on meaningful stage jumps
+      if (nextStatus && nextStatus !== order.status) {
+        try {
+          await supabase.functions.invoke('handle-order-status-change', {
+            body: {
+              order: { ...order, ...data, status: nextStatus },
+              old_order: order,
+              custom_message:
+                stage === 'deposit_verified'
+                  ? 'Your Claude pre-order deposit was verified. We will activate soon — balance is due at activation.'
+                  : stage === 'balance_paid'
+                    ? 'Balance payment received for your Claude pre-order. Activation is next.'
+                    : stage === 'activated'
+                      ? 'Your Claude Team seat has been activated on your account. Enjoy!'
+                      : `Your Claude pre-order status is now: ${claudeStageLabel(stage)}.`,
+            },
+          });
+        } catch (notifyErr) {
+          console.warn('Claude stage notification failed', notifyErr);
+        }
+      }
+
+      toast({
+        title: 'Claude workflow updated',
+        description: `${order.order_number} → ${claudeStageLabel(stage)}`,
+      });
+
+      if (selectedOrder?.id === order.id && data) {
+        setSelectedOrder(data as unknown as Order);
+      }
+      refetch();
+    } catch (e: any) {
+      toast({
+        title: 'Failed to update Claude stage',
+        description: e.message || 'Could not save workflow stage',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdatingClaudeStage(false);
+    }
+  };
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     const order = orders.find(o => o.id === orderId);
@@ -314,7 +412,7 @@ const AdminOrders = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
         <div className="p-4 rounded-xl bg-warning/10 border border-warning/20">
           <p className="text-2xl font-bold text-warning">{pendingCount}</p>
           <p className="text-sm text-muted-foreground">Pending</p>
@@ -331,6 +429,24 @@ const AdminOrders = () => {
           <p className="text-2xl font-bold text-muted-foreground">{refundedCount}</p>
           <p className="text-sm text-muted-foreground">Refunded</p>
         </div>
+        <button
+          type="button"
+          onClick={() => setTypeFilter(typeFilter === 'claude' ? 'all' : 'claude')}
+          className={cn(
+            'p-4 rounded-xl border text-left transition-all',
+            typeFilter === 'claude'
+              ? 'bg-orange-500/15 border-orange-500/40 ring-2 ring-orange-500/30'
+              : 'bg-orange-500/10 border-orange-500/20 hover:border-orange-500/40'
+          )}
+        >
+          <p className="text-2xl font-bold text-orange-400">{claudeCount}</p>
+          <p className="text-sm text-muted-foreground">
+            Claude pre-orders
+            {claudeActiveCount > 0 && (
+              <span className="block text-[11px] text-orange-400 font-semibold">{claudeActiveCount} open</span>
+            )}
+          </p>
+        </button>
       </div>
 
       {/* Filters */}
@@ -339,7 +455,7 @@ const AdminOrders = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search orders..."
+            placeholder="Search orders, Claude email, notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-12 bg-card border-border"
@@ -353,10 +469,21 @@ const AdminOrders = () => {
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="shipping">Shipping</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="on_hold">On Hold</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
             <SelectItem value="refunded">Refunded</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as 'all' | 'claude' | 'standard')}>
+          <SelectTrigger className="w-full sm:w-44 h-12 bg-card border-border">
+            <SelectValue placeholder="Order type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="claude">Claude pre-order</SelectItem>
+            <SelectItem value="standard">Standard only</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -428,16 +555,32 @@ const AdminOrders = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((order) => (
+                {filteredOrders.map((order) => {
+                  const claude = parseClaudePreOrder(order);
+                  return (
                   <tr key={order.id} className="border-t border-border hover:bg-secondary/30 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-start gap-4">
                         <div className="mt-1">
-                          <p className="font-mono text-sm font-bold text-foreground">{order.order_number}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-mono text-sm font-bold text-foreground">{order.order_number}</p>
+                            {claude && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                                <Zap className="w-3 h-3" />
+                                Claude · {claude.plan}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                             <User className="w-3 h-3" />
                             {order.customer_name}
                           </div>
+                          {claude?.claudeEmail && (
+                            <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-orange-400/90 font-mono">
+                              <Mail className="w-3 h-3 shrink-0" />
+                              <span className="truncate max-w-[200px]">{claude.claudeEmail}</span>
+                            </div>
+                          )}
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <span className="text-base">{getCountryFlag(order.customer_country)}</span>
                             {order.customer_country || 'Unknown'}
@@ -464,6 +607,11 @@ const AdminOrders = () => {
                             <SelectItem value="refunded">Refunded</SelectItem>
                           </SelectContent>
                         </Select>
+                        {claude && (
+                          <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wide">
+                            {claudeStageLabel(claude.stage)}
+                          </p>
+                        )}
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium uppercase">
                           <Clock className="w-3 h-3" />
                           {formatDate(order.created_at)}
@@ -482,14 +630,25 @@ const AdminOrders = () => {
                           : formatPrice(order.total_amount)
                         }
                       </p>
-                      <div className="flex items-center gap-1 mt-1">
-                        {order.payment_method === 'bank_transfer' && <Building2 className="w-3 h-3 text-primary" />}
-                        {order.payment_method === 'binance_usdt' && <Bitcoin className="w-3 h-3 text-[#F0B90B]" />}
-                        {order.payment_method === 'card' && <CreditCard className="w-3 h-3 text-purple-500" />}
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                          {order.payment_method === 'card' ? 'CARD' : order.payment_method?.replace('_', ' ') || 'UNPAID'}
-                        </span>
-                      </div>
+                      {claude ? (
+                        <div className="mt-1 space-y-0.5">
+                          <p className="text-[10px] font-bold text-orange-400 uppercase">30% deposit</p>
+                          {claude.remaining != null && (
+                            <p className="text-[10px] text-muted-foreground">
+                              Due: {formatLkrAdmin(claude.remaining)}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 mt-1">
+                          {order.payment_method === 'bank_transfer' && <Building2 className="w-3 h-3 text-primary" />}
+                          {order.payment_method === 'binance_usdt' && <Bitcoin className="w-3 h-3 text-[#F0B90B]" />}
+                          {order.payment_method === 'card' && <CreditCard className="w-3 h-3 text-purple-500" />}
+                          <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                            {order.payment_method === 'card' ? 'CARD' : order.payment_method?.replace('_', ' ') || 'UNPAID'}
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center justify-end gap-1">
@@ -507,28 +666,39 @@ const AdminOrders = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
           {/* Mobile View (Enhanced Card List) */}
           <div className="md:hidden space-y-4 p-4">
-            {filteredOrders.map((order) => (
+            {filteredOrders.map((order) => {
+              const claude = parseClaudePreOrder(order);
+              return (
               <div key={order.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
                 <div className="p-4 space-y-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-mono text-sm font-black text-foreground">{order.order_number}</span>
                         <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(order.status)}`}>
                           {order.status}
                         </div>
+                        {claude && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                            <Zap className="w-3 h-3" /> Claude
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
                         <span className="text-sm">{getCountryFlag(order.customer_country)}</span>
                         {order.customer_name}
                       </p>
+                      {claude?.claudeEmail && (
+                        <p className="text-[10px] font-mono text-orange-400 mt-1 truncate">{claude.claudeEmail}</p>
+                      )}
                       <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-muted-foreground uppercase opacity-60">
                         <Clock className="w-3 h-3" />
                         {formatDateTime(order.created_at)}
@@ -546,10 +716,14 @@ const AdminOrders = () => {
                           : formatPrice(order.total_amount)
                         }
                       </p>
-                      <div className="flex items-center justify-end gap-1 mt-1 opacity-60">
-                        {order.payment_method === 'card' ? <CreditCard className="w-3 h-3 text-purple-500" /> : <Building2 className="w-3 h-3 text-primary" />}
-                        <span className="text-[9px] font-black uppercase">{order.payment_method?.replace('_', ' ') || 'UNPAID'}</span>
-                      </div>
+                      {claude ? (
+                        <p className="text-[9px] font-black uppercase text-orange-400 mt-1">30% deposit</p>
+                      ) : (
+                        <div className="flex items-center justify-end gap-1 mt-1 opacity-60">
+                          {order.payment_method === 'card' ? <CreditCard className="w-3 h-3 text-purple-500" /> : <Building2 className="w-3 h-3 text-primary" />}
+                          <span className="text-[9px] font-black uppercase">{order.payment_method?.replace('_', ' ') || 'UNPAID'}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -590,7 +764,8 @@ const AdminOrders = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -605,13 +780,31 @@ const AdminOrders = () => {
           {selectedOrder && (
             <div className="flex flex-col max-h-[90vh]">
               {/* Modal Header */}
-              <div className="bg-primary p-5 md:p-8 text-primary-foreground relative">
-                <div className="flex items-center gap-2 mb-2 opacity-80">
-                  <ShieldCheck className="w-4 h-4 text-primary-foreground shrink-0" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Audit Report</span>
+              <div className={cn(
+                'p-5 md:p-8 text-primary-foreground relative',
+                isClaudePreOrder(selectedOrder)
+                  ? 'bg-gradient-to-br from-orange-600 to-amber-600'
+                  : 'bg-primary'
+              )}>
+                <div className="flex items-center gap-2 mb-2 opacity-80 flex-wrap">
+                  {isClaudePreOrder(selectedOrder) ? (
+                    <>
+                      <Zap className="w-4 h-4 text-primary-foreground shrink-0" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">Claude Pre-Order</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-primary-foreground shrink-0" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">Audit Report</span>
+                    </>
+                  )}
                 </div>
                 <h2 className="text-xl md:text-3xl font-display font-black mb-1 truncate pr-20">{selectedOrder.order_number}</h2>
-                <p className="text-primary-foreground/60 text-[10px] md:text-sm font-medium">Secured Entry • Verified System</p>
+                <p className="text-primary-foreground/60 text-[10px] md:text-sm font-medium">
+                  {isClaudePreOrder(selectedOrder)
+                    ? `${parseClaudePreOrder(selectedOrder)?.plan || 'Team'} · ${claudeStageLabel(parseClaudePreOrder(selectedOrder)!.stage)}`
+                    : 'Secured Entry • Verified System'}
+                </p>
                 <div className={`absolute top-4 right-4 md:top-6 md:right-6 px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-xs font-black uppercase border-2 ${getStatusColor(selectedOrder.status)} bg-white shadow-xl`}>
                   {selectedOrder.status}
                 </div>
@@ -619,6 +812,166 @@ const AdminOrders = () => {
 
               {/* Modal Content */}
               <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
+                {(() => {
+                  const claude = parseClaudePreOrder(selectedOrder);
+                  if (!claude) return null;
+                  const stageIdx = claudeStageOrder.indexOf(claude.stage);
+                  return (
+                    <div className="rounded-3xl border-2 border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-background to-amber-500/5 p-5 md:p-6 space-y-5">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-2xl bg-orange-500/20 flex items-center justify-center">
+                            <Zap className="w-5 h-5 text-orange-400" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-400">Claude pre-order</p>
+                            <h3 className="text-lg font-black text-foreground">
+                              {claude.productName || 'Claude Team'} · {claude.plan}
+                            </h3>
+                            <p className="text-xs text-muted-foreground">Activate on customer&apos;s own Claude account</p>
+                          </div>
+                        </div>
+                        <span className="self-start px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                          {claudeStageLabel(claude.stage)}
+                        </span>
+                      </div>
+
+                      {/* Money breakdown */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="p-3 rounded-2xl bg-background/60 border border-border">
+                          <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground mb-1">Full price</p>
+                          <p className="text-sm font-black text-foreground">{formatLkrAdmin(claude.fullPrice)}</p>
+                        </div>
+                        <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/25">
+                          <p className="text-[9px] font-black uppercase tracking-wider text-orange-400 mb-1">Deposit 30%</p>
+                          <p className="text-sm font-black text-foreground">{formatLkrAdmin(claude.deposit)}</p>
+                          <p className="text-[9px] text-muted-foreground mt-0.5">Order total paid</p>
+                        </div>
+                        <div className="p-3 rounded-2xl bg-background/60 border border-border">
+                          <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground mb-1">Balance 70%</p>
+                          <p className="text-sm font-black text-foreground">{formatLkrAdmin(claude.remaining)}</p>
+                          <p className="text-[9px] text-muted-foreground mt-0.5">Due at activation</p>
+                        </div>
+                      </div>
+
+                      {/* Claude email */}
+                      <div className="p-4 rounded-2xl bg-background/70 border border-orange-500/20">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1 flex items-center gap-1.5">
+                              <Mail className="w-3.5 h-3.5" /> Claude account email
+                            </p>
+                            <p className="font-mono text-sm font-bold text-foreground break-all select-all">
+                              {claude.claudeEmail || '— not provided —'}
+                            </p>
+                          </div>
+                          {claude.claudeEmail && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              className="shrink-0 h-9 w-9"
+                              onClick={() => {
+                                navigator.clipboard.writeText(claude.claudeEmail!);
+                                toast({ title: 'Copied', description: 'Claude email copied' });
+                              }}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Workflow steps */}
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
+                          Workflow
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                          {claudeStageOrder.map((stage, idx) => {
+                            const done = idx <= stageIdx;
+                            const current = stage === claude.stage;
+                            return (
+                              <div
+                                key={stage}
+                                className={cn(
+                                  'p-2.5 rounded-xl border text-center transition-colors',
+                                  current
+                                    ? 'border-orange-500 bg-orange-500/15'
+                                    : done
+                                      ? 'border-green-500/30 bg-green-500/5'
+                                      : 'border-border bg-secondary/30'
+                                )}
+                              >
+                                <div className="flex justify-center mb-1">
+                                  {done ? (
+                                    <CheckCircle2 className={cn('w-4 h-4', current ? 'text-orange-400' : 'text-green-500')} />
+                                  ) : (
+                                    <div className="w-4 h-4 rounded-full border border-muted-foreground/40" />
+                                  )}
+                                </div>
+                                <p className={cn(
+                                  'text-[9px] font-black uppercase tracking-wide leading-tight',
+                                  current ? 'text-orange-300' : done ? 'text-green-500' : 'text-muted-foreground'
+                                )}>
+                                  {claudeStageLabel(stage)}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-10 font-bold border-orange-500/30 hover:bg-orange-500/10"
+                            disabled={isUpdatingClaudeStage || claude.stage === 'deposit_verified' || claude.stage === 'activated'}
+                            onClick={() => handleClaudeStageChange(selectedOrder, 'deposit_verified')}
+                          >
+                            {isUpdatingClaudeStage ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <BadgeCheck className="w-4 h-4 mr-2" />}
+                            Mark deposit verified
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-10 font-bold border-orange-500/30 hover:bg-orange-500/10"
+                            disabled={isUpdatingClaudeStage || claude.stage === 'balance_paid' || claude.stage === 'activated' || claude.stage === 'deposit_pending'}
+                            onClick={() => handleClaudeStageChange(selectedOrder, 'balance_paid')}
+                          >
+                            {isUpdatingClaudeStage ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wallet className="w-4 h-4 mr-2" />}
+                            Mark balance paid
+                          </Button>
+                          <Button
+                            type="button"
+                            className="h-10 font-bold bg-orange-500 hover:bg-orange-400 text-white sm:col-span-2"
+                            disabled={isUpdatingClaudeStage || claude.stage === 'activated'}
+                            onClick={() => handleClaudeStageChange(selectedOrder, 'activated')}
+                          >
+                            {isUpdatingClaudeStage ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
+                            Mark seat activated
+                          </Button>
+                          {claude.stage !== 'deposit_pending' && claude.stage !== 'activated' && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="sm:col-span-2 text-xs text-muted-foreground"
+                              disabled={isUpdatingClaudeStage}
+                              onClick={() => handleClaudeStageChange(selectedOrder, 'deposit_pending')}
+                            >
+                              Reset to deposit pending
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-3 leading-relaxed">
+                          Stage updates also set order status (pending → processing → shipping → completed) and try to email the customer when status changes.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Section: Customer Intelligence */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   <div className="space-y-6">
@@ -683,7 +1036,9 @@ const AdminOrders = () => {
                       <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-3">
                         <div className="flex justify-between items-end">
                           <div>
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Payload</p>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                              {isClaudePreOrder(selectedOrder) ? 'Deposit paid (order total)' : 'Total Payload'}
+                            </p>
                             <p className="text-xl font-black text-foreground">
                               {selectedOrder.currency_code && selectedOrder.currency_rate
                                 ? new Intl.NumberFormat(undefined, {
@@ -695,6 +1050,15 @@ const AdminOrders = () => {
                                 : formatPrice(selectedOrder.total_amount)
                               }
                             </p>
+                            {(() => {
+                              const c = parseClaudePreOrder(selectedOrder);
+                              if (!c || c.fullPrice == null) return null;
+                              return (
+                                <p className="text-[10px] text-muted-foreground mt-1">
+                                  Full plan {formatLkrAdmin(c.fullPrice)} · Balance {formatLkrAdmin(c.remaining)}
+                                </p>
+                              );
+                            })()}
                           </div>
                           <div className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedOrder.status === 'completed' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'}`}>
                             {selectedOrder.status === 'completed' ? 'Success' : 'Pending'}
@@ -751,7 +1115,11 @@ const AdminOrders = () => {
                                 <p className="text-[10px] font-bold uppercase text-muted-foreground">Customer Provided Details:</p>
                                 {item.customer_credentials.email && (
                                   <div className="bg-background/50 p-2 rounded border border-border/50 flex flex-col">
-                                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground">Email / Login</span>
+                                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                                      {item.customer_credentials.service === 'claude' || item.customer_credentials.preorder
+                                        ? 'Claude account email'
+                                        : 'Email / Login'}
+                                    </span>
                                     <span className="font-mono text-xs select-all">{item.customer_credentials.email}</span>
                                   </div>
                                 )}
@@ -759,6 +1127,22 @@ const AdminOrders = () => {
                                   <div className="bg-background/50 p-2 rounded border border-border/50 flex flex-col">
                                     <span className="text-[9px] uppercase tracking-wider text-muted-foreground">Password</span>
                                     <span className="font-mono text-xs select-all text-foreground">{item.customer_credentials.password}</span>
+                                  </div>
+                                )}
+                                {(item.customer_credentials.preorder || item.customer_credentials.service === 'claude') && (
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {item.customer_credentials.full_price != null && (
+                                      <div className="bg-orange-500/5 p-2 rounded border border-orange-500/20 flex flex-col">
+                                        <span className="text-[9px] uppercase tracking-wider text-orange-400">Full price</span>
+                                        <span className="text-xs font-bold">{formatLkrAdmin(Number(item.customer_credentials.full_price))}</span>
+                                      </div>
+                                    )}
+                                    {item.customer_credentials.remaining_amount != null && (
+                                      <div className="bg-orange-500/5 p-2 rounded border border-orange-500/20 flex flex-col">
+                                        <span className="text-[9px] uppercase tracking-wider text-orange-400">Balance due</span>
+                                        <span className="text-xs font-bold">{formatLkrAdmin(Number(item.customer_credentials.remaining_amount))}</span>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -793,8 +1177,24 @@ const AdminOrders = () => {
                   </div>
                 </div>
 
-                {/* Section: Fulfillment Console (Manual Assignment) */}
+                {/* Section: Fulfillment Console (Manual Assignment) — skip for Claude (own-account activation) */}
                 {(() => {
+                  if (isClaudePreOrder(selectedOrder)) {
+                    return (
+                      <div className="bg-orange-500/5 p-6 rounded-2xl border border-orange-500/20 border-dashed">
+                        <div className="flex items-center gap-3">
+                          <Zap className="w-5 h-5 text-orange-400" />
+                          <div>
+                            <p className="text-sm font-bold text-foreground">Claude: own-account activation</p>
+                            <p className="text-xs text-muted-foreground">
+                              No inventory assignment. Use the Claude workflow above (deposit → balance → activate on their email).
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const needsManualFulfillment = selectedOrder.order_items?.some(
                     item => item.products?.manual_fulfillment !== false
                   );

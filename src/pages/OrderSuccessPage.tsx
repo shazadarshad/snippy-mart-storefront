@@ -19,6 +19,16 @@ interface OrderData {
   }[];
   total: number;
   discount?: number;
+  isPreOrder?: boolean;
+  preOrder?: {
+    service: string;
+    plan: string;
+    fullPrice: number;
+    deposit: number;
+    remaining: number;
+    claudeEmail: string;
+    depositRate: number;
+  };
 }
 
 const OrderSuccessPage = () => {
@@ -98,13 +108,77 @@ const OrderSuccessPage = () => {
           </div>
 
           <h1 className="text-3xl md:text-5xl font-display font-black text-foreground mb-4 animate-fade-in">
-            Order Confirmed!
+            {sessionOrder?.isPreOrder ? 'Pre-Order Locked In!' : 'Order Confirmed!'}
           </h1>
           <p className="text-lg text-muted-foreground mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             Success! Your order <span className="text-primary font-mono font-black">{orderId}</span> has been locked in.
             {liveOrder?.discount_amount > 0 && <span className="block text-sm text-green-500 mt-1 font-bold">You saved {formatPrice(liveOrder.discount_amount)}! 🎉</span>}
             {liveOrder?.status === 'pending' && <span className="block text-sm text-amber-500 mt-2 font-bold">(Waiting for Payment Confirmation)</span>}
           </p>
+
+          {sessionOrder?.isPreOrder && sessionOrder.preOrder && (
+            <div className="text-left mb-8 animate-fade-in" style={{ animationDelay: '0.12s' }}>
+              <div className="bg-card border-2 border-orange-500/25 p-6 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-3 pb-4 border-b border-border/50">
+                    <div className="w-12 h-12 rounded-2xl bg-orange-500/15 flex items-center justify-center text-2xl">
+                      ⚡
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black uppercase tracking-wide text-foreground">
+                        {sessionOrder.preOrder.service} Pre-Order
+                      </h3>
+                      <p className="text-sm text-orange-400 font-bold">
+                        {sessionOrder.preOrder.plan} · 30% deposit received
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-2xl bg-secondary/50 border border-border">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Full price</p>
+                      <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.fullPrice.toLocaleString()}</p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Deposit paid</p>
+                      <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.deposit.toLocaleString()}</p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-secondary/50 border border-border">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Balance due</p>
+                      <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.remaining.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Claude account email</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-mono font-bold text-foreground break-all">{sessionOrder.preOrder.claudeEmail}</p>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={() => copyToClipboard(sessionOrder.preOrder!.claudeEmail, 'Email')}>
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Order ID</p>
+                      <p className="font-mono font-black text-primary">{orderId}</p>
+                    </div>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(orderId, 'Order ID')}>
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Save your Order ID. After deposit verification we invite this email to a{' '}
+                    <strong className="text-foreground">private Claude Team workspace</strong> with
+                    Pro/Max access. The remaining 70% is due at activation. Track status anytime below.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* AUTO-DELIVERY CARD: Show if automation exists */}
           {isAutomationLoading ? (
@@ -162,6 +236,14 @@ const OrderSuccessPage = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          ) : sessionOrder?.isPreOrder ? (
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 mb-8 animate-fade-in" style={{ animationDelay: '0.15s' }}>
+              <span className="text-2xl">📦</span>
+              <div className="text-left">
+                <p className="text-sm font-bold text-orange-400">Pre-order slot reserved</p>
+                <p className="text-xs text-muted-foreground">We verify your deposit, then activate — balance due at activation</p>
               </div>
             </div>
           ) : (

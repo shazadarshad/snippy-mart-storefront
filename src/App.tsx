@@ -52,6 +52,7 @@ const AdminAIKnowledge = lazy(() => import("./pages/admin/AdminAIKnowledge"));
 const AdminExtensionUpload = lazy(() => import("./pages/admin/AdminExtensionUpload"));
 const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
 const DownloadExtension = lazy(() => import("./pages/DownloadExtension"));
+const ClaudePage = lazy(() => import("./pages/ClaudePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -85,6 +86,7 @@ const AppContent = () => {
             <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
             <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
             <Route path="/download" element={<PageTransition><DownloadExtension /></PageTransition>} />
+            <Route path="/claude" element={<PageTransition><ClaudePage /></PageTransition>} />
 
             <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
 

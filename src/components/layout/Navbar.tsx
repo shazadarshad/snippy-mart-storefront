@@ -36,6 +36,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
+    { name: 'Claude', path: '/claude' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
     { name: 'Track Order', path: '/track-order' },
