@@ -49,6 +49,7 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   amountDueNow,
   remainingBalance,
+  buildClaudeOrderWhatsAppUrl,
   type ClaudePaymentMode,
   CLAUDE_RESERVE_RATE,
 } from '@/lib/claudePreorder';
@@ -311,6 +312,9 @@ const ClaudePage = () => {
       return;
     }
 
+    // Open blank tab immediately (same user gesture) so popup blockers don't kill WhatsApp after await
+    const waWindow = window.open('about:blank', '_blank');
+
     setIsSubmitting(true);
     try {
       const fileExt = proofFile.name.split('.').pop();
@@ -400,6 +404,19 @@ const ClaudePage = () => {
         ],
       });
 
+      const waPayload = {
+        orderId,
+        name: formData.name.trim(),
+        customerWhatsapp: formData.whatsapp.trim(),
+        claudeEmail: formData.claudeEmail.trim(),
+        plan: selectedPlan.name,
+        paymentMode,
+        fullPrice: selectedPlan.fullPrice,
+        amountPaid: amountDue,
+        remaining,
+      };
+      const whatsappConfirmUrl = buildClaudeOrderWhatsAppUrl(whatsappNumber, waPayload);
+
       const orderData = {
         orderId,
         whatsapp: formData.whatsapp.trim(),
@@ -417,6 +434,8 @@ const ClaudePage = () => {
         total: amountDue,
         paymentMethod: 'bank_transfer' as const,
         isPreOrder: true,
+        whatsappConfirmUrl,
+        autoOpenWhatsApp: true,
         preOrder: {
           service: 'Claude Team',
           plan: selectedPlan.name,
@@ -431,8 +450,28 @@ const ClaudePage = () => {
       };
 
       sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+
+      // Point the pre-opened tab at WhatsApp (survives popup blockers better than open-after-await)
+      if (waWindow && !waWindow.closed) {
+        waWindow.location.href = whatsappConfirmUrl;
+        sessionStorage.removeItem('waNeedsRetry');
+      } else {
+        // Popup blocked — success page shows big CTA + one more auto attempt
+        sessionStorage.setItem('waNeedsRetry', '1');
+      }
+
+      toast({
+        title: 'Order placed!',
+        description: waWindow && !waWindow.closed
+          ? 'WhatsApp opened with your order details — just hit Send.'
+          : 'Order saved. Tap “Send order on WhatsApp” on the next screen.',
+      });
+
       navigate('/order-success');
     } catch (error) {
+      if (waWindow && !waWindow.closed) {
+        waWindow.close();
+      }
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error('Claude pre-order failed:', error);
       toast({
@@ -1273,24 +1312,24 @@ const ClaudePage = () => {
                     </>
                   ) : (
                     <>
-                      Submit order · {formatLkr(amountDue)}
+                      Submit · WhatsApp auto-opens · {formatLkr(amountDue)}
                       <Check className="w-5 h-5 ml-2" />
                     </>
                   )}
                 </Button>
 
                 <p className="text-center text-xs text-muted-foreground leading-relaxed px-1">
-                  Or message{' '}
+                  After submit, WhatsApp opens with Order ID, plan, payment, Claude email — just hit{' '}
+                  <strong className="text-foreground">Send</strong>. Or message{' '}
                   <a
                     href={whatsappPreorderLink()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#25D366] font-semibold hover:underline"
                   >
-                    WhatsApp +94 78 776 7869
+                    +94 78 776 7869
                   </a>{' '}
-                  with Order ID{' '}
-                  <span className="font-mono text-foreground break-all">{orderId}</span>
+                  manually.
                 </p>
               </form>
             )}

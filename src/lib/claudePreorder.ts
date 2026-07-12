@@ -269,3 +269,53 @@ export const formatLkrAdmin = (amount: number | null | undefined) => {
   if (amount == null || Number.isNaN(amount)) return '—';
   return `LKR ${Number(amount).toLocaleString('en-LK', { maximumFractionDigits: 0 })}`;
 };
+
+export interface ClaudeWhatsAppOrderPayload {
+  orderId: string;
+  name: string;
+  customerWhatsapp: string;
+  claudeEmail: string;
+  plan: string;
+  paymentMode: ClaudePaymentMode;
+  fullPrice: number;
+  amountPaid: number;
+  remaining: number;
+  bankName?: string;
+}
+
+/** Prefilled message customer sends you after placing a Claude order */
+export const buildClaudeOrderWhatsAppMessage = (p: ClaudeWhatsAppOrderPayload): string => {
+  const isFull = p.paymentMode === 'full';
+  const lines = [
+    `Hi Snippy Mart! 👋`,
+    ``,
+    `I just placed a *Claude Team* order on the website.`,
+    ``,
+    `*Order ID:* ${p.orderId}`,
+    `*Name:* ${p.name}`,
+    `*My WhatsApp:* ${p.customerWhatsapp}`,
+    `*Claude account email:* ${p.claudeEmail}`,
+    `*Plan:* ${p.plan}`,
+    `*Payment:* ${isFull ? 'Full payment (100%)' : '50% reserve'}`,
+    `*Full price:* ${formatLkrAdmin(p.fullPrice)}`,
+    `*Paid now:* ${formatLkrAdmin(p.amountPaid)}`,
+    isFull
+      ? `*Balance due:* None`
+      : `*Balance due at activation:* ${formatLkrAdmin(p.remaining)}`,
+    `*Method:* Bank transfer`,
+    `*Receipt:* Uploaded on website ✅`,
+    `*Delivery:* Private workspace invite (Pro/Max)`,
+    ``,
+    `Please confirm payment and process my seat. Thank you!`,
+  ];
+  return lines.join('\n');
+};
+
+export const buildClaudeOrderWhatsAppUrl = (
+  storeWhatsappDigits: string,
+  payload: ClaudeWhatsAppOrderPayload
+): string => {
+  const digits = storeWhatsappDigits.replace(/\D/g, '') || '94787767869';
+  const text = buildClaudeOrderWhatsAppMessage(payload);
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+};

@@ -8,10 +8,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useTrackOrder } from '@/hooks/useOrders';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
+import { buildClaudeOrderWhatsAppUrl } from '@/lib/claudePreorder';
 
 interface OrderData {
   orderId: string;
   whatsapp: string;
+  name?: string;
   items: {
     name: string;
     price: number;
@@ -20,6 +22,8 @@ interface OrderData {
   total: number;
   discount?: number;
   isPreOrder?: boolean;
+  whatsappConfirmUrl?: string;
+  autoOpenWhatsApp?: boolean;
   preOrder?: {
     service: string;
     plan: string;
@@ -33,12 +37,40 @@ interface OrderData {
   };
 }
 
+function resolveWhatsAppConfirmUrl(
+  order: OrderData | null,
+  storeWhatsapp?: string | null
+): string | null {
+  if (!order) return null;
+  if (order.whatsappConfirmUrl) return order.whatsappConfirmUrl;
+
+  // Rebuild Claude message if we have pre-order details
+  if (order.isPreOrder && order.preOrder) {
+    return buildClaudeOrderWhatsAppUrl(storeWhatsapp || '94787767869', {
+      orderId: order.orderId,
+      name: order.name || 'Customer',
+      customerWhatsapp: order.whatsapp,
+      claudeEmail: order.preOrder.claudeEmail,
+      plan: order.preOrder.plan,
+      paymentMode: order.preOrder.paymentMode || (order.preOrder.isFullPayment ? 'full' : 'reserve'),
+      fullPrice: order.preOrder.fullPrice,
+      amountPaid: order.preOrder.deposit,
+      remaining: order.preOrder.remaining,
+    });
+  }
+
+  const number = (storeWhatsapp || '94787767869').replace(/\D/g, '');
+  const message = `Hello! I just placed an order. Order ID: ${order.orderId}`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
 const OrderSuccessPage = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [sessionOrder, setSessionOrder] = useState<OrderData | null>(null);
   const [copied, setCopied] = useState(false);
+  const [waAutoTried, setWaAutoTried] = useState(false);
   const { data: settings, isLoading: isSettingsLoading } = useSiteSettings();
 
   // Load basic info from session first (for immediate feedback)
@@ -51,6 +83,34 @@ const OrderSuccessPage = () => {
       // navigate('/'); 
     }
   }, [navigate]);
+
+  // Retry WhatsApp auto-open only if checkout popup was blocked
+  useEffect(() => {
+    if (!sessionOrder || waAutoTried) return;
+    const needsRetry = sessionStorage.getItem('waNeedsRetry') === '1';
+    if (!needsRetry && !sessionOrder.autoOpenWhatsApp) return;
+
+    setWaAutoTried(true);
+    sessionStorage.removeItem('waNeedsRetry');
+    sessionStorage.removeItem('autoOpenWhatsApp');
+    try {
+      const updated = { ...sessionOrder, autoOpenWhatsApp: false };
+      sessionStorage.setItem('lastOrder', JSON.stringify(updated));
+      setSessionOrder(updated);
+    } catch {
+      /* ignore */
+    }
+
+    if (!needsRetry) return;
+
+    const url = resolveWhatsAppConfirmUrl(sessionOrder, settings?.whatsapp_number);
+    if (!url) return;
+
+    const t = window.setTimeout(() => {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }, 500);
+    return () => window.clearTimeout(t);
+  }, [sessionOrder, settings?.whatsapp_number, waAutoTried]);
 
   // Fetch live order details to check for auto-fulfillment
   const { data: liveOrder, isLoading: isLiveOrderLoading } = useTrackOrder(sessionOrder?.orderId || '');
@@ -79,6 +139,8 @@ const OrderSuccessPage = () => {
   const showAutomation = assignment && (isCompleted || liveOrder?.status === 'processing');
 
   const getWhatsAppLink = () => {
+    const rich = resolveWhatsAppConfirmUrl(sessionOrder, settings?.whatsapp_number);
+    if (rich) return rich;
     const number = settings?.whatsapp_number || '94787767869';
     const template = settings?.whatsapp_message_template || 'Hello! I just placed an order. Order ID: {order_id}';
     const message = template.replace('{order_id}', orderId);
@@ -277,14 +339,22 @@ const OrderSuccessPage = () => {
           {/* Action Buttons */}
           <div className="flex flex-col gap-4 md:gap-6 mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
 
-            {/* If not completed yet, show WhatsApp confirm */}
+            {/* If not completed yet, show WhatsApp confirm (Claude: full prefilled details) */}
             {!isCompleted && (
-              <Button variant="whatsapp" size="xl" className="h-14 md:h-18 rounded-2xl md:rounded-3xl text-lg md:text-xl font-black uppercase tracking-widest shadow-2xl hover:translate-y-[-4px] active:translate-y-[0px] transition-all" asChild disabled={isSettingsLoading}>
-                <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
-                  {isSettingsLoading ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <MessageCircle className="w-6 h-6 md:w-7 md:h-7 mr-3 animate-bounce" />}
-                  Confirm Order
-                </a>
-              </Button>
+              <div className="space-y-3">
+                {sessionOrder?.isPreOrder && (
+                  <p className="text-sm text-muted-foreground">
+                    WhatsApp should open with your order details prefilled — tap <strong className="text-foreground">Send</strong>.
+                    If it didn&apos;t open, use the button below.
+                  </p>
+                )}
+                <Button variant="whatsapp" size="xl" className="w-full h-14 md:h-18 rounded-2xl md:rounded-3xl text-base md:text-xl font-black uppercase tracking-widest shadow-2xl hover:translate-y-[-4px] active:translate-y-[0px] transition-all" asChild disabled={isSettingsLoading}>
+                  <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
+                    {isSettingsLoading ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <MessageCircle className="w-6 h-6 md:w-7 md:h-7 mr-3 animate-bounce" />}
+                    {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm Order'}
+                  </a>
+                </Button>
+              </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
