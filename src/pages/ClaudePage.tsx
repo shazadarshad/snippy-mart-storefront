@@ -312,9 +312,6 @@ const ClaudePage = () => {
       return;
     }
 
-    // Open blank tab immediately (same user gesture) so popup blockers don't kill WhatsApp after await
-    const waWindow = window.open('about:blank', '_blank');
-
     setIsSubmitting(true);
     try {
       const fileExt = proofFile.name.split('.').pop();
@@ -435,7 +432,6 @@ const ClaudePage = () => {
         paymentMethod: 'bank_transfer' as const,
         isPreOrder: true,
         whatsappConfirmUrl,
-        autoOpenWhatsApp: true,
         preOrder: {
           service: 'Claude Team',
           plan: selectedPlan.name,
@@ -450,28 +446,16 @@ const ClaudePage = () => {
       };
 
       sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
-
-      // Point the pre-opened tab at WhatsApp (survives popup blockers better than open-after-await)
-      if (waWindow && !waWindow.closed) {
-        waWindow.location.href = whatsappConfirmUrl;
-        sessionStorage.removeItem('waNeedsRetry');
-      } else {
-        // Popup blocked — success page shows big CTA + one more auto attempt
-        sessionStorage.setItem('waNeedsRetry', '1');
-      }
+      sessionStorage.removeItem('waNeedsRetry');
+      sessionStorage.removeItem('autoOpenWhatsApp');
 
       toast({
         title: 'Order placed!',
-        description: waWindow && !waWindow.closed
-          ? 'WhatsApp opened with your order details — just hit Send.'
-          : 'Order saved. Tap “Send order on WhatsApp” on the next screen.',
+        description: 'Tap “Send order on WhatsApp” on the next screen to confirm with full details.',
       });
 
       navigate('/order-success');
     } catch (error) {
-      if (waWindow && !waWindow.closed) {
-        waWindow.close();
-      }
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error('Claude pre-order failed:', error);
       toast({
@@ -1312,15 +1296,14 @@ const ClaudePage = () => {
                     </>
                   ) : (
                     <>
-                      Submit · WhatsApp auto-opens · {formatLkr(amountDue)}
+                      Submit order · {formatLkr(amountDue)}
                       <Check className="w-5 h-5 ml-2" />
                     </>
                   )}
                 </Button>
 
                 <p className="text-center text-xs text-muted-foreground leading-relaxed px-1">
-                  After submit, WhatsApp opens with Order ID, plan, payment, Claude email — just hit{' '}
-                  <strong className="text-foreground">Send</strong>. Or message{' '}
+                  Next screen: confirm via WhatsApp button (order details prefilled). Support:{' '}
                   <a
                     href={whatsappPreorderLink()}
                     target="_blank"
@@ -1328,8 +1311,7 @@ const ClaudePage = () => {
                     className="text-[#25D366] font-semibold hover:underline"
                   >
                     +94 78 776 7869
-                  </a>{' '}
-                  manually.
+                  </a>
                 </p>
               </form>
             )}

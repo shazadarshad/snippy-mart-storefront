@@ -23,7 +23,6 @@ interface OrderData {
   discount?: number;
   isPreOrder?: boolean;
   whatsappConfirmUrl?: string;
-  autoOpenWhatsApp?: boolean;
   preOrder?: {
     service: string;
     plan: string;
@@ -70,7 +69,6 @@ const OrderSuccessPage = () => {
   const { toast } = useToast();
   const [sessionOrder, setSessionOrder] = useState<OrderData | null>(null);
   const [copied, setCopied] = useState(false);
-  const [waAutoTried, setWaAutoTried] = useState(false);
   const { data: settings, isLoading: isSettingsLoading } = useSiteSettings();
 
   // Load basic info from session first (for immediate feedback)
@@ -82,35 +80,10 @@ const OrderSuccessPage = () => {
       // Fallback or redirect if direct access without order
       // navigate('/'); 
     }
-  }, [navigate]);
-
-  // Retry WhatsApp auto-open only if checkout popup was blocked
-  useEffect(() => {
-    if (!sessionOrder || waAutoTried) return;
-    const needsRetry = sessionStorage.getItem('waNeedsRetry') === '1';
-    if (!needsRetry && !sessionOrder.autoOpenWhatsApp) return;
-
-    setWaAutoTried(true);
+    // Clean any legacy auto-open flags
     sessionStorage.removeItem('waNeedsRetry');
     sessionStorage.removeItem('autoOpenWhatsApp');
-    try {
-      const updated = { ...sessionOrder, autoOpenWhatsApp: false };
-      sessionStorage.setItem('lastOrder', JSON.stringify(updated));
-      setSessionOrder(updated);
-    } catch {
-      /* ignore */
-    }
-
-    if (!needsRetry) return;
-
-    const url = resolveWhatsAppConfirmUrl(sessionOrder, settings?.whatsapp_number);
-    if (!url) return;
-
-    const t = window.setTimeout(() => {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }, 500);
-    return () => window.clearTimeout(t);
-  }, [sessionOrder, settings?.whatsapp_number, waAutoTried]);
+  }, [navigate]);
 
   // Fetch live order details to check for auto-fulfillment
   const { data: liveOrder, isLoading: isLiveOrderLoading } = useTrackOrder(sessionOrder?.orderId || '');
@@ -339,18 +312,30 @@ const OrderSuccessPage = () => {
           {/* Action Buttons */}
           <div className="flex flex-col gap-4 md:gap-6 mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
 
-            {/* If not completed yet, show WhatsApp confirm (Claude: full prefilled details) */}
+            {/* WhatsApp confirm — user taps (no auto popup); Claude gets full prefilled details */}
             {!isCompleted && (
               <div className="space-y-3">
                 {sessionOrder?.isPreOrder && (
-                  <p className="text-sm text-muted-foreground">
-                    WhatsApp should open with your order details prefilled — tap <strong className="text-foreground">Send</strong>.
-                    If it didn&apos;t open, use the button below.
-                  </p>
+                  <div className="p-4 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/25 text-left">
+                    <p className="text-sm font-bold text-foreground mb-1">Confirm on WhatsApp</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Tap the button below. A message with your <strong className="text-foreground">Order ID, plan, payment, and Claude email</strong> is prefilled — just hit Send.
+                    </p>
+                  </div>
                 )}
-                <Button variant="whatsapp" size="xl" className="w-full h-14 md:h-18 rounded-2xl md:rounded-3xl text-base md:text-xl font-black uppercase tracking-widest shadow-2xl hover:translate-y-[-4px] active:translate-y-[0px] transition-all" asChild disabled={isSettingsLoading}>
+                <Button
+                  variant="whatsapp"
+                  size="xl"
+                  className="w-full h-14 md:h-16 rounded-2xl md:rounded-3xl text-base md:text-lg font-black uppercase tracking-widest shadow-2xl hover:translate-y-[-2px] active:translate-y-[0px] transition-all"
+                  asChild
+                  disabled={isSettingsLoading}
+                >
                   <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
-                    {isSettingsLoading ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <MessageCircle className="w-6 h-6 md:w-7 md:h-7 mr-3 animate-bounce" />}
+                    {isSettingsLoading ? (
+                      <Loader2 className="w-6 h-6 animate-spin mr-3" />
+                    ) : (
+                      <MessageCircle className="w-6 h-6 md:w-7 md:h-7 mr-3" />
+                    )}
                     {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm Order'}
                   </a>
                 </Button>
