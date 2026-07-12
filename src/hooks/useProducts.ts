@@ -114,6 +114,38 @@ export const useAddProduct = () => {
   });
 };
 
+/** Bulk insert products (CSV import). Chunks to avoid payload limits. */
+export const useBulkAddProducts = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (products: ProductFormData[]) => {
+      if (!products.length) throw new Error('No products to import');
+
+      const CHUNK = 40;
+      let inserted = 0;
+      for (let i = 0; i < products.length; i += CHUNK) {
+        const chunk = products.slice(i, i + CHUNK);
+        const { data, error } = await supabase.from('products').insert(chunk).select('id');
+        if (error) throw error;
+        inserted += data?.length ?? chunk.length;
+      }
+      return { count: inserted };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: 'Bulk import complete',
+        description: `${result.count} product${result.count === 1 ? '' : 's'} added.`,
+      });
+    },
+    onError: (error) => {
+      toast({ title: 'Bulk import failed', description: error.message, variant: 'destructive' });
+    },
+  });
+};
+
 // Update a product
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();

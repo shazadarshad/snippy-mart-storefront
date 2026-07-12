@@ -8,7 +8,6 @@ import {
   MessageCircle,
   ChevronRight,
   Search,
-  Sparkles,
   BadgeCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,6 @@ import { useProducts, type Product } from '@/hooks/useProducts';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import SEO from '@/components/seo/SEO';
-import ClaudePromo from '@/components/ClaudePromo';
 import { motion } from 'framer-motion';
 
 const containerVariants = {
@@ -63,7 +61,7 @@ const HomePage = () => {
     {
       icon: Shield,
       title: 'Trusted checkout',
-      description: 'Bank transfer with receipt upload and order tracking.',
+      description: 'Bank transfer with receipt upload and secure order tracking.',
     },
     {
       icon: BadgeCheck,
@@ -80,8 +78,8 @@ const HomePage = () => {
   const steps = [
     {
       number: '01',
-      title: 'Pick a product',
-      description: 'Browse the mart or grab Claude Team from the homepage.',
+      title: 'Choose a product',
+      description: 'Browse 50+ digital subscriptions and pick your plan.',
     },
     {
       number: '02',
@@ -99,7 +97,7 @@ const HomePage = () => {
     <div className="min-h-screen">
       <SEO
         title="Premium Digital Subscriptions"
-        description="Snippy Mart — Claude Team, AI tools, streaming & more. Instant WhatsApp support, bank checkout, live order tracking."
+        description="Snippy Mart — premium digital subscriptions at fair prices. Bank checkout, live order tracking, WhatsApp support."
       />
 
       {/* Hero */}
@@ -107,19 +105,18 @@ const HomePage = () => {
         <div className="absolute inset-0 bg-background">
           <div className="absolute top-1/4 left-1/4 w-48 sm:w-96 h-48 sm:h-96 bg-primary/20 rounded-full blur-[60px] sm:blur-[120px] animate-pulse-soft" />
           <div
-            className="absolute bottom-1/4 right-1/4 w-48 sm:w-96 h-48 sm:h-96 bg-orange-500/15 rounded-full blur-[60px] sm:blur-[120px] animate-pulse-soft"
+            className="absolute bottom-1/4 right-1/4 w-48 sm:w-96 h-48 sm:h-96 bg-accent/15 rounded-full blur-[60px] sm:blur-[120px] animate-pulse-soft"
             style={{ animationDelay: '1s' }}
           />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-accent/5 rounded-full blur-[100px]" />
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:30px_30px] sm:bg-[size:48px_48px]" />
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-sm border border-white/10 mb-5 sm:mb-7 animate-fade-in">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <Zap className="w-3.5 h-3.5 text-primary" />
               <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-foreground">
-                Premium digital · Claude · AI tools
+                Premium digital subscriptions
               </span>
             </div>
 
@@ -127,36 +124,26 @@ const HomePage = () => {
               className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-display font-black text-foreground mb-4 sm:mb-6 animate-fade-in tracking-tighter leading-[0.92]"
               style={{ animationDelay: '0.08s' }}
             >
-              Digital access.
+              Digital Subscriptions.
               <br />
-              <span className="gradient-text">Delivered smart.</span>
+              <span className="gradient-text">Instant Delivery.</span>
             </h1>
 
             <p
-              className="text-sm md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 animate-fade-in font-medium px-2"
+              className="text-sm md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-10 animate-fade-in font-medium px-2"
               style={{ animationDelay: '0.15s' }}
             >
-              Claude Team workspaces, AI tools, design & streaming — fair prices, bank checkout,
-              live tracking, WhatsApp support.
+              AI tools, design software, streaming & more — fair prices, bank checkout, live tracking,
+              WhatsApp support.
             </p>
 
             <div
-              className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center animate-fade-in px-1 sm:px-0 mb-5"
+              className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center animate-fade-in px-1"
               style={{ animationDelay: '0.22s' }}
             >
-              <Button
-                size="xl"
-                className="h-12 sm:h-14 text-sm sm:text-base rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-lg shadow-orange-500/25"
-                asChild
-              >
-                <Link to="/claude">
-                  <Zap className="w-5 h-5 mr-2" />
-                  Purchase Claude
-                </Link>
-              </Button>
               <Button variant="hero" size="xl" className="h-12 sm:h-14 text-sm sm:text-base rounded-2xl" asChild>
                 <Link to="/products">
-                  Explore mart
+                  Browse products
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </Button>
@@ -171,16 +158,22 @@ const HomePage = () => {
                   Track order
                 </Link>
               </Button>
-            </div>
-
-            {/* Inline Claude teaser strip */}
-            <div className="max-w-xl mx-auto animate-fade-in" style={{ animationDelay: '0.28s' }}>
-              <ClaudePromo variant="compact" />
+              <Button
+                variant="heroOutline"
+                size="xl"
+                className="h-12 sm:h-14 text-sm sm:text-base rounded-2xl glass-sm"
+                asChild
+              >
+                <a href="https://wa.me/94787767869" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  WhatsApp
+                </a>
+              </Button>
             </div>
 
             <div
-              className="grid grid-cols-3 gap-2 sm:gap-8 mt-10 sm:mt-16 pt-8 border-t border-white/5 animate-fade-in"
-              style={{ animationDelay: '0.35s' }}
+              className="grid grid-cols-3 gap-2 sm:gap-8 mt-12 sm:mt-16 pt-8 border-t border-white/5 animate-fade-in"
+              style={{ animationDelay: '0.32s' }}
             >
               <div className="p-2">
                 <div className="text-xl sm:text-4xl font-black text-foreground mb-1">2K+</div>
@@ -204,9 +197,6 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* Claude full promo */}
-      <ClaudePromo variant="section" />
 
       {/* Why us */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
@@ -247,26 +237,22 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Popular products + banner */}
+      {/* Popular products */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/30 to-accent/5" />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="mb-6 sm:mb-8">
-            <ClaudePromo variant="banner" />
-          </div>
-
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-3">
                 Popular <span className="gradient-text">products</span>
               </h2>
               <p className="text-base sm:text-lg text-muted-foreground max-w-xl">
-                Top picks from the mart — plus Claude on its own landing page.
+                Top picks from the vault — browse the full catalogue for more.
               </p>
             </div>
             <Button variant="outline" size="lg" className="rounded-xl w-fit" asChild>
               <Link to="/products">
-                View all
+                View all products
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
@@ -290,11 +276,10 @@ const HomePage = () => {
             </motion.div>
           ) : (
             <div className="text-center py-12 text-muted-foreground rounded-2xl border border-dashed border-border">
-              No products yet — try{' '}
-              <Link to="/claude" className="text-orange-400 font-bold underline">
-                Claude Team
-              </Link>{' '}
-              meanwhile.
+              No featured products yet.{' '}
+              <Link to="/products" className="text-primary font-bold underline">
+                Browse all
+              </Link>
             </div>
           )}
         </div>
@@ -359,24 +344,20 @@ const HomePage = () => {
 
       {/* Final CTA */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-orange-500/5 to-accent/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
               Ready to get access?
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground mb-8">
-              Start with Claude Team or browse the full mart. We&apos;re on WhatsApp if you need a hand.
+              Browse the product vault or message us on WhatsApp for recommendations.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button
-                size="xl"
-                className="h-14 rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white"
-                asChild
-              >
-                <Link to="/claude">
-                  <Zap className="w-5 h-5 mr-2" />
-                  Get Claude
+              <Button variant="hero" size="xl" className="h-14 rounded-2xl" asChild>
+                <Link to="/products">
+                  Browse products
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </Button>
               <Button variant="whatsapp" size="xl" className="h-14 rounded-2xl" asChild>

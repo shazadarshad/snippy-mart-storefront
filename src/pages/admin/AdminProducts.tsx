@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, Search, Upload, Loader2, X, Eye, EyeOff, Star, Package, Image as ImageIcon, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, Loader2, X, Eye, EyeOff, Star, Package, Image as ImageIcon, ArrowUp, ArrowDown, FileSpreadsheet, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,6 +29,7 @@ import { FormattedDescription } from '@/components/products/FormattedDescription
 import {
   useProducts,
   useAddProduct,
+  useBulkAddProducts,
   useUpdateProduct,
   useDeleteProduct,
   useUploadProductImage,
@@ -37,6 +38,7 @@ import {
   type ProductFormData,
   type StockStatus,
 } from '@/hooks/useProducts';
+import { useToast } from '@/hooks/use-toast';
 import {
   useAllPricingPlans,
   useAddPricingPlan,
@@ -81,12 +83,122 @@ interface GalleryImageInput {
   image_url: string;
 }
 
+const CSV_TEMPLATE = `name,description,price,old_price,category,image_url,stock_status,is_featured,is_active,manual_fulfillment
+Netflix Premium,Shared Netflix plan with 4 screens,1500,2500,Streaming,https://example.com/netflix.jpg,in_stock,true,true,true
+ChatGPT Plus,1 month ChatGPT Plus access,2500,,AI Tools,/placeholder.svg,in_stock,false,true,true
+Canva Pro,Canva Pro yearly seat,1200,2000,Design,/placeholder.svg,limited,true,true,true`;
+
+/** Minimal CSV line parser supporting quoted fields */
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+    if (inQuotes) {
+      if (ch === '"' && next === '"') {
+        cell += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        cell += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ',') {
+      row.push(cell.trim());
+      cell = '';
+    } else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cell.trim());
+      cell = '';
+      if (row.some((c) => c !== '')) rows.push(row);
+      row = [];
+    } else {
+      cell += ch;
+    }
+  }
+  row.push(cell.trim());
+  if (row.some((c) => c !== '')) rows.push(row);
+  return rows;
+}
+
+function parseBool(v: string | undefined, fallback: boolean) {
+  if (v == null || v === '') return fallback;
+  const s = v.toLowerCase();
+  if (['1', 'true', 'yes', 'y'].includes(s)) return true;
+  if (['0', 'false', 'no', 'n'].includes(s)) return false;
+  return fallback;
+}
+
+function rowsToProducts(rows: string[][]): ProductFormData[] {
+  if (rows.length < 2) throw new Error('CSV needs a header row and at least one product');
+
+  const headers = rows[0].map((h) => h.toLowerCase().replace(/\s+/g, '_'));
+  const idx = (key: string) => headers.indexOf(key);
+
+  const nameI = idx('name');
+  if (nameI < 0) throw new Error('CSV must include a "name" column');
+
+  const priceI = idx('price');
+  const descI = idx('description');
+  const oldI = idx('old_price');
+  const catI = idx('category');
+  const imgI = idx('image_url');
+  const stockI = idx('stock_status');
+  const featI = idx('is_featured');
+  const activeI = idx('is_active');
+  const manualI = idx('manual_fulfillment');
+
+  const out: ProductFormData[] = [];
+  for (let r = 1; r < rows.length; r++) {
+    const cols = rows[r];
+    const name = cols[nameI]?.trim();
+    if (!name) continue;
+
+    const price = priceI >= 0 ? parseFloat(cols[priceI] || '0') : 0;
+    const oldRaw = oldI >= 0 ? cols[oldI] : '';
+    const old_price =
+      oldRaw === '' || oldRaw == null ? null : Number.isFinite(parseFloat(oldRaw)) ? parseFloat(oldRaw) : null;
+
+    let stock_status: StockStatus = 'in_stock';
+    const stockVal = (stockI >= 0 ? cols[stockI] : '')?.toLowerCase() || 'in_stock';
+    if (stockVal === 'limited' || stockVal === 'out_of_stock' || stockVal === 'in_stock') {
+      stock_status = stockVal;
+    }
+
+    out.push({
+      name,
+      description: descI >= 0 ? cols[descI] || '' : '',
+      price: Number.isFinite(price) ? price : 0,
+      old_price,
+      category: catI >= 0 ? cols[catI] || 'General' : 'General',
+      image_url: imgI >= 0 && cols[imgI] ? cols[imgI] : '/placeholder.svg',
+      is_active: parseBool(activeI >= 0 ? cols[activeI] : undefined, true),
+      is_featured: parseBool(featI >= 0 ? cols[featI] : undefined, false),
+      stock_status,
+      requirements: { require_email: false, require_password: false },
+      manual_fulfillment: parseBool(manualI >= 0 ? cols[manualI] : undefined, true),
+      use_variant_pricing: false,
+    });
+  }
+
+  if (!out.length) throw new Error('No valid product rows found in CSV');
+  return out;
+}
+
 const AdminProducts = () => {
   const { formatPrice } = useCurrency();
+  const { toast } = useToast();
   const { data: products = [], isLoading } = useProducts(true); // Include inactive
   const { data: allPricingPlans = [] } = useAllPricingPlans();
   const { data: allProductImages = [] } = useAllProductImages();
   const addProduct = useAddProduct();
+  const bulkAddProducts = useBulkAddProducts();
   const { data: allPricingPlanVariants = [], isLoading: variantsLoading } = usePricingPlanVariants();
 
   const updateProduct = useUpdateProduct();
@@ -102,6 +214,10 @@ const AdminProducts = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importPreview, setImportPreview] = useState<ProductFormData[]>([]);
+  const [importError, setImportError] = useState<string | null>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
@@ -459,15 +575,59 @@ const AdminProducts = () => {
 
   const isSubmitting = addProduct.isPending || updateProduct.isPending || addPricingPlan.isPending || addProductImage.isPending || addPricingPlanVariant.isPending;
 
+  const downloadCsvTemplate = () => {
+    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'snippy-products-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCsvFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportError(null);
+    try {
+      const text = await file.text();
+      const rows = parseCsv(text);
+      const parsed = rowsToProducts(rows);
+      setImportPreview(parsed);
+    } catch (err) {
+      setImportPreview([]);
+      setImportError(err instanceof Error ? err.message : 'Failed to parse CSV');
+    }
+    e.target.value = '';
+  };
+
+  const handleConfirmImport = async () => {
+    if (!importPreview.length) return;
+    try {
+      await bulkAddProducts.mutateAsync(importPreview);
+      setImportPreview([]);
+      setIsImportOpen(false);
+    } catch {
+      /* toast handled in hook */
+    }
+  };
+
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Products</h1>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+          <p className="text-muted-foreground">
+            Manage your catalog · {products.length} products · CSV bulk import for 50+
+          </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Import CSV
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="hero" onClick={() => handleOpenDialog()}>
               <Plus className="w-4 h-4 mr-2" />
@@ -906,7 +1066,91 @@ const AdminProducts = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
+      {/* CSV bulk import */}
+      <Dialog
+        open={isImportOpen}
+        onOpenChange={(open) => {
+          setIsImportOpen(open);
+          if (!open) {
+            setImportPreview([]);
+            setImportError(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Import products (CSV)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Best way to add 50+ products: fill the template in Excel/Google Sheets, export CSV, upload here.
+              Plans/variants can still be edited per product after import.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" onClick={downloadCsvTemplate}>
+                <Download className="w-4 h-4 mr-2" />
+                Download template
+              </Button>
+              <Button type="button" variant="outline" onClick={() => csvInputRef.current?.click()}>
+                <Upload className="w-4 h-4 mr-2" />
+                Choose CSV
+              </Button>
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleCsvFile}
+              />
+            </div>
+            <div className="text-[11px] text-muted-foreground p-3 rounded-xl bg-secondary/40 border border-border font-mono leading-relaxed">
+              Columns: name*, description, price, old_price, category, image_url,
+              stock_status (in_stock|limited|out_of_stock), is_featured, is_active, manual_fulfillment
+            </div>
+            {importError && (
+              <p className="text-sm text-destructive font-medium">{importError}</p>
+            )}
+            {importPreview.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-foreground">
+                  Preview: {importPreview.length} product{importPreview.length === 1 ? '' : 's'}
+                </p>
+                <div className="max-h-48 overflow-y-auto rounded-xl border border-border divide-y divide-border">
+                  {importPreview.slice(0, 20).map((p, i) => (
+                    <div key={`${p.name}-${i}`} className="px-3 py-2 text-xs flex justify-between gap-2">
+                      <span className="font-medium text-foreground truncate">{p.name}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        {p.category} · {formatPrice(p.price)}
+                      </span>
+                    </div>
+                  ))}
+                  {importPreview.length > 20 && (
+                    <p className="px-3 py-2 text-xs text-muted-foreground">
+                      +{importPreview.length - 20} more…
+                    </p>
+                  )}
+                </div>
+                <Button
+                  variant="hero"
+                  className="w-full"
+                  disabled={bulkAddProducts.isPending}
+                  onClick={handleConfirmImport}
+                >
+                  {bulkAddProducts.isPending ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  )}
+                  Import {importPreview.length} products
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Search */}
       <div className="relative max-w-md mb-6">

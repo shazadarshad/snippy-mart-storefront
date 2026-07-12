@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   Search,
   X,
   Package,
   ArrowUpDown,
   Star,
-  Zap,
   LayoutGrid,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,7 +23,6 @@ import { cn } from '@/lib/utils';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '@/components/seo/SEO';
-import ClaudePromo from '@/components/ClaudePromo';
 
 type SortKey = 'featured' | 'price_asc' | 'price_desc' | 'name' | 'newest';
 type StockFilter = 'all' | 'in_stock' | 'limited' | 'out_of_stock';
@@ -142,35 +139,19 @@ const ProductsPage = () => {
       />
 
       <div className="container mx-auto px-4">
-        {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
-                <LayoutGrid className="w-3 h-3" />
-                Product vault
-              </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black text-foreground tracking-tight mb-2">
-                Shop digital <span className="gradient-text">access</span>
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
-                {isLoading
-                  ? 'Loading catalogue…'
-                  : `${products.length} products · ${inStockCount} in stock · ${featuredCount} featured`}
-              </p>
-            </div>
-            <Button
-              className="w-full sm:w-auto h-11 rounded-xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shrink-0"
-              asChild
-            >
-              <Link to="/claude">
-                <Zap className="w-4 h-4 mr-2" />
-                Claude Team
-              </Link>
-            </Button>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
+            <LayoutGrid className="w-3 h-3" />
+            Product vault
           </div>
-
-          <ClaudePromo variant="banner" className="mb-2" />
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black text-foreground tracking-tight mb-2">
+            Shop digital <span className="gradient-text">access</span>
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+            {isLoading
+              ? 'Loading catalogue…'
+              : `${products.length} products · ${inStockCount} in stock · ${featuredCount} featured`}
+          </p>
         </div>
 
         {/* Toolbar */}
@@ -180,7 +161,7 @@ const ProductsPage = () => {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search products, categories, AI, streaming…"
+                placeholder="Search products, categories…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-10 h-11 sm:h-12 rounded-xl bg-card border-border text-sm sm:text-base"
@@ -283,7 +264,6 @@ const ProductsPage = () => {
           </div>
         </div>
 
-        {/* Grid */}
         {isLoading ? (
           <ProductsGridSkeleton count={8} />
         ) : filteredProducts.length > 0 ? (
@@ -309,22 +289,11 @@ const ProductsPage = () => {
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">No products match</h3>
             <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-              Try another search or category — or check out Claude Team while you&apos;re here.
+              Try another search or category.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-              <Button variant="outline" onClick={clearFilters}>
-                Clear filters
-              </Button>
-              <Button
-                className="bg-gradient-to-r from-orange-500 to-amber-500 text-white"
-                asChild
-              >
-                <Link to="/claude">
-                  <Zap className="w-4 h-4 mr-2" />
-                  Get Claude
-                </Link>
-              </Button>
-            </div>
+            <Button variant="outline" onClick={clearFilters}>
+              Clear filters
+            </Button>
           </div>
         )}
 
@@ -340,11 +309,6 @@ const ProductsPage = () => {
             </div>
           </div>
         )}
-
-        {/* Bottom Claude CTA */}
-        <div className="mt-12 max-w-2xl mx-auto">
-          <ClaudePromo variant="compact" />
-        </div>
       </div>
 
       <ProductDetailModal

@@ -11,10 +11,9 @@ const Footer = () => {
   const quickLinks = [
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
-    { name: 'Claude Team', path: '/claude' },
-    { name: 'Track Order', path: '/track-order' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
+    { name: 'Track Order', path: '/track-order' },
   ];
 
   const supportLinks = [
@@ -26,12 +25,10 @@ const Footer = () => {
 
   return (
     <footer className="relative border-t border-border bg-card/30 backdrop-blur-lg overflow-hidden">
-      {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 pointer-events-none" />
 
       <div className="container mx-auto px-4 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8">
-          {/* Brand */}
           <div className="lg:col-span-5 space-y-6">
             <Link to="/" className="flex items-center gap-2 group w-fit">
               {logoUrl ? (
@@ -48,7 +45,8 @@ const Footer = () => {
               <span className="text-2xl font-display font-black text-foreground tracking-tight">
                 {storeName.includes(' ') ? (
                   <>
-                    {storeName.split(' ')[0]}<span className="gradient-text">{storeName.split(' ').slice(1).join(' ')}</span>
+                    {storeName.split(' ')[0]}
+                    <span className="gradient-text">{storeName.split(' ').slice(1).join(' ')}</span>
                   </>
                 ) : (
                   storeName
@@ -56,29 +54,22 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-muted-foreground max-w-sm text-base sm:text-lg leading-relaxed">
-              Premium digital access — Claude Team, AI tools, streaming & more. Bank checkout,
-              live tracking, WhatsApp support.
+              Your trusted destination for premium digital subscriptions at fair prices. Secure
+              checkout, live tracking, reliable delivery.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/claude"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold hover:opacity-95 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-orange-500/20"
-              >
-                Get Claude
-              </Link>
+            <div className="flex gap-4">
               <a
                 href="https://wa.me/94787767869"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white font-bold hover:bg-[#22c55e] transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#25d366]/20"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white font-bold hover:bg-[#22c55e] transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#25d366]/20"
               >
                 <MessageCircle className="w-5 h-5" />
-                WhatsApp
+                Chat on WhatsApp
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
           <div className="lg:col-span-3 lg:col-start-7">
             <h4 className="font-bold text-foreground mb-6 text-lg">Quick Access</h4>
             <ul className="space-y-4">
@@ -96,7 +87,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support */}
           <div className="lg:col-span-3">
             <h4 className="font-bold text-foreground mb-6 text-lg">Support</h4>
             <ul className="space-y-4">
@@ -115,34 +105,8 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-border/50">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-sm text-muted-foreground font-medium">
-              © {currentYear} {storeName}. All rights reserved.
-            </p>
-
-            {/* DMCA Badge */}
-            <div className="flex items-center">
-              <a
-                href="//www.dmca.com/Protection/Status.aspx?ID=0a993e42-3372-4b7b-bd4c-889fc5b93577"
-                title="DMCA.com Protection Status"
-                className="dmca-badge transition-all hover:scale-105 active:scale-95 opacity-80 hover:opacity-100"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  src="https://images.dmca.com/Badges/dmca-badge-w100-5x1-11.png?ID=0a993e42-3372-4b7b-bd4c-889fc5b93577"
-                  alt="DMCA.com Protection Status"
-                  className="h-8 w-auto"
-                />
-              </a>
-            </div>
-
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              Made with <span className="text-red-500 animate-pulse">❤️</span> for digital enthusiasts
-            </p>
-          </div>
+        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <p>© {currentYear} {storeName}. All rights reserved.</p>
         </div>
       </div>
     </footer>
