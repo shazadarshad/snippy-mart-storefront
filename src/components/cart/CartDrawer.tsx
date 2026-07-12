@@ -41,20 +41,24 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 right-0 h-full w-full sm:max-w-md bg-background/95 backdrop-blur-3xl border-l border-white/10 z-50 transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) flex flex-col shadow-2xl',
+          'fixed top-0 right-0 h-full w-full sm:max-w-md bg-background/95 backdrop-blur-2xl border-l border-border z-50 transition-transform duration-500 ease-out flex flex-col shadow-2xl',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <ShoppingBag className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Your Cart</h2>
-            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-secondary text-muted-foreground">
-              {items.length} items
-            </span>
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <ShoppingBag className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-foreground">Your cart</h2>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                {items.length} item{items.length === 1 ? '' : 's'}
+              </p>
+            </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" className="rounded-xl" onClick={onClose}>
             <X className="w-5 h-5" />
           </Button>
         </div>

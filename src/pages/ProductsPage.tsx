@@ -131,23 +131,23 @@ const ProductsPage = () => {
     !!searchQuery || !!selectedCategory || stockFilter !== 'all' || sortKey !== 'featured';
 
   return (
-    <div className="min-h-screen pt-20 pb-16 lg:pt-28">
+    <div className="min-h-screen page-mesh pb-16">
       <SEO
         title="Products"
         description="Browse premium digital subscriptions — AI tools, streaming, design software. Fair prices, bank checkout, live tracking."
         type="website"
       />
 
-      <div className="container mx-auto px-4">
-        <div className="mb-6 sm:mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
+      <div className="container mx-auto px-4 pt-20 lg:pt-24">
+        <div className="mb-6 sm:mb-8 max-w-2xl">
+          <p className="page-eyebrow mb-3">
             <LayoutGrid className="w-3 h-3" />
             Product vault
-          </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black text-foreground tracking-tight mb-2">
+          </p>
+          <h1 className="page-title mb-2">
             Shop digital <span className="gradient-text">access</span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+          <p className="page-lead">
             {isLoading
               ? 'Loading catalogue…'
               : `${products.length} products · ${inStockCount} in stock · ${featuredCount} featured`}
@@ -155,7 +155,7 @@ const ProductsPage = () => {
         </div>
 
         {/* Toolbar */}
-        <div className="sticky top-14 lg:top-16 z-30 -mx-4 px-4 py-3 mb-6 bg-background/90 backdrop-blur-xl border-b border-border/60">
+        <div className="sticky top-14 lg:top-16 z-30 -mx-4 px-4 py-3 mb-6 bg-background/90 backdrop-blur-xl border-y border-border/50">
           <div className="flex flex-col gap-3 max-w-[1400px] mx-auto">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

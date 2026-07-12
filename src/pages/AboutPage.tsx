@@ -1,177 +1,136 @@
 import { Shield, Target, Heart, Users, Award, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import SEO from '@/components/seo/SEO';
+import PageHero from '@/components/layout/PageHero';
+import { Button } from '@/components/ui/button';
 
 const AboutPage = () => {
   const values = [
     {
       icon: Shield,
-      title: 'Trust & Security',
-      description: 'Your security is our priority. All transactions are encrypted and your data is protected.',
+      title: 'Trust & security',
+      description: 'Encrypted transactions and careful handling of your order data.',
     },
     {
       icon: Heart,
-      title: 'Customer First',
-      description: 'We put our customers at the heart of everything we do, ensuring satisfaction at every step.',
+      title: 'Customer first',
+      description: 'Clear statuses, WhatsApp support, and help when something goes wrong.',
     },
     {
       icon: Zap,
-      title: 'Instant Delivery',
-      description: 'No waiting. Get your subscription details delivered within minutes of purchase.',
+      title: 'Fast delivery',
+      description: 'Most digital products delivered shortly after payment is confirmed.',
     },
     {
       icon: Award,
-      title: 'Quality Assurance',
-      description: 'We only offer genuine, premium subscriptions that meet our high standards.',
+      title: 'Quality focus',
+      description: 'We list products we can support — not endless junk listings.',
     },
   ];
 
   const stats = [
-    { value: '10,000+', label: 'Happy Customers' },
-    { value: '50+', label: 'Premium Products' },
-    { value: '99.9%', label: 'Uptime Guarantee' },
-    { value: '24/7', label: 'Support Available' },
+    { value: '10K+', label: 'Orders served' },
+    { value: '50+', label: 'Products' },
+    { value: '24/7', label: 'WhatsApp help' },
+    { value: 'Live', label: 'Order tracking' },
   ];
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
+    <div className="min-h-screen page-mesh pb-16 sm:pb-20">
       <SEO
         title="About Us"
-        description="Learn about Snippy Mart's mission to provide affordable, premium digital subscriptions with instant delivery and exceptional support."
+        description="Learn about Snippy Mart — affordable premium digital subscriptions with secure checkout and support."
       />
-      {/* Hero */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-6">
-              About <span className="gradient-text">Snippy Mart</span>
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              We're on a mission to make premium digital subscriptions accessible to everyone.
-              Founded with the belief that quality digital services shouldn't break the bank,
-              Snippy Mart has grown to become a trusted destination for thousands of customers worldwide.
+
+      <PageHero
+        eyebrow="Our story"
+        title={
+          <>
+            About <span className="gradient-text">Snippy Mart</span>
+          </>
+        }
+        description="We make premium digital subscriptions accessible — fair pricing, transparent checkout, and human support."
+      />
+
+      <section className="container mx-auto px-4 pb-14">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+          {stats.map((s) => (
+            <div key={s.label} className="surface-card p-4 sm:p-5 text-center">
+              <p className="text-xl sm:text-2xl font-display font-black text-foreground">{s.value}</p>
+              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
+          <div className="surface-card p-6 sm:p-8">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+              <Target className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-display font-bold text-foreground mb-3">Mission</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Democratize access to premium digital tools with affordable pricing, without cutting
+              corners on support or delivery quality.
+            </p>
+          </div>
+          <div className="surface-card p-6 sm:p-8">
+            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
+              <Users className="w-5 h-5 text-accent" />
+            </div>
+            <h2 className="text-xl font-display font-bold text-foreground mb-3">Vision</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Be the most trusted local-first digital subscription mart — simple to buy, easy to
+              track, and reliable when you need help.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <section className="py-16 bg-secondary/20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="p-8 rounded-2xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <Target className="w-6 h-6 text-primary" />
+      <section className="container mx-auto px-4 pb-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-display font-black text-foreground">
+            What we <span className="gradient-text">stand for</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          {values.map((v) => (
+            <div key={v.title} className="surface-card-interactive p-5 sm:p-6">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                <v.icon className="w-5 h-5 text-primary" />
               </div>
-              <h2 className="text-2xl font-display font-bold text-foreground mb-4">Our Mission</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                To democratize access to premium digital subscriptions by offering them at
-                affordable prices without compromising on quality or service. We believe
-                everyone deserves access to the best digital tools and entertainment.
-              </p>
+              <h3 className="font-bold text-foreground mb-1.5">{v.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{v.description}</p>
             </div>
-
-            <div className="p-8 rounded-2xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-accent" />
-              </div>
-              <h2 className="text-2xl font-display font-bold text-foreground mb-4">Our Vision</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                To become the world's most trusted platform for digital subscription services,
-                known for our unbeatable prices, instant delivery, and exceptional customer
-                support that treats every customer like family.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center p-6 rounded-2xl bg-card border border-border">
-                <div className="text-3xl md:text-4xl font-display font-bold gradient-text mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+      <section className="container mx-auto px-4 pb-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-display font-black text-foreground mb-2">
+            From our customers
+          </h2>
         </div>
+        <TestimonialCarousel />
       </section>
 
-      {/* Values */}
-      <section className="py-16 bg-secondary/20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-              Our <span className="gradient-text">Values</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              These core values guide everything we do at Snippy Mart.
-            </p>
+      <section className="container mx-auto px-4">
+        <div className="surface-card p-8 text-center max-w-xl mx-auto">
+          <h3 className="text-xl font-display font-bold text-foreground mb-2">Ready to shop?</h3>
+          <p className="text-sm text-muted-foreground mb-5">Browse the vault or message us anytime.</p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button variant="hero" className="rounded-xl" asChild>
+              <Link to="/products">Browse products</Link>
+            </Button>
+            <Button variant="outline" className="rounded-xl" asChild>
+              <Link to="/contact">Contact</Link>
+            </Button>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((value, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-2xl bg-card border border-border card-hover text-center"
-              >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <value.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{value.title}</h3>
-                <p className="text-sm text-muted-foreground">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Story */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6 text-center">
-              Our <span className="gradient-text">Story</span>
-            </h2>
-            <div className="prose prose-invert max-w-none">
-              <p className="text-muted-foreground leading-relaxed mb-4">
-                Snippy Mart started with a simple observation: premium digital subscriptions are
-                becoming essential for work, education, and entertainment, but their prices keep
-                rising. We saw an opportunity to bridge this gap.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-4">
-                By leveraging partnerships and innovative business models, we created a platform
-                where users can access the same premium services at a fraction of the cost. Our
-                focus on WhatsApp-based communication ensures a personal touch that larger platforms
-                often lack.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Today, we serve thousands of satisfied customers who trust us for their digital
-                subscription needs. As we continue to grow, our commitment remains the same:
-                affordable access, instant delivery, and customer service that cares.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16 bg-card/50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
-              Trusted by <span className="gradient-text">Thousands</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We take pride in our service. Here's what some of our customers have to say.
-            </p>
-          </div>
-          <TestimonialCarousel />
         </div>
       </section>
     </div>

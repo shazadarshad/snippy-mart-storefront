@@ -184,8 +184,46 @@
   }
 
   .glass-navbar {
-    @apply bg-background/70 backdrop-blur-2xl border-b border-border/40;
+    @apply bg-background/75 backdrop-blur-2xl border-b border-border/50 supports-[backdrop-filter]:bg-background/60;
     transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Store redesign surfaces */
+  .page-mesh {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, hsl(var(--primary) / 0.14), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 90% 10%, hsl(var(--accent) / 0.1), transparent 50%),
+      radial-gradient(ellipse 50% 30% at 50% 100%, hsl(var(--primary) / 0.06), transparent 60%);
+  }
+
+  .section-shell {
+    @apply relative py-16 sm:py-20 lg:py-28;
+  }
+
+  .surface-card {
+    @apply rounded-2xl sm:rounded-3xl border border-border/80 bg-card/80 backdrop-blur-sm shadow-sm;
+  }
+
+  .surface-card-interactive {
+    @apply surface-card transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5;
+  }
+
+  .page-eyebrow {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-primary/20 bg-primary/10 text-primary;
+  }
+
+  .page-title {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-black tracking-tight text-foreground text-balance;
+  }
+
+  .page-lead {
+    @apply text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl text-balance;
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 
   .glass-premium {

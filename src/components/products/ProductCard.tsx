@@ -64,8 +64,8 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
         }
       }}
       className={cn(
-        'group relative flex flex-col rounded-2xl sm:rounded-3xl border border-border/80 overflow-hidden bg-card',
-        'shadow-sm hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300',
+        'group relative flex flex-col rounded-2xl sm:rounded-[1.25rem] border border-border/70 overflow-hidden bg-card/90 backdrop-blur-sm',
+        'shadow-sm hover:shadow-xl hover:shadow-primary/8 hover:border-primary/35 transition-all duration-300',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         isOutOfStock ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer active:scale-[0.99]',
         className

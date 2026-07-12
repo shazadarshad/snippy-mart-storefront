@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MessageCircle, Mail, Clock, ChevronDown, Send } from 'lucide-react';
+import { MessageCircle, Mail, Clock, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,214 +12,174 @@ import {
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/seo/SEO';
+import PageHero from '@/components/layout/PageHero';
 
 const ContactPage = () => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
   const faqs = [
     {
       question: 'How do I receive my subscription after purchase?',
-      answer: 'After completing your order, you\'ll receive your subscription details directly on WhatsApp within minutes. This includes login credentials or activation codes depending on the service.',
-    },
-    {
-      question: 'Are these subscriptions genuine?',
-      answer: 'Yes, all subscriptions offered on Snippy Mart are 100% genuine. We partner with authorized distributors to ensure you get authentic service access.',
+      answer:
+        "After payment is confirmed, you'll receive access details via WhatsApp and/or the track-order page, depending on the product.",
     },
     {
       question: 'What payment methods do you accept?',
-      answer: 'We accept various payment methods including bank transfers, digital wallets, and cryptocurrency. Payment instructions are provided after you place your order.',
+      answer:
+        'Bank transfer is the primary method. Upload your receipt at checkout. Other options may be shown depending on the product.',
     },
     {
-      question: 'Can I get a refund if I\'m not satisfied?',
-      answer: 'Yes, we offer a satisfaction guarantee. If there\'s an issue with your subscription, contact us on WhatsApp and we\'ll resolve it or provide a refund within our policy terms.',
+      question: 'How do I track my order?',
+      answer:
+        'Use your Order ID on the Track Order page. Status updates from pending payment → payment confirmed → processing → completed.',
+    },
+    {
+      question: 'Can I get a refund if something fails?',
+      answer:
+        "Yes, within our refund policy. Contact WhatsApp with your Order ID and we'll help resolve issues quickly.",
     },
     {
       question: 'How long do subscriptions last?',
-      answer: 'Subscription durations vary by product, typically ranging from 1 month to 1 year. The duration is clearly mentioned on each product page.',
+      answer:
+        'Durations vary by product (often 1 month to 1 year). Check the plan name on each product before checkout.',
     },
     {
-      question: 'Do you offer group or family plans?',
-      answer: 'Yes, many of our subscriptions include family or team options. Check the product description or contact us for specific details about multi-user plans.',
+      question: 'Do you offer team or family plans?',
+      answer:
+        'Many products include multi-seat options. Check plan variants on the product, or ask us on WhatsApp.',
     },
   ];
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Message sent!",
-      description: "We'll get back to you as soon as possible.",
+      title: 'Message noted',
+      description: 'For fastest reply, also message us on WhatsApp with your Order ID if you have one.',
     });
     setFormData({ name: '', email: '', message: '' });
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
+    <div className="min-h-screen page-mesh pb-16 sm:pb-20">
       <SEO
         title="Contact Us"
-        description="Get in touch with Snippy Mart. We're available 24/7 via WhatsApp and email to help you with your digital subscription needs."
+        description="Contact Snippy Mart via WhatsApp or form. FAQs on delivery, payments, tracking, and refunds."
       />
-      {/* Hero */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-6">
-              Get in <span className="gradient-text">Touch</span>
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Have questions? We'd love to hear from you. Our team is here to help.
-            </p>
-          </div>
-        </div>
-      </section>
 
-      {/* Contact Methods */}
-      <section className="pb-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <a
-              href="https://wa.me/94787767869"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-6 rounded-2xl bg-card border border-border card-hover text-center group"
-            >
-              <div className="w-14 h-14 rounded-xl bg-[#25D366]/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-[#25D366]/20 transition-colors">
-                <MessageCircle className="w-7 h-7 text-[#25D366]" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">WhatsApp</h3>
-              <p className="text-sm text-muted-foreground">Fastest response</p>
-              <p className="text-sm text-primary mt-2">+94 78 776 7869</p>
-            </a>
+      <PageHero
+        eyebrow="Support"
+        title={
+          <>
+            Get in <span className="gradient-text">touch</span>
+          </>
+        }
+        description="WhatsApp is fastest. Or send a message below — include your Order ID if you have one."
+      />
 
-            <div className="p-6 rounded-2xl bg-card border border-border text-center">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-7 h-7 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Email</h3>
-              <p className="text-sm text-muted-foreground">For detailed inquiries</p>
-              <p className="text-sm text-primary mt-2">snippymartco@gmail.com</p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-card border border-border text-center">
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-7 h-7 text-accent" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Support Hours</h3>
-              <p className="text-sm text-muted-foreground">We're available</p>
-              <p className="text-sm text-primary mt-2">24/7, Always</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Form & FAQ */}
-      <section className="py-16 bg-secondary/20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            {/* Contact Form */}
-            <div>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
-                Send us a Message
-              </h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="text-foreground">Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Your name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="mt-1.5 h-12 bg-card border-border"
-                    required
-                  />
+      <section className="container mx-auto px-4 pb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl mx-auto mb-12">
+          {[
+            {
+              icon: MessageCircle,
+              t: 'WhatsApp',
+              d: '+94 78 776 7869',
+              href: 'https://wa.me/94787767869',
+            },
+            { icon: Mail, t: 'Email', d: 'Via contact form', href: '#form' },
+            { icon: Clock, t: 'Hours', d: 'Usually 24/7 replies', href: undefined },
+          ].map((c) => {
+            const inner = (
+              <div className="surface-card-interactive p-5 h-full">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <c.icon className="w-5 h-5 text-primary" />
                 </div>
-                <div>
-                  <Label htmlFor="email" className="text-foreground">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="mt-1.5 h-12 bg-card border-border"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="message" className="text-foreground">Message</Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    placeholder="How can we help you?"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    className="mt-1.5 bg-card border-border min-h-[150px]"
-                    required
-                  />
-                </div>
-                <Button type="submit" variant="hero" size="lg" className="w-full">
-                  Send Message
-                  <Send className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
-            </div>
-
-            {/* FAQ */}
-            <div id="faq">
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
-                Frequently Asked Questions
-              </h2>
-              <Accordion type="single" collapsible className="space-y-3">
-                {faqs.map((faq, index) => (
-                  <AccordionItem
-                    key={index}
-                    value={`item-${index}`}
-                    className="bg-card border border-border rounded-xl px-4 data-[state=open]:border-primary/50"
-                  >
-                    <AccordionTrigger className="text-left hover:no-underline py-4 text-foreground">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-4">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* WhatsApp CTA */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4">
-              Prefer instant support?
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Get immediate assistance from our team on WhatsApp. We're available 24/7 to help with any questions.
-            </p>
-            <Button variant="whatsapp" size="xl" asChild>
-              <a href="https://wa.me/94787767869" target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Chat on WhatsApp Now
+                <p className="font-bold text-foreground text-sm">{c.t}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{c.d}</p>
+              </div>
+            );
+            return c.href?.startsWith('http') ? (
+              <a key={c.t} href={c.href} target="_blank" rel="noopener noreferrer">
+                {inner}
               </a>
-            </Button>
+            ) : (
+              <div key={c.t}>{inner}</div>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div id="form" className="surface-card p-6 sm:p-8 scroll-mt-24">
+            <h2 className="text-lg font-display font-bold text-foreground mb-1">Send a message</h2>
+            <p className="text-xs text-muted-foreground mb-6">
+              We read every message. WhatsApp is still quicker for order issues.
+            </p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                  className="h-11 rounded-xl"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                  className="h-11 rounded-xl"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={(e) => setFormData((p) => ({ ...p, message: e.target.value }))}
+                  className="min-h-[120px] rounded-xl"
+                  required
+                />
+              </div>
+              <Button type="submit" variant="hero" className="w-full h-11 rounded-xl font-bold">
+                <Send className="w-4 h-4 mr-2" />
+                Send message
+              </Button>
+              <Button type="button" variant="whatsapp" className="w-full h-11 rounded-xl font-bold" asChild>
+                <a href="https://wa.me/94787767869" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Prefer WhatsApp
+                </a>
+              </Button>
+            </form>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-display font-bold text-foreground mb-4">FAQs</h2>
+            <Accordion type="single" collapsible className="space-y-2">
+              {faqs.map((faq, i) => (
+                <AccordionItem
+                  key={faq.question}
+                  value={`faq-${i}`}
+                  className="surface-card px-4 border data-[state=open]:border-primary/25"
+                >
+                  <AccordionTrigger className="text-left text-sm font-semibold hover:no-underline py-4">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>
