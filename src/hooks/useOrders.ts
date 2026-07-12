@@ -25,6 +25,7 @@ export interface Order {
   customer_name: string;
   customer_whatsapp: string;
   total_amount: number;
+  discount_amount?: number;
   status: OrderStatus;
   notes: string | null;
   payment_method: 'bank_transfer' | 'binance_usdt' | 'card' | null;
@@ -310,10 +311,18 @@ export const useTrackOrder = (query: string) => {
           id,
           order_number,
           customer_name,
+          customer_whatsapp,
           total_amount,
+          discount_amount,
           status,
+          notes,
           created_at,
+          updated_at,
           payment_method,
+          payment_proof_url,
+          currency_code,
+          currency_symbol,
+          currency_rate,
           order_items (*)
         `);
 

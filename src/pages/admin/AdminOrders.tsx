@@ -44,6 +44,12 @@ import {
   statusForClaudeStage,
   type ClaudeWorkflowStage,
 } from '@/lib/claudePreorder';
+import {
+  ORDER_STATUS_ADMIN_OPTIONS,
+  adminStatusLabel,
+  getDefaultStatusMessage,
+  getOrderStatusDisplay,
+} from '@/lib/orderStatus';
 
 // Sub-component for Manual Assignment
 const ManualAssignmentPanel = ({ order }: { order: Order }) => {
@@ -143,16 +149,7 @@ const AdminOrders = () => {
   });
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-success/10 text-success border-success/20';
-      case 'processing': return 'bg-primary/10 text-primary border-primary/20';
-      case 'shipping': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
-      case 'on_hold': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
-      case 'refunded': return 'bg-muted text-muted-foreground border-border';
-      default: return 'bg-muted text-muted-foreground border-border';
-    }
+    return getOrderStatusDisplay(status).color;
   };
 
   const getCountryFlag = (country: string | null) => {
@@ -277,11 +274,7 @@ const AdminOrders = () => {
     setStatusUpdate({
       order,
       newStatus,
-      message: newStatus === 'completed'
-        ? 'Your subscription is ready! Check the details below.'
-        : newStatus === 'cancelled'
-          ? 'We are sorry, but your payment could not be verified.'
-          : `Your order status has been updated to ${newStatus}.`
+      message: getDefaultStatusMessage(newStatus),
     });
   };
 
@@ -305,7 +298,7 @@ const AdminOrders = () => {
 
       toast({
         title: 'Status updated & Email sent',
-        description: `Order ${statusUpdate.order.order_number} is now ${statusUpdate.newStatus}.`,
+        description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(statusUpdate.newStatus)}.`,
       });
       setStatusUpdate(null);
     } catch (error: any) {
@@ -470,14 +463,12 @@ const AdminOrders = () => {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="shipping">Shipping</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="on_hold">On Hold</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-            <SelectItem value="refunded">Refunded</SelectItem>
+            <SelectItem value="all">All status</SelectItem>
+            {ORDER_STATUS_ADMIN_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as 'all' | 'claude' | 'standard')}>
@@ -598,22 +589,23 @@ const AdminOrders = () => {
                           value={order.status}
                           onValueChange={(value) => handleStatusChange(order.id, value as OrderStatus)}
                         >
-                          <SelectTrigger className={`w-32 h-8 text-[11px] font-bold uppercase tracking-wider ${getStatusColor(order.status)}`}>
-                            <SelectValue />
+                          <SelectTrigger className={`w-44 h-9 text-[11px] font-bold ${getStatusColor(order.status)}`}>
+                            <SelectValue placeholder={adminStatusLabel(order.status)} />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="shipping">Shipping</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="on_hold">On Hold</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                            <SelectItem value="refunded">Refunded</SelectItem>
+                          <SelectContent className="max-w-[280px]">
+                            {ORDER_STATUS_ADMIN_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value} className="py-2">
+                                <span className="font-bold">{opt.label}</span>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
+                        <p className="text-[10px] font-bold text-muted-foreground">
+                          {adminStatusLabel(order.status)}
+                        </p>
                         {claude && (
                           <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wide">
-                            {claudeStageLabel(claude.stage)}
+                            {claudeStageLabel(claude.stage, claude.paymentMode)}
                           </p>
                         )}
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium uppercase">
@@ -745,13 +737,11 @@ const AdminOrders = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipping">Shipping</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="on_hold">On Hold</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                        <SelectItem value="refunded">Refunded</SelectItem>
+                        {ORDER_STATUS_ADMIN_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
 
@@ -1420,14 +1410,28 @@ const AdminOrders = () => {
               Confirm Status Change
             </DialogTitle>
             <DialogDescription>
-              Update <strong>{statusUpdate?.order.order_number}</strong> to <strong>{statusUpdate?.newStatus}</strong>?
-              This will automatically send a notification email to the customer.
+              Update <strong>{statusUpdate?.order.order_number}</strong> to{' '}
+              <strong>{statusUpdate ? adminStatusLabel(statusUpdate.newStatus) : ''}</strong>?
+              This notifies the customer (email when available). Track page will show the new status.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {statusUpdate && (
+              <div className="p-3 rounded-xl bg-secondary/40 border border-border text-sm">
+                <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">
+                  Customer will see
+                </p>
+                <p className="font-bold text-foreground">
+                  {getOrderStatusDisplay(statusUpdate.newStatus).title}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {getOrderStatusDisplay(statusUpdate.newStatus).description}
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="status-message">Custom message for customer (optional)</Label>
+              <Label htmlFor="status-message">Message for customer (email)</Label>
               <Textarea
                 id="status-message"
                 placeholder="Type a message to include in the email..."
