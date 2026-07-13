@@ -57,6 +57,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn, getCountry } from '@/lib/utils';
 import {
   type AutoProduct,
+  type AutoProductGroup,
   type DeliveredAccount,
   fetchAutoProducts,
   purchaseAutoProduct,
@@ -66,8 +67,10 @@ import {
   productImageUrl,
   formatLkr,
   getProductPromotions,
-  categorizeProduct,
+  groupAutoProducts,
+  variantLabel,
   accountLines,
+  AUTO_USD_TO_LKR,
 } from '@/lib/autoBuyer';
 
 type StockFilter = 'all' | 'in_stock' | 'out';
@@ -84,8 +87,11 @@ const AutoPage = () => {
   const [category, setCategory] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [sortKey, setSortKey] = useState<SortKey>('order');
+  /** Selected variant id per group key (for card UI) */
+  const [cardVariantId, setCardVariantId] = useState<Record<string, string>>({});
 
   const [buyProduct, setBuyProduct] = useState<AutoProduct | null>(null);
+  const [buyGroup, setBuyGroup] = useState<AutoProductGroup | null>(null);
   const [qty, setQty] = useState(1);
   const [customerEmail, setCustomerEmail] = useState('');
   const [slotMonths, setSlotMonths] = useState<number | null>(null);
@@ -113,54 +119,65 @@ const AutoPage = () => {
   });
 
   const products = productsQuery.data ?? [];
+  const groups = useMemo(() => groupAutoProducts(products), [products]);
 
   const categories = useMemo(() => {
     const map = new Map<string, number>();
-    for (const p of products) {
-      const c = categorizeProduct(p.product_name || '');
-      map.set(c, (map.get(c) || 0) + 1);
+    for (const g of groups) {
+      map.set(g.category, (map.get(g.category) || 0) + 1);
     }
     return Array.from(map.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  }, [products]);
+  }, [groups]);
 
-  const filtered = useMemo(() => {
+  const filteredGroups = useMemo(() => {
     const q = search.trim().toLowerCase();
-    let list = products.filter((p) => {
-      if (!p?._id) return false;
-      const pname = p.product_name || '';
-      const desc = p.description || '';
-      const cat = categorizeProduct(pname);
-      const avail = productAvailable(p);
-      if (category !== 'all' && cat !== category) return false;
-      if (stockFilter === 'in_stock' && avail <= 0) return false;
-      if (stockFilter === 'out' && avail > 0) return false;
-      if (q && !`${pname} ${desc} ${cat}`.toLowerCase().includes(q)) return false;
+    let list = groups.filter((g) => {
+      if (category !== 'all' && g.category !== category) return false;
+      if (stockFilter === 'in_stock' && g.totalAvailable <= 0) return false;
+      if (stockFilter === 'out' && g.totalAvailable > 0) return false;
+      if (q) {
+        const hay = [
+          g.title,
+          g.description,
+          g.category,
+          ...g.variants.map((v) => v.product_name),
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       return true;
     });
 
     list = [...list].sort((a, b) => {
       switch (sortKey) {
         case 'price_asc':
-          return productLkrPrice(a) - productLkrPrice(b);
+          return a.minLkr - b.minLkr;
         case 'price_desc':
-          return productLkrPrice(b) - productLkrPrice(a);
+          return b.maxLkr - a.maxLkr;
         case 'stock':
-          return productAvailable(b) - productAvailable(a);
+          return b.totalAvailable - a.totalAvailable;
         case 'name':
-          return (a.product_name || '').localeCompare(b.product_name || '');
+          return a.title.localeCompare(b.title);
         default:
-          return (a.displayOrder ?? 999) - (b.displayOrder ?? 999);
+          return (a.defaultVariant.displayOrder ?? 999) - (b.defaultVariant.displayOrder ?? 999);
       }
     });
     return list;
-  }, [products, search, category, stockFilter, sortKey]);
+  }, [groups, search, category, stockFilter, sortKey]);
 
   const inStockCount = products.filter((p) => productAvailable(p) > 0).length;
 
-  const openBuy = useCallback((p: AutoProduct) => {
+  const resolveCardVariant = (g: AutoProductGroup): AutoProduct => {
+    const id = cardVariantId[g.key];
+    return g.variants.find((v) => v._id === id) || g.defaultVariant;
+  };
+
+  const openBuy = useCallback((p: AutoProduct, group?: AutoProductGroup | null) => {
     setBuyProduct(p);
+    setBuyGroup(group || null);
     setQty(typeof p.quantityFixed === 'number' && p.quantityFixed > 0 ? p.quantityFixed : 1);
     setCustomerEmail('');
     const durations = p.slotDurations?.filter((d) => Number.isFinite(d) && d > 0) ?? [];
@@ -172,9 +189,20 @@ const AutoPage = () => {
     orderIdRef.current = generateOrderId();
   }, []);
 
+  const selectBuyVariant = (variantId: string) => {
+    if (!buyGroup) return;
+    const v = buyGroup.variants.find((x) => x._id === variantId);
+    if (!v) return;
+    setBuyProduct(v);
+    setQty(typeof v.quantityFixed === 'number' && v.quantityFixed > 0 ? v.quantityFixed : 1);
+    const durations = v.slotDurations?.filter((d) => Number.isFinite(d) && d > 0) ?? [];
+    setSlotMonths(v.requiresSlotMonths || v.isSlotProduct ? durations[0] ?? 1 : null);
+  };
+
   const closeBuy = () => {
     if (submitting) return;
     setBuyProduct(null);
+    setBuyGroup(null);
     setDelivery(null);
   };
 
@@ -446,7 +474,7 @@ const AutoPage = () => {
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card/60 px-2.5 py-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-primary" />
-                    Prices in LKR
+                    LKR = API $ × {AUTO_USD_TO_LKR}
                   </span>
                 </div>
               </div>
@@ -458,9 +486,11 @@ const AutoPage = () => {
                     Products
                   </div>
                   <div className="mt-1 text-lg font-semibold tabular-nums">
-                    {loading ? '…' : products.length}
+                    {loading ? '…' : groups.length}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">{inStockCount} in stock</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {products.length} options · {inStockCount} in stock
+                  </div>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur">
                   <Button
@@ -541,7 +571,7 @@ const AutoPage = () => {
                     : 'border-border bg-card hover:border-primary/40'
                 )}
               >
-                All ({products.length})
+                All ({groups.length})
               </button>
               {categories.map((c) => (
                 <button
@@ -585,14 +615,14 @@ const AutoPage = () => {
             </div>
           )}
 
-          {!loading && !errorMsg && filtered.length === 0 && (
+          {!loading && !errorMsg && filteredGroups.length === 0 && (
             <div className="py-20 text-center text-muted-foreground">
               <Package className="mx-auto mb-3 h-10 w-10 opacity-40" />
               No products match your filters.
             </div>
           )}
 
-          {!loading && !errorMsg && filtered.length > 0 && (
+          {!loading && !errorMsg && filteredGroups.length > 0 && (
             <motion.div
               className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
               initial="hidden"
@@ -602,18 +632,17 @@ const AutoPage = () => {
                 visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
               }}
             >
-              {filtered.map((p) => {
-                if (!p?._id) return null;
-                const avail = productAvailable(p);
-                const lkr = productLkrPrice(p);
-                const img = productImageUrl(p);
-                const promos = getProductPromotions(p);
-                const out = avail <= 0;
-                const cat = categorizeProduct(p.product_name || '');
+              {filteredGroups.map((g) => {
+                const selected = resolveCardVariant(g);
+                const avail = productAvailable(selected);
+                const lkr = productLkrPrice(selected);
+                const multi = g.variants.length > 1;
+                const out = g.totalAvailable <= 0;
+                const promos = getProductPromotions(selected);
 
                 return (
                   <motion.article
-                    key={p._id}
+                    key={g.key}
                     variants={{
                       hidden: { opacity: 0, y: 12 },
                       visible: { opacity: 1, y: 0 },
@@ -624,9 +653,9 @@ const AutoPage = () => {
                     )}
                   >
                     <div className="relative flex h-28 items-center justify-center overflow-hidden bg-gradient-to-br from-primary/10 via-accent/5 to-transparent">
-                      {img ? (
+                      {g.image ? (
                         <img
-                          src={img}
+                          src={g.image}
                           alt=""
                           className="h-full w-full object-cover opacity-90 transition group-hover:scale-105"
                           loading="lazy"
@@ -637,10 +666,15 @@ const AutoPage = () => {
                       ) : (
                         <Package className="h-10 w-10 text-primary/40" />
                       )}
-                      <div className="absolute left-3 top-3">
+                      <div className="absolute left-3 top-3 flex flex-wrap gap-1">
                         <Badge variant="secondary" className="text-[10px]">
-                          {cat}
+                          {g.category}
                         </Badge>
+                        {multi && (
+                          <Badge className="bg-accent text-[10px] text-accent-foreground hover:bg-accent">
+                            {g.variants.length} options
+                          </Badge>
+                        )}
                       </div>
                       <div className="absolute right-3 top-3">
                         <Badge
@@ -651,19 +685,51 @@ const AutoPage = () => {
                               : 'bg-emerald-600 hover:bg-emerald-600'
                           )}
                         >
-                          {out ? 'Out of stock' : `${avail} left`}
+                          {out ? 'Out of stock' : `${g.totalAvailable} left`}
                         </Badge>
                       </div>
                     </div>
 
                     <div className="flex flex-1 flex-col p-4">
                       <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
-                        {p.product_name}
+                        {g.title}
                       </h3>
-                      {p.description && (
+                      {g.description && (
                         <p className="mt-1.5 line-clamp-2 whitespace-pre-line text-xs text-muted-foreground">
-                          {p.description}
+                          {g.description}
                         </p>
+                      )}
+
+                      {multi && (
+                        <div className="mt-3 space-y-1.5">
+                          <Label className="text-[11px] text-muted-foreground">Variant</Label>
+                          <Select
+                            value={selected._id}
+                            onValueChange={(id) =>
+                              setCardVariantId((prev) => ({ ...prev, [g.key]: id }))
+                            }
+                          >
+                            <SelectTrigger className="h-9 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {g.variants.map((v) => {
+                                const vAvail = productAvailable(v);
+                                return (
+                                  <SelectItem
+                                    key={v._id}
+                                    value={v._id}
+                                    disabled={vAvail <= 0}
+                                    className="text-xs"
+                                  >
+                                    {variantLabel(v)} · {formatLkr(productLkrPrice(v))}
+                                    {vAvail <= 0 ? ' (out)' : ` · ${vAvail} left`}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       )}
 
                       {promos.length > 0 && (
@@ -687,15 +753,19 @@ const AutoPage = () => {
                       <div className="mt-auto flex items-end justify-between gap-3 pt-4">
                         <div>
                           <div className="text-lg font-bold tabular-nums text-primary">
-                            {formatLkr(lkr)}
+                            {multi && g.minLkr !== g.maxLkr && selected._id === g.defaultVariant._id
+                              ? `from ${formatLkr(g.minLkr)}`
+                              : formatLkr(lkr)}
                           </div>
-                          <div className="text-[11px] text-muted-foreground">per unit</div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {multi ? 'selected option' : 'per unit'}
+                          </div>
                         </div>
                         <Button
                           size="sm"
                           className="gap-1.5"
-                          disabled={out}
-                          onClick={() => openBuy(p)}
+                          disabled={out || avail <= 0}
+                          onClick={() => openBuy(selected, g)}
                         >
                           <ShoppingCart className="h-3.5 w-3.5" />
                           Order
@@ -735,6 +805,28 @@ const AutoPage = () => {
 
             {!orderDone ? (
               <div className="space-y-4">
+                {buyGroup && buyGroup.variants.length > 1 && (
+                  <div className="space-y-2">
+                    <Label>Choose option / plan</Label>
+                    <Select value={buyProduct._id} onValueChange={selectBuyVariant}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {buyGroup.variants.map((v) => {
+                          const vAvail = productAvailable(v);
+                          return (
+                            <SelectItem key={v._id} value={v._id} disabled={vAvail <= 0}>
+                              {variantLabel(v)} — {formatLkr(productLkrPrice(v))}
+                              {vAvail <= 0 ? ' (out)' : ` · ${vAvail} left`}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {buyProduct.description && (
                   <div className="max-h-20 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
                     {buyProduct.description}
@@ -742,7 +834,13 @@ const AutoPage = () => {
                 )}
 
                 <div className="rounded-xl border border-border/70 bg-card p-3 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Selected</span>
+                    <span className="max-w-[65%] text-right text-xs font-medium leading-snug">
+                      {buyProduct.product_name}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex justify-between">
                     <span className="text-muted-foreground">Unit</span>
                     <span className="font-semibold tabular-nums">{formatLkr(unitLkr)}</span>
                   </div>
