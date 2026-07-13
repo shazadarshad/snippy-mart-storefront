@@ -134,33 +134,32 @@ function mapAkundingProduct(p: Record<string, unknown>) {
   const idStr = String(rawId);
 
   const name = firstString(p.name, p.title, p.product_name, p.productName, `Product ${idStr}`);
-  const description = firstString(
-    p.description,
-    p.desc,
-    p.details,
-    p.note,
-    p.content
-  );
+  const descriptionParts = [
+    firstString(p.description, p.desc, p.details, p.note, p.content),
+    firstString(p.features, p.feature),
+  ].filter(Boolean);
+  const description = descriptionParts.join("\n\n");
+  const unitLabel = firstString(p.unit_label, p.unitLabel, p.unit);
 
-  // Prefer explicit USD; else treat small prices as USD, large as VND/other → approx USD
+  // Akunding uses base_price in USD; also accept common aliases
   let usd = num(
-    p.price_usd ?? p.usd_price ?? p.usdPricing ?? p.usd ?? p.price_usd_cents
+    p.base_price ??
+      p.price_usd ??
+      p.usd_price ??
+      p.usdPricing ??
+      p.usd ??
+      p.unit_price ??
+      p.price ??
+      p.amount ??
+      p.cost ??
+      p.sell_price
   );
   if (p.price_usd_cents != null && num(p.price_usd_cents) > 0 && usd === num(p.price_usd_cents)) {
     usd = num(p.price_usd_cents) / 100;
   }
-  const rawPrice = num(p.price ?? p.amount ?? p.cost ?? p.unit_price ?? p.sell_price);
-  const currency = firstString(p.currency, p.price_currency, p.walletCurrency).toUpperCase();
-
-  if (usd <= 0 && rawPrice > 0) {
-    if (currency === "USD" || currency === "USDT" || currency === "") {
-      // Heuristic: very large numbers likely VND
-      usd = rawPrice >= 1000 ? rawPrice / 25000 : rawPrice;
-    } else if (currency === "VND" || currency === "Đ" || currency === "DONG") {
-      usd = rawPrice / 25000;
-    } else {
-      usd = rawPrice >= 1000 ? rawPrice / 25000 : rawPrice;
-    }
+  // Heuristic: huge numbers without explicit USD field → VND-ish
+  if (usd >= 1000 && p.base_price == null && p.price_usd == null) {
+    usd = usd / 25000;
   }
 
   const available = num(
@@ -175,6 +174,20 @@ function mapAkundingProduct(p: Record<string, unknown>) {
   );
   const total = num(p.total ?? p.total_stock ?? available);
 
+  // Bulk tiers → promotion-style badges for UI
+  const bulk = Array.isArray(p.bulk_tiers) ? p.bulk_tiers : [];
+  const promotions = bulk
+    .map((t) => {
+      if (!t || typeof t !== "object") return null;
+      const row = t as Record<string, unknown>;
+      return {
+        type: "bulk_price",
+        minQty: num(row.min_qty ?? row.minQty),
+        unitPrice: num(row.unit_price ?? row.unitPrice ?? row.price),
+      };
+    })
+    .filter(Boolean);
+
   return {
     _id: `akunding:${idStr}`,
     provider: "akunding" as const,
@@ -185,6 +198,7 @@ function mapAkundingProduct(p: Record<string, unknown>) {
     walletPricing: Math.round(usd * 10000) / 10000,
     walletCurrency: "USD",
     walletPricingText: `$${usd.toFixed(2)}`,
+    unit_label: unitLabel || undefined,
     stats: {
       total,
       sold: Math.max(0, total - available),
@@ -194,9 +208,9 @@ function mapAkundingProduct(p: Record<string, unknown>) {
     displayOrder: num(p.display_order ?? p.sort_order ?? p.position, 500),
     isSlotProduct: false,
     requiresCustomerEmail: !!(p.requires_email ?? p.require_email),
-    raw_provider_fields: undefined, // keep response lean
     emoji: firstString(p.emoji, p.category) || "akunding",
-    promotions: p.promotions,
+    promotions: promotions.length ? promotions : p.promotions,
+    bulk_tiers: bulk.length ? bulk : undefined,
   };
 }
 
