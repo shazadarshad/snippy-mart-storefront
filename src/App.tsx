@@ -133,7 +133,12 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <CurrencyProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem={false}
+        storageKey="snippy-theme-v2"
+      >
         <HelmetProvider>
           <TooltipProvider>
             <Toaster />
