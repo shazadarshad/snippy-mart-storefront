@@ -21,28 +21,31 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="border-t border-border/60 bg-card/30 backdrop-blur-sm">
-      <div className="container mx-auto px-4 py-14 sm:py-16">
+    <footer className="relative border-t border-border/50 overflow-hidden">
+      <div className="absolute inset-0 page-mesh opacity-60 pointer-events-none" />
+      <div className="absolute inset-0 bg-card/40 backdrop-blur-sm pointer-events-none" />
+      <div className="container mx-auto px-4 py-14 sm:py-16 relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-5 space-y-5">
             <Link to="/" className="inline-flex items-center gap-2.5">
               {logoUrl ? (
                 <img src={logoUrl} alt={storeName} className="h-9 w-auto" />
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-cyan-400 to-accent flex items-center justify-center shadow-lg shadow-primary/25 ring-1 ring-white/15">
                   <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
               )}
               <span className="font-display font-bold text-lg tracking-tight">{storeName}</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-              A modern digital subscription mart — clean checkout, live tracking, WhatsApp support.
+              Premium digital subscriptions — clean bank checkout, live tracking, real WhatsApp
+              support.
             </p>
             <a
               href="https://wa.me/94787767869"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 h-11 px-5 rounded-2xl bg-[#25D366] text-white text-sm font-semibold hover:brightness-110 transition"
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-2xl bg-[#25D366] text-white text-sm font-semibold shadow-md shadow-[#25D366]/25 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition"
             >
               <MessageCircle className="w-4 h-4" />
               WhatsApp support

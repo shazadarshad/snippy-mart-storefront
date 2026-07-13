@@ -1,4 +1,4 @@
-const CACHE_NAME = 'snippy-mart-v4';
+const CACHE_NAME = 'snippy-mart-v5-ui';
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', (event) => {

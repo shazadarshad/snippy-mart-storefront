@@ -20,7 +20,9 @@ const PageHero = ({
 }: PageHeroProps) => (
   <section className={cn('relative overflow-hidden pt-28 sm:pt-32 pb-10 sm:pb-14', className)}>
     <div className="absolute inset-0 page-mesh pointer-events-none" />
-    <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
+    <div className="absolute inset-0 dot-grid opacity-25 pointer-events-none" />
+    <div className="orb orb-primary w-72 h-72 -top-20 -left-16 opacity-70" />
+    <div className="orb orb-accent w-64 h-64 top-10 -right-12 opacity-60" />
     <div className="container mx-auto px-4 relative z-10">
       <div className={cn('max-w-3xl', align === 'center' ? 'mx-auto text-center' : 'text-left')}>
         {eyebrow && <p className="page-eyebrow mb-5">{eyebrow}</p>}

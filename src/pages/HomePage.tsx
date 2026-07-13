@@ -57,7 +57,10 @@ const HomePage = () => {
 
       {/* Hero */}
       <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-24">
-        <div className="absolute inset-0 dot-grid opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 dot-grid opacity-35 pointer-events-none" />
+        <div className="orb orb-primary w-[28rem] h-[28rem] -top-32 left-1/2 -translate-x-1/2 opacity-80" />
+        <div className="orb orb-accent w-72 h-72 top-20 right-0 opacity-50" />
+        <div className="orb orb-primary w-56 h-56 bottom-0 left-0 opacity-40" />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
@@ -67,7 +70,7 @@ const HomePage = () => {
           >
             <motion.div variants={fade} className="inline-flex items-center gap-2 page-eyebrow mb-6">
               <Sparkles className="w-3.5 h-3.5" />
-              Next-gen digital mart
+              Premium digital marketplace
             </motion.div>
             <motion.h1 variants={fade} className="page-title mb-6">
               Premium access.
@@ -84,7 +87,7 @@ const HomePage = () => {
             >
               <Button
                 size="xl"
-                className="h-14 rounded-2xl px-8 text-base font-semibold btn-glow"
+                className="h-14 rounded-2xl px-8 text-base font-semibold btn-glow shadow-lg shadow-primary/25"
                 asChild
               >
                 <Link to="/products">
@@ -95,7 +98,7 @@ const HomePage = () => {
               <Button
                 size="xl"
                 variant="outline"
-                className="h-14 rounded-2xl px-8 text-base border-border/80 bg-card/40 backdrop-blur"
+                className="h-14 rounded-2xl px-8 text-base border-border/70 bg-card/50 backdrop-blur-md hover:bg-card/80"
                 asChild
               >
                 <Link to="/track-order">
@@ -116,7 +119,7 @@ const HomePage = () => {
               ].map((s) => (
                 <div
                   key={s.l}
-                  className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur-md px-3 py-4 shadow-sm"
+                  className="rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md px-3 py-4 shadow-[var(--shadow-sm)] ring-1 ring-primary/5"
                 >
                   <p className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{s.v}</p>
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-1">

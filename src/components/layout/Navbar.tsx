@@ -52,8 +52,8 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
         className={cn(
           'mx-auto max-w-6xl rounded-2xl border transition-all duration-300',
           scrolled
-            ? 'border-border/70 bg-background/80 backdrop-blur-2xl shadow-lg shadow-black/5'
-            : 'border-border/40 bg-background/50 backdrop-blur-xl'
+            ? 'border-border/60 bg-background/85 backdrop-blur-2xl shadow-[var(--shadow-md)] shadow-primary/5'
+            : 'border-border/35 bg-background/45 backdrop-blur-xl'
         )}
       >
         <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-5">
@@ -61,7 +61,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
             {logoUrl ? (
               <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
             ) : (
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shadow-md shadow-primary/30 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary via-cyan-400 to-accent flex items-center justify-center shadow-md shadow-primary/35 shrink-0 ring-1 ring-white/20">
                 <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
             )}
@@ -73,16 +73,16 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-0.5">
+          <nav className="hidden md:flex items-center gap-0.5 p-1 rounded-2xl bg-secondary/40 border border-border/40">
             {links.map((l) => (
               <Link
                 key={l.path}
                 to={l.path}
                 className={cn(
-                  'px-3.5 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all',
+                  'px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200',
                   location.pathname === l.path
-                    ? 'bg-primary/12 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'
+                    ? 'nav-pill-active'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
                 )}
               >
                 {l.name}
