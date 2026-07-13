@@ -113,10 +113,17 @@ const AutoPage = () => {
     retry: 1,
   });
 
-  const products = useMemo(
-    () => (productsQuery.data?.products ?? []).filter((p): p is AutoProduct => !!p && !!p._id),
-    [productsQuery.data?.products]
-  );
+  const products = useMemo(() => {
+    const raw = productsQuery.data?.products;
+    if (!Array.isArray(raw)) return [] as AutoProduct[];
+    return raw.filter(
+      (p): p is AutoProduct =>
+        p != null &&
+        typeof p === 'object' &&
+        typeof (p as AutoProduct)._id === 'string' &&
+        !!(p as AutoProduct)._id
+    );
+  }, [productsQuery.data?.products]);
   const balance = balanceQuery.data;
   const walletUsd =
     typeof balance?.balanceUsd === 'number'
@@ -492,6 +499,7 @@ const AutoPage = () => {
               }}
             >
               {filtered.map((p) => {
+                if (!p?._id) return null;
                 const avail = productAvailable(p);
                 const usd = productUsdPrice(p);
                 const lkr = productLkrPrice(p);

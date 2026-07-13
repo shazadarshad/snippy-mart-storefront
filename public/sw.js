@@ -1,68 +1,71 @@
-const CACHE_NAME = 'snippy-mart-v1';
-const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json'
-];
+// Bump on every release that changes hashed assets so clients drop stale JS.
+const CACHE_NAME = 'snippy-mart-v3-auto-fix';
+const STATIC_ASSETS = ['/', '/index.html', '/manifest.json'];
 
-// Install event - cache static assets
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS);
-        })
-    );
-    self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).catch(() => undefined)
+  );
+  self.skipWaiting();
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames
-                    .filter((name) => name !== CACHE_NAME)
-                    .map((name) => caches.delete(name))
-            );
-        })
-    );
-    self.clients.claim();
+  event.waitUntil(
+    caches.keys().then((cacheNames) =>
+      Promise.all(cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name)))
+    ).then(() => self.clients.claim())
+  );
 });
 
-// Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-    // Skip non-GET requests
-    if (event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET') return;
 
-    // Skip API requests and external resources
-    const url = new URL(event.request.url);
-    if (url.origin !== location.origin) return;
-    if (url.pathname.startsWith('/api')) return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api')) return;
 
+  // Never cache hashed build assets — stale AutoPage chunks break deploys.
+  const isHashedAsset =
+    url.pathname.startsWith('/assets/') ||
+    /\.[a-f0-9]{6,}\.(js|css)$/i.test(url.pathname);
+
+  if (isHashedAsset) {
     event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // Clone and cache successful responses
-                if (response.ok) {
-                    const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
-                    });
-                }
-                return response;
-            })
-            .catch(() => {
-                // Fallback to cache
-                return caches.match(event.request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    // Return offline page for navigation requests
-                    if (event.request.mode === 'navigate') {
-                        return caches.match('/');
-                    }
-                    return new Response('Offline', { status: 503 });
-                });
-            })
+      fetch(event.request).catch(() => caches.match(event.request).then((c) => c || new Response('Offline', { status: 503 })))
     );
+    return;
+  }
+
+  // HTML / navigation: network-first, do not serve stale index that points at deleted chunks.
+  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() =>
+          caches.match(event.request).then((cached) => cached || caches.match('/') || new Response('Offline', { status: 503 }))
+        )
+    );
+    return;
+  }
+
+  // Other same-origin GETs: network-first with cache fallback
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) => cached || new Response('Offline', { status: 503 }))
+      )
+  );
 });

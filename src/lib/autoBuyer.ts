@@ -128,12 +128,18 @@ export function getProductPromotions(p: AutoProduct | null | undefined): AutoPro
 }
 
 export function productUsdPrice(p: AutoProduct | null | undefined): number {
-  if (!p) return 0;
-  const promo = p.promotionUsdPricing;
-  if (typeof promo === 'number' && Number.isFinite(promo) && promo > 0) return promo;
-  if (typeof p.usdPricing === 'number' && Number.isFinite(p.usdPricing)) return p.usdPricing;
-  if (typeof p.walletPricing === 'number' && Number.isFinite(p.walletPricing)) return p.walletPricing;
-  return 0;
+  try {
+    if (p == null || typeof p !== 'object') return 0;
+    const promo = p?.promotionUsdPricing;
+    if (typeof promo === 'number' && Number.isFinite(promo) && promo > 0) return promo;
+    const usd = p?.usdPricing;
+    if (typeof usd === 'number' && Number.isFinite(usd)) return usd;
+    const wallet = p?.walletPricing;
+    if (typeof wallet === 'number' && Number.isFinite(wallet)) return wallet;
+    return 0;
+  } catch {
+    return 0;
+  }
 }
 
 export function productLkrPrice(p: AutoProduct | null | undefined): number {

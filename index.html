@@ -214,7 +214,23 @@
     </div>
   </div>
   <script type="module" src="/src/main.tsx"></script>
-  <script src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js" async></script>
+  <!-- DMCA helper only if a badge node exists (avoids getAttribute crash) -->
+  <script>
+    (function () {
+      function loadDmca() {
+        if (!document.querySelector('[src*="dmca.com"], a[href*="dmca.com"], .dmca-badge')) return;
+        var s = document.createElement('script');
+        s.src = 'https://images.dmca.com/Badges/DMCABadgeHelper.min.js';
+        s.async = true;
+        document.body.appendChild(s);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadDmca);
+      } else {
+        loadDmca();
+      }
+    })();
+  </script>
 
   <!-- Service Worker Registration -->
   <script>
@@ -222,6 +238,9 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
           .then((registration) => {
+            // Force activate updated SW so /auto is not stuck on old chunks
+            if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            registration.update();
             console.log('SW registered:', registration.scope);
           })
           .catch((error) => {
