@@ -71,7 +71,7 @@ import {
   displayTitle,
   displayDescription,
   accountLines,
-  AUTO_USD_TO_LKR,
+  AUTO_MIN_MARGIN_LKR,
 } from '@/lib/autoBuyer';
 
 type StockFilter = 'all' | 'in_stock' | 'out';
@@ -357,6 +357,7 @@ const AutoPage = () => {
               slot_months: slotMonths,
               cost_usd: productUsdPrice(buyProduct),
               sell_lkr: unitLkr,
+              // Wallet is charged cost_usd only; sell_lkr is customer bank-transfer amount
             },
           },
         ],
@@ -478,7 +479,7 @@ const AutoPage = () => {
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card/60 px-2.5 py-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-primary" />
-                    LKR = API $ × {AUTO_USD_TO_LKR}
+                    Prices include margin (min LKR {AUTO_MIN_MARGIN_LKR})
                   </span>
                 </div>
               </div>

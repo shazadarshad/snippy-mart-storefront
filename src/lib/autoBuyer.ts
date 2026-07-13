@@ -1,21 +1,41 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Customer sell rate: LKR per $1 of supplier (Canboso) price.
+ * Auto pricing (customer sees sell LKR; you pay Canboso in USD):
  *
- * Profit (approx):
- *   cost_usd     = API usdPricing (debited from YOUR Canboso wallet)
- *   sell_lkr     = cost_usd × AUTO_USD_TO_LKR
- *   cost_lkr     ≈ cost_usd × (what YOU paid per $ when funding the wallet)
- *   profit_lkr   ≈ sell_lkr − cost_lkr
+ *   cost_usd   = API usdPricing  → debited from YOUR Canboso wallet on purchase
+ *   cost_lkr   = cost_usd × AUTO_FUND_RATE_LKR  (your estimated $ funding cost)
+ *   margin_lkr = at least AUTO_MIN_MARGIN_LKR (500), more on premium / higher $ SKUs
+ *   sell_lkr   = cost_lkr + margin_lkr   ← what the customer pays in the UI
  *
- * Example CapCut Pro 30D at $2.75:
- *   sell = 2.75 × 360 = LKR 990
- *   if you fund at ~LKR 300/USD → cost ≈ 825 → profit ≈ LKR 165 (~20%)
- * There is NO extra fixed +1000 on auto items — only this rate.
+ * Example CapCut Pro 30D at $2.75, fund rate 300:
+ *   cost  = 2.75 × 300 = 825 LKR
+ *   margin ≥ 500 → sell = 1,325 LKR  (not a flat fixed margin on every SKU)
  */
-export const AUTO_USD_TO_LKR = 360;
+export const AUTO_FUND_RATE_LKR = 300; // LKR per $1 you spend topping up Canboso
+export const AUTO_MIN_MARGIN_LKR = 500; // minimum profit in LKR per unit
+/** @deprecated use AUTO_FUND_RATE_LKR + margin; kept for any old UI labels */
+export const AUTO_USD_TO_LKR = AUTO_FUND_RATE_LKR;
 export const CANBOSO_ASSET_BASE = 'https://canboso.com';
+
+/** Families that get a stronger margin (popular / higher-value lines). */
+const PREMIUM_FAMILY_KEYS = new Set([
+  'adobe-full-app',
+  'cursor-pro',
+  'gpt-plus',
+  'api-claude',
+  'api-codex',
+  'api-deepseek',
+  'veo3',
+  'supergrok',
+  'gemini',
+  'office-365',
+  'elevenlabs',
+  'kling',
+  'capcut-pro',
+  'canva-pro',
+  'canva-edu',
+]);
 
 /** Same project as the rest of the storefront (hardcoded client — do not rely on VITE_* at runtime). */
 const SUPABASE_URL = 'https://vuffzfuklzzcnfnubtzx.supabase.co';
@@ -141,9 +161,47 @@ export function productUsdPrice(p: AutoProduct | null | undefined): number {
   }
 }
 
-/** Customer-facing LKR price (USD × rate). */
+/** Estimated cost in LKR for one unit (what topping up that $ roughly costs you). */
+export function productCostLkr(p: AutoProduct | null | undefined): number {
+  return Math.round(productUsdPrice(p) * AUTO_FUND_RATE_LKR);
+}
+
+/**
+ * Variable profit margin in LKR (not fixed on every SKU).
+ * Always ≥ AUTO_MIN_MARGIN_LKR (500). Premium / higher $ products get more.
+ */
+export function productMarginLkr(p: AutoProduct | null | undefined): number {
+  const usd = productUsdPrice(p);
+  if (usd <= 0) return AUTO_MIN_MARGIN_LKR;
+
+  const costLkr = productCostLkr(p);
+  const famKey = productFamily(p?.product_name || '').key;
+  const premium = PREMIUM_FAMILY_KEYS.has(famKey);
+
+  // Base: 25% of cost, floor 500
+  let margin = Math.max(AUTO_MIN_MARGIN_LKR, Math.round(costLkr * 0.25));
+
+  // Cheap tickets still keep min 500 (often > 25%)
+  // Mid / high: scale up
+  if (usd >= 3) margin = Math.max(margin, Math.round(costLkr * 0.28), AUTO_MIN_MARGIN_LKR + 100);
+  if (usd >= 8) margin = Math.max(margin, Math.round(costLkr * 0.32), AUTO_MIN_MARGIN_LKR + 400);
+  if (usd >= 20) margin = Math.max(margin, Math.round(costLkr * 0.35), AUTO_MIN_MARGIN_LKR + 900);
+  if (usd >= 50) margin = Math.max(margin, Math.round(costLkr * 0.4), AUTO_MIN_MARGIN_LKR + 2000);
+
+  // “Good” product lines — extra bump
+  if (premium) {
+    margin = Math.max(margin, Math.round(costLkr * 0.38), AUTO_MIN_MARGIN_LKR + 350);
+  }
+
+  return Math.round(margin);
+}
+
+/**
+ * Customer-facing sell price in LKR (includes margin).
+ * Your Canboso wallet is still charged cost_usd only — not this LKR amount.
+ */
 export function productLkrPrice(p: AutoProduct | null | undefined): number {
-  return Math.round(productUsdPrice(p) * AUTO_USD_TO_LKR);
+  return productCostLkr(p) + productMarginLkr(p);
 }
 
 export function productAvailable(p: AutoProduct | null | undefined): number {
@@ -667,13 +725,33 @@ export function groupAutoProducts(products: AutoProduct[]): AutoProductGroup[] {
   return groups;
 }
 
-/** Rough profit in LKR if you fund USD at `fundRateLkrPerUsd` (default 300). */
+/** Breakdown: customer sell vs your estimated cost / margin. */
 export function estimateProfitLkr(
   p: AutoProduct | null | undefined,
-  fundRateLkrPerUsd = 300
-): { costUsd: number; sellLkr: number; costLkr: number; profitLkr: number } {
+  fundRateLkrPerUsd: number = AUTO_FUND_RATE_LKR
+): {
+  costUsd: number;
+  sellLkr: number;
+  costLkr: number;
+  profitLkr: number;
+  minMargin: number;
+} {
   const costUsd = productUsdPrice(p);
-  const sellLkr = productLkrPrice(p);
-  const costLkr = Math.round(costUsd * fundRateLkrPerUsd);
-  return { costUsd, sellLkr, costLkr, profitLkr: sellLkr - costLkr };
+  const costLkr =
+    fundRateLkrPerUsd === AUTO_FUND_RATE_LKR
+      ? productCostLkr(p)
+      : Math.round(costUsd * fundRateLkrPerUsd);
+  // Recompute sell with same margin engine (margin uses default fund rate cost basis)
+  const profitLkr = productMarginLkr(p);
+  const sellLkr =
+    fundRateLkrPerUsd === AUTO_FUND_RATE_LKR
+      ? productLkrPrice(p)
+      : costLkr + profitLkr;
+  return {
+    costUsd,
+    sellLkr,
+    costLkr,
+    profitLkr,
+    minMargin: AUTO_MIN_MARGIN_LKR,
+  };
 }
