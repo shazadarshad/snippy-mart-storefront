@@ -227,7 +227,8 @@
   }
 
   ::selection {
-    @apply bg-primary/25 text-foreground;
+    background-color: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
   }
 
   ::-webkit-scrollbar {
@@ -240,30 +241,43 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full;
+    background-color: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/40;
+    background-color: hsl(var(--primary) / 0.4);
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-card/75 backdrop-blur-2xl border border-border/60;
+    background-color: hsl(var(--card) / 0.75);
+    @apply backdrop-blur-2xl border;
+    border-color: hsl(var(--border) / 0.6);
   }
 
   .glass-card {
-    @apply rounded-3xl border border-border/50 backdrop-blur-xl;
+    @apply rounded-3xl border backdrop-blur-xl;
+    border-color: hsl(var(--border) / 0.5);
     background: var(--gradient-card);
   }
 
   .glass-navbar {
-    @apply bg-background/70 backdrop-blur-2xl border-b border-border/40 supports-[backdrop-filter]:bg-background/55;
+    background-color: hsl(var(--background) / 0.7);
+    @apply backdrop-blur-2xl border-b;
+    border-color: hsl(var(--border) / 0.4);
+  }
+
+  @supports (backdrop-filter: blur(0)) {
+    .glass-navbar {
+      background-color: hsl(var(--background) / 0.55);
+    }
   }
 
   .glass-premium {
-    @apply bg-background/50 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-2xl;
+    background-color: hsl(var(--background) / 0.5);
+    @apply backdrop-blur-3xl border border-white/10 rounded-3xl shadow-2xl;
   }
 
   .glass-sm {
@@ -280,20 +294,27 @@
   }
 
   .surface-card {
-    @apply rounded-2xl sm:rounded-3xl border border-border/70 bg-card/85 backdrop-blur-md;
+    @apply rounded-2xl sm:rounded-3xl border backdrop-blur-md;
+    border-color: hsl(var(--border) / 0.7);
+    background-color: hsl(var(--card) / 0.85);
     box-shadow: var(--shadow-sm);
   }
 
   .surface-card-interactive {
-    @apply surface-card transition-all duration-300 ease-out hover:border-primary/45 hover:-translate-y-1;
+    @apply surface-card transition-all duration-300 ease-out;
   }
 
   .surface-card-interactive:hover {
+    border-color: hsl(var(--primary) / 0.45);
+    transform: translateY(-0.25rem);
     box-shadow: var(--shadow-md), 0 0 0 1px hsl(var(--primary) / 0.08);
   }
 
   .page-eyebrow {
-    @apply inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em] border border-primary/30 bg-primary/10 text-primary shadow-sm shadow-primary/10;
+    @apply inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em] border text-primary shadow-sm;
+    border-color: hsl(var(--primary) / 0.3);
+    background-color: hsl(var(--primary) / 0.1);
+    box-shadow: 0 1px 2px hsl(var(--primary) / 0.1);
   }
 
   .page-title {
@@ -368,7 +389,8 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/25 rounded-full;
+    background-color: hsl(var(--primary) / 0.25);
+    border-radius: 9999px;
   }
 
   .shine-border {
@@ -396,7 +418,9 @@
 
   /* Premium pill nav active state */
   .nav-pill-active {
-    @apply bg-primary/12 text-primary shadow-sm shadow-primary/10;
+    background-color: hsl(var(--primary) / 0.12);
+    color: hsl(var(--primary));
+    box-shadow: 0 1px 2px hsl(var(--primary) / 0.1);
   }
 
   /* Soft ambient orbs for heroes */
