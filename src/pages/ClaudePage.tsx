@@ -57,6 +57,9 @@ import { motion } from 'framer-motion';
 
 const WHATSAPP_FALLBACK = '94787767869';
 
+/** Flip to true when stock is back and checkout should work again */
+const CLAUDE_SALES_OPEN = false;
+
 type PlanId = 'pro' | 'max5x';
 
 interface ClaudePlan {
@@ -292,6 +295,14 @@ const ClaudePage = () => {
 
   const handleContinueToPayment = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!CLAUDE_SALES_OPEN) {
+      toast({
+        title: 'Stock over',
+        description: 'Claude seats are sold out. Expected back soon — message us on WhatsApp to join the waitlist.',
+        variant: 'destructive',
+      });
+      return;
+    }
     if (!validateDetails()) return;
     setStep('payment');
     setTimeout(() => scrollTo(checkoutRef), 50);
@@ -299,6 +310,14 @@ const ClaudePage = () => {
 
   const handleSubmitPreorder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!CLAUDE_SALES_OPEN) {
+      toast({
+        title: 'Stock over',
+        description: 'Claude seats are sold out. Expected back soon.',
+        variant: 'destructive',
+      });
+      return;
+    }
     if (!validateDetails()) {
       setStep('details');
       return;
@@ -498,24 +517,41 @@ const ClaudePage = () => {
       />
 
       {/* Sticky mobile CTA bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-border/80 bg-background/95 backdrop-blur-lg px-3 py-2.5 safe-area-pb">
-        <div className="flex items-center gap-2 max-w-lg mx-auto">
-          <div className="flex-1 min-w-0 pl-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-              {selectedPlan.shortLabel} · {isFullPay ? 'Full pay' : `${reservePct}% now`}
-            </p>
-            <p className="text-sm font-black text-foreground">{formatLkr(amountDue)}</p>
+      {!CLAUDE_SALES_OPEN ? (
+        <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-amber-500/30 bg-background/95 backdrop-blur-lg px-3 py-2.5">
+          <div className="flex items-center gap-2 max-w-lg mx-auto">
+            <div className="flex-1 min-w-0 pl-1">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Stock over</p>
+              <p className="text-sm font-black text-foreground">Expected soon</p>
+            </div>
+            <Button size="sm" className="h-11 px-4 rounded-xl font-bold bg-[#25D366] text-white shrink-0" asChild>
+              <a href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hi! I want to join the Claude Team waitlist.')}`} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="w-4 h-4 mr-1" />
+                Waitlist
+              </a>
+            </Button>
           </div>
-          <Button
-            size="sm"
-            className="h-11 px-4 rounded-xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shrink-0"
-            onClick={() => scrollTo(checkoutRef)}
-          >
-            Pre-order
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Button>
         </div>
-      </div>
+      ) : (
+        <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-border/80 bg-background/95 backdrop-blur-lg px-3 py-2.5 safe-area-pb">
+          <div className="flex items-center gap-2 max-w-lg mx-auto">
+            <div className="flex-1 min-w-0 pl-1">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+                {selectedPlan.shortLabel} · {isFullPay ? 'Full pay' : `${reservePct}% now`}
+              </p>
+              <p className="text-sm font-black text-foreground">{formatLkr(amountDue)}</p>
+            </div>
+            <Button
+              size="sm"
+              className="h-11 px-4 rounded-xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white shrink-0"
+              onClick={() => scrollTo(checkoutRef)}
+            >
+              Pre-order
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative pt-20 sm:pt-24 pb-12 sm:pb-16 lg:pt-32 lg:pb-24 overflow-hidden">
@@ -529,13 +565,27 @@ const ClaudePage = () => {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex flex-wrap items-center justify-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-5 sm:mb-6"
+              className={cn(
+                'inline-flex flex-wrap items-center justify-center gap-2 px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-5 sm:mb-6 border',
+                CLAUDE_SALES_OPEN
+                  ? 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+                  : 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+              )}
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
-              </span>
-              Pre-Order · Private workspace · Limited slots
+              {CLAUDE_SALES_OPEN ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
+                  </span>
+                  Pre-Order · Private workspace · Limited slots
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  Stock over · Expected soon
+                </>
+              )}
             </motion.div>
 
             <motion.h1
@@ -592,14 +642,25 @@ const ClaudePage = () => {
               transition={{ delay: 0.15 }}
               className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center items-stretch sm:items-center px-1"
             >
-              <Button
-                size="lg"
-                className="h-12 sm:h-12 px-6 sm:px-8 rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-lg shadow-orange-500/25 w-full sm:w-auto"
-                onClick={() => scrollTo(checkoutRef)}
-              >
-                Secure my slot
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              {CLAUDE_SALES_OPEN ? (
+                <Button
+                  size="lg"
+                  className="h-12 sm:h-12 px-6 sm:px-8 rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-lg shadow-orange-500/25 w-full sm:w-auto"
+                  onClick={() => scrollTo(checkoutRef)}
+                >
+                  Secure my slot
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  className="h-12 px-6 sm:px-8 rounded-2xl font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 w-full sm:w-auto cursor-not-allowed"
+                  disabled
+                >
+                  <Package className="w-4 h-4 mr-2" />
+                  Stock over · Expected soon
+                </Button>
+              )}
               <Button
                 size="lg"
                 variant="outline"
@@ -614,10 +675,20 @@ const ClaudePage = () => {
                 className="h-12 px-6 sm:px-8 rounded-2xl font-bold border-2 w-full sm:w-auto"
                 asChild
               >
-                <a href={whatsappPreorderLink()} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={
+                    CLAUDE_SALES_OPEN
+                      ? whatsappPreorderLink()
+                      : `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hi! Claude stock is over — please add me to the waitlist for Team Pro/Max.')}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   <span className="sm:hidden">WhatsApp us</span>
-                  <span className="hidden sm:inline">+94 78 776 7869</span>
+                  <span className="hidden sm:inline">
+                    {CLAUDE_SALES_OPEN ? '+94 78 776 7869' : 'Join waitlist'}
+                  </span>
                 </a>
               </Button>
             </motion.div>
@@ -626,10 +697,17 @@ const ClaudePage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.25 }}
-              className="mt-5 sm:mt-6 text-xs sm:text-sm text-amber-500/90 font-medium flex items-center justify-center gap-2 px-2"
+              className={cn(
+                'mt-5 sm:mt-6 text-xs sm:text-sm font-medium flex items-center justify-center gap-2 px-2',
+                CLAUDE_SALES_OPEN ? 'text-amber-500/90' : 'text-amber-400'
+              )}
             >
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>Slots available for pre-order · Limited stock — secure yours NOW</span>
+              <span>
+                {CLAUDE_SALES_OPEN
+                  ? 'Slots available for pre-order · Limited stock — secure yours NOW'
+                  : 'All Claude seats sold out for now. New stock expected soon — WhatsApp for waitlist.'}
+              </span>
             </motion.p>
           </div>
         </div>
@@ -857,12 +935,61 @@ const ClaudePage = () => {
       <section ref={checkoutRef} className="py-12 sm:py-16 lg:py-20 scroll-mt-20 pb-28 md:pb-20">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-3xl mx-auto">
+            {!CLAUDE_SALES_OPEN && (
+              <div className="relative mb-8 overflow-hidden rounded-3xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/15 via-card to-orange-500/10 p-6 sm:p-10 text-center shadow-xl">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.12),transparent_55%)] pointer-events-none" />
+                <div className="relative z-10 space-y-4">
+                  <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                    <Package className="w-8 h-8 text-amber-400" />
+                  </div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-400">
+                    Sold out
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-display font-black text-foreground">
+                    Stock over · Expected soon
+                  </h2>
+                  <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+                    All Claude Team pre-order slots are currently sold out. We&apos;re restocking —
+                    new seats are expected soon. Checkout is closed until then.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-2">
+                    <Button
+                      className="h-12 rounded-2xl font-bold bg-[#25D366] hover:bg-[#20bd5a] text-white"
+                      asChild
+                    >
+                      <a
+                        href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+                          'Hi! Claude stock is over — please add me to the waitlist for Team Pro/Max when new seats open.'
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Join waitlist on WhatsApp
+                      </a>
+                    </Button>
+                    <Button variant="outline" className="h-12 rounded-2xl font-bold border-2" asChild>
+                      <Link to="/products">Browse other products</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div
+              className={cn(
+                !CLAUDE_SALES_OPEN && 'relative opacity-35 pointer-events-none select-none blur-[1px]'
+              )}
+              aria-hidden={!CLAUDE_SALES_OPEN}
+            >
             <div className="text-center mb-8 sm:mb-10">
               <h2 className="text-2xl sm:text-3xl font-display font-black mb-2">
                 Pre-order checkout
               </h2>
               <p className="text-muted-foreground text-sm px-2">
-                Details → choose payment → transfer → upload receipt → Order ID
+                {CLAUDE_SALES_OPEN
+                  ? 'Details → choose payment → transfer → upload receipt → Order ID'
+                  : 'Checkout locked until stock returns'}
               </p>
             </div>
 
@@ -1315,6 +1442,7 @@ const ClaudePage = () => {
                 </p>
               </form>
             )}
+            </div>
           </div>
         </div>
       </section>
@@ -1360,20 +1488,35 @@ const ClaudePage = () => {
                 Chat with us on WhatsApp — we&apos;ll guide you
               </p>
               <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
-                <Button
-                  className="rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white h-11"
-                  onClick={() => scrollTo(checkoutRef)}
-                >
-                  Pre-order now
-                </Button>
+                {CLAUDE_SALES_OPEN ? (
+                  <Button
+                    className="rounded-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-white h-11"
+                    onClick={() => scrollTo(checkoutRef)}
+                  >
+                    Pre-order now
+                  </Button>
+                ) : (
+                  <Button
+                    className="rounded-2xl font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 h-11"
+                    disabled
+                  >
+                    Stock over · Expected soon
+                  </Button>
+                )}
                 <Button variant="outline" className="rounded-2xl font-bold h-11" asChild>
                   <a
-                    href={`https://wa.me/${whatsappNumber}`}
+                    href={
+                      CLAUDE_SALES_OPEN
+                        ? `https://wa.me/${whatsappNumber}`
+                        : `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+                            'Hi! Add me to the Claude waitlist please.'
+                          )}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    +94 78 776 7869
+                    {CLAUDE_SALES_OPEN ? '+94 78 776 7869' : 'Join waitlist'}
                   </a>
                 </Button>
               </div>
