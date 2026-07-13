@@ -1,5 +1,12 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export const AUTO_USD_TO_LKR = 360;
 export const CANBOSO_ASSET_BASE = 'https://canboso.com';
+
+/** Same project as the rest of the storefront (hardcoded client — do not rely on VITE_* at runtime). */
+const SUPABASE_URL = 'https://vuffzfuklzzcnfnubtzx.supabase.co';
+const SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1ZmZ6ZnVrbHp6Y25mbnVidHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTQ1NjAsImV4cCI6MjA4NDI3MDU2MH0.qHjJYOrNi1cBYPYapmHMJgDxsI50sHAKUAvv0VnPQFM';
 
 export interface AutoProductStats {
   total?: number;
@@ -169,22 +176,25 @@ async function fetchFunction<T>(
   action: string,
   init?: { method?: 'GET' | 'POST'; body?: unknown }
 ): Promise<T> {
-  const base = import.meta.env.VITE_SUPABASE_URL as string;
-  const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-  if (!base || !anon) {
-    throw new Error('Store is not configured. Please refresh or contact support.');
-  }
-
-  const url = `${base.replace(/\/$/, '')}/functions/v1/auto-buyer?action=${encodeURIComponent(action)}`;
   const method = init?.method || 'GET';
+  const url = `${SUPABASE_URL}/functions/v1/auto-buyer?action=${encodeURIComponent(action)}`;
+
+  // Prefer session token when logged in; always fall back to publishable key
+  let authToken = SUPABASE_ANON_KEY;
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data.session?.access_token) authToken = data.session.access_token;
+  } catch {
+    /* ignore */
+  }
 
   let res: Response;
   try {
     res = await fetch(url, {
       method,
       headers: {
-        apikey: anon,
-        Authorization: `Bearer ${anon}`,
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${authToken}`,
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
