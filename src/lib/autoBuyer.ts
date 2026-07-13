@@ -120,13 +120,15 @@ function asArrayPromos(value: AutoPromotion[] | string | null | undefined): Auto
   return [];
 }
 
-export function getProductPromotions(p: AutoProduct): AutoPromotion[] {
+export function getProductPromotions(p: AutoProduct | null | undefined): AutoPromotion[] {
+  if (!p) return [];
   const a = asArrayPromos(p.promotions);
   const b = asArrayPromos(p.marketPromotions);
   return [...a, ...b];
 }
 
-export function productUsdPrice(p: AutoProduct): number {
+export function productUsdPrice(p: AutoProduct | null | undefined): number {
+  if (!p) return 0;
   const promo = p.promotionUsdPricing;
   if (typeof promo === 'number' && Number.isFinite(promo) && promo > 0) return promo;
   if (typeof p.usdPricing === 'number' && Number.isFinite(p.usdPricing)) return p.usdPricing;
@@ -134,16 +136,18 @@ export function productUsdPrice(p: AutoProduct): number {
   return 0;
 }
 
-export function productLkrPrice(p: AutoProduct): number {
+export function productLkrPrice(p: AutoProduct | null | undefined): number {
   return Math.round(productUsdPrice(p) * AUTO_USD_TO_LKR);
 }
 
-export function productAvailable(p: AutoProduct): number {
+export function productAvailable(p: AutoProduct | null | undefined): number {
+  if (!p) return 0;
   const n = p.stats?.available;
   return typeof n === 'number' && Number.isFinite(n) ? Math.max(0, n) : 0;
 }
 
-export function productImageUrl(p: AutoProduct): string | null {
+export function productImageUrl(p: AutoProduct | null | undefined): string | null {
+  if (!p) return null;
   const img = (p.descriptionImage || '').trim();
   if (!img || img === '__none__') return null;
   if (img.startsWith('http://') || img.startsWith('https://')) return img;

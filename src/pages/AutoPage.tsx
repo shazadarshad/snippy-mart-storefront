@@ -113,7 +113,10 @@ const AutoPage = () => {
     retry: 1,
   });
 
-  const products = productsQuery.data?.products ?? [];
+  const products = useMemo(
+    () => (productsQuery.data?.products ?? []).filter((p): p is AutoProduct => !!p && !!p._id),
+    [productsQuery.data?.products]
+  );
   const balance = balanceQuery.data;
   const walletUsd =
     typeof balance?.balanceUsd === 'number'
@@ -613,7 +616,7 @@ const AutoPage = () => {
           </DialogHeader>
 
           <AnimatePresence mode="wait">
-            {!result?.success ? (
+            {!result?.success && buyProduct ? (
               <motion.div
                 key="form"
                 initial={{ opacity: 0, y: 6 }}
@@ -621,11 +624,12 @@ const AutoPage = () => {
                 exit={{ opacity: 0, y: -6 }}
                 className="space-y-4"
               >
-                {buyProduct?.description && (
+                {buyProduct.description && (
                   <div className="max-h-28 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
                     {buyProduct.description}
                   </div>
                 )}
+
 
                 <div className="rounded-xl border border-border/70 bg-card p-3">
                   <div className="flex items-center justify-between text-sm">
@@ -633,14 +637,14 @@ const AutoPage = () => {
                     <span className="font-semibold tabular-nums">
                       {formatUsd(unitUsd)}{' '}
                       <span className="text-xs font-normal text-muted-foreground">
-                        (~{formatLkr(productLkrPrice(buyProduct!))})
+                        (~{formatLkr(productLkrPrice(buyProduct))})
                       </span>
                     </span>
                   </div>
                   <div className="mt-1 flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Stock</span>
                     <span className="tabular-nums">
-                      {productAvailable(buyProduct!)} available
+                      {productAvailable(buyProduct)} available
                     </span>
                   </div>
                   <div className="mt-1 flex items-center justify-between text-sm">
@@ -717,7 +721,7 @@ const AutoPage = () => {
                         <SelectValue placeholder="Select months" />
                       </SelectTrigger>
                       <SelectContent>
-                        {(buyProduct.slotDurations?.length
+                        {(buyProduct?.slotDurations?.length
                           ? buyProduct.slotDurations
                           : [1, 3, 6, 12]
                         ).map((m) => (
