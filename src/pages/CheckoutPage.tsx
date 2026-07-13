@@ -344,27 +344,27 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
-      <div className="container mx-auto px-4">
+    <div className="min-h-dvh page-mesh pt-24 pb-safe pb-24 sm:pb-20">
+      <div className="container mx-auto px-3 sm:px-4">
         {/* Back Button */}
         <Button
           variant="ghost"
-          className="mb-6"
+          className="mb-4 sm:mb-6 -ml-2"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 lg:gap-12">
           {/* Customer Details */}
           <div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground mb-4 sm:mb-6">
               Checkout
             </h1>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="p-6 rounded-2xl bg-card border border-border">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="p-4 sm:p-6 rounded-2xl bg-card/95 border border-border shadow-sm">
                 <h2 className="text-lg font-semibold text-foreground mb-4">
                   Customer Details
                 </h2>
@@ -504,7 +504,7 @@ const CheckoutPage = () => {
               )}
 
               {/* Payment Method Selection */}
-              <div className="p-6 rounded-2xl bg-card border border-border">
+              <div className="p-4 sm:p-6 rounded-2xl bg-card/95 border border-border shadow-sm">
                 <h2 className="text-lg font-semibold text-foreground mb-4">
                   Payment
                 </h2>
@@ -564,9 +564,9 @@ const CheckoutPage = () => {
           </div>
 
           {/* Order Summary */}
-          <div>
-            <div className="sticky top-24">
-              <div className="p-6 rounded-2xl bg-card border border-border">
+          <div className="order-first lg:order-none">
+            <div className="lg:sticky lg:top-24">
+              <div className="p-4 sm:p-6 rounded-2xl bg-card/95 border border-border shadow-sm">
                 <h2 className="text-lg font-semibold text-foreground mb-4">
                   Order Summary
                 </h2>

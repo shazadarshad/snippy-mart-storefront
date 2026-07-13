@@ -131,23 +131,23 @@ const ProductsPage = () => {
     !!searchQuery || !!selectedCategory || stockFilter !== 'all' || sortKey !== 'featured';
 
   return (
-    <div className="min-h-screen page-mesh pb-20">
+    <div className="min-h-dvh page-mesh pb-safe pb-20">
       <SEO
         title="Products"
         description="Browse premium digital subscriptions — AI tools, streaming, design software. Fair prices, bank checkout, live tracking."
         type="website"
       />
 
-      <div className="container mx-auto px-4 pt-28 sm:pt-32">
-        <div className="mb-8 max-w-2xl">
+      <div className="container mx-auto px-3 sm:px-4 pt-28 sm:pt-32">
+        <div className="mb-6 sm:mb-8 max-w-2xl">
           <p className="page-eyebrow mb-4">
             <LayoutGrid className="w-3.5 h-3.5" />
             Product vault
           </p>
-          <h1 className="page-title mb-3">
+          <h1 className="page-title mb-3 text-3xl sm:text-5xl md:text-6xl">
             Shop the <span className="gradient-text">catalogue</span>
           </h1>
-          <p className="page-lead">
+          <p className="page-lead text-sm sm:text-lg">
             {isLoading
               ? 'Loading catalogue…'
               : `${products.length} products · ${inStockCount} in stock · ${featuredCount} featured`}
@@ -155,16 +155,16 @@ const ProductsPage = () => {
         </div>
 
         {/* Toolbar */}
-        <div className="sticky top-20 z-30 mb-8 rounded-2xl border border-border/60 bg-background/80 backdrop-blur-2xl p-3 sm:p-4 shadow-lg shadow-black/5">
-          <div className="flex flex-col gap-3">
+        <div className="sticky top-[4.5rem] sm:top-20 z-30 mb-6 sm:mb-8 rounded-2xl border border-border/60 bg-background/90 backdrop-blur-2xl p-2.5 sm:p-4 shadow-md">
+          <div className="flex flex-col gap-2.5 sm:gap-3">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search products, categories…"
+                placeholder="Search products…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 h-11 sm:h-12 rounded-xl bg-card/80 border-border/80 text-sm sm:text-base"
+                className="pl-10 pr-10 h-11 sm:h-12 rounded-xl bg-card border-border text-sm sm:text-base"
               />
               {searchQuery && (
                 <button
@@ -211,13 +211,13 @@ const ProductsPage = () => {
                 ))}
               </div>
 
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-2 shrink-0 w-full sm:w-auto">
                 <Select
                   value={stockFilter}
                   onValueChange={(v) => setStockFilter(v as StockFilter)}
                 >
-                  <SelectTrigger className="h-9 w-[130px] rounded-xl text-xs bg-card">
-                    <Package className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectTrigger className="h-10 sm:h-9 flex-1 sm:w-[130px] rounded-xl text-xs bg-card">
+                    <Package className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
                     <SelectValue placeholder="Stock" />
                   </SelectTrigger>
                   <SelectContent>
@@ -229,8 +229,8 @@ const ProductsPage = () => {
                 </Select>
 
                 <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                  <SelectTrigger className="h-9 w-[140px] rounded-xl text-xs bg-card">
-                    <ArrowUpDown className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectTrigger className="h-10 sm:h-9 flex-1 sm:w-[140px] rounded-xl text-xs bg-card">
+                    <ArrowUpDown className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
                     <SelectValue placeholder="Sort" />
                   </SelectTrigger>
                   <SelectContent>
@@ -273,7 +273,7 @@ const ProductsPage = () => {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
+              className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
             >
               {filteredProducts.map((product) => (
                 <motion.div key={product.id} variants={itemVariants}>

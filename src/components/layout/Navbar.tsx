@@ -47,13 +47,13 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 px-3 sm:px-4 pt-3">
+    <header className="fixed top-0 inset-x-0 z-50 px-3 sm:px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
       <div
         className={cn(
           'mx-auto max-w-6xl rounded-2xl border transition-all duration-300',
           scrolled
-            ? 'border-border/60 bg-background/85 backdrop-blur-2xl shadow-[var(--shadow-md)] shadow-primary/5'
-            : 'border-border/35 bg-background/45 backdrop-blur-xl'
+            ? 'border-border/70 bg-background/90 backdrop-blur-2xl shadow-[var(--shadow-md)]'
+            : 'border-border/40 bg-background/70 backdrop-blur-xl'
         )}
       >
         <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-5">
