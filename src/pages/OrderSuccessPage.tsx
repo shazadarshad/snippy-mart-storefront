@@ -1,6 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MessageCircle, CheckCircle2, Package, Search, Home, ExternalLink, Users, Loader2, Copy, ShieldCheck, Mail, Key, ArrowRight, Check, User } from 'lucide-react';
+import {
+  MessageCircle,
+  CheckCircle2,
+  Search,
+  Home,
+  ExternalLink,
+  Users,
+  Loader2,
+  Copy,
+  ShieldCheck,
+  Package,
+  Clock3,
+  Sparkles,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -9,6 +22,10 @@ import { useTrackOrder } from '@/hooks/useOrders';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
 import { buildClaudeOrderWhatsAppUrl } from '@/lib/claudePreorder';
+import { cn } from '@/lib/utils';
+import SEO from '@/components/seo/SEO';
+
+const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/EB9hDAkQBmcHEjlTMLYXBh';
 
 interface OrderData {
   orderId: string;
@@ -43,7 +60,6 @@ function resolveWhatsAppConfirmUrl(
   if (!order) return null;
   if (order.whatsappConfirmUrl) return order.whatsappConfirmUrl;
 
-  // Rebuild Claude message if we have pre-order details
   if (order.isPreOrder && order.preOrder) {
     return buildClaudeOrderWhatsAppUrl(storeWhatsapp || '94787767869', {
       orderId: order.orderId,
@@ -51,7 +67,8 @@ function resolveWhatsAppConfirmUrl(
       customerWhatsapp: order.whatsapp,
       claudeEmail: order.preOrder.claudeEmail,
       plan: order.preOrder.plan,
-      paymentMode: order.preOrder.paymentMode || (order.preOrder.isFullPayment ? 'full' : 'reserve'),
+      paymentMode:
+        order.preOrder.paymentMode || (order.preOrder.isFullPayment ? 'full' : 'reserve'),
       fullPrice: order.preOrder.fullPrice,
       amountPaid: order.preOrder.deposit,
       remaining: order.preOrder.remaining,
@@ -68,54 +85,59 @@ const OrderSuccessPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [sessionOrder, setSessionOrder] = useState<OrderData | null>(null);
-  const [copied, setCopied] = useState(false);
   const { data: settings, isLoading: isSettingsLoading } = useSiteSettings();
 
-  // Load basic info from session first (for immediate feedback)
   useEffect(() => {
     const storedOrder = sessionStorage.getItem('lastOrder');
     if (storedOrder) {
-      setSessionOrder(JSON.parse(storedOrder));
-    } else {
-      // Fallback or redirect if direct access without order
-      // navigate('/'); 
+      try {
+        setSessionOrder(JSON.parse(storedOrder));
+      } catch {
+        /* ignore */
+      }
     }
-    // Clean any legacy auto-open flags
     sessionStorage.removeItem('waNeedsRetry');
     sessionStorage.removeItem('autoOpenWhatsApp');
   }, [navigate]);
 
-  // Fetch live order details to check for auto-fulfillment
-  const { data: liveOrder, isLoading: isLiveOrderLoading } = useTrackOrder(sessionOrder?.orderId || '');
+  const { data: liveOrder, isLoading: isLiveOrderLoading } = useTrackOrder(
+    sessionOrder?.orderId || ''
+  );
   const { assignment, isLoading: isAutomationLoading } = useOrderAutomation(liveOrder?.id);
 
   const copyToClipboard = (text: string, label: string = 'ID') => {
     navigator.clipboard.writeText(text);
     toast({
-      title: `${label} Copied!`,
+      title: `${label} copied`,
       description: 'Copied to clipboard.',
     });
   };
 
   if ((!sessionOrder && !liveOrder) || isLiveOrderLoading) {
     return (
-      <div className="min-h-screen pt-24 pb-20 flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <div className="min-h-dvh page-mesh pt-28 pb-20 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground font-medium">Loading your order…</p>
+        </div>
       </div>
     );
   }
 
   const orderId = liveOrder?.order_number || sessionOrder?.orderId || '';
   const total = liveOrder?.total_amount || sessionOrder?.total || 0;
-  // Consider 'processing' as well, as sometimes status updates lag slightly behind assignment in UI
+  const items = sessionOrder?.items || [];
   const isCompleted = liveOrder?.status === 'completed' || liveOrder?.status === 'delivered';
+  const isPending = !liveOrder?.status || liveOrder?.status === 'pending';
   const showAutomation = assignment && (isCompleted || liveOrder?.status === 'processing');
 
   const getWhatsAppLink = () => {
     const rich = resolveWhatsAppConfirmUrl(sessionOrder, settings?.whatsapp_number);
     if (rich) return rich;
     const number = settings?.whatsapp_number || '94787767869';
-    const template = settings?.whatsapp_message_template || 'Hello! I just placed an order. Order ID: {order_id}';
+    const template =
+      settings?.whatsapp_message_template ||
+      'Hello! I just placed an order. Order ID: {order_id}';
     const message = template.replace('{order_id}', orderId);
     return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
   };
@@ -131,279 +153,349 @@ const OrderSuccessPage = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20 flex items-center justify-center">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          {/* Success Animation */}
-          <div className="relative mb-8">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 rounded-full bg-success/20 animate-ping" />
-            </div>
-            <div className="relative w-24 h-24 rounded-full bg-success flex items-center justify-center mx-auto animate-scale-in">
-              <CheckCircle2 className="w-12 h-12 text-success-foreground" />
+    <div className="min-h-dvh page-mesh pt-24 sm:pt-28 pb-safe pb-16 sm:pb-20">
+      <SEO title="Order confirmed" description="Your Snippy Mart order was placed successfully." />
+      <div className="container mx-auto px-3 sm:px-4 max-w-2xl">
+        {/* Success header */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="relative inline-flex mb-5">
+            <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl scale-150" />
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/15">
+              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-white" strokeWidth={2.5} />
             </div>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-display font-black text-foreground mb-4 animate-fade-in">
-            {sessionOrder?.isPreOrder ? 'Pre-Order Locked In!' : 'Order Confirmed!'}
+          <h1 className="text-2xl sm:text-4xl font-display font-bold tracking-tight text-foreground mb-2">
+            {sessionOrder?.isPreOrder ? 'Pre-order locked in' : 'Order confirmed'}
           </h1>
-          <p className="text-lg text-muted-foreground mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Success! Your order <span className="text-primary font-mono font-black">{orderId}</span> has been locked in.
-            {liveOrder?.discount_amount > 0 && <span className="block text-sm text-green-500 mt-1 font-bold">You saved {formatPrice(liveOrder.discount_amount)}! 🎉</span>}
-            {liveOrder?.status === 'pending' && <span className="block text-sm text-amber-500 mt-2 font-bold">(Waiting for Payment Confirmation)</span>}
+          <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Thanks{sessionOrder?.name ? `, ${sessionOrder.name}` : ''}! We received your order and
+            will process it after payment verification.
           </p>
+        </div>
 
-          {sessionOrder?.isPreOrder && sessionOrder.preOrder && (
-            <div className="text-left mb-8 animate-fade-in" style={{ animationDelay: '0.12s' }}>
-              <div className="bg-card border-2 border-orange-500/25 p-6 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full -mr-20 -mt-20 blur-3xl" />
-                <div className="relative z-10 space-y-4">
-                  <div className="flex items-center gap-3 pb-4 border-b border-border/50">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-500/15 flex items-center justify-center text-2xl">
-                      ⚡
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-black uppercase tracking-wide text-foreground">
-                        {sessionOrder.preOrder.service} Pre-Order
-                      </h3>
-                      <p className="text-sm text-orange-400 font-bold">
-                        {sessionOrder.preOrder.plan} ·{' '}
-                        {sessionOrder.preOrder.isFullPayment || sessionOrder.preOrder.paymentMode === 'full'
-                          ? 'Full payment received'
-                          : 'Reserve deposit received'}
-                      </p>
-                    </div>
-                  </div>
+        {/* Order ID card */}
+        <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              Order ID
+            </p>
+            <p className="font-mono text-lg sm:text-xl font-bold text-primary break-all">{orderId}</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-xl shrink-0 h-10"
+            onClick={() => copyToClipboard(orderId, 'Order ID')}
+          >
+            <Copy className="w-4 h-4 mr-2" />
+            Copy ID
+          </Button>
+        </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-2xl bg-secondary/50 border border-border">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Full price</p>
-                      <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.fullPrice.toLocaleString()}</p>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">
-                        {sessionOrder.preOrder.isFullPayment || sessionOrder.preOrder.paymentMode === 'full'
-                          ? 'Paid now'
-                          : 'Deposit paid'}
-                      </p>
-                      <p className="font-bold text-foreground">LKR {sessionOrder.preOrder.deposit.toLocaleString()}</p>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-secondary/50 border border-border">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Balance due</p>
-                      <p className="font-bold text-foreground">
-                        LKR {(sessionOrder.preOrder.remaining ?? 0).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
+        {/* Status + total */}
+        <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-5">
+          <div className="surface-card p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              Status
+            </p>
+            <p
+              className={cn(
+                'text-sm font-bold capitalize',
+                isCompleted && 'text-emerald-600',
+                isPending && 'text-amber-600',
+                !isCompleted && !isPending && 'text-primary'
+              )}
+            >
+              {(liveOrder?.status || 'pending').replace(/_/g, ' ')}
+            </p>
+          </div>
+          <div className="surface-card p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              Total paid
+            </p>
+            <p className="text-sm sm:text-base font-bold text-foreground tabular-nums">
+              {formatPrice(total)}
+            </p>
+            {(liveOrder?.discount_amount > 0 || (sessionOrder?.discount || 0) > 0) && (
+              <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+                Saved {formatPrice(liveOrder?.discount_amount || sessionOrder?.discount || 0)}
+              </p>
+            )}
+          </div>
+        </div>
 
-                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Claude account email</p>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono font-bold text-foreground break-all">{sessionOrder.preOrder.claudeEmail}</p>
-                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={() => copyToClipboard(sessionOrder.preOrder!.claudeEmail, 'Email')}>
-                        <Copy className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+        {/* Items summary */}
+        {items.length > 0 && (
+          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Package className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground">Order items</h2>
+            </div>
+            <ul className="space-y-2.5">
+              {items.map((item, i) => (
+                <li
+                  key={`${item.name}-${i}`}
+                  className="flex items-start justify-between gap-3 text-sm border-b border-border/50 last:border-0 pb-2.5 last:pb-0"
+                >
+                  <span className="text-foreground font-medium leading-snug">
+                    {item.name}
+                    {item.quantity > 1 && (
+                      <span className="text-muted-foreground font-normal"> ×{item.quantity}</span>
+                    )}
+                  </span>
+                  <span className="tabular-nums text-muted-foreground shrink-0">
+                    {formatPrice(item.price * item.quantity)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Order ID</p>
-                      <p className="font-mono font-black text-primary">{orderId}</p>
-                    </div>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(orderId, 'Order ID')}>
-                      <Copy className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Save your Order ID. After payment verification we invite this email to a{' '}
-                    <strong className="text-foreground">private Claude Team workspace</strong> with
-                    Pro/Max access.
-                    {sessionOrder.preOrder.isFullPayment || sessionOrder.preOrder.paymentMode === 'full'
-                      ? ' Full payment means no second transfer.'
-                      : ' Remaining balance is due before activation.'}{' '}
-                    Track status anytime below.
-                  </p>
-                </div>
+        {/* Claude pre-order block */}
+        {sessionOrder?.isPreOrder && sessionOrder.preOrder && (
+          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 border-orange-500/25">
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border/60">
+              <div className="w-11 h-11 rounded-2xl bg-orange-500/15 flex items-center justify-center text-xl">
+                ⚡
               </div>
-            </div>
-          )}
-
-          {/* AUTO-DELIVERY CARD: Show if automation exists */}
-          {isAutomationLoading ? (
-            <div className="h-40 rounded-2xl bg-secondary/50 animate-pulse mb-8 flex items-center justify-center">
-              <span className="text-muted-foreground text-sm font-medium">Checking available inventory...</span>
-            </div>
-          ) : showAutomation ? (
-            <div className="text-left mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="bg-card border-2 border-primary/20 p-6 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full -mr-20 -mt-20 blur-3xl" />
-
-                <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border/50">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl">
-                    {getServiceIcon(assignment.service_type || 'default')}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black uppercase tracking-wide text-foreground">
-                      {assignment.service_type || 'Account'} Access
-                    </h3>
-                    <p className="text-sm text-green-500 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Instant Delivery Successful
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Username / Email</p>
-                    <div className="flex items-center justify-between">
-                      <p className="font-mono font-bold text-foreground">{assignment.email}</p>
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(assignment.email, 'Email')}>
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Password</p>
-                    <div className="flex items-center justify-between">
-                      <p className="font-mono font-bold text-foreground">••••••••</p>
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(assignment.password, 'Password')}>
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {assignment.rules_template && (
-                  <div className="mt-4 p-4 rounded-2xl bg-orange-500/5 border border-orange-500/10">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2 flex items-center gap-2">
-                      <ShieldCheck className="w-3 h-3" /> Important Rules
-                    </p>
-                    <div className="text-sm text-muted-foreground">
-                      <FormattedDescription description={assignment.rules_template} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : sessionOrder?.isPreOrder ? (
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 mb-8 animate-fade-in" style={{ animationDelay: '0.15s' }}>
-              <span className="text-2xl">📦</span>
-              <div className="text-left">
-                <p className="text-sm font-bold text-orange-400">Claude order received</p>
-                <p className="text-xs text-muted-foreground">
-                  We verify payment, then send your private workspace invite
+              <div>
+                <h3 className="font-bold text-foreground">
+                  {sessionOrder.preOrder.service} pre-order
+                </h3>
+                <p className="text-xs text-orange-600 font-semibold">
+                  {sessionOrder.preOrder.plan} ·{' '}
+                  {sessionOrder.preOrder.isFullPayment || sessionOrder.preOrder.paymentMode === 'full'
+                    ? 'Full payment'
+                    : 'Reserve deposit'}
                 </p>
               </div>
             </div>
-          ) : (
-            /* STANDARD DELIVERY NOTICE */
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-primary/10 border border-primary/20 mb-8 animate-fade-in" style={{ animationDelay: '0.15s' }}>
-              <span className="text-2xl">⏱️</span>
-              <div className="text-left">
-                <p className="text-sm font-bold text-primary">Estimated Delivery: 1 - 24 Hours</p>
-                <p className="text-xs text-muted-foreground">Credentials sent via WhatsApp & Email</p>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="rounded-xl bg-secondary/70 p-2.5 text-center">
+                <p className="text-[10px] uppercase font-semibold text-muted-foreground">Full</p>
+                <p className="text-xs sm:text-sm font-bold tabular-nums">
+                  {sessionOrder.preOrder.fullPrice.toLocaleString()}
+                </p>
+              </div>
+              <div className="rounded-xl bg-orange-500/10 p-2.5 text-center border border-orange-500/20">
+                <p className="text-[10px] uppercase font-semibold text-orange-600">Paid</p>
+                <p className="text-xs sm:text-sm font-bold tabular-nums">
+                  {sessionOrder.preOrder.deposit.toLocaleString()}
+                </p>
+              </div>
+              <div className="rounded-xl bg-secondary/70 p-2.5 text-center">
+                <p className="text-[10px] uppercase font-semibold text-muted-foreground">Due</p>
+                <p className="text-xs sm:text-sm font-bold tabular-nums">
+                  {(sessionOrder.preOrder.remaining ?? 0).toLocaleString()}
+                </p>
               </div>
             </div>
-          )}
+            <div className="rounded-xl bg-secondary/60 p-3 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-semibold text-muted-foreground mb-0.5">
+                  Claude email
+                </p>
+                <p className="font-mono text-xs sm:text-sm font-bold break-all">
+                  {sessionOrder.preOrder.claudeEmail}
+                </p>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 shrink-0"
+                onClick={() => copyToClipboard(sessionOrder.preOrder!.claudeEmail, 'Email')}
+              >
+                <Copy className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col gap-4 md:gap-6 mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-
-            {/* WhatsApp confirm — user taps (no auto popup); Claude gets full prefilled details */}
-            {!isCompleted && (
-              <div className="space-y-3">
-                {sessionOrder?.isPreOrder && (
-                  <div className="p-4 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/25 text-left">
-                    <p className="text-sm font-bold text-foreground mb-1">Confirm on WhatsApp</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Tap the button below. A message with your <strong className="text-foreground">Order ID, plan, payment, and Claude email</strong> is prefilled — just hit Send.
-                    </p>
-                  </div>
-                )}
-                <Button
-                  variant="whatsapp"
-                  size="xl"
-                  className="w-full h-14 md:h-16 rounded-2xl md:rounded-3xl text-base md:text-lg font-black uppercase tracking-widest shadow-2xl hover:translate-y-[-2px] active:translate-y-[0px] transition-all"
-                  asChild
-                  disabled={isSettingsLoading}
-                >
-                  <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
-                    {isSettingsLoading ? (
-                      <Loader2 className="w-6 h-6 animate-spin mr-3" />
-                    ) : (
-                      <MessageCircle className="w-6 h-6 md:w-7 md:h-7 mr-3" />
-                    )}
-                    {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm Order'}
-                  </a>
-                </Button>
+        {/* Instant delivery credentials */}
+        {isAutomationLoading ? (
+          <div className="surface-card p-6 mb-4 sm:mb-5 flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <span className="text-sm text-muted-foreground">Checking delivery…</span>
+          </div>
+        ) : showAutomation ? (
+          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 border-primary/25">
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border/60">
+              <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center text-xl">
+                {getServiceIcon(assignment.service_type || 'default')}
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">
+                  {assignment.service_type || 'Account'} access
+                </h3>
+                <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Instant delivery ready
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="rounded-xl bg-secondary/60 p-3">
+                <p className="text-[10px] uppercase font-semibold text-muted-foreground mb-1">
+                  Username / email
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono text-sm font-bold break-all">{assignment.email}</p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 shrink-0"
+                    onClick={() => copyToClipboard(assignment.email, 'Email')}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+              <div className="rounded-xl bg-secondary/60 p-3">
+                <p className="text-[10px] uppercase font-semibold text-muted-foreground mb-1">
+                  Password
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono text-sm font-bold">••••••••</p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 shrink-0"
+                    onClick={() => copyToClipboard(assignment.password, 'Password')}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            {assignment.rules_template && (
+              <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-1.5 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3 h-3" />
+                  Important rules
+                </p>
+                <div className="text-sm text-muted-foreground">
+                  <FormattedDescription description={assignment.rules_template} />
+                </div>
               </div>
             )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Track Order Button used as primary if completed, secondary if not */}
-              <Button variant={isCompleted ? "hero" : "outline"} size="xl" className="h-14 md:h-18 rounded-2xl md:rounded-3xl text-base md:text-lg font-bold" asChild>
-                <Link to={`/track-order?orderId=${orderId}`}>
-                  <Search className="w-5 h-5 md:w-6 md:h-6 mr-3" />
-                  {isCompleted ? "View Full Details" : "Track Status"}
-                </Link>
-              </Button>
-
-              <Button variant="outline" size="xl" className="h-14 md:h-18 rounded-2xl md:rounded-3xl text-base md:text-lg font-bold border-2" asChild>
-                <Link to="/">
-                  <Home className="w-5 h-5 md:w-6 md:h-6 mr-3" />
-                  Home
-                </Link>
-              </Button>
-            </div>
           </div>
-
-          {/* WhatsApp Community Invite */}
-          <div className="mb-12 p-6 md:p-8 rounded-[2rem] bg-gradient-to-br from-[#25D366]/10 to-transparent border border-[#25D366]/20 relative overflow-hidden group animate-fade-in" style={{ animationDelay: '0.35s' }}>
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Users className="w-24 h-24 text-[#25D366]" />
+        ) : (
+          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Clock3 className="w-5 h-5 text-primary" />
             </div>
-            <div className="relative z-10 text-left">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg shadow-[#25D366]/20">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Join Our Community</h3>
-              </div>
-              <p className="text-muted-foreground mb-6 max-w-md leading-relaxed">
-                Join our exclusive WhatsApp community to get instant updates on new products, flash sales, and premium support from our team.
+            <div>
+              <p className="text-sm font-bold text-foreground mb-0.5">
+                {sessionOrder?.isPreOrder
+                  ? 'Next: payment check → workspace invite'
+                  : 'Delivery: usually 1–24 hours'}
               </p>
-              <Button
-                variant="whatsapp"
-                size="lg"
-                className="rounded-2xl font-bold px-8 shadow-xl hover:scale-105 active:scale-95 transition-all"
-                asChild
-              >
-                <a href="https://chat.whatsapp.com/J5lBGUiobiKIPpUYGMorec" target="_blank" rel="noopener noreferrer">
-                  Join Group Now
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {sessionOrder?.isPreOrder
+                  ? 'We verify payment, then invite your email to a private Claude Team workspace.'
+                  : 'After we confirm payment, credentials go to WhatsApp (and email if provided).'}
+              </p>
             </div>
           </div>
+        )}
 
+        {/* Primary actions */}
+        <div className="space-y-3 mb-5 sm:mb-6">
           {!isCompleted && (
-            <div className="flex flex-col items-center gap-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <p className="text-xs text-muted-foreground uppercase font-black tracking-widest">Fail-safe Communication</p>
-              <a
-                href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-8 py-4 rounded-2xl bg-secondary/50 border border-border text-primary hover:bg-primary hover:text-white transition-all font-black uppercase text-xs tracking-widest flex items-center gap-3 shadow-xl"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Manual Support Line
+            <Button
+              variant="whatsapp"
+              size="xl"
+              className="w-full h-12 sm:h-14 rounded-2xl text-sm sm:text-base font-bold shadow-lg shadow-[#25D366]/25"
+              asChild
+              disabled={isSettingsLoading}
+            >
+              <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
+                {isSettingsLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : (
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                )}
+                {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm on WhatsApp'}
               </a>
-            </div>
+            </Button>
           )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant={isCompleted ? 'default' : 'outline'}
+              size="lg"
+              className="h-12 rounded-2xl font-semibold"
+              asChild
+            >
+              <Link to={`/track-order?orderId=${orderId}`}>
+                <Search className="w-4 h-4 mr-2" />
+                Track
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="h-12 rounded-2xl font-semibold" asChild>
+              <Link to="/products">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Shop more
+              </Link>
+            </Button>
+          </div>
+
+          <Button variant="ghost" size="sm" className="w-full text-muted-foreground" asChild>
+            <Link to="/">
+              <Home className="w-4 h-4 mr-2" />
+              Back to home
+            </Link>
+          </Button>
         </div>
+
+        {/* WhatsApp community group */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[#25D366]/25 bg-gradient-to-br from-[#25D366]/12 via-card to-card p-5 sm:p-6 shadow-sm">
+          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-[#25D366]/10 blur-2xl pointer-events-none" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-11 h-11 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-md shadow-[#25D366]/30">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground text-base sm:text-lg">
+                  Join our WhatsApp group
+                </h3>
+                <p className="text-xs text-muted-foreground">Deals · updates · support</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+              Get flash sales, new product drops, and help from the Snippy Mart community.
+            </p>
+            <Button
+              variant="whatsapp"
+              size="lg"
+              className="w-full sm:w-auto rounded-2xl font-bold px-6 h-11 shadow-md shadow-[#25D366]/25"
+              asChild
+            >
+              <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
+                Join group
+                <ExternalLink className="w-4 h-4 ml-2" />
+              </a>
+            </Button>
+          </div>
+        </div>
+
+        {!isCompleted && (
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            Need help?{' '}
+            <a
+              href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary font-semibold hover:underline"
+            >
+              Message support
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );
