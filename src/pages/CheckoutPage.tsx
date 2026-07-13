@@ -193,12 +193,11 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Force bank transfer only (Binance / card disabled for now)
-    if (paymentMethod !== 'bank_transfer') {
+    if (paymentMethod !== 'bank_transfer' && paymentMethod !== 'binance_usdt') {
       setPaymentMethod('bank_transfer');
       toast({
-        title: 'Bank transfer only',
-        description: 'Please pay by bank transfer and upload your receipt.',
+        title: 'Payment method unavailable',
+        description: 'Please use bank transfer or Binance Pay.',
         variant: 'destructive',
       });
       return;
@@ -206,9 +205,21 @@ const CheckoutPage = () => {
 
     if (!proofFile) {
       toast({
-        title: "Payment proof required",
-        description: "Please upload your bank transfer receipt screenshot.",
-        variant: "destructive",
+        title: 'Payment proof required',
+        description:
+          paymentMethod === 'binance_usdt'
+            ? 'Please upload your Binance payment screenshot.'
+            : 'Please upload your bank transfer receipt screenshot.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (paymentMethod === 'binance_usdt' && !binanceId.trim()) {
+      toast({
+        title: 'Binance ID required',
+        description: 'Please enter your Binance ID so we can verify the payment.',
+        variant: 'destructive',
       });
       return;
     }
@@ -261,24 +272,16 @@ const CheckoutPage = () => {
         throw new Error('Your cart has an invalid item (old cached data). Please clear the cart and add items again.');
       }
 
-      const commonOrderData = {
-        payment_proof_url: paymentProofPath,
-        notes: formData.notes || undefined,
-        binance_id: undefined,
-        // Update customer details just in case they changed them after pre-registering
-        customer_name: formData.name || 'Customer',
-        customer_whatsapp: formData.whatsapp,
-        customer_email: formData.email || undefined,
-      };
-
       // Create final payload
       const payload = await getOrderPayload();
 
-      // Add submit-time fields (bank transfer only)
       Object.assign(payload, {
         payment_proof_url: paymentProofPath,
-        binance_id: undefined,
-        payment_method: 'bank_transfer' as PaymentMethod,
+        binance_id: paymentMethod === 'binance_usdt' ? binanceId.trim() : undefined,
+        payment_method: paymentMethod,
+        customer_name: formData.name || 'Customer',
+        customer_whatsapp: formData.whatsapp,
+        customer_email: formData.email || undefined,
       });
 
       // We always use createOrder (which is our create-order Edge Function)
@@ -508,10 +511,12 @@ const CheckoutPage = () => {
                 <PaymentMethodSelector
                   selectedMethod={paymentMethod}
                   onMethodChange={(m) => {
-                    // Only allow bank transfer while other methods are disabled
-                    if (m === 'bank_transfer' || m === null) {
-                      setPaymentMethod(m ?? 'bank_transfer');
+                    if (m === 'bank_transfer' || m === 'binance_usdt') {
+                      setPaymentMethod(m);
+                    } else if (m === null) {
+                      setPaymentMethod('bank_transfer');
                     }
+                    // card stays blocked
                   }}
                   binanceId={binanceId}
                   onBinanceIdChange={setBinanceId}
@@ -527,12 +532,11 @@ const CheckoutPage = () => {
               <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20">
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-foreground mb-1">
-                    How bank checkout works
-                  </p>
+                  <p className="font-medium text-foreground mb-1">How checkout works</p>
                   <p className="text-muted-foreground">
-                    Transfer the order total, put your Order ID in the remarks, upload the receipt,
-                    then place the order. We verify payment and send your product details on WhatsApp.
+                    Pay by bank transfer or Binance, put your Order ID in the remarks/note, upload
+                    the proof, then place the order. We verify payment and send your product details
+                    on WhatsApp.
                   </p>
                 </div>
               </div>
