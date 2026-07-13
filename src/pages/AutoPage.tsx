@@ -64,7 +64,6 @@ import {
   productLkrPrice,
   productUsdPrice,
   productAvailable,
-  productImageUrl,
   formatLkr,
   getProductPromotions,
   groupAutoProducts,
