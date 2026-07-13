@@ -363,13 +363,238 @@ export function productFamily(name: string): { key: string; title: string } {
   return { key: `solo:${key}`, title: title || name };
 }
 
-/** Short label for a variant inside a family (what the customer picks). */
+/**
+ * Display-only text cleanup. Does NOT change API IDs or purchase mapping.
+ * Original supplier strings stay on the product object for admin / notes.
+ */
+export function cleanSupplierText(raw: string | null | undefined): string {
+  if (!raw) return '';
+  let t = String(raw)
+    .replace(/\r\n/g, '\n')
+    .replace(/\uFFFD/g, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+    // collapse weird spacing
+    .replace(/[ \t\f\v]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  // Common supplier English / shorthand fixes (safe, conservative)
+  const replacements: [RegExp, string][] = [
+    [/\bcomes with full warranty\b/gi, 'Full warranty'],
+    [/\bcomes with\b/gi, 'Includes'],
+    [/\bfully covered\b/gi, 'Full warranty'],
+    [/\bfull cover\b/gi, 'Full warranty'],
+    [/\bfull warranty\b/gi, 'Full warranty'],
+    [/\bno damage\b/gi, 'No damage warranty'],
+    [/\bno warranty\b/gi, 'No warranty'],
+    [/\bno fees?\b/gi, 'No extra fees'],
+    [/\bcovers?\s+(\d+)\s*d\b/gi, '$1-day warranty'],
+    [/\bcovers?\s+(\d+)\s*h\b/gi, '$1-hour warranty'],
+    [/\b(\d+)\s*d\b/gi, '$1 days'],
+    [/\b(\d+)\s*h\b/gi, '$1 hours'],
+    [/\b(\d+)\s*m\b(?!\w)/gi, '$1 months'],
+    [/\b1 month\b/gi, '1 month'],
+    [/\bcre\b/gi, 'credits'],
+    [/\bcdk\b/gi, 'activation code'],
+    [/\badd mail\b/gi, 'Add mail'],
+    [/\brandom cre\b/gi, 'random credits'],
+    [/\bvery phone\b/gi, 'phone verification'],
+    [/\blogin l[oộ]i pass\b/gi, 'login password issues'],
+    [/\bdu[oọ]c b[aả]o h[aà]nh\b/gi, 'warranty included'],
+    [/\bmkp\b/gi, 'recovery'],
+    [/\b ho[aà]n ti[eề]n\b/gi, ' refund'],
+  ];
+
+  for (const [re, to] of replacements) {
+    t = t.replace(re, to);
+  }
+
+  // Fix " -> " range leftovers
+  t = t.replace(/\s*->\s*/g, ' – ').replace(/\s{2,}/g, ' ').trim();
+  return t;
+}
+
+/** Nice title-case without wrecking known brands / codes. */
+function smartTitleCase(s: string): string {
+  const keepUpper = new Set([
+    'ai',
+    'api',
+    'vpn',
+    'gpt',
+    'us',
+    'pc',
+    'ip',
+    'cdn',
+    'pro',
+    'vip',
+    'edu',
+    'veo3',
+    'chatgpt',
+    'gmail',
+    'hotmail',
+    'office',
+    '365',
+    'canva',
+    'capcut',
+    'claude',
+    'codex',
+    'cursor',
+  ]);
+  return s
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => {
+      const lower = w.toLowerCase();
+      if (keepUpper.has(lower)) {
+        if (lower === 'chatgpt') return 'ChatGPT';
+        if (lower === 'veo3') return 'VEO3';
+        if (lower === 'ip') return 'IP';
+        if (lower === 'us') return 'US';
+        if (lower === 'pc') return 'PC';
+        if (lower === 'api') return 'API';
+        if (lower === 'ai') return 'AI';
+        if (lower === 'vpn') return 'VPN';
+        if (lower === 'gpt') return 'GPT';
+        if (lower === 'edu') return 'Edu';
+        if (lower === 'vip') return 'VIP';
+        if (lower === 'pro') return 'Pro';
+        return lower.toUpperCase() === w ? w : lower.charAt(0).toUpperCase() + lower.slice(1);
+      }
+      if (/^\d/.test(w)) return w;
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(' ');
+}
+
+/** Customer-facing product title (display only). */
+export function displayTitle(p: AutoProduct | null | undefined): string {
+  if (!p) return 'Product';
+  const fam = productFamily(p.product_name || '');
+  // Prefer clean family name + short variant cue when multi-part
+  const variant = shortVariantParts(p.product_name || '');
+  if (variant) return `${fam.title} — ${variant}`;
+  return smartTitleCase(cleanSupplierText(p.product_name || fam.title));
+}
+
+const FAMILY_BLURBS: Record<string, string> = {
+  'capcut-pro':
+    'CapCut Pro access for creators. Pick a duration. Delivered after your bank transfer is confirmed.',
+  supergrok: 'SuperGrok access. Choose plan length and warranty option below.',
+  'adobe-full-app':
+    'Adobe Creative Cloud full-app access. Select duration and warranty type.',
+  'api-claude': 'Claude API token packs. Instant-style delivery after payment confirmation.',
+  'api-codex': 'Codex API token packs for coding workflows. Choose pack size below.',
+  'api-deepseek': 'DeepSeek API token access. Select the pack that fits your usage.',
+  'cursor-pro': 'Cursor Pro access. Choose warranty style below.',
+  elevenlabs: 'ElevenLabs credits / plan access for voice AI.',
+  'picsart-pro': 'Picsart Pro creative suite access. Choose warranty option.',
+  veo3: 'Google VEO3 / Antigravity video AI credits. Select pack below.',
+  higgs: 'Higgs AI credits and plans.',
+  'canva-edu': 'Canva Education plan access for design work.',
+  'canva-pro': 'Canva Pro access. Add-mail / upgrade style delivery as listed.',
+  gemini: 'Google Gemini AI Pro access. Choose the plan option below.',
+  'office-365': 'Microsoft Office 365 access. Family / premium options available.',
+  'gmail-random-ip': 'Gmail accounts (random IP range). Format and warranty as listed on the option.',
+  'gmail-stock': 'Gmail stock accounts by year range. Check the option notes before buying.',
+  'gpt-plus': 'ChatGPT Plus access for the selected period.',
+  'express-vpn': 'ExpressVPN subscription access.',
+  'hma-vpn': 'HMA VPN key / access for supported devices.',
+  duolingo: 'Duolingo Super premium access.',
+  openart: 'OpenArt AI credits for image generation.',
+  kling: 'Kling AI video credits.',
+  meitu: 'Meitu VIP creative tools access.',
+  kiro: 'Kiro Power plan access.',
+  xbox: 'Xbox gift code (random).',
+  hotmail: 'Hotmail / Outlook mail access. Immortal-style stock as listed.',
+};
+
+function shortVariantParts(name: string): string {
+  const n = name.toLowerCase();
+  const bits: string[] = [];
+
+  // Token / credit size first
+  const token = name.match(/(\d+\s*M)\s*Token/i) || name.match(/(\d+)\s*M\s*Token/i);
+  if (token) bits.push(`${token[1].replace(/\s+/g, '')} tokens`);
+
+  const credits = name.match(/(\d[\d,]*)\s*(?:cre|credits?)/i);
+  if (credits && !token) bits.push(`${credits[1]} credits`);
+
+  // Duration
+  const rangeD = n.match(/(\d+)\s*d\s*[-–>]+\s*(\d+)\s*d/);
+  if (rangeD) bits.push(`${rangeD[1]}–${rangeD[2]} days`);
+  else {
+    const d = n.match(/\b(\d+)\s*d\b/);
+    const months = n.match(/\b(\d+)\s*months?\b/) || n.match(/\b(\d+)\s*m\b(?!\w)/);
+    const years = n.match(/\b(\d+)\s*years?\b/);
+    const hours = n.match(/\b(\d+)\s*h\b/);
+    if (d) bits.push(`${d[1]} days`);
+    else if (months) bits.push(`${months[1]} month${months[1] === '1' ? '' : 's'}`);
+    else if (years) bits.push(`${years[1]} year${years[1] === '1' ? '' : 's'}`);
+    else if (hours) bits.push(`${hours[1]} hours`);
+  }
+
+  // Warranty / quality tags
+  if (/\bno warranty\b/i.test(n)) bits.push('No warranty');
+  else if (/\b24h\b/i.test(n)) bits.push('24h warranty');
+  else if (/\b7d warranty\b|\b7-day warranty\b|\bcovers 7d\b/i.test(n)) bits.push('7-day warranty');
+  else if (/\bfull warranty\b|\bfully covered\b|\bfull cover\b|\bcomes with full warranty\b/i.test(n))
+    bits.push('Full warranty');
+  else if (/\bno damage\b/i.test(n)) bits.push('No damage warranty');
+  else if (/\bno fees?\b/i.test(n)) bits.push('No fees');
+
+  if (/\btrial\b/i.test(n)) bits.push('Trial');
+  if (/\brenew\b/i.test(n)) bits.push('Renew');
+  if (/\brandom\b/i.test(n) && !/gmail/i.test(n)) bits.push('Random');
+  if (/\bus stock\b/i.test(n)) bits.push('US stock');
+  if (/\bnot serviced\b/i.test(n)) bits.push('Not serviced');
+  if (/\bstarter\b/i.test(n)) bits.push('Starter');
+  if (/\bultra\b/i.test(n)) bits.push('Ultra');
+  if (/\bx5\b/i.test(n)) bits.push('x5');
+  if (/\bx20\b/i.test(n)) bits.push('x20');
+  if (/\bfamily\b/i.test(n)) bits.push('Family');
+  if (/\badd\s*5\b/i.test(n) || /\badd 5 member\b/i.test(n)) bits.push('Add 5 members');
+  if (/\bcdk\b/i.test(n)) bits.push('Activation code');
+  if (/\blink\b/i.test(n) && /gemini/i.test(n)) bits.push('Invite link');
+
+  // Year ranges for gmail
+  const yearsRange = name.match(/(20\d{2})\s*[-~–]\s*(20\d{2})/);
+  if (yearsRange) bits.push(`${yearsRange[1]}–${yearsRange[2]}`);
+
+  return bits.join(' · ');
+}
+
+/** Short option label in dropdowns (display only). */
 export function variantLabel(p: AutoProduct): string {
-  const name = p.product_name || 'Option';
-  const fam = productFamily(name);
-  // Prefer the full name if short enough; otherwise keep full name for clarity
-  if (name.length <= 72) return name;
-  return name.slice(0, 69) + '…';
+  const parts = shortVariantParts(p.product_name || '');
+  if (parts) return parts;
+  const cleaned = cleanSupplierText(p.product_name || 'Option');
+  return cleaned.length <= 64 ? cleaned : cleaned.slice(0, 61) + '…';
+}
+
+/** Customer-facing description (display only). */
+export function displayDescription(p: AutoProduct | null | undefined): string {
+  if (!p) return '';
+  const fam = productFamily(p.product_name || '');
+  const blurb = FAMILY_BLURBS[fam.key];
+  const raw = cleanSupplierText(p.description || '');
+
+  // Prefer supplier text if it looks usable (enough Latin letters, not too short)
+  const latin = (raw.match(/[A-Za-z]/g) || []).length;
+  const looksEnglish = latin >= 40 && raw.length >= 30;
+
+  if (looksEnglish) {
+    // Soft-trim for cards; keep readable paragraphs
+    const clipped = raw.length > 280 ? raw.slice(0, 277).trimEnd() + '…' : raw;
+    return clipped;
+  }
+
+  if (blurb) return blurb;
+
+  if (raw) {
+    return raw.length > 200 ? raw.slice(0, 197).trimEnd() + '…' : raw;
+  }
+
+  return `${fam.title} — digital delivery after bank transfer confirmation. Choose an option and complete payment.`;
 }
 
 export interface AutoProductGroup {
@@ -415,11 +640,12 @@ export function groupAutoProducts(products: AutoProduct[]): AutoProductGroup[] {
     const inStock = variants.filter((v) => productAvailable(v) > 0);
     const defaultVariant = inStock[0] || variants[0];
     const withImg = variants.find((v) => productImageUrl(v));
-    const withDesc = variants.find((v) => (v.description || '').trim());
+    // Prefer a cleaned blurb over messy raw supplier text
+    const description = displayDescription(defaultVariant);
 
     groups.push({
       key,
-      title,
+      title, // already clean family title
       category: categorizeProduct(variants[0].product_name || ''),
       variants,
       defaultVariant,
@@ -427,7 +653,7 @@ export function groupAutoProducts(products: AutoProduct[]): AutoProductGroup[] {
       maxLkr,
       totalAvailable,
       image: productImageUrl(withImg || defaultVariant),
-      description: withDesc?.description,
+      description,
     });
   }
 

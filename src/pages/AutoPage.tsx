@@ -68,6 +68,8 @@ import {
   getProductPromotions,
   groupAutoProducts,
   variantLabel,
+  displayTitle,
+  displayDescription,
   accountLines,
   AUTO_USD_TO_LKR,
 } from '@/lib/autoBuyer';
@@ -141,7 +143,7 @@ const AutoPage = () => {
           g.title,
           g.description,
           g.category,
-          ...g.variants.map((v) => v.product_name),
+          ...g.variants.map((v) => `${v.product_name} ${displayTitle(v)} ${variantLabel(v)}`),
         ]
           .join(' ')
           .toLowerCase();
@@ -322,7 +324,8 @@ const AutoPage = () => {
         total_amount: lineLkr,
         notes: [
           '[AUTO STOCK ORDER]',
-          `Supplier product: ${buyProduct.product_name}`,
+          `Display name: ${displayTitle(buyProduct)}`,
+          `Supplier product (raw): ${buyProduct.product_name}`,
           `Supplier ID: ${buyProduct._id}`,
           `Qty: ${qty}`,
           slotMonths ? `Slot months: ${slotMonths}` : null,
@@ -339,8 +342,9 @@ const AutoPage = () => {
         items: [
           {
             // External auto SKU — not a products table UUID
-            product_name: `[Auto] ${buyProduct.product_name}`,
-            plan_name: slotMonths ? `${slotMonths} month(s)` : 'Instant delivery',
+            // Clean name for customer-facing order; raw kept in credentials
+            product_name: `[Auto] ${displayTitle(buyProduct)}`,
+            plan_name: variantLabel(buyProduct) || (slotMonths ? `${slotMonths} month(s)` : 'Instant delivery'),
             quantity: qty,
             unit_price: unitLkr,
             total_price: lineLkr,
@@ -348,6 +352,7 @@ const AutoPage = () => {
               auto_source: 'canboso',
               auto_product_id: buyProduct._id,
               auto_product_name: buyProduct.product_name,
+              auto_display_name: displayTitle(buyProduct),
               delivery_email: customerEmail.trim() || null,
               slot_months: slotMonths,
               cost_usd: productUsdPrice(buyProduct),
@@ -798,7 +803,7 @@ const AutoPage = () => {
               <DialogDescription>
                 {orderDone
                   ? `Order ${lastOrderId}`
-                  : buyProduct.product_name}
+                  : buyGroup?.title || displayTitle(buyProduct)}
               </DialogDescription>
             </DialogHeader>
 
@@ -826,9 +831,9 @@ const AutoPage = () => {
                   </div>
                 )}
 
-                {buyProduct.description && (
-                  <div className="max-h-20 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
-                    {buyProduct.description}
+                {displayDescription(buyProduct) && (
+                  <div className="max-h-24 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
+                    {displayDescription(buyProduct)}
                   </div>
                 )}
 
@@ -836,7 +841,7 @@ const AutoPage = () => {
                   <div className="flex justify-between gap-2">
                     <span className="text-muted-foreground">Selected</span>
                     <span className="max-w-[65%] text-right text-xs font-medium leading-snug">
-                      {buyProduct.product_name}
+                      {displayTitle(buyProduct)}
                     </span>
                   </div>
                   <div className="mt-1 flex justify-between">
