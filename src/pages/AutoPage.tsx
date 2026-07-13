@@ -609,287 +609,290 @@ const AutoPage = () => {
         </section>
       </div>
 
-      {/* Buy dialog */}
-      <Dialog open={!!buyProduct} onOpenChange={(o) => !o && closeBuy()}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="pr-6">
-              {result?.success ? 'Delivery ready' : 'Instant purchase'}
-            </DialogTitle>
-            <DialogDescription>
-              {result?.success
-                ? 'Copy credentials below. Keep them safe.'
-                : buyProduct?.product_name}
-            </DialogDescription>
-          </DialogHeader>
+      {/* Buy dialog — only mount content when a product is selected to avoid null result.orderCode */}
+      <Dialog
+        open={!!buyProduct}
+        onOpenChange={(o) => {
+          if (!o) closeBuy();
+        }}
+      >
+        {buyProduct ? (
+          <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="pr-6">
+                {result?.success ? 'Delivery ready' : 'Instant purchase'}
+              </DialogTitle>
+              <DialogDescription>
+                {result?.success
+                  ? 'Copy credentials below. Keep them safe.'
+                  : buyProduct.product_name}
+              </DialogDescription>
+            </DialogHeader>
 
-          <AnimatePresence mode="wait">
-            {!result?.success && buyProduct ? (
-              <motion.div
-                key="form"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="space-y-4"
-              >
-                {buyProduct.description && (
-                  <div className="max-h-28 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
-                    {buyProduct.description}
-                  </div>
-                )}
-
-
-                <div className="rounded-xl border border-border/70 bg-card p-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Unit price</span>
-                    <span className="font-semibold tabular-nums">
-                      {formatUsd(unitUsd)}{' '}
-                      <span className="text-xs font-normal text-muted-foreground">
-                        (~{formatLkr(productLkrPrice(buyProduct))})
-                      </span>
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Stock</span>
-                    <span className="tabular-nums">
-                      {productAvailable(buyProduct)} available
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Wallet</span>
-                    <span className="tabular-nums">{formatUsd(walletUsd)}</span>
-                  </div>
-                </div>
-
-                {!qtyLocked && (
-                  <div className="space-y-2">
-                    <Label>Quantity</Label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10"
-                        disabled={qty <= 1}
-                        onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={maxQty}
-                        value={qty}
-                        onChange={(e) => {
-                          const n = parseInt(e.target.value, 10);
-                          if (!Number.isFinite(n)) return;
-                          setQty(Math.min(maxQty, Math.max(1, n)));
-                        }}
-                        className="h-10 text-center tabular-nums"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10"
-                        disabled={qty >= maxQty}
-                        onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+            <AnimatePresence mode="wait">
+              {result?.success ? (
+                <motion.div
+                  key="result"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm">
+                    <div className="font-semibold text-emerald-700 dark:text-emerald-300">
+                      Order {result?.orderCode || 'OK'}
                     </div>
-                  </div>
-                )}
-
-                {buyProduct?.requiresCustomerEmail && (
-                  <div className="space-y-2">
-                    <Label htmlFor="auto-email" className="flex items-center gap-1.5">
-                      <Mail className="h-3.5 w-3.5" />
-                      Customer email
-                    </Label>
-                    <Input
-                      id="auto-email"
-                      type="email"
-                      placeholder="customer@email.com"
-                      value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
-                      autoComplete="email"
-                    />
-                  </div>
-                )}
-
-                {(buyProduct?.requiresSlotMonths || buyProduct?.isSlotProduct) && (
-                  <div className="space-y-2">
-                    <Label>Duration (months)</Label>
-                    <Select
-                      value={String(slotMonths ?? '')}
-                      onValueChange={(v) => setSlotMonths(Number(v))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select months" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(buyProduct?.slotDurations?.length
-                          ? buyProduct.slotDurations
-                          : [1, 3, 6, 12]
-                        ).map((m) => (
-                          <SelectItem key={m} value={String(m)}>
-                            {m} month{m === 1 ? '' : 's'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Total</span>
-                    <span className="text-lg font-bold tabular-nums text-primary">
-                      {formatUsd(lineUsd)}
-                    </span>
-                  </div>
-                  <div className="text-right text-xs text-muted-foreground tabular-nums">
-                    ~{formatLkr(lineLkr)} · charged from wallet
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="result"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm">
-                  <div className="font-semibold text-emerald-700 dark:text-emerald-300">
-                    Order {result.orderCode || 'OK'}
-                  </div>
-                  <div className="mt-1 text-muted-foreground">
-                    {result.productType} · qty {result.finalQuantity ?? result.quantity}
-                    {result.bonusQuantity ? ` (+${result.bonusQuantity} bonus)` : ''}
-                  </div>
-                  {result.amountText && (
-                    <div className="mt-1 text-muted-foreground">Paid {result.amountText}</div>
-                  )}
-                  {result.balanceText && (
-                    <div className="text-muted-foreground">
-                      New balance {result.balanceText}
+                    <div className="mt-1 text-muted-foreground">
+                      {result?.productType} · qty{' '}
+                      {result?.finalQuantity ?? result?.quantity}
+                      {result?.bonusQuantity ? ` (+${result.bonusQuantity} bonus)` : ''}
                     </div>
-                  )}
-                </div>
+                    {result?.amountText && (
+                      <div className="mt-1 text-muted-foreground">
+                        Paid {result.amountText}
+                      </div>
+                    )}
+                    {result?.balanceText && (
+                      <div className="text-muted-foreground">
+                        New balance {result.balanceText}
+                      </div>
+                    )}
+                  </div>
 
-                {(result.deliveredAccounts?.length ?? 0) > 0 ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label>Delivered accounts</Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1 text-xs"
-                        onClick={() =>
-                          handleCopy(
-                            'all',
-                            (result.deliveredAccounts || [])
-                              .map((a, i) => `#${i + 1}\n${accountLines(a)}`)
-                              .join('\n\n')
-                          )
-                        }
-                      >
-                        {copiedKey === 'all' ? (
-                          <Check className="h-3.5 w-3.5" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" />
-                        )}
-                        Copy all
-                      </Button>
-                    </div>
-                    <div className="max-h-64 space-y-2 overflow-y-auto">
-                      {result.deliveredAccounts!.map((acc, i) => {
-                        const text = accountLines(acc);
-                        const key = `acc-${i}`;
-                        return (
-                          <div
-                            key={key}
-                            className="rounded-lg border border-border/70 bg-muted/20 p-3 font-mono text-xs"
-                          >
-                            <div className="mb-2 flex items-center justify-between gap-2">
-                              <span className="font-sans text-[11px] font-medium text-muted-foreground">
-                                Item {i + 1}
-                              </span>
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
-                                onClick={() => handleCopy(key, text)}
-                              >
-                                {copiedKey === key ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                                Copy
-                              </button>
+                  {(result?.deliveredAccounts?.length ?? 0) > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Delivered accounts</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1 text-xs"
+                          onClick={() =>
+                            handleCopy(
+                              'all',
+                              (result?.deliveredAccounts || [])
+                                .map((a, i) => `#${i + 1}\n${accountLines(a)}`)
+                                .join('\n\n')
+                            )
+                          }
+                        >
+                          {copiedKey === 'all' ? (
+                            <Check className="h-3.5 w-3.5" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5" />
+                          )}
+                          Copy all
+                        </Button>
+                      </div>
+                      <div className="max-h-64 space-y-2 overflow-y-auto">
+                        {(result?.deliveredAccounts || []).map((acc, i) => {
+                          const text = accountLines(acc);
+                          const key = `acc-${i}`;
+                          return (
+                            <div
+                              key={key}
+                              className="rounded-lg border border-border/70 bg-muted/20 p-3 font-mono text-xs"
+                            >
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <span className="font-sans text-[11px] font-medium text-muted-foreground">
+                                  Item {i + 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+                                  onClick={() => handleCopy(key, text)}
+                                >
+                                  {copiedKey === key ? (
+                                    <Check className="h-3 w-3" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                  Copy
+                                </button>
+                              </div>
+                              <pre className="whitespace-pre-wrap break-all">{text}</pre>
                             </div>
-                            <pre className="whitespace-pre-wrap break-all">{text}</pre>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Purchase succeeded but no account payload was returned. Check the bot
+                      / supplier panel for delivery.
+                    </p>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="form"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="space-y-4"
+                >
+                  {buyProduct.description && (
+                    <div className="max-h-28 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
+                      {buyProduct.description}
+                    </div>
+                  )}
+
+                  <div className="rounded-xl border border-border/70 bg-card p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Unit price</span>
+                      <span className="font-semibold tabular-nums">
+                        {formatUsd(unitUsd)}{' '}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          (~{formatLkr(productLkrPrice(buyProduct))})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Stock</span>
+                      <span className="tabular-nums">
+                        {productAvailable(buyProduct)} available
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Wallet</span>
+                      <span className="tabular-nums">{formatUsd(walletUsd)}</span>
                     </div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Purchase succeeded but no account payload was returned. Check the bot /
-                    supplier panel for delivery.
-                  </p>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            {!result?.success ? (
-              <>
-                <Button type="button" variant="outline" onClick={closeBuy} disabled={buying}>
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handlePurchase}
-                  disabled={buying || !buyProduct || productAvailable(buyProduct) <= 0}
-                  className="gap-2"
-                >
-                  {buying ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Purchasing…
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="h-4 w-4" />
-                      Pay & deliver
-                    </>
+                  {!qtyLocked && (
+                    <div className="space-y-2">
+                      <Label>Quantity</Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10"
+                          disabled={qty <= 1}
+                          onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={maxQty}
+                          value={qty}
+                          onChange={(e) => {
+                            const n = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(n)) return;
+                            setQty(Math.min(maxQty, Math.max(1, n)));
+                          }}
+                          className="h-10 text-center tabular-nums"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10"
+                          disabled={qty >= maxQty}
+                          onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   )}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setResult(null);
-                  }}
-                >
-                  Buy again
-                </Button>
-                <Button type="button" onClick={closeBuy}>
-                  Done
-                </Button>
-              </>
-            )}
-          </DialogFooter>
-        </DialogContent>
+
+                  {buyProduct.requiresCustomerEmail && (
+                    <div className="space-y-2">
+                      <Label htmlFor="auto-email" className="flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5" />
+                        Customer email
+                      </Label>
+                      <Input
+                        id="auto-email"
+                        type="email"
+                        placeholder="customer@email.com"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        autoComplete="email"
+                      />
+                    </div>
+                  )}
+
+                  {(buyProduct.requiresSlotMonths || buyProduct.isSlotProduct) && (
+                    <div className="space-y-2">
+                      <Label>Duration (months)</Label>
+                      <Select
+                        value={String(slotMonths ?? '')}
+                        onValueChange={(v) => setSlotMonths(Number(v))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select months" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(buyProduct.slotDurations?.length
+                            ? buyProduct.slotDurations
+                            : [1, 3, 6, 12]
+                          ).map((m) => (
+                            <SelectItem key={m} value={String(m)}>
+                              {m} month{m === 1 ? '' : 's'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium">Total</span>
+                      <span className="text-lg font-bold tabular-nums text-primary">
+                        {formatUsd(lineUsd)}
+                      </span>
+                    </div>
+                    <div className="text-right text-xs text-muted-foreground tabular-nums">
+                      ~{formatLkr(lineLkr)} · charged from wallet
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              {!result?.success ? (
+                <>
+                  <Button type="button" variant="outline" onClick={closeBuy} disabled={buying}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handlePurchase}
+                    disabled={buying || productAvailable(buyProduct) <= 0}
+                    className="gap-2"
+                  >
+                    {buying ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Purchasing…
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-4 w-4" />
+                        Pay & deliver
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button type="button" variant="outline" onClick={() => setResult(null)}>
+                    Buy again
+                  </Button>
+                  <Button type="button" onClick={closeBuy}>
+                    Done
+                  </Button>
+                </>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        ) : null}
       </Dialog>
     </>
   );
