@@ -55,8 +55,14 @@ export interface AutoPromotion {
   bonusQty?: number;
 }
 
+export type AutoProvider = 'canboso' | 'akunding';
+
 export interface AutoProduct {
   _id: string;
+  /** Supplier source — canboso | akunding */
+  provider?: AutoProvider;
+  /** Raw id on the supplier (mongo id or integer) */
+  provider_product_id?: string;
   product_name: string;
   product_name_raw?: string;
   description?: string;
@@ -91,6 +97,8 @@ export interface AutoProductsResponse {
   walletCurrency?: string;
   requester?: { chatId?: number; name?: string };
   products?: AutoProduct[];
+  providers?: Record<string, { ok?: boolean; count?: number; message?: string }>;
+  count?: number;
   message?: string;
 }
 
@@ -133,7 +141,22 @@ export type AutoPurchasePayload = {
   quantity: number;
   customer_email?: string;
   slot_months?: number;
+  provider?: AutoProvider;
+  idempotency_key?: string;
 };
+
+export function productProvider(p: AutoProduct | null | undefined): AutoProvider {
+  if (p?.provider === 'akunding' || p?.provider === 'canboso') return p.provider;
+  const id = p?._id || '';
+  if (id.startsWith('akunding:')) return 'akunding';
+  return 'canboso';
+}
+
+export function providerLabel(provider: AutoProvider | string | undefined): string {
+  if (provider === 'akunding') return 'Akunding';
+  if (provider === 'canboso') return 'Canboso';
+  return 'Supplier';
+}
 
 function asArrayPromos(value: AutoPromotion[] | string | null | undefined): AutoPromotion[] {
   if (!value) return [];
@@ -298,14 +321,20 @@ async function fetchFunction<T>(
 export async function fetchAutoProducts(): Promise<AutoProduct[]> {
   const data = await fetchFunction<AutoProductsResponse>('products');
   const list = Array.isArray(data.products) ? data.products : [];
-  return list.filter(
-    (p): p is AutoProduct =>
-      p != null &&
-      typeof p === 'object' &&
-      typeof p._id === 'string' &&
-      !!p._id &&
-      typeof p.product_name === 'string'
-  );
+  return list
+    .filter(
+      (p): p is AutoProduct =>
+        p != null &&
+        typeof p === 'object' &&
+        typeof p._id === 'string' &&
+        !!p._id &&
+        typeof p.product_name === 'string'
+    )
+    .map((p) => ({
+      ...p,
+      provider: productProvider(p),
+      provider_product_id: p.provider_product_id || p._id.replace(/^(canboso|akunding):/, ''),
+    }));
 }
 
 /** Staff-only; not shown to customers. */
@@ -318,7 +347,16 @@ export async function purchaseAutoProduct(
 ): Promise<AutoPurchaseResponse> {
   return fetchFunction<AutoPurchaseResponse>('purchase', {
     method: 'POST',
-    body: payload,
+    body: {
+      ...payload,
+      provider: payload.provider,
+      product_id: payload.product_id,
+      idempotency_key:
+        payload.idempotency_key ||
+        (typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `auto-${Date.now()}`),
+    },
   });
 }
 
@@ -659,6 +697,7 @@ export interface AutoProductGroup {
   key: string;
   title: string;
   category: string;
+  provider: AutoProvider;
   variants: AutoProduct[];
   /** Cheapest in-stock variant, else cheapest overall */
   defaultVariant: AutoProduct;
@@ -674,7 +713,10 @@ export function groupAutoProducts(products: AutoProduct[]): AutoProductGroup[] {
 
   for (const p of products) {
     if (!p?._id) continue;
-    const { key } = productFamily(p.product_name || '');
+    // Don't merge same name across suppliers — keep Canboso vs Akunding separate
+    const fam = productFamily(p.product_name || '');
+    const prov = productProvider(p);
+    const key = `${prov}:${fam.key}`;
     const list = map.get(key) || [];
     list.push(p);
     map.set(key, list);
@@ -705,6 +747,7 @@ export function groupAutoProducts(products: AutoProduct[]): AutoProductGroup[] {
       key,
       title, // already clean family title
       category: categorizeProduct(variants[0].product_name || ''),
+      provider: productProvider(variants[0]),
       variants,
       defaultVariant,
       minLkr,

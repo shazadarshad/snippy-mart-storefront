@@ -71,6 +71,8 @@ import {
   displayTitle,
   displayDescription,
   accountLines,
+  productProvider,
+  providerLabel,
   AUTO_MIN_MARGIN_LKR,
 } from '@/lib/autoBuyer';
 
@@ -86,6 +88,7 @@ const AutoPage = () => {
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string>('all');
+  const [providerFilter, setProviderFilter] = useState<'all' | 'canboso' | 'akunding'>('all');
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [sortKey, setSortKey] = useState<SortKey>('order');
   /** Selected variant id per group key (for card UI) */
@@ -135,6 +138,7 @@ const AutoPage = () => {
   const filteredGroups = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = groups.filter((g) => {
+      if (providerFilter !== 'all' && g.provider !== providerFilter) return false;
       if (category !== 'all' && g.category !== category) return false;
       if (stockFilter === 'in_stock' && g.totalAvailable <= 0) return false;
       if (stockFilter === 'out' && g.totalAvailable > 0) return false;
@@ -167,7 +171,7 @@ const AutoPage = () => {
       }
     });
     return list;
-  }, [groups, search, category, stockFilter, sortKey]);
+  }, [groups, search, category, providerFilter, stockFilter, sortKey]);
 
   const inStockCount = products.filter((p) => productAvailable(p) > 0).length;
 
@@ -349,15 +353,18 @@ const AutoPage = () => {
             unit_price: unitLkr,
             total_price: lineLkr,
             customer_credentials: {
-              auto_source: 'canboso',
+              auto_source: productProvider(buyProduct),
               auto_product_id: buyProduct._id,
+              auto_provider_product_id:
+                buyProduct.provider_product_id ||
+                buyProduct._id.replace(/^(canboso|akunding):/, ''),
               auto_product_name: buyProduct.product_name,
               auto_display_name: displayTitle(buyProduct),
               delivery_email: customerEmail.trim() || null,
               slot_months: slotMonths,
               cost_usd: productUsdPrice(buyProduct),
               sell_lkr: unitLkr,
-              // Wallet is charged cost_usd only; sell_lkr is customer bank-transfer amount
+              // Supplier wallet is charged cost_usd only; sell_lkr is customer bank-transfer amount
             },
           },
         ],
@@ -371,9 +378,11 @@ const AutoPage = () => {
       try {
         const purchase = await purchaseAutoProduct({
           product_id: buyProduct._id,
+          provider: productProvider(buyProduct),
           quantity: qty,
           customer_email: customerEmail.trim() || undefined,
           slot_months: slotMonths ?? undefined,
+          idempotency_key: orderId,
         });
         if (purchase?.success && Array.isArray(purchase.deliveredAccounts)) {
           delivered = purchase.deliveredAccounts;
@@ -539,6 +548,19 @@ const AutoPage = () => {
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
+                <Select
+                  value={providerFilter}
+                  onValueChange={(v) => setProviderFilter(v as 'all' | 'canboso' | 'akunding')}
+                >
+                  <SelectTrigger className="h-11 w-[140px]">
+                    <SelectValue placeholder="Supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All suppliers</SelectItem>
+                    <SelectItem value="canboso">Canboso</SelectItem>
+                    <SelectItem value="akunding">Akunding</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as StockFilter)}>
                   <SelectTrigger className="h-11 w-[140px]">
                     <Filter className="mr-2 h-3.5 w-3.5" />
@@ -674,6 +696,16 @@ const AutoPage = () => {
                       <div className="absolute left-3 top-3 flex flex-wrap gap-1">
                         <Badge variant="secondary" className="text-[10px]">
                           {g.category}
+                        </Badge>
+                        <Badge
+                          className={cn(
+                            'text-[10px]',
+                            g.provider === 'akunding'
+                              ? 'bg-violet-600 hover:bg-violet-600'
+                              : 'bg-sky-600 hover:bg-sky-600'
+                          )}
+                        >
+                          {providerLabel(g.provider)}
                         </Badge>
                         {multi && (
                           <Badge className="bg-accent text-[10px] text-accent-foreground hover:bg-accent">
