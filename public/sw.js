@@ -1,5 +1,4 @@
-// Bump on every release that changes hashed assets so clients drop stale JS.
-const CACHE_NAME = 'snippy-mart-v3-auto-fix';
+const CACHE_NAME = 'snippy-mart-v4';
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
@@ -24,7 +23,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api')) return;
 
-  // Never cache hashed build assets — stale AutoPage chunks break deploys.
+  // Never cache hashed build assets
   const isHashedAsset =
     url.pathname.startsWith('/assets/') ||
     /\.[a-f0-9]{6,}\.(js|css)$/i.test(url.pathname);
@@ -36,7 +35,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML / navigation: network-first, do not serve stale index that points at deleted chunks.
   if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
     event.respondWith(
       fetch(event.request)
@@ -54,7 +52,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Other same-origin GETs: network-first with cache fallback
   event.respondWith(
     fetch(event.request)
       .then((response) => {
