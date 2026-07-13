@@ -29,7 +29,8 @@ const CheckoutPage = () => {
     notes: '',
   });
   const [customerCredentials, setCustomerCredentials] = useState<Record<string, { email?: string; password?: string }>>({});
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  // Only bank transfer is active; Binance & card are disabled in the UI
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
   const [binanceId, setBinanceId] = useState('');
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -192,11 +193,13 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (!paymentMethod) {
+    // Force bank transfer only (Binance / card disabled for now)
+    if (paymentMethod !== 'bank_transfer') {
+      setPaymentMethod('bank_transfer');
       toast({
-        title: "Payment method required",
-        description: "Please select a payment method.",
-        variant: "destructive",
+        title: 'Bank transfer only',
+        description: 'Please pay by bank transfer and upload your receipt.',
+        variant: 'destructive',
       });
       return;
     }
@@ -204,16 +207,7 @@ const CheckoutPage = () => {
     if (!proofFile) {
       toast({
         title: "Payment proof required",
-        description: "Please upload your payment receipt or screenshot.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (paymentMethod === 'binance_usdt' && !binanceId) {
-      toast({
-        title: "Binance ID required",
-        description: "Please enter your Binance ID.",
+        description: "Please upload your bank transfer receipt screenshot.",
         variant: "destructive",
       });
       return;
@@ -270,7 +264,7 @@ const CheckoutPage = () => {
       const commonOrderData = {
         payment_proof_url: paymentProofPath,
         notes: formData.notes || undefined,
-        binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
+        binance_id: undefined,
         // Update customer details just in case they changed them after pre-registering
         customer_name: formData.name || 'Customer',
         customer_whatsapp: formData.whatsapp,
@@ -280,11 +274,11 @@ const CheckoutPage = () => {
       // Create final payload
       const payload = await getOrderPayload();
 
-      // Add submit-time fields
+      // Add submit-time fields (bank transfer only)
       Object.assign(payload, {
         payment_proof_url: paymentProofPath,
-        binance_id: paymentMethod === 'binance_usdt' ? binanceId : undefined,
-        payment_method: paymentMethod,
+        binance_id: undefined,
+        payment_method: 'bank_transfer' as PaymentMethod,
       });
 
       // We always use createOrder (which is our create-order Edge Function)
@@ -509,11 +503,16 @@ const CheckoutPage = () => {
               {/* Payment Method Selection */}
               <div className="p-6 rounded-2xl bg-card border border-border">
                 <h2 className="text-lg font-semibold text-foreground mb-4">
-                  Payment Method
+                  Payment
                 </h2>
                 <PaymentMethodSelector
                   selectedMethod={paymentMethod}
-                  onMethodChange={setPaymentMethod}
+                  onMethodChange={(m) => {
+                    // Only allow bank transfer while other methods are disabled
+                    if (m === 'bank_transfer' || m === null) {
+                      setPaymentMethod(m ?? 'bank_transfer');
+                    }
+                  }}
                   binanceId={binanceId}
                   onBinanceIdChange={setBinanceId}
                   proofFile={proofFile}
@@ -529,11 +528,11 @@ const CheckoutPage = () => {
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
                   <p className="font-medium text-foreground mb-1">
-                    How it works
+                    How bank checkout works
                   </p>
                   <p className="text-muted-foreground">
-                    After placing your order, we'll verify your payment and send a confirmation
-                    message to your WhatsApp with your subscription details.
+                    Transfer the order total, put your Order ID in the remarks, upload the receipt,
+                    then place the order. We verify payment and send your product details on WhatsApp.
                   </p>
                 </div>
               </div>

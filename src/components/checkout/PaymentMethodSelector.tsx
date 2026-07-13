@@ -1,7 +1,17 @@
-import { useState, useRef } from 'react';
-import { Building2, Bitcoin, ChevronDown, Upload, X, FileText, Image as ImageIcon, Check, Copy, CreditCard, MessageCircle } from 'lucide-react';
+import { useRef } from 'react';
+import {
+  Building2,
+  Bitcoin,
+  Upload,
+  X,
+  FileText,
+  Image as ImageIcon,
+  Check,
+  Copy,
+  CreditCard,
+  Lock,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -24,13 +34,9 @@ interface PaymentMethodSelectorProps {
 const PaymentMethodSelector = ({
   selectedMethod,
   onMethodChange,
-  binanceId,
-  onBinanceIdChange,
   proofFile,
   onProofFileChange,
   orderId,
-  onPreRegister,
-  isPreRegistering,
 }: PaymentMethodSelectorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -44,20 +50,9 @@ const PaymentMethodSelector = ({
     });
   };
 
-  const handleWhatsAppClick = async () => {
-    // 1. Create order (Pre-register)
-    await onPreRegister();
-
-    // 2. Open WhatsApp
-    const message = `Hi! I'd like to pay by card for Order ${orderId}. Please send me the payment link.`;
-    const whatsappUrl = `https://wa.me/${settings?.whatsapp_number || '94787767869'}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
       if (!allowedTypes.includes(file.type)) {
         toast({
@@ -67,7 +62,6 @@ const PaymentMethodSelector = ({
         });
         return;
       }
-      // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast({
           title: 'File too large',
@@ -95,87 +89,101 @@ const PaymentMethodSelector = ({
     return <ImageIcon className="w-5 h-5 text-primary" />;
   };
 
-  // Bank details from settings
   const bankName = settings?.bank_name || 'Sampath Bank';
   const bankBranch = settings?.bank_branch || 'Horana';
   const bankAccountName = settings?.bank_account_name || 'M A MUSAMMIL';
   const bankAccountNumber = settings?.bank_account_number || '105752093919';
-
-  // Binance details from settings
-  const storeBinanceId = settings?.binance_id || '1190172947';
-  const storeBinanceName = settings?.binance_name || 'Snippy Mart';
   const storeBinanceCoin = settings?.binance_coin || 'USDT';
 
+  const isBank = selectedMethod === 'bank_transfer';
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Label className="text-foreground text-base font-semibold">
         Payment Method <span className="text-destructive">*</span>
       </Label>
+      <p className="text-xs text-muted-foreground -mt-2">
+        Bank transfer is available now. Other methods are temporarily disabled.
+      </p>
 
-      {/* Bank Transfer Option */}
+      {/* Bank Transfer — only active method */}
       <div
         className={cn(
-          "border rounded-xl overflow-hidden transition-all duration-300 ease-out",
-          selectedMethod === 'bank_transfer'
-            ? "border-primary bg-primary/5 shadow-md shadow-primary/5 scale-[1.01]"
-            : "border-border hover:border-primary/50 hover:bg-secondary/30 active:scale-[0.99]"
+          'border rounded-xl overflow-hidden transition-all duration-300 ease-out',
+          isBank
+            ? 'border-primary bg-primary/5 shadow-md shadow-primary/5'
+            : 'border-border hover:border-primary/50'
         )}
       >
         <button
           type="button"
           className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => onMethodChange(selectedMethod === 'bank_transfer' ? null : 'bank_transfer')}
+          onClick={() => onMethodChange('bank_transfer')}
         >
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-              selectedMethod === 'bank_transfer'
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-muted-foreground"
-            )}>
+            <div
+              className={cn(
+                'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
+                isBank
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground'
+              )}
+            >
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Bank Transfer</p>
-              <p className="text-sm text-muted-foreground">Transfer to our bank account</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-foreground">Bank Transfer</p>
+                <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                  Available
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Transfer to our bank account &amp; upload receipt
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {selectedMethod === 'bank_transfer' && (
-              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                <Check className="w-3 h-3 text-primary-foreground" />
-              </div>
-            )}
-            <ChevronDown className={cn(
-              "w-5 h-5 text-muted-foreground transition-transform duration-300",
-              selectedMethod === 'bank_transfer' && "rotate-180"
-            )} />
-          </div>
+          {isBank && (
+            <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+              <Check className="w-3 h-3 text-primary-foreground" />
+            </div>
+          )}
         </button>
 
-        {/* Expanded Content for Bank Transfer */}
-        <div className={cn(
-          "overflow-hidden transition-all duration-300",
-          selectedMethod === 'bank_transfer' ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-        )}>
+        {/* Always show bank details when bank is selected (default) */}
+        <div
+          className={cn(
+            'overflow-hidden transition-all duration-300',
+            isBank ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+          )}
+        >
           <div className="p-4 pt-0 space-y-4">
+            <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside bg-secondary/40 rounded-lg p-3 border border-border/60">
+              <li>Transfer the exact order total to the account below</li>
+              <li>
+                Put your <strong className="text-foreground">Order ID</strong> in the bank remarks
+              </li>
+              <li>Upload the payment receipt screenshot</li>
+              <li>Place order — we verify and deliver on WhatsApp</li>
+            </ol>
+
             <div className="p-4 rounded-lg bg-secondary/50 border border-border">
               <p className="text-sm font-medium text-foreground mb-3">Bank Details</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
+              <div className="space-y-2.5 text-sm">
+                <div className="flex items-center justify-between gap-2">
                   <div>
                     <span className="text-muted-foreground">Bank:</span>{' '}
                     <span className="font-medium text-foreground">{bankName}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <div>
                     <span className="text-muted-foreground">Branch:</span>{' '}
                     <span className="font-medium text-foreground">{bankBranch}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
                     <span className="text-muted-foreground">Account Name:</span>{' '}
                     <span className="font-medium text-foreground">{bankAccountName}</span>
                   </div>
@@ -183,22 +191,24 @@ const PaymentMethodSelector = ({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-7 w-7 shrink-0"
                     onClick={() => copyToClipboard(bankAccountName, 'Account name')}
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
                     <span className="text-muted-foreground">Account Number:</span>{' '}
-                    <span className="font-medium text-foreground font-mono">{bankAccountNumber}</span>
+                    <span className="font-medium text-foreground font-mono">
+                      {bankAccountNumber}
+                    </span>
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-7 w-7 shrink-0"
                     onClick={() => copyToClipboard(bankAccountNumber, 'Account number')}
                   >
                     <Copy className="w-3.5 h-3.5" />
@@ -221,7 +231,7 @@ const PaymentMethodSelector = ({
                 </div>
                 <p className="text-sm font-mono font-bold text-primary">{orderId}</p>
                 <p className="text-xs text-primary/80 mt-1">
-                  ⚡ Enter this Order ID as beneficiary remarks
+                  Enter this Order ID as beneficiary remarks when transferring
                 </p>
               </div>
             </div>
@@ -231,7 +241,7 @@ const PaymentMethodSelector = ({
                 Upload Receipt <span className="text-destructive">*</span>
               </Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Upload a screenshot or photo of your payment receipt (JPG, PNG, PDF)
+                Screenshot or photo of your payment receipt (JPG, PNG, PDF · max 10MB)
               </p>
 
               <input
@@ -255,7 +265,9 @@ const PaymentMethodSelector = ({
                 <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
                   {getFileIcon()}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{proofFile.name}</p>
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {proofFile.name}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {(proofFile.size / 1024).toFixed(1)} KB
                     </p>
@@ -276,332 +288,53 @@ const PaymentMethodSelector = ({
         </div>
       </div>
 
-      {/* Binance USDT Option */}
+      {/* Binance — disabled */}
       <div
-        className={cn(
-          "border rounded-xl overflow-hidden transition-all duration-300 ease-out",
-          selectedMethod === 'binance_usdt'
-            ? "border-[#F0B90B] bg-[#F0B90B]/5 shadow-md shadow-[#F0B90B]/5 scale-[1.01]"
-            : "border-border hover:border-[#F0B90B]/50 hover:bg-secondary/30 active:scale-[0.99]"
-        )}
+        className="border border-border/60 rounded-xl overflow-hidden opacity-60 cursor-not-allowed bg-muted/20"
+        aria-disabled="true"
       >
-        <button
-          type="button"
-          className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => onMethodChange(selectedMethod === 'binance_usdt' ? null : 'binance_usdt')}
-        >
+        <div className="w-full p-4 flex items-center justify-between text-left pointer-events-none select-none">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-              selectedMethod === 'binance_usdt'
-                ? "bg-[#F0B90B] text-black"
-                : "bg-secondary text-muted-foreground"
-            )}>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-secondary text-muted-foreground">
               <Bitcoin className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Binance {storeBinanceCoin}</p>
-              <p className="text-sm text-muted-foreground">Pay with Binance Pay</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {selectedMethod === 'binance_usdt' && (
-              <div className="w-5 h-5 rounded-full bg-[#F0B90B] flex items-center justify-center">
-                <Check className="w-3 h-3 text-black" />
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-muted-foreground">Binance {storeBinanceCoin}</p>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  <Lock className="w-3 h-3" />
+                  Temporarily disabled
+                </span>
               </div>
-            )}
-            <ChevronDown className={cn(
-              "w-5 h-5 text-muted-foreground transition-transform duration-300",
-              selectedMethod === 'binance_usdt' && "rotate-180"
-            )} />
-          </div>
-        </button>
-
-        {/* Expanded Content for Binance */}
-        <div className={cn(
-          "overflow-hidden transition-all duration-300",
-          selectedMethod === 'binance_usdt' ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-        )}>
-          <div className="p-4 pt-0 space-y-4">
-            <div className="p-4 rounded-lg bg-[#F0B90B]/10 border border-[#F0B90B]/20">
-              <p className="text-sm font-medium text-foreground mb-3">Binance Pay Details</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-muted-foreground">Account Name:</span>{' '}
-                    <span className="font-medium text-foreground">{storeBinanceName}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-muted-foreground">Binance ID:</span>{' '}
-                    <span className="font-medium text-foreground font-mono">{storeBinanceId}</span>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => copyToClipboard(storeBinanceId, 'Binance ID')}
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-muted-foreground">Coin:</span>{' '}
-                    <span className="font-medium text-foreground">{storeBinanceCoin}</span>
-                  </div>
-                </div>
-                <p className="text-xs mt-2 text-muted-foreground">
-                  Use Binance Pay to send {storeBinanceCoin} - it's instant and free!
-                </p>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-[#F0B90B]/20">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-muted-foreground">Your Order ID:</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => copyToClipboard(orderId, 'Order ID')}
-                  >
-                    <Copy className="w-3 h-3" />
-                  </Button>
-                </div>
-                <p className="text-sm font-mono font-bold text-[#F0B90B]">{orderId}</p>
-                <p className="text-xs text-[#F0B90B]/80 mt-1">
-                  ⚡ Enter this Order ID as note when sending
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="binance-id" className="text-sm text-foreground">
-                Your Binance ID <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="binance-id"
-                type="text"
-                placeholder="Enter your Binance ID"
-                value={binanceId}
-                onChange={(e) => onBinanceIdChange(e.target.value)}
-                className="mt-1.5 h-12 bg-secondary/50 border-border"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                We need this to verify your payment
-              </p>
-            </div>
-
-            <div>
-              <Label className="text-sm text-foreground">
-                Upload Screenshot <span className="text-destructive">*</span>
-              </Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Upload a screenshot of your payment confirmation
-              </p>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              {!proofFile ? (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-6 border-2 border-dashed border-border rounded-xl hover:border-[#F0B90B]/50 hover:bg-[#F0B90B]/5 transition-colors flex flex-col items-center gap-2"
-                >
-                  <Upload className="w-8 h-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Click to upload screenshot</p>
-                </button>
-              ) : (
-                <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
-                  {getFileIcon()}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{proofFile.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(proofFile.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="flex-shrink-0"
-                    onClick={removeFile}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
+              <p className="text-sm text-muted-foreground">Not available right now</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Card Payment Option */}
+      {/* Card — disabled */}
       <div
-        className={cn(
-          "border rounded-xl overflow-hidden transition-all duration-300 ease-out",
-          selectedMethod === 'card'
-            ? "border-primary bg-primary/5 shadow-md shadow-primary/5 scale-[1.01]"
-            : "border-border hover:border-primary/50 hover:bg-secondary/30 active:scale-[0.99]"
-        )}
+        className="border border-border/60 rounded-xl overflow-hidden opacity-60 cursor-not-allowed bg-muted/20"
+        aria-disabled="true"
       >
-        <button
-          type="button"
-          className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => onMethodChange(selectedMethod === 'card' ? null : 'card')}
-        >
+        <div className="w-full p-4 flex items-center justify-between text-left pointer-events-none select-none">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-              selectedMethod === 'card'
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-muted-foreground"
-            )}>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-secondary text-muted-foreground">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Card Payment (Visa / Master)</p>
-              <p className="text-sm text-muted-foreground">Pay with Credit or Debit card</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {selectedMethod === 'card' && (
-              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                <Check className="w-3 h-3 text-primary-foreground" />
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-muted-foreground">Card Payment (Visa / Master)</p>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  <Lock className="w-3 h-3" />
+                  Temporarily disabled
+                </span>
               </div>
-            )}
-            <ChevronDown className={cn(
-              "w-5 h-5 text-muted-foreground transition-transform duration-300",
-              selectedMethod === 'card' && "rotate-180"
-            )} />
-          </div>
-        </button>
-
-        {/* Expanded Content for Card Payment */}
-        <div className={cn(
-          "overflow-hidden transition-all duration-300",
-          selectedMethod === 'card' ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-        )}>
-          <div className="p-4 pt-0 space-y-4">
-            {/* WhatsApp Contact Section */}
-            <div className="p-4 rounded-lg bg-gradient-to-br from-[#25D366]/10 to-[#128C7E]/10 border border-[#25D366]/20">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-foreground mb-1">Step 1: Get Card Payment Link</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Contact us on WhatsApp to receive your secure card payment link. We'll send you a personalized checkout link for this order.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleWhatsAppClick}
-                disabled={isPreRegistering}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl font-bold transition-all shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/40 hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isPreRegistering ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Connecting...</span>
-                  </>
-                ) : (
-                  <>
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Contact on WhatsApp</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Order ID Display */}
-            <div className="p-4 rounded-lg bg-secondary/50 border border-border">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground">Your Order ID:</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => copyToClipboard(orderId, 'Order ID')}
-                >
-                  <Copy className="w-3 h-3" />
-                </Button>
-              </div>
-              <p className="text-sm font-mono font-bold text-primary">{orderId}</p>
-              <p className="text-xs text-primary/80 mt-1">
-                ⚡ Share this ID when contacting us
-              </p>
-            </div>
-
-            {/* Upload Proof Section */}
-            <div>
-              <Label className="text-sm text-foreground">
-                Step 2: Upload Payment Confirmation <span className="text-destructive">*</span>
-              </Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                After completing the card payment, upload a screenshot of your confirmation
-              </p>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              {!proofFile ? (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-6 border-2 border-dashed border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-colors flex flex-col items-center gap-2"
-                >
-                  <Upload className="w-8 h-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Click to upload confirmation</p>
-                </button>
-              ) : (
-                <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
-                  {getFileIcon()}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{proofFile.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(proofFile.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="flex-shrink-0"
-                    onClick={removeFile}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
+              <p className="text-sm text-muted-foreground">Not available right now</p>
             </div>
           </div>
         </div>
       </div>
-
-      {!selectedMethod && (
-        <p className="text-xs text-muted-foreground">
-          Select a payment method to continue
-        </p>
-      )}
     </div>
   );
 };
