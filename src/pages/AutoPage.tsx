@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Search,
-  Wallet,
   Zap,
   Package,
   RefreshCw,
@@ -21,12 +21,19 @@ import {
   ShieldCheck,
   Clock,
   BadgePercent,
+  Building2,
+  Upload,
+  Image as ImageIcon,
+  FileText,
+  User,
+  Phone,
 } from 'lucide-react';
 import SEO from '@/components/seo/SEO';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -43,48 +50,35 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useCreateOrder } from '@/hooks/useOrders';
+import { generateOrderId } from '@/lib/store';
+import { supabase } from '@/integrations/supabase/client';
+import { cn, getCountry } from '@/lib/utils';
 import {
   type AutoProduct,
-  type AutoPurchaseResponse,
   type DeliveredAccount,
-  fetchAutoBalance,
   fetchAutoProducts,
   purchaseAutoProduct,
-  productUsdPrice,
   productLkrPrice,
+  productUsdPrice,
   productAvailable,
   productImageUrl,
-  formatUsd,
   formatLkr,
   getProductPromotions,
   categorizeProduct,
-  AUTO_USD_TO_LKR,
+  accountLines,
 } from '@/lib/autoBuyer';
 
 type StockFilter = 'all' | 'in_stock' | 'out';
 type SortKey = 'order' | 'price_asc' | 'price_desc' | 'stock' | 'name';
 
-function copyText(text: string) {
-  return navigator.clipboard.writeText(text);
-}
-
-function accountLines(acc: DeliveredAccount): string {
-  const parts: string[] = [];
-  if (acc.user) parts.push(`User: ${acc.user}`);
-  if (acc.password) parts.push(`Pass: ${acc.password}`);
-  if (acc.verifyEmail) parts.push(`Recovery: ${acc.verifyEmail}`);
-  // fallback dump other string fields
-  for (const [k, v] of Object.entries(acc)) {
-    if (['user', 'password', 'verifyEmail', 'productItemId', 'deliveredAt'].includes(k)) continue;
-    if (typeof v === 'string' && v.trim()) parts.push(`${k}: ${v}`);
-  }
-  return parts.join('\n') || JSON.stringify(acc, null, 2);
-}
-
 const AutoPage = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { data: settings } = useSiteSettings();
+  const createOrder = useCreateOrder();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string>('all');
@@ -95,42 +89,30 @@ const AutoPage = () => {
   const [qty, setQty] = useState(1);
   const [customerEmail, setCustomerEmail] = useState('');
   const [slotMonths, setSlotMonths] = useState<number | null>(null);
-  const [buying, setBuying] = useState(false);
-  const [result, setResult] = useState<AutoPurchaseResponse | null>(null);
+  const [name, setName] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [notes, setNotes] = useState('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [delivery, setDelivery] = useState<DeliveredAccount[] | null>(null);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const orderIdRef = useRef(generateOrderId());
+
+  const bankName = settings?.bank_name || 'Sampath Bank';
+  const bankBranch = settings?.bank_branch || 'Horana';
+  const bankAccountName = settings?.bank_account_name || 'M A MUSAMMIL';
+  const bankAccountNumber = settings?.bank_account_number || '105752093919';
 
   const productsQuery = useQuery({
-    queryKey: ['auto-products'],
+    queryKey: ['auto-products-v2'],
     queryFn: fetchAutoProducts,
     staleTime: 30_000,
-    retry: 1,
+    retry: 2,
+    refetchOnWindowFocus: true,
   });
 
-  const balanceQuery = useQuery({
-    queryKey: ['auto-balance'],
-    queryFn: fetchAutoBalance,
-    staleTime: 15_000,
-    retry: 1,
-  });
-
-  const products = useMemo(() => {
-    const raw = productsQuery.data?.products;
-    if (!Array.isArray(raw)) return [] as AutoProduct[];
-    return raw.filter(
-      (p): p is AutoProduct =>
-        p != null &&
-        typeof p === 'object' &&
-        typeof (p as AutoProduct)._id === 'string' &&
-        !!(p as AutoProduct)._id
-    );
-  }, [productsQuery.data?.products]);
-  const balance = balanceQuery.data;
-  const walletUsd =
-    typeof balance?.balanceUsd === 'number'
-      ? balance.balanceUsd
-      : typeof balance?.balance === 'number'
-        ? balance.balance
-        : 0;
+  const products = productsQuery.data ?? [];
 
   const categories = useMemo(() => {
     const map = new Map<string, number>();
@@ -146,23 +128,24 @@ const AutoPage = () => {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = products.filter((p) => {
-      const name = p.product_name || '';
+      if (!p?._id) return false;
+      const pname = p.product_name || '';
       const desc = p.description || '';
-      const cat = categorizeProduct(name);
+      const cat = categorizeProduct(pname);
       const avail = productAvailable(p);
       if (category !== 'all' && cat !== category) return false;
       if (stockFilter === 'in_stock' && avail <= 0) return false;
       if (stockFilter === 'out' && avail > 0) return false;
-      if (q && !`${name} ${desc} ${cat}`.toLowerCase().includes(q)) return false;
+      if (q && !`${pname} ${desc} ${cat}`.toLowerCase().includes(q)) return false;
       return true;
     });
 
     list = [...list].sort((a, b) => {
       switch (sortKey) {
         case 'price_asc':
-          return productUsdPrice(a) - productUsdPrice(b);
+          return productLkrPrice(a) - productLkrPrice(b);
         case 'price_desc':
-          return productUsdPrice(b) - productUsdPrice(a);
+          return productLkrPrice(b) - productLkrPrice(a);
         case 'stock':
           return productAvailable(b) - productAvailable(a);
         case 'name':
@@ -182,31 +165,89 @@ const AutoPage = () => {
     setCustomerEmail('');
     const durations = p.slotDurations?.filter((d) => Number.isFinite(d) && d > 0) ?? [];
     setSlotMonths(p.requiresSlotMonths || p.isSlotProduct ? durations[0] ?? 1 : null);
-    setResult(null);
+    setNotes('');
+    setProofFile(null);
+    setDelivery(null);
+    setLastOrderId(null);
+    orderIdRef.current = generateOrderId();
   }, []);
 
   const closeBuy = () => {
-    if (buying) return;
+    if (submitting) return;
     setBuyProduct(null);
-    setResult(null);
+    setDelivery(null);
   };
 
-  const unitUsd = buyProduct ? productUsdPrice(buyProduct) : 0;
-  const lineUsd = unitUsd * qty;
-  const lineLkr = Math.round(lineUsd * AUTO_USD_TO_LKR);
+  const unitLkr = buyProduct ? productLkrPrice(buyProduct) : 0;
+  const lineLkr = unitLkr * qty;
   const maxQty = buyProduct
-    ? Math.max(1, Math.min(100, productAvailable(buyProduct) || 1))
+    ? Math.max(1, Math.min(50, productAvailable(buyProduct) || 1))
     : 1;
   const qtyLocked =
     typeof buyProduct?.quantityFixed === 'number' && buyProduct.quantityFixed > 0;
 
-  const handlePurchase = async () => {
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: 'Copied', description: `${label} copied` });
+  };
+
+  const handleCopy = async (key: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 1500);
+    } catch {
+      toast({ title: 'Copy failed', variant: 'destructive' });
+    }
+  };
+
+  const onProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!allowed.includes(file.type)) {
+      toast({
+        title: 'Invalid file',
+        description: 'Upload JPG, PNG, WebP or PDF.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Max 10MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setProofFile(file);
+  };
+
+  const handlePlaceOrder = async () => {
     if (!buyProduct) return;
 
+    const wa = whatsapp.trim();
+    if (!wa || wa.replace(/\D/g, '').length < 9) {
+      toast({
+        title: 'WhatsApp required',
+        description: 'Enter a valid WhatsApp number so we can reach you.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!proofFile) {
+      toast({
+        title: 'Payment proof required',
+        description: 'Transfer to our bank account, then upload the receipt screenshot.',
+        variant: 'destructive',
+      });
+      return;
+    }
     if (buyProduct.requiresCustomerEmail && !customerEmail.trim()) {
       toast({
         title: 'Email required',
-        description: 'This product needs a customer email.',
+        description: 'This product needs a customer email for delivery.',
         variant: 'destructive',
       });
       return;
@@ -217,54 +258,145 @@ const AutoPage = () => {
     ) {
       toast({
         title: 'Duration required',
-        description: 'Select slot duration in months.',
+        description: 'Select how many months.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (productAvailable(buyProduct) < qty) {
+      toast({
+        title: 'Not enough stock',
+        description: 'Reduce quantity or pick another product.',
         variant: 'destructive',
       });
       return;
     }
 
-    setBuying(true);
+    setSubmitting(true);
+    const orderId = orderIdRef.current;
+
     try {
-      const res = await purchaseAutoProduct({
-        product_id: buyProduct._id,
-        quantity: qty,
+      // 1) Upload bank transfer screenshot
+      const ext = proofFile.name.split('.').pop() || 'jpg';
+      const fileName = `auto-${orderId}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('payment-proofs')
+        .upload(fileName, proofFile);
+      if (uploadError) throw new Error(uploadError.message || 'Failed to upload payment proof');
+
+      const country = await getCountry();
+
+      // 2) Create store order (pending verification / auto delivery)
+      await createOrder.mutateAsync({
+        order_number: orderId,
+        customer_name: name.trim() || 'Customer',
+        customer_whatsapp: wa,
         customer_email: customerEmail.trim() || undefined,
-        slot_months: slotMonths ?? undefined,
+        total_amount: lineLkr,
+        notes: [
+          '[AUTO STOCK ORDER]',
+          `Supplier product: ${buyProduct.product_name}`,
+          `Supplier ID: ${buyProduct._id}`,
+          `Qty: ${qty}`,
+          slotMonths ? `Slot months: ${slotMonths}` : null,
+          notes.trim() ? `Customer notes: ${notes.trim()}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+        payment_method: 'bank_transfer',
+        payment_proof_url: fileName,
+        customer_country: country,
+        currency_code: 'LKR',
+        currency_symbol: 'Rs.',
+        currency_rate: 1,
+        items: [
+          {
+            // External auto SKU — not a products table UUID
+            product_name: `[Auto] ${buyProduct.product_name}`,
+            plan_name: slotMonths ? `${slotMonths} month(s)` : 'Instant delivery',
+            quantity: qty,
+            unit_price: unitLkr,
+            total_price: lineLkr,
+            customer_credentials: {
+              auto_source: 'canboso',
+              auto_product_id: buyProduct._id,
+              auto_product_name: buyProduct.product_name,
+              delivery_email: customerEmail.trim() || null,
+              slot_months: slotMonths,
+              cost_usd: productUsdPrice(buyProduct),
+              sell_lkr: unitLkr,
+            },
+          },
+        ],
       });
-      setResult(res);
-      toast({
-        title: 'Purchase successful',
-        description: res.orderCode
-          ? `Order ${res.orderCode} · ${res.finalQuantity ?? qty} item(s)`
-          : 'Accounts delivered instantly.',
-      });
-      queryClient.invalidateQueries({ queryKey: ['auto-balance'] });
-      queryClient.invalidateQueries({ queryKey: ['auto-products'] });
+
+      setLastOrderId(orderId);
+
+      // 3) Try instant supplier delivery (uses store wallet — not shown to customer)
+      let delivered: DeliveredAccount[] = [];
+      let autoOk = false;
+      try {
+        const purchase = await purchaseAutoProduct({
+          product_id: buyProduct._id,
+          quantity: qty,
+          customer_email: customerEmail.trim() || undefined,
+          slot_months: slotMonths ?? undefined,
+        });
+        if (purchase?.success && Array.isArray(purchase.deliveredAccounts)) {
+          delivered = purchase.deliveredAccounts;
+          autoOk = delivered.length > 0;
+        }
+      } catch (purchaseErr) {
+        // Expected when store wallet is empty — order still placed for admin/manual or later auto
+        console.warn('[auto] Instant delivery deferred:', purchaseErr);
+      }
+
+      if (autoOk) {
+        setDelivery(delivered);
+        // Persist delivery into order notes (best effort)
+        try {
+          const deliveryText = delivered
+            .map((a, i) => `#${i + 1}\n${accountLines(a)}`)
+            .join('\n\n');
+          await supabase
+            .from('orders')
+            .update({
+              notes: [
+                '[AUTO STOCK ORDER — DELIVERED]',
+                `Order ${orderId}`,
+                `Supplier: ${buyProduct.product_name}`,
+                `Qty: ${qty}`,
+                '',
+                'CREDENTIALS:',
+                deliveryText,
+              ].join('\n'),
+              status: 'completed',
+            })
+            .eq('order_number', orderId);
+        } catch {
+          /* ignore */
+        }
+
+        toast({
+          title: 'Order delivered!',
+          description: `${orderId} — copy your credentials below.`,
+        });
+      } else {
+        setDelivery([]);
+        toast({
+          title: 'Order placed',
+          description: `${orderId} received. We verify payment and deliver shortly on WhatsApp.`,
+        });
+      }
+
+      // Refresh stock
+      productsQuery.refetch();
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Purchase failed';
-      toast({
-        title: 'Purchase failed',
-        description: message,
-        variant: 'destructive',
-      });
+      const message = e instanceof Error ? e.message : 'Order failed';
+      toast({ title: 'Order failed', description: message, variant: 'destructive' });
     } finally {
-      setBuying(false);
+      setSubmitting(false);
     }
-  };
-
-  const handleCopy = async (key: string, text: string) => {
-    try {
-      await copyText(text);
-      setCopiedKey(key);
-      setTimeout(() => setCopiedKey(null), 1500);
-    } catch {
-      toast({ title: 'Copy failed', variant: 'destructive' });
-    }
-  };
-
-  const refreshAll = () => {
-    productsQuery.refetch();
-    balanceQuery.refetch();
   };
 
   const loading = productsQuery.isLoading;
@@ -272,18 +404,19 @@ const AutoPage = () => {
     productsQuery.error instanceof Error
       ? productsQuery.error.message
       : productsQuery.isError
-        ? 'Failed to load auto products'
+        ? 'Failed to load catalog'
         : null;
+
+  const orderDone = !!lastOrderId;
 
   return (
     <>
       <SEO
         title="Auto Instant Delivery"
-        description="Instant digital products — auto stock with live inventory and wallet delivery."
+        description="Instant digital products — bank transfer, upload proof, get delivered fast."
       />
 
       <div className="min-h-screen bg-background">
-        {/* Hero */}
         <section className="relative overflow-hidden border-b border-border/60">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(172_80%_40%_/_0.12),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_hsl(262_70%_50%_/_0.1),_transparent_50%)]" />
           <div className="container relative mx-auto max-w-7xl px-4 py-10 sm:py-14">
@@ -293,42 +426,32 @@ const AutoPage = () => {
                   <Zap className="h-3.5 w-3.5" />
                   Instant auto delivery
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  Auto Stock
-                </h1>
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Auto Stock</h1>
                 <p className="mt-2 text-muted-foreground">
-                  Live inventory from our auto supplier. Buy with wallet balance — accounts
-                  delivered instantly on success.
+                  Pick a product, pay by bank transfer, upload your receipt — we deliver accounts
+                  as soon as payment is confirmed (often instantly when stock is ready).
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card/60 px-2.5 py-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    Bank transfer checkout
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card/60 px-2.5 py-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                    Secure proxy checkout
+                    Upload receipt screenshot
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card/60 px-2.5 py-1.5">
                     <Clock className="h-3.5 w-3.5 text-primary" />
-                    Instant credentials
+                    Fast delivery
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card/60 px-2.5 py-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-primary" />
-                    Rate {AUTO_USD_TO_LKR} LKR / $1 display
+                    Prices in LKR
                   </span>
                 </div>
               </div>
 
-              <div className="grid w-full max-w-md grid-cols-2 gap-3 sm:grid-cols-3 lg:w-auto">
-                <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Wallet className="h-3.5 w-3.5" />
-                    Wallet
-                  </div>
-                  <div className="mt-1 text-lg font-semibold tabular-nums">
-                    {balanceQuery.isLoading ? '…' : formatUsd(walletUsd)}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {balance?.balanceText || balance?.walletCurrency || 'USD'}
-                  </div>
-                </div>
+              <div className="grid w-full max-w-sm grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Package className="h-3.5 w-3.5" />
@@ -337,41 +460,23 @@ const AutoPage = () => {
                   <div className="mt-1 text-lg font-semibold tabular-nums">
                     {loading ? '…' : products.length}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {inStockCount} in stock
-                  </div>
+                  <div className="text-[11px] text-muted-foreground">{inStockCount} in stock</div>
                 </div>
-                <div className="col-span-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur sm:col-span-1">
+                <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur">
                   <Button
                     variant="outline"
                     className="h-full w-full gap-2"
-                    onClick={refreshAll}
-                    disabled={productsQuery.isFetching || balanceQuery.isFetching}
+                    onClick={() => productsQuery.refetch()}
+                    disabled={productsQuery.isFetching}
                   >
                     <RefreshCw
-                      className={cn(
-                        'h-4 w-4',
-                        (productsQuery.isFetching || balanceQuery.isFetching) && 'animate-spin'
-                      )}
+                      className={cn('h-4 w-4', productsQuery.isFetching && 'animate-spin')}
                     />
                     Refresh
                   </Button>
                 </div>
               </div>
             </div>
-
-            {walletUsd <= 0 && !balanceQuery.isLoading && (
-              <div className="mt-6 flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                <div>
-                  <p className="font-medium text-foreground">Wallet balance is $0.00</p>
-                  <p className="text-muted-foreground">
-                    Top up the Canboso / bot wallet linked to this buyer key before purchasing.
-                    Catalog browsing still works.
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
@@ -425,7 +530,7 @@ const AutoPage = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               <button
                 type="button"
                 onClick={() => setCategory('all')}
@@ -457,7 +562,6 @@ const AutoPage = () => {
           </div>
         </section>
 
-        {/* Grid */}
         <section className="container mx-auto max-w-7xl px-4 py-8">
           {loading && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -473,9 +577,9 @@ const AutoPage = () => {
           {errorMsg && !loading && (
             <div className="mx-auto max-w-lg rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-center">
               <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-destructive" />
-              <h2 className="text-lg font-semibold">Could not load auto catalog</h2>
+              <h2 className="text-lg font-semibold">Could not load catalog</h2>
               <p className="mt-2 text-sm text-muted-foreground">{errorMsg}</p>
-              <Button className="mt-4" onClick={refreshAll}>
+              <Button className="mt-4" onClick={() => productsQuery.refetch()}>
                 Try again
               </Button>
             </div>
@@ -501,7 +605,6 @@ const AutoPage = () => {
               {filtered.map((p) => {
                 if (!p?._id) return null;
                 const avail = productAvailable(p);
-                const usd = productUsdPrice(p);
                 const lkr = productLkrPrice(p);
                 const img = productImageUrl(p);
                 const promos = getProductPromotions(p);
@@ -534,7 +637,7 @@ const AutoPage = () => {
                       ) : (
                         <Package className="h-10 w-10 text-primary/40" />
                       )}
-                      <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                      <div className="absolute left-3 top-3">
                         <Badge variant="secondary" className="text-[10px]">
                           {cat}
                         </Badge>
@@ -558,7 +661,7 @@ const AutoPage = () => {
                         {p.product_name}
                       </h3>
                       {p.description && (
-                        <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground whitespace-pre-line">
+                        <p className="mt-1.5 line-clamp-2 whitespace-pre-line text-xs text-muted-foreground">
                           {p.description}
                         </p>
                       )}
@@ -568,10 +671,10 @@ const AutoPage = () => {
                           {promos.slice(0, 2).map((pr, i) => (
                             <span
                               key={i}
-                              className="inline-flex items-center gap-1 rounded-md bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground dark:text-accent"
+                              className="inline-flex items-center gap-1 rounded-md bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium"
                             >
                               <BadgePercent className="h-3 w-3" />
-                              {pr.type === 'bulk_bonus' || pr.bonusQty
+                              {pr.bonusQty
                                 ? `Buy ${pr.minQty}+ get +${pr.bonusQty}`
                                 : pr.percent
                                   ? `${pr.percent}% off ${pr.minQty}+`
@@ -584,11 +687,9 @@ const AutoPage = () => {
                       <div className="mt-auto flex items-end justify-between gap-3 pt-4">
                         <div>
                           <div className="text-lg font-bold tabular-nums text-primary">
-                            {formatUsd(usd)}
+                            {formatLkr(lkr)}
                           </div>
-                          <div className="text-[11px] text-muted-foreground tabular-nums">
-                            ~{formatLkr(lkr)}
-                          </div>
+                          <div className="text-[11px] text-muted-foreground">per unit</div>
                         </div>
                         <Button
                           size="sm"
@@ -597,7 +698,7 @@ const AutoPage = () => {
                           onClick={() => openBuy(p)}
                         >
                           <ShoppingCart className="h-3.5 w-3.5" />
-                          Buy
+                          Order
                         </Button>
                       </div>
                     </div>
@@ -609,7 +710,6 @@ const AutoPage = () => {
         </section>
       </div>
 
-      {/* Buy dialog — only mount content when a product is selected to avoid null result.orderCode */}
       <Dialog
         open={!!buyProduct}
         onOpenChange={(o) => {
@@ -620,270 +720,380 @@ const AutoPage = () => {
           <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="pr-6">
-                {result?.success ? 'Delivery ready' : 'Instant purchase'}
+                {orderDone
+                  ? delivery && delivery.length > 0
+                    ? 'Delivered'
+                    : 'Order placed'
+                  : 'Checkout'}
               </DialogTitle>
               <DialogDescription>
-                {result?.success
-                  ? 'Copy credentials below. Keep them safe.'
+                {orderDone
+                  ? `Order ${lastOrderId}`
                   : buyProduct.product_name}
               </DialogDescription>
             </DialogHeader>
 
-            <AnimatePresence mode="wait">
-              {result?.success ? (
-                <motion.div
-                  key="result"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm">
-                    <div className="font-semibold text-emerald-700 dark:text-emerald-300">
-                      Order {result?.orderCode || 'OK'}
-                    </div>
-                    <div className="mt-1 text-muted-foreground">
-                      {result?.productType} · qty{' '}
-                      {result?.finalQuantity ?? result?.quantity}
-                      {result?.bonusQuantity ? ` (+${result.bonusQuantity} bonus)` : ''}
-                    </div>
-                    {result?.amountText && (
-                      <div className="mt-1 text-muted-foreground">
-                        Paid {result.amountText}
-                      </div>
-                    )}
-                    {result?.balanceText && (
-                      <div className="text-muted-foreground">
-                        New balance {result.balanceText}
-                      </div>
-                    )}
+            {!orderDone ? (
+              <div className="space-y-4">
+                {buyProduct.description && (
+                  <div className="max-h-20 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
+                    {buyProduct.description}
                   </div>
+                )}
 
-                  {(result?.deliveredAccounts?.length ?? 0) > 0 ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>Delivered accounts</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 gap-1 text-xs"
-                          onClick={() =>
-                            handleCopy(
-                              'all',
-                              (result?.deliveredAccounts || [])
-                                .map((a, i) => `#${i + 1}\n${accountLines(a)}`)
-                                .join('\n\n')
-                            )
-                          }
-                        >
-                          {copiedKey === 'all' ? (
-                            <Check className="h-3.5 w-3.5" />
-                          ) : (
-                            <Copy className="h-3.5 w-3.5" />
-                          )}
-                          Copy all
-                        </Button>
-                      </div>
-                      <div className="max-h-64 space-y-2 overflow-y-auto">
-                        {(result?.deliveredAccounts || []).map((acc, i) => {
-                          const text = accountLines(acc);
-                          const key = `acc-${i}`;
-                          return (
-                            <div
-                              key={key}
-                              className="rounded-lg border border-border/70 bg-muted/20 p-3 font-mono text-xs"
-                            >
-                              <div className="mb-2 flex items-center justify-between gap-2">
-                                <span className="font-sans text-[11px] font-medium text-muted-foreground">
-                                  Item {i + 1}
-                                </span>
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
-                                  onClick={() => handleCopy(key, text)}
-                                >
-                                  {copiedKey === key ? (
-                                    <Check className="h-3 w-3" />
-                                  ) : (
-                                    <Copy className="h-3 w-3" />
-                                  )}
-                                  Copy
-                                </button>
-                              </div>
-                              <pre className="whitespace-pre-wrap break-all">{text}</pre>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Purchase succeeded but no account payload was returned. Check the bot
-                      / supplier panel for delivery.
-                    </p>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="form"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="space-y-4"
-                >
-                  {buyProduct.description && (
-                    <div className="max-h-28 overflow-y-auto rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground whitespace-pre-wrap">
-                      {buyProduct.description}
-                    </div>
-                  )}
-
-                  <div className="rounded-xl border border-border/70 bg-card p-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Unit price</span>
-                      <span className="font-semibold tabular-nums">
-                        {formatUsd(unitUsd)}{' '}
-                        <span className="text-xs font-normal text-muted-foreground">
-                          (~{formatLkr(productLkrPrice(buyProduct))})
-                        </span>
-                      </span>
-                    </div>
-                    <div className="mt-1 flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Stock</span>
-                      <span className="tabular-nums">
-                        {productAvailable(buyProduct)} available
-                      </span>
-                    </div>
-                    <div className="mt-1 flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Wallet</span>
-                      <span className="tabular-nums">{formatUsd(walletUsd)}</span>
-                    </div>
+                <div className="rounded-xl border border-border/70 bg-card p-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Unit</span>
+                    <span className="font-semibold tabular-nums">{formatLkr(unitLkr)}</span>
                   </div>
+                  <div className="mt-1 flex justify-between">
+                    <span className="text-muted-foreground">Stock</span>
+                    <span className="tabular-nums">{productAvailable(buyProduct)} available</span>
+                  </div>
+                </div>
 
-                  {!qtyLocked && (
-                    <div className="space-y-2">
-                      <Label>Quantity</Label>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10"
-                          disabled={qty <= 1}
-                          onClick={() => setQty((q) => Math.max(1, q - 1))}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={maxQty}
-                          value={qty}
-                          onChange={(e) => {
-                            const n = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(n)) return;
-                            setQty(Math.min(maxQty, Math.max(1, n)));
-                          }}
-                          className="h-10 text-center tabular-nums"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10"
-                          disabled={qty >= maxQty}
-                          onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {buyProduct.requiresCustomerEmail && (
-                    <div className="space-y-2">
-                      <Label htmlFor="auto-email" className="flex items-center gap-1.5">
-                        <Mail className="h-3.5 w-3.5" />
-                        Customer email
-                      </Label>
-                      <Input
-                        id="auto-email"
-                        type="email"
-                        placeholder="customer@email.com"
-                        value={customerEmail}
-                        onChange={(e) => setCustomerEmail(e.target.value)}
-                        autoComplete="email"
-                      />
-                    </div>
-                  )}
-
-                  {(buyProduct.requiresSlotMonths || buyProduct.isSlotProduct) && (
-                    <div className="space-y-2">
-                      <Label>Duration (months)</Label>
-                      <Select
-                        value={String(slotMonths ?? '')}
-                        onValueChange={(v) => setSlotMonths(Number(v))}
+                {!qtyLocked && (
+                  <div className="space-y-2">
+                    <Label>Quantity</Label>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-10 w-10"
+                        disabled={qty <= 1}
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select months" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(buyProduct.slotDurations?.length
-                            ? buyProduct.slotDurations
-                            : [1, 3, 6, 12]
-                          ).map((m) => (
-                            <SelectItem key={m} value={String(m)}>
-                              {m} month{m === 1 ? '' : 's'}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">Total</span>
-                      <span className="text-lg font-bold tabular-nums text-primary">
-                        {formatUsd(lineUsd)}
-                      </span>
-                    </div>
-                    <div className="text-right text-xs text-muted-foreground tabular-nums">
-                      ~{formatLkr(lineLkr)} · charged from wallet
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={maxQty}
+                        value={qty}
+                        onChange={(e) => {
+                          const n = parseInt(e.target.value, 10);
+                          if (!Number.isFinite(n)) return;
+                          setQty(Math.min(maxQty, Math.max(1, n)));
+                        }}
+                        className="h-10 text-center tabular-nums"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-10 w-10"
+                        disabled={qty >= maxQty}
+                        onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="auto-name" className="flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5" />
+                      Name
+                    </Label>
+                    <Input
+                      id="auto-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="auto-wa" className="flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5" />
+                      WhatsApp *
+                    </Label>
+                    <Input
+                      id="auto-wa"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      placeholder="+9477…"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="auto-email" className="flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5" />
+                    Email {buyProduct.requiresCustomerEmail ? '*' : '(optional)'}
+                  </Label>
+                  <Input
+                    id="auto-email"
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="you@email.com"
+                  />
+                </div>
+
+                {(buyProduct.requiresSlotMonths || buyProduct.isSlotProduct) && (
+                  <div className="space-y-2">
+                    <Label>Duration (months)</Label>
+                    <Select
+                      value={String(slotMonths ?? '')}
+                      onValueChange={(v) => setSlotMonths(Number(v))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select months" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(buyProduct.slotDurations?.length
+                          ? buyProduct.slotDurations
+                          : [1, 3, 6, 12]
+                        ).map((m) => (
+                          <SelectItem key={m} value={String(m)}>
+                            {m} month{m === 1 ? '' : 's'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Bank details */}
+                <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    Pay by bank transfer
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Transfer exactly <strong className="text-foreground">{formatLkr(lineLkr)}</strong>{' '}
+                    then upload the screenshot.
+                  </p>
+                  <div className="space-y-1.5 text-sm">
+                    {[
+                      { label: 'Bank', value: bankName },
+                      { label: 'Branch', value: bankBranch },
+                      { label: 'Account name', value: bankAccountName, copy: true },
+                      { label: 'Account number', value: bankAccountNumber, copy: true },
+                    ].map((row) => (
+                      <div key={row.label} className="flex items-center justify-between gap-2">
+                        <div>
+                          <span className="text-muted-foreground">{row.label}: </span>
+                          <span className={cn('font-medium', row.copy && 'font-mono')}>
+                            {row.value}
+                          </span>
+                        </div>
+                        {row.copy && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copyToClipboard(row.value, row.label)}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
+                      <span>Order ID (put in bank remark if possible)</span>
+                      <button
+                        type="button"
+                        className="font-mono text-primary hover:underline"
+                        onClick={() => copyToClipboard(orderIdRef.current, 'Order ID')}
+                      >
+                        {orderIdRef.current}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Payment screenshot *</Label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    className="hidden"
+                    onChange={onProofChange}
+                  />
+                  {!proofFile ? (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground transition hover:border-primary/40 hover:bg-muted/40"
+                    >
+                      <Upload className="h-6 w-6" />
+                      Upload receipt (JPG, PNG, PDF)
+                    </button>
+                  ) : (
+                    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-3">
+                      <div className="flex items-center gap-2 text-sm min-w-0">
+                        {proofFile.type === 'application/pdf' ? (
+                          <FileText className="h-5 w-5 shrink-0 text-destructive" />
+                        ) : (
+                          <ImageIcon className="h-5 w-5 shrink-0 text-primary" />
+                        )}
+                        <span className="truncate">{proofFile.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setProofFile(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="auto-notes">Notes (optional)</Label>
+                  <Textarea
+                    id="auto-notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Any extra info…"
+                    rows={2}
+                  />
+                </div>
+
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Total to pay</span>
+                    <span className="text-lg font-bold tabular-nums text-primary">
+                      {formatLkr(lineLkr)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div
+                  className={cn(
+                    'rounded-xl border p-3 text-sm',
+                    delivery && delivery.length > 0
+                      ? 'border-emerald-500/30 bg-emerald-500/10'
+                      : 'border-primary/25 bg-primary/5'
+                  )}
+                >
+                  <div className="font-semibold">
+                    {delivery && delivery.length > 0
+                      ? 'Payment received · product delivered'
+                      : 'Order submitted · delivery pending'}
+                  </div>
+                  <p className="mt-1 text-muted-foreground">
+                    Order <span className="font-mono text-foreground">{lastOrderId}</span>
+                    {delivery && delivery.length === 0 && (
+                      <>
+                        {' '}
+                        — we verify your bank transfer and send credentials on WhatsApp as soon as
+                        ready. Track anytime on the Track page.
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                {delivery && delivery.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Your credentials</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1 text-xs"
+                        onClick={() =>
+                          handleCopy(
+                            'all',
+                            delivery.map((a, i) => `#${i + 1}\n${accountLines(a)}`).join('\n\n')
+                          )
+                        }
+                      >
+                        {copiedKey === 'all' ? (
+                          <Check className="h-3.5 w-3.5" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                        Copy all
+                      </Button>
+                    </div>
+                    <div className="max-h-64 space-y-2 overflow-y-auto">
+                      {delivery.map((acc, i) => {
+                        const text = accountLines(acc);
+                        const key = `acc-${i}`;
+                        return (
+                          <div
+                            key={key}
+                            className="rounded-lg border border-border/70 bg-muted/20 p-3 font-mono text-xs"
+                          >
+                            <div className="mb-2 flex justify-between">
+                              <span className="font-sans text-[11px] text-muted-foreground">
+                                Item {i + 1}
+                              </span>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 text-[11px] text-primary"
+                                onClick={() => handleCopy(key, text)}
+                              >
+                                {copiedKey === key ? (
+                                  <Check className="h-3 w-3" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                                Copy
+                              </button>
+                            </div>
+                            <pre className="whitespace-pre-wrap break-all">{text}</pre>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <DialogFooter className="gap-2 sm:gap-0">
-              {!result?.success ? (
+              {!orderDone ? (
                 <>
-                  <Button type="button" variant="outline" onClick={closeBuy} disabled={buying}>
+                  <Button type="button" variant="outline" onClick={closeBuy} disabled={submitting}>
                     Cancel
                   </Button>
                   <Button
                     type="button"
-                    onClick={handlePurchase}
-                    disabled={buying || productAvailable(buyProduct) <= 0}
+                    onClick={handlePlaceOrder}
+                    disabled={submitting || productAvailable(buyProduct) <= 0}
                     className="gap-2"
                   >
-                    {buying ? (
+                    {submitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Purchasing…
+                        Placing order…
                       </>
                     ) : (
                       <>
                         <Zap className="h-4 w-4" />
-                        Pay & deliver
+                        Pay & order · {formatLkr(lineLkr)}
                       </>
                     )}
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button type="button" variant="outline" onClick={() => setResult(null)}>
-                    Buy again
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (lastOrderId) navigate(`/track-order?order=${lastOrderId}`);
+                      else navigate('/track-order');
+                    }}
+                  >
+                    Track order
                   </Button>
                   <Button type="button" onClick={closeBuy}>
                     Done

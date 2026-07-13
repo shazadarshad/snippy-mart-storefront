@@ -44,7 +44,7 @@ export interface AutoProduct {
 }
 
 export interface AutoProductsResponse {
-  success: boolean;
+  success?: boolean;
   lang?: string;
   botSource?: string;
   walletCurrency?: string;
@@ -54,18 +54,11 @@ export interface AutoProductsResponse {
 }
 
 export interface AutoBalanceResponse {
-  success: boolean;
-  lang?: string;
-  botSource?: string;
-  walletCurrency?: string;
-  requester?: { chatId?: number; name?: string };
+  success?: boolean;
   balance?: number;
   balanceUsd?: number;
-  balanceVnd?: number;
   balanceText?: string;
-  usdtBalance?: number;
-  usdRate?: number;
-  updatedAt?: string | null;
+  walletCurrency?: string;
   message?: string;
 }
 
@@ -79,32 +72,19 @@ export interface DeliveredAccount {
 }
 
 export interface AutoPurchaseResponse {
-  success: boolean;
-  lang?: string;
-  botSource?: string;
-  walletCurrency?: string;
+  success?: boolean;
   orderCode?: string;
   productType?: string;
-  productTypeRaw?: string;
   quantity?: number;
   bonusQuantity?: number;
   finalQuantity?: number;
-  slotMonths?: number;
-  customerEmail?: string;
-  originalAmount?: number;
-  originalAmountText?: string;
-  discountPercent?: number;
-  discountAmount?: number;
-  discountAmountText?: string;
   amount?: number;
   amountUsd?: number;
   amountText?: string;
   balance?: number;
-  balanceUsd?: number;
   balanceText?: string;
   deliveredAccounts?: DeliveredAccount[];
   message?: string;
-  referralReward?: unknown;
 }
 
 export type AutoPurchasePayload = {
@@ -122,9 +102,7 @@ function asArrayPromos(value: AutoPromotion[] | string | null | undefined): Auto
 
 export function getProductPromotions(p: AutoProduct | null | undefined): AutoPromotion[] {
   if (!p) return [];
-  const a = asArrayPromos(p.promotions);
-  const b = asArrayPromos(p.marketPromotions);
-  return [...a, ...b];
+  return [...asArrayPromos(p.promotions), ...asArrayPromos(p.marketPromotions)];
 }
 
 export function productUsdPrice(p: AutoProduct | null | undefined): number {
@@ -142,6 +120,7 @@ export function productUsdPrice(p: AutoProduct | null | undefined): number {
   }
 }
 
+/** Customer-facing LKR price (USD × rate). */
 export function productLkrPrice(p: AutoProduct | null | undefined): number {
   return Math.round(productUsdPrice(p) * AUTO_USD_TO_LKR);
 }
@@ -165,7 +144,7 @@ export function formatUsd(n: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: n < 1 ? 2 : 2,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(n);
 }
@@ -174,10 +153,18 @@ export function formatLkr(n: number): string {
   return `LKR ${new Intl.NumberFormat('en-LK').format(Math.round(n))}`;
 }
 
-/**
- * Direct fetch to the functions URL for reliable GET + query params
- * (supabase.functions.invoke is POST-oriented and awkward with query strings).
- */
+export function accountLines(acc: DeliveredAccount): string {
+  const parts: string[] = [];
+  if (acc.user) parts.push(`User: ${acc.user}`);
+  if (acc.password) parts.push(`Pass: ${acc.password}`);
+  if (acc.verifyEmail) parts.push(`Recovery: ${acc.verifyEmail}`);
+  for (const [k, v] of Object.entries(acc)) {
+    if (['user', 'password', 'verifyEmail', 'productItemId', 'deliveredAt'].includes(k)) continue;
+    if (typeof v === 'string' && v.trim()) parts.push(`${k}: ${v}`);
+  }
+  return parts.join('\n') || JSON.stringify(acc, null, 2);
+}
+
 async function fetchFunction<T>(
   action: string,
   init?: { method?: 'GET' | 'POST'; body?: unknown }
@@ -185,41 +172,61 @@ async function fetchFunction<T>(
   const base = import.meta.env.VITE_SUPABASE_URL as string;
   const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
   if (!base || !anon) {
-    throw new Error('Supabase is not configured');
+    throw new Error('Store is not configured. Please refresh or contact support.');
   }
 
   const url = `${base.replace(/\/$/, '')}/functions/v1/auto-buyer?action=${encodeURIComponent(action)}`;
   const method = init?.method || 'GET';
 
-  const res = await fetch(url, {
-    method,
-    headers: {
-      apikey: anon,
-      Authorization: `Bearer ${anon}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: method === 'POST' ? JSON.stringify(init?.body ?? {}) : undefined,
-  });
-
-  let data: T & { success?: boolean; message?: string };
+  let res: Response;
   try {
-    data = (await res.json()) as T & { success?: boolean; message?: string };
+    res = await fetch(url, {
+      method,
+      headers: {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: method === 'POST' ? JSON.stringify(init?.body ?? {}) : undefined,
+    });
   } catch {
-    throw new Error(`Auto API returned non-JSON (HTTP ${res.status})`);
+    throw new Error('Network error loading auto catalog. Check your connection and try again.');
+  }
+
+  let data: T & { success?: boolean; message?: string; products?: unknown };
+  try {
+    data = (await res.json()) as T & { success?: boolean; message?: string; products?: unknown };
+  } catch {
+    throw new Error(`Auto catalog returned invalid data (HTTP ${res.status}).`);
+  }
+
+  // Products list: accept body if products array is present even when success is omitted
+  if (action === 'products' && Array.isArray((data as AutoProductsResponse).products)) {
+    return data;
   }
 
   if (!res.ok || data?.success === false) {
-    throw new Error(data?.message || `Auto API error (HTTP ${res.status})`);
+    throw new Error(data?.message || `Auto service error (HTTP ${res.status})`);
   }
 
   return data;
 }
 
-export async function fetchAutoProducts(): Promise<AutoProductsResponse> {
-  return fetchFunction<AutoProductsResponse>('products');
+export async function fetchAutoProducts(): Promise<AutoProduct[]> {
+  const data = await fetchFunction<AutoProductsResponse>('products');
+  const list = Array.isArray(data.products) ? data.products : [];
+  return list.filter(
+    (p): p is AutoProduct =>
+      p != null &&
+      typeof p === 'object' &&
+      typeof p._id === 'string' &&
+      !!p._id &&
+      typeof p.product_name === 'string'
+  );
 }
 
+/** Staff-only; not shown to customers. */
 export async function fetchAutoBalance(): Promise<AutoBalanceResponse> {
   return fetchFunction<AutoBalanceResponse>('balance');
 }
@@ -236,12 +243,35 @@ export async function purchaseAutoProduct(
 export function categorizeProduct(name: string): string {
   const n = name.toLowerCase();
   if (n.includes('gmail') || n.includes('hotmail') || n.includes('mail')) return 'Email';
-  if (n.includes('grok') || n.includes('chatgpt') || n.includes('gpt') || n.includes('claude') || n.includes('gemini') || n.includes('deepseek') || n.includes('api ')) return 'AI';
-  if (n.includes('capcut') || n.includes('canva') || n.includes('adobe') || n.includes('picsart') || n.includes('meitu')) return 'Design';
+  if (
+    n.includes('grok') ||
+    n.includes('chatgpt') ||
+    n.includes('gpt') ||
+    n.includes('claude') ||
+    n.includes('gemini') ||
+    n.includes('deepseek') ||
+    n.includes('api ')
+  )
+    return 'AI';
+  if (
+    n.includes('capcut') ||
+    n.includes('canva') ||
+    n.includes('adobe') ||
+    n.includes('picsart') ||
+    n.includes('meitu')
+  )
+    return 'Design';
   if (n.includes('vpn') || n.includes('express') || n.includes('hma')) return 'VPN';
   if (n.includes('cursor') || n.includes('kiro') || n.includes('codex')) return 'Dev Tools';
   if (n.includes('office') || n.includes('microsoft') || n.includes('xbox')) return 'Microsoft';
-  if (n.includes('elevenlabs') || n.includes('kling') || n.includes('veo') || n.includes('higgs') || n.includes('openart')) return 'Media AI';
+  if (
+    n.includes('elevenlabs') ||
+    n.includes('kling') ||
+    n.includes('veo') ||
+    n.includes('higgs') ||
+    n.includes('openart')
+  )
+    return 'Media AI';
   if (n.includes('duolingo')) return 'Education';
   return 'Other';
 }
