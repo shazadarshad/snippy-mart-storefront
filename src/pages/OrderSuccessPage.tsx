@@ -213,13 +213,7 @@ const OrderSuccessPage = () => {
   };
 
   return (
-    <div
-      className={cn(
-        'min-h-dvh page-mesh pt-24 sm:pt-28',
-        // Extra bottom space so sticky WhatsApp bar doesn't cover content
-        showWhatsAppCta ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pb-20' : 'pb-safe pb-16 sm:pb-20'
-      )}
-    >
+    <div className="min-h-dvh page-mesh pt-24 sm:pt-28 pb-safe pb-16 sm:pb-20">
       <SEO title="Order confirmed" description="Your Snippy Mart order was placed successfully." />
       <div className="container mx-auto px-3 sm:px-4 max-w-2xl">
         {/* Success header — tighter on mobile */}
@@ -493,23 +487,8 @@ const OrderSuccessPage = () => {
           </div>
         )}
 
-        {/* Secondary actions (WhatsApp already shown above + sticky bar) */}
+        {/* Secondary actions */}
         <div className="space-y-3 mb-5 sm:mb-6">
-          {showWhatsAppCta && (
-            <Button
-              variant="whatsapp"
-              size="lg"
-              className="hidden sm:flex w-full h-12 rounded-2xl text-base font-bold shadow-md shadow-[#25D366]/20 text-white"
-              asChild
-              disabled={isSettingsLoading}
-            >
-              <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm order on WhatsApp'}
-              </a>
-            </Button>
-          )}
-
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <Button
               variant={isCompleted ? 'default' : 'outline'}
@@ -589,35 +568,6 @@ const OrderSuccessPage = () => {
           </p>
         )}
       </div>
-
-      {/* Sticky WhatsApp bar — always visible on mobile without scrolling */}
-      {showWhatsAppCta && (
-        <div
-          className={cn(
-            'fixed inset-x-0 bottom-0 z-50 sm:hidden',
-            'border-t border-[#25D366]/30 bg-background/95 backdrop-blur-md',
-            'px-3 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]',
-            'shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.25)]'
-          )}
-        >
-          <Button
-            variant="whatsapp"
-            size="xl"
-            className="w-full min-h-12 h-12 rounded-2xl text-sm font-bold shadow-lg shadow-[#25D366]/30 touch-manipulation text-white"
-            asChild
-            disabled={isSettingsLoading}
-          >
-            <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
-              {isSettingsLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              ) : (
-                <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
-              )}
-              {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm order on WhatsApp'}
-            </a>
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
