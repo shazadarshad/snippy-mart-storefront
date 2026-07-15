@@ -53,9 +53,37 @@ interface OrderData {
   };
 }
 
+function buildStandardOrderWhatsAppMessage(
+  order: OrderData,
+  total: number,
+  formatPrice: (n: number) => string
+): string {
+  const lines = [
+    'Hello Snippy Mart! ✅ I just placed an order.',
+    '',
+    `Order ID: ${order.orderId}`,
+    `Name: ${order.name || 'Customer'}`,
+    `WhatsApp: ${order.whatsapp}`,
+  ];
+
+  if (order.items?.length) {
+    lines.push('', 'Items:');
+    order.items.forEach((item) => {
+      lines.push(
+        `• ${item.name} ×${item.quantity} — ${formatPrice(item.price * item.quantity)}`
+      );
+    });
+  }
+
+  lines.push('', `Total: ${formatPrice(total)}`, '', 'Payment proof uploaded. Please confirm. 🙏');
+  return lines.join('\n');
+}
+
 function resolveWhatsAppConfirmUrl(
   order: OrderData | null,
-  storeWhatsapp?: string | null
+  storeWhatsapp?: string | null,
+  formatPrice?: (n: number) => string,
+  liveTotal?: number
 ): string | null {
   if (!order) return null;
   if (order.whatsappConfirmUrl) return order.whatsappConfirmUrl;
@@ -76,7 +104,10 @@ function resolveWhatsAppConfirmUrl(
   }
 
   const number = (storeWhatsapp || '94787767869').replace(/\D/g, '');
-  const message = `Hello! I just placed an order. Order ID: ${order.orderId}`;
+  const total = liveTotal ?? order.total ?? 0;
+  const message = formatPrice
+    ? buildStandardOrderWhatsAppMessage(order, total, formatPrice)
+    : `Hello! I just placed an order. Order ID: ${order.orderId}`;
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
@@ -154,15 +185,22 @@ const OrderSuccessPage = () => {
   const showAutomation = assignment && (isCompleted || liveOrder?.status === 'processing');
 
   const getWhatsAppLink = () => {
-    const rich = resolveWhatsAppConfirmUrl(sessionOrder, settings?.whatsapp_number);
-    if (rich) return rich;
+    if (sessionOrder) {
+      const rich = resolveWhatsAppConfirmUrl(
+        sessionOrder,
+        settings?.whatsapp_number,
+        formatPrice,
+        total
+      );
+      if (rich) return rich;
+    }
     const number = settings?.whatsapp_number || '94787767869';
-    const template =
-      settings?.whatsapp_message_template ||
-      'Hello! I just placed an order. Order ID: {order_id}';
-    const message = template.replace('{order_id}', orderId);
+    const message = `Hello Snippy Mart! I just placed order ${orderId}. Please confirm.`;
     return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
   };
+
+  const whatsAppHref = getWhatsAppLink();
+  const showWhatsAppCta = !isCompleted;
 
   const getServiceIcon = (type: string) => {
     const t = type.toLowerCase();
@@ -175,40 +213,46 @@ const OrderSuccessPage = () => {
   };
 
   return (
-    <div className="min-h-dvh page-mesh pt-24 sm:pt-28 pb-safe pb-16 sm:pb-20">
+    <div
+      className={cn(
+        'min-h-dvh page-mesh pt-24 sm:pt-28',
+        // Extra bottom space so sticky WhatsApp bar doesn't cover content
+        showWhatsAppCta ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pb-20' : 'pb-safe pb-16 sm:pb-20'
+      )}
+    >
       <SEO title="Order confirmed" description="Your Snippy Mart order was placed successfully." />
       <div className="container mx-auto px-3 sm:px-4 max-w-2xl">
-        {/* Success header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="relative inline-flex mb-5">
+        {/* Success header — tighter on mobile */}
+        <div className="text-center mb-4 sm:mb-8">
+          <div className="relative inline-flex mb-3 sm:mb-5">
             <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl scale-150" />
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/15">
-              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-white" strokeWidth={2.5} />
+            <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/15">
+              <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 text-white" strokeWidth={2.5} />
             </div>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-display font-bold tracking-tight text-foreground mb-2">
+          <h1 className="text-xl sm:text-4xl font-display font-bold tracking-tight text-foreground mb-1.5 sm:mb-2">
             {sessionOrder?.isPreOrder ? 'Pre-order locked in' : 'Order confirmed'}
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
-            Thanks{sessionOrder?.name ? `, ${sessionOrder.name}` : ''}! We received your order and
-            will process it after payment verification.
+          <p className="text-xs sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-1">
+            Thanks{sessionOrder?.name ? `, ${sessionOrder.name}` : ''}! Tap WhatsApp below to send
+            your order details and finish confirmation.
           </p>
         </div>
 
         {/* Order ID card */}
-        <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="surface-card p-3.5 sm:p-5 mb-3 sm:mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
               Order ID
             </p>
-            <p className="font-mono text-lg sm:text-xl font-bold text-primary break-all">{orderId}</p>
+            <p className="font-mono text-base sm:text-xl font-bold text-primary break-all">{orderId}</p>
           </div>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="rounded-xl shrink-0 h-10"
+            className="rounded-xl shrink-0 h-10 text-foreground"
             onClick={() => copyToClipboard(orderId, 'Order ID')}
           >
             <Copy className="w-4 h-4 mr-2" />
@@ -217,8 +261,8 @@ const OrderSuccessPage = () => {
         </div>
 
         {/* Status + total */}
-        <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-5">
-          <div className="surface-card p-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mb-3 sm:mb-5">
+          <div className="surface-card p-3 sm:p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
               Status
             </p>
@@ -233,7 +277,7 @@ const OrderSuccessPage = () => {
               {(liveOrder?.status || 'pending').replace(/_/g, ' ')}
             </p>
           </div>
-          <div className="surface-card p-4">
+          <div className="surface-card p-3 sm:p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
               Total paid
             </p>
@@ -247,6 +291,31 @@ const OrderSuccessPage = () => {
             )}
           </div>
         </div>
+
+        {/* Primary CTA — right under order summary so it's above the fold on mobile */}
+        {showWhatsAppCta && (
+          <div className="mb-4 sm:mb-5 space-y-2">
+            <Button
+              variant="whatsapp"
+              size="xl"
+              className="w-full min-h-14 h-14 rounded-2xl text-base font-bold shadow-lg shadow-[#25D366]/30 touch-manipulation text-white"
+              asChild
+              disabled={isSettingsLoading}
+            >
+              <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
+                {isSettingsLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : (
+                  <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
+                )}
+                {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm order on WhatsApp'}
+              </a>
+            </Button>
+            <p className="text-center text-[11px] sm:text-xs text-foreground/70 px-2">
+              Opens WhatsApp with your order details prefilled — one tap to send us.
+            </p>
+          </div>
+        )}
 
         {/* Items summary */}
         {items.length > 0 && (
@@ -424,48 +493,49 @@ const OrderSuccessPage = () => {
           </div>
         )}
 
-        {/* Primary actions */}
+        {/* Secondary actions (WhatsApp already shown above + sticky bar) */}
         <div className="space-y-3 mb-5 sm:mb-6">
-          {!isCompleted && (
+          {showWhatsAppCta && (
             <Button
               variant="whatsapp"
-              size="xl"
-              className="w-full h-12 sm:h-14 rounded-2xl text-sm sm:text-base font-bold shadow-lg shadow-[#25D366]/25"
+              size="lg"
+              className="hidden sm:flex w-full h-12 rounded-2xl text-base font-bold shadow-md shadow-[#25D366]/20 text-white"
               asChild
               disabled={isSettingsLoading}
             >
-              <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer">
-                {isSettingsLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                ) : (
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                )}
-                {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm on WhatsApp'}
+              <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="w-5 h-5 mr-2" />
+                {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm order on WhatsApp'}
               </a>
             </Button>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <Button
               variant={isCompleted ? 'default' : 'outline'}
               size="lg"
-              className="h-12 rounded-2xl font-semibold"
+              className="h-11 sm:h-12 rounded-2xl font-semibold text-foreground"
               asChild
             >
               <Link to={`/track-order?orderId=${orderId}`}>
-                <Search className="w-4 h-4 mr-2" />
+                <Search className="w-4 h-4 mr-1.5 sm:mr-2" />
                 Track
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="h-12 rounded-2xl font-semibold" asChild>
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-11 sm:h-12 rounded-2xl font-semibold text-foreground"
+              asChild
+            >
               <Link to="/products">
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Sparkles className="w-4 h-4 mr-1.5 sm:mr-2" />
                 Shop more
               </Link>
             </Button>
           </div>
 
-          <Button variant="ghost" size="sm" className="w-full text-muted-foreground" asChild>
+          <Button variant="ghost" size="sm" className="w-full text-foreground/70" asChild>
             <Link to="/">
               <Home className="w-4 h-4 mr-2" />
               Back to home
@@ -506,7 +576,7 @@ const OrderSuccessPage = () => {
         </div>
 
         {!isCompleted && (
-          <p className="text-center text-xs text-muted-foreground mt-6">
+          <p className="text-center text-xs text-muted-foreground mt-6 mb-2">
             Need help?{' '}
             <a
               href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
@@ -519,6 +589,35 @@ const OrderSuccessPage = () => {
           </p>
         )}
       </div>
+
+      {/* Sticky WhatsApp bar — always visible on mobile without scrolling */}
+      {showWhatsAppCta && (
+        <div
+          className={cn(
+            'fixed inset-x-0 bottom-0 z-50 sm:hidden',
+            'border-t border-[#25D366]/30 bg-background/95 backdrop-blur-md',
+            'px-3 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]',
+            'shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.25)]'
+          )}
+        >
+          <Button
+            variant="whatsapp"
+            size="xl"
+            className="w-full min-h-12 h-12 rounded-2xl text-sm font-bold shadow-lg shadow-[#25D366]/30 touch-manipulation text-white"
+            asChild
+            disabled={isSettingsLoading}
+          >
+            <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
+              {isSettingsLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              ) : (
+                <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
+              )}
+              {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm order on WhatsApp'}
+            </a>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
