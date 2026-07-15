@@ -214,11 +214,20 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-[90vh] min-h-[50vh] p-0 gap-0 overflow-hidden bg-card text-foreground border-border/50 rounded-[2rem] shadow-2xl">
+      <DialogContent
+        className={cn(
+          "max-w-[calc(100vw-0.75rem)] sm:max-w-5xl",
+          "w-full p-0 gap-0 overflow-hidden",
+          "h-[min(92dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.5rem))]",
+          "max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.5rem))]",
+          "bg-card text-foreground border-border/50",
+          "rounded-2xl sm:rounded-3xl shadow-2xl",
+        )}
+      >
         <DialogTitle className="sr-only">{product.name}</DialogTitle>
 
         {/* Content Wrapper */}
-        <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden max-h-[90vh]">
+        <div className="flex flex-col md:flex-row h-full min-h-0 overflow-hidden">
           {/* Image Section with Gallery - Desktop Only */}
           <div className="hidden md:block relative w-1/2 h-full bg-muted flex-shrink-0">
             <img
@@ -231,14 +240,16 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
             {allImages.length > 1 && (
               <>
                 <button
+                  type="button"
                   onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
+                  type="button"
                   onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -247,10 +258,11 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                   {allImages.map((_, idx) => (
                     <button
+                      type="button"
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
                       className={cn(
-                        "w-2 h-2 rounded-full transition-colors",
+                        "h-2.5 w-2.5 rounded-full transition-colors",
                         idx === currentImageIndex ? "bg-white" : "bg-white/50"
                       )}
                     />
@@ -267,14 +279,14 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
           </div>
 
           {/* Details Section */}
-          <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-card">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative bg-card">
             <div
               data-lenis-prevent
-              className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 md:p-8 pt-12 md:pt-8 custom-scrollbar"
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3.5 sm:px-6 md:px-8 pt-12 sm:pt-10 md:pt-8 pb-3 custom-scrollbar"
             >
 
               {/* Mobile Image Gallery */}
-              <div className="md:hidden relative aspect-square bg-muted rounded-2xl mb-6 overflow-hidden">
+              <div className="md:hidden relative aspect-[4/3] sm:aspect-square max-h-[42dvh] mx-auto w-full bg-muted rounded-xl mb-4 overflow-hidden">
                 <img
                   src={allImages[currentImageIndex] || product.image_url}
                   alt={product.name}
@@ -282,16 +294,43 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 />
 
                 {allImages.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 rounded-full bg-black/20 backdrop-blur-sm">
-                    {allImages.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full transition-colors",
-                          idx === currentImageIndex ? "bg-white" : "bg-white/40"
-                        )}
-                      />
-                    ))}
+                  <>
+                    <button
+                      type="button"
+                      onClick={prevImage}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-black/55 text-white z-10"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={nextImage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-black/55 text-white z-10"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5 px-2.5 py-1.5 rounded-full bg-black/40 backdrop-blur-sm">
+                      {allImages.map((_, idx) => (
+                        <button
+                          type="button"
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={cn(
+                            "h-2 w-2 rounded-full transition-colors",
+                            idx === currentImageIndex ? "bg-white" : "bg-white/40"
+                          )}
+                          aria-label={`Image ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {discount > 0 && (
+                  <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold z-10">
+                    -{discount}% OFF
                   </div>
                 )}
               </div>
@@ -305,23 +344,25 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               </div>
 
               {/* Title */}
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-3 sm:mb-4 leading-snug pr-1">
                 {product.name}
               </h2>
 
               {/* Share Buttons */}
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-sm text-muted-foreground">Share:</span>
+                <span className="text-sm text-foreground/70">Share:</span>
                 <button
+                  type="button"
                   onClick={handleShareWhatsApp}
-                  className="p-2 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] transition-colors"
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#25D366]/10 active:bg-[#25D366]/20 text-[#25D366] transition-colors touch-manipulation"
                   title="Share on WhatsApp"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={handleCopyLink}
-                  className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-secondary active:bg-secondary/80 text-foreground transition-colors touch-manipulation"
                   title="Copy link"
                 >
                   <Copy className="w-4 h-4" />
@@ -445,29 +486,29 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               )}
             </div>
 
-            {/* Actions Footer */}
-            <div className="flex-shrink-0 p-4 sm:p-6 md:p-8 pt-0 border-t border-border bg-card pb-6 md:pb-8">
+            {/* Actions Footer — sticky on mobile with safe area */}
+            <div className="flex-shrink-0 border-t border-border bg-card/95 backdrop-blur-sm px-3.5 sm:px-6 md:px-8 pt-3 sm:pt-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-6">
               {/* Selected Plan Summary */}
               {selectedPlan && (
-                <div className="flex items-center justify-between mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-secondary/50">
-                  <div>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Selected:</p>
+                <div className="flex items-center justify-between gap-2 mb-3 p-2.5 sm:p-3 rounded-xl bg-secondary/60">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Selected</p>
                     <div className="flex flex-wrap gap-1 items-center">
-                      <p className="text-sm sm:text-base font-semibold text-foreground">{selectedPlan.name}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{selectedPlan.name}</p>
                       {selectedVariant && (
                         <>
                           <span className="text-muted-foreground">›</span>
-                          <span className="text-sm sm:text-base font-semibold text-primary">{selectedVariant.name}</span>
+                          <span className="text-sm font-semibold text-primary truncate">{selectedVariant.name}</span>
                         </>
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg sm:text-2xl font-bold text-foreground">
+                  <div className="text-right shrink-0">
+                    <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums">
                       {formatPrice(currentPrice)}
                     </p>
                     {currentOldPrice && (
-                      <p className="text-xs sm:text-sm text-muted-foreground line-through">
+                      <p className="text-xs text-muted-foreground line-through tabular-nums">
                         {formatPrice(currentOldPrice)}
                       </p>
                     )}
@@ -479,7 +520,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:flex-1 h-12 rounded-xl border-2 border-border bg-card text-foreground font-bold hover:bg-secondary hover:text-foreground active:scale-95 transition-all"
+                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl border-2 border-border bg-card text-foreground font-bold hover:bg-secondary hover:text-foreground active:scale-[0.98] transition-all touch-manipulation"
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
                 >
@@ -489,7 +530,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <Button
                   variant="hero"
                   size="lg"
-                  className="w-full sm:flex-1 h-12 rounded-xl font-bold text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all"
+                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl font-bold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all touch-manipulation"
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
                 >
@@ -500,8 +541,8 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
             </div>
           </div>
         </div>
-      </DialogContent >
-    </Dialog >
+      </DialogContent>
+    </Dialog>
   );
 };
 

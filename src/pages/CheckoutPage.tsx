@@ -416,11 +416,13 @@ const CheckoutPage = () => {
                         placeholder="+94 77 123 4567"
                         value={formData.whatsapp}
                         onChange={handleInputChange}
-                        className="pl-10 h-12 bg-secondary/50 border-border"
+                        className="pl-10 h-12 bg-background border-border text-foreground text-base"
                         required
+                        autoComplete="tel"
+                        inputMode="tel"
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-foreground/70 mt-1">
                       We'll send your order confirmation to this number
                     </p>
                   </div>
@@ -436,7 +438,8 @@ const CheckoutPage = () => {
                       placeholder="Your name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="mt-1.5 h-12 bg-secondary/50 border-border"
+                      className="mt-1.5 h-12 bg-background border-border text-foreground text-base"
+                      autoComplete="name"
                     />
                   </div>
 
@@ -451,9 +454,11 @@ const CheckoutPage = () => {
                       placeholder="your@email.com"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="mt-1.5 h-12 bg-secondary/50 border-border"
+                      className="mt-1.5 h-12 bg-background border-border text-foreground text-base"
+                      autoComplete="email"
+                      inputMode="email"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-foreground/70 mt-1">
                       We'll send order confirmation and product delivery to this email
                     </p>
                   </div>
@@ -468,7 +473,7 @@ const CheckoutPage = () => {
                       placeholder="Any special instructions..."
                       value={formData.notes}
                       onChange={handleInputChange}
-                      className="mt-1.5 bg-secondary/50 border-border min-h-[80px]"
+                      className="mt-1.5 bg-background border-border text-foreground min-h-[80px] text-base"
                     />
                   </div>
                 </div>
@@ -476,23 +481,23 @@ const CheckoutPage = () => {
 
               {/* Account Setup for Specific Products */}
               {items.some(item => item.product.requirements?.require_email || item.product.requirements?.require_password) && (
-                <div className="p-6 rounded-2xl bg-card border border-border">
+                <div className="p-4 sm:p-6 rounded-2xl bg-card border border-border">
                   <h2 className="text-lg font-semibold text-foreground mb-4">
                     Account Setup
                   </h2>
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {items.map((item) => {
                       if (!item.product.requirements?.require_email && !item.product.requirements?.require_password) return null;
                       return (
-                        <div key={item.id} className="p-4 rounded-xl bg-secondary/30 border border-border space-y-4">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-8 h-8 rounded bg-muted overflow-hidden">
+                        <div key={item.id} className="p-3.5 sm:p-4 rounded-xl bg-secondary/30 border border-border space-y-4">
+                          <div className="flex items-center gap-3 mb-2 min-w-0">
+                            <div className="w-10 h-10 shrink-0 rounded-lg bg-muted overflow-hidden">
                               <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
                             </div>
-                            <div>
-                              <p className="font-semibold text-sm">{item.product.name}</p>
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm text-foreground truncate">{item.product.name}</p>
+                              <div className="flex items-center gap-1.5 text-xs text-foreground/70">
+                                <ShieldCheck className="w-3 h-3 text-emerald-500 shrink-0" />
                                 <span>Secure Account Setup</span>
                               </div>
                             </div>
@@ -500,7 +505,7 @@ const CheckoutPage = () => {
 
                           {item.product.requirements.require_email && (
                             <div>
-                              <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 block">Account Email</Label>
+                              <Label className="text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block">Account Email</Label>
                               <Input
                                 type="email"
                                 placeholder={`Email for ${item.product.name}`}
@@ -509,14 +514,15 @@ const CheckoutPage = () => {
                                   ...prev,
                                   [item.product.id]: { ...prev[item.product.id], email: e.target.value }
                                 }))}
-                                className="bg-background border-border"
+                                className="bg-background border-border text-foreground h-12 text-base"
+                                autoComplete="email"
                               />
                             </div>
                           )}
 
                           {item.product.requirements.require_password && (
                             <div>
-                              <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 block">Account Password</Label>
+                              <Label className="text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block">Account Password</Label>
                               <Input
                                 type="text"
                                 placeholder={`Password for ${item.product.name}`}
@@ -525,7 +531,8 @@ const CheckoutPage = () => {
                                   ...prev,
                                   [item.product.id]: { ...prev[item.product.id], password: e.target.value }
                                 }))}
-                                className="bg-background border-border"
+                                className="bg-background border-border text-foreground h-12 text-base"
+                                autoComplete="off"
                               />
                             </div>
                           )}
@@ -565,14 +572,13 @@ const CheckoutPage = () => {
               </div>
 
               {/* Info Box */}
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20">
+              <div className="flex items-start gap-3 p-3.5 sm:p-4 rounded-xl bg-primary/10 border border-primary/20">
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
+                <div className="text-sm min-w-0">
                   <p className="font-medium text-foreground mb-1">How checkout works</p>
-                  <p className="text-muted-foreground">
-                    Pay by bank transfer or crypto (Binance / wallet). Put your Order ID in the
-                    remarks/note, send the exact converted amount, upload proof, then place the
-                    order. We verify payment and deliver on WhatsApp.
+                  <p className="text-foreground/70 text-xs sm:text-sm leading-relaxed">
+                    Pay by bank or crypto, put your Order ID in the note, upload proof, then place
+                    the order. We verify and deliver on WhatsApp.
                   </p>
                 </div>
               </div>
@@ -581,7 +587,7 @@ const CheckoutPage = () => {
                 type="submit"
                 variant="hero"
                 size="xl"
-                className="w-full"
+                className="w-full min-h-14 h-14 text-base font-bold text-primary-foreground touch-manipulation sticky bottom-2 sm:static z-10 shadow-lg shadow-primary/25"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

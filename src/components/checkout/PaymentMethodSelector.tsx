@@ -176,34 +176,40 @@ const PaymentMethodSelector = ({
 
   const ProofUpload = ({ accent = 'primary' }: { accent?: 'primary' | 'crypto' }) => (
     <div>
-      <Label className="text-sm text-foreground">
+      <Label className="text-sm text-foreground font-medium">
         Upload payment proof <span className="text-destructive">*</span>
       </Label>
-      <p className="text-xs text-muted-foreground mb-2">
-        Screenshot of transfer / Binance confirmation (JPG, PNG, PDF · max 10MB)
+      <p className="text-xs text-foreground/70 mb-2">
+        Screenshot or PDF (JPG, PNG, WebP, PDF · max 10MB)
       </p>
       {!proofFile ? (
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            'w-full p-6 border-2 border-dashed rounded-xl transition-colors flex flex-col items-center gap-2',
+            'w-full min-h-[7rem] p-4 sm:p-6 border-2 border-dashed rounded-xl transition-colors flex flex-col items-center justify-center gap-2 touch-manipulation',
             accent === 'crypto'
-              ? 'border-border hover:border-[#F0B90B]/50 hover:bg-[#F0B90B]/5'
-              : 'border-border hover:border-primary/50 hover:bg-primary/5',
+              ? 'border-border active:bg-[#F0B90B]/10 hover:border-[#F0B90B]/50'
+              : 'border-border active:bg-primary/10 hover:border-primary/50',
           )}
         >
-          <Upload className="w-8 h-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Click to upload proof</p>
+          <Upload className="w-7 h-7 sm:w-8 sm:h-8 text-foreground/60" />
+          <p className="text-sm font-medium text-foreground">Tap to upload proof</p>
         </button>
       ) : (
-        <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
+        <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border">
           {getFileIcon()}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">{proofFile.name}</p>
-            <p className="text-xs text-muted-foreground">{(proofFile.size / 1024).toFixed(1)} KB</p>
+            <p className="text-xs text-foreground/70">{(proofFile.size / 1024).toFixed(1)} KB</p>
           </div>
-          <Button type="button" variant="ghost" size="icon" onClick={removeFile}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0 text-foreground"
+            onClick={removeFile}
+          >
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -244,30 +250,30 @@ const PaymentMethodSelector = ({
       >
         <button
           type="button"
-          className="w-full p-4 flex items-center justify-between text-left"
+          className="w-full min-h-[4.25rem] p-3.5 sm:p-4 flex items-center justify-between gap-2 text-left touch-manipulation"
           onClick={() => {
             onMethodChange('bank_transfer');
             onCryptoSelectionChange(null);
           }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div
               className={cn(
-                'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
+                'w-11 h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors',
                 isBank ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground',
               )}
             >
               <Building2 className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-medium text-foreground">Bank Transfer</p>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <p className="font-semibold text-foreground text-sm sm:text-base">Bank Transfer</p>
                 <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
                   Available
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Transfer to our bank account &amp; upload receipt
+              <p className="text-xs sm:text-sm text-foreground/70 mt-0.5">
+                Bank deposit + upload receipt
               </p>
             </div>
           </div>
@@ -369,34 +375,27 @@ const PaymentMethodSelector = ({
       >
         <button
           type="button"
-          className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => {
-            if (isCrypto && cryptoSelection) {
-              // Toggle collapse by re-opening modal to change option
-              openCrypto();
-            } else {
-              openCrypto();
-            }
-          }}
+          className="w-full min-h-[4.25rem] p-3.5 sm:p-4 flex items-center justify-between gap-2 text-left touch-manipulation"
+          onClick={() => openCrypto()}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div
               className={cn(
-                'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
+                'w-11 h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors',
                 isCrypto ? 'bg-violet-500 text-white' : 'bg-secondary text-muted-foreground',
               )}
             >
               <Wallet className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-medium text-foreground">Crypto</p>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <p className="font-semibold text-foreground text-sm sm:text-base">Crypto</p>
                 <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
                   Available
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Binance Pay or on-chain wallet (USDT, BTC, ETH…)
+              <p className="text-xs sm:text-sm text-foreground/70 mt-0.5">
+                Binance Pay or wallet transfer
               </p>
             </div>
           </div>
@@ -593,20 +592,22 @@ const PaymentMethodSelector = ({
 
       {/* Crypto options modal */}
       <Dialog open={cryptoModalOpen} onOpenChange={setCryptoModalOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto bg-card text-foreground border-border">
+        <DialogContent className="sm:max-w-lg bg-card text-foreground border-border">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-foreground">Pay with crypto</DialogTitle>
-            <DialogDescription className="text-foreground/70">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-foreground pr-2">
+              Pay with crypto
+            </DialogTitle>
+            <DialogDescription className="text-foreground/70 text-sm">
               Choose Binance Pay or a wallet transfer, then send the exact amount shown.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex gap-2 p-1 rounded-xl bg-secondary border border-border">
+          <div className="flex gap-1.5 p-1 rounded-xl bg-secondary border border-border">
             <button
               type="button"
               onClick={() => setModalTab('binance')}
               className={cn(
-                'flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors',
+                'flex-1 min-h-11 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors touch-manipulation',
                 modalTab === 'binance'
                   ? 'bg-[#F0B90B] text-black shadow'
                   : 'text-foreground/70 hover:text-foreground',
@@ -618,7 +619,7 @@ const PaymentMethodSelector = ({
               type="button"
               onClick={() => setModalTab('wallets')}
               className={cn(
-                'flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors',
+                'flex-1 min-h-11 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors touch-manipulation',
                 modalTab === 'wallets'
                   ? 'bg-violet-600 text-white shadow'
                   : 'text-foreground/70 hover:text-foreground',
@@ -660,7 +661,7 @@ const PaymentMethodSelector = ({
               </div>
               <Button
                 type="button"
-                className="w-full h-12 font-bold bg-[#F0B90B] text-black hover:bg-[#F0B90B]/90"
+                className="w-full min-h-12 h-12 font-bold bg-[#F0B90B] text-black hover:bg-[#F0B90B]/90 touch-manipulation"
                 onClick={selectBinance}
               >
                 <Bitcoin className="w-4 h-4 mr-2" />
@@ -670,7 +671,7 @@ const PaymentMethodSelector = ({
           )}
 
           {modalTab === 'wallets' && (
-            <div className="space-y-3 text-foreground">
+            <div className="space-y-2.5 sm:space-y-3 text-foreground pb-[env(safe-area-inset-bottom)]">
               {wallets.length === 0 ? (
                 <div className="p-6 text-center rounded-xl border border-dashed border-border bg-background">
                   <Wallet className="w-8 h-8 mx-auto text-foreground/50 mb-2" />
@@ -687,22 +688,22 @@ const PaymentMethodSelector = ({
                       key={w.id}
                       type="button"
                       onClick={() => selectWallet(w)}
-                      className="w-full text-left p-4 rounded-xl border border-border bg-background hover:border-violet-500/60 hover:bg-violet-500/5 transition-colors text-foreground"
+                      className="w-full text-left p-3.5 sm:p-4 min-h-[4.5rem] rounded-xl border border-border bg-background hover:border-violet-500/60 active:bg-violet-500/10 transition-colors text-foreground touch-manipulation"
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-col xs:flex-row xs:items-start justify-between gap-2 sm:gap-3">
                         <div className="min-w-0">
-                          <p className="font-bold text-foreground">
+                          <p className="font-bold text-foreground text-sm sm:text-base">
                             {w.symbol}{' '}
-                            <span className="text-foreground/70 font-medium text-sm">
+                            <span className="text-foreground/70 font-medium text-xs sm:text-sm">
                               · {w.network}
                             </span>
                           </p>
-                          <p className="text-[11px] font-mono text-foreground/70 mt-1 truncate max-w-[240px]">
-                            {w.address.slice(0, 12)}…{w.address.slice(-8)}
+                          <p className="text-[11px] font-mono text-foreground/70 mt-1 break-all">
+                            {w.address.slice(0, 10)}…{w.address.slice(-8)}
                           </p>
                         </div>
-                        <div className="text-right shrink-0">
-                          <p className="font-black text-violet-700 dark:text-violet-300 tabular-nums">
+                        <div className="xs:text-right shrink-0">
+                          <p className="font-black text-violet-700 dark:text-violet-300 tabular-nums text-base sm:text-lg">
                             {q.formatted}
                           </p>
                           <p className="text-[10px] text-foreground/70">send this amount</p>

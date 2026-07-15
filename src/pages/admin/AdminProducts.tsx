@@ -739,7 +739,7 @@ const AdminProducts = () => {
             Add Product
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card text-foreground border-border custom-scrollbar">
+          <DialogContent className="max-w-2xl sm:max-w-2xl w-full bg-card text-foreground border-border custom-scrollbar">
             <DialogHeader>
               <DialogTitle className="text-foreground">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
