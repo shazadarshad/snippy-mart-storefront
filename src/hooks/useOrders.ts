@@ -28,7 +28,7 @@ export interface Order {
   discount_amount?: number;
   status: OrderStatus;
   notes: string | null;
-  payment_method: 'bank_transfer' | 'binance_usdt' | 'card' | null;
+  payment_method: 'bank_transfer' | 'binance_usdt' | 'crypto_onchain' | 'card' | null;
   payment_proof_url: string | null;
   binance_id: string | null;
   customer_country: string | null;

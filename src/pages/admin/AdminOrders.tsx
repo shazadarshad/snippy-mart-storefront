@@ -641,9 +641,18 @@ const AdminOrders = () => {
                         <div className="flex items-center gap-1 mt-1">
                           {order.payment_method === 'bank_transfer' && <Building2 className="w-3 h-3 text-primary" />}
                           {order.payment_method === 'binance_usdt' && <Bitcoin className="w-3 h-3 text-[#F0B90B]" />}
+                          {order.payment_method === 'crypto_onchain' && <Wallet className="w-3 h-3 text-violet-500" />}
                           {order.payment_method === 'card' && <CreditCard className="w-3 h-3 text-purple-500" />}
                           <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                            {order.payment_method === 'card' ? 'CARD' : order.payment_method?.replace('_', ' ') || 'UNPAID'}
+                            {order.payment_method === 'card'
+                              ? 'CARD'
+                              : order.payment_method === 'binance_usdt'
+                                ? 'BINANCE'
+                                : order.payment_method === 'crypto_onchain'
+                                  ? 'CRYPTO'
+                                  : order.payment_method === 'bank_transfer'
+                                    ? 'BANK'
+                                    : order.payment_method?.replace(/_/g, ' ') || 'UNPAID'}
                           </span>
                         </div>
                       )}
@@ -1073,7 +1082,11 @@ const AdminOrders = () => {
                           <div className="flex items-center gap-2 mt-1">
                             {selectedOrder.payment_method === 'binance_usdt' ? (
                               <div className="flex items-center gap-2 text-sm font-bold text-[#F0B90B]">
-                                <Bitcoin className="w-4 h-4" /> Binance USDT
+                                <Bitcoin className="w-4 h-4" /> Binance Pay
+                              </div>
+                            ) : selectedOrder.payment_method === 'crypto_onchain' ? (
+                              <div className="flex items-center gap-2 text-sm font-bold text-violet-500">
+                                <Wallet className="w-4 h-4" /> Crypto Wallet
                               </div>
                             ) : selectedOrder.payment_method === 'card' ? (
                               <div className="flex items-center gap-2 text-sm font-bold text-purple-500">
