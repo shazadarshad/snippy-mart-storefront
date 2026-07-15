@@ -420,70 +420,70 @@ const PaymentMethodSelector = ({
         >
           <div className="p-4 pt-0 space-y-4">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground/70">
                 {ratesLoading || isFetching ? (
                   <span className="inline-flex items-center gap-1">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Updating live rates…
+                    <Loader2 className="w-3 h-3 animate-spin" /> Updating amount…
                   </span>
                 ) : (
-                  <>
-                    Rates: {rateSource === 'live' ? 'live market' : 'fallback'} · amounts rounded{' '}
-                    <strong className="text-foreground">up</strong> + safety buffer
-                  </>
+                  'Send the exact amount shown below'
                 )}
               </p>
-              <Button type="button" variant="outline" size="sm" onClick={openCrypto}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-foreground border-border"
+                onClick={openCrypto}
+              >
                 Change option
               </Button>
             </div>
 
             {cryptoSelection?.kind === 'binance' && (
-              <div className="p-4 rounded-lg bg-[#F0B90B]/10 border border-[#F0B90B]/20 space-y-3">
+              <div className="p-4 rounded-lg bg-card border border-[#F0B90B]/40 space-y-3 text-foreground">
                 <div className="flex items-center gap-2">
-                  <Bitcoin className="w-4 h-4 text-[#F0B90B]" />
+                  <Bitcoin className="w-4 h-4 text-[#D4A017]" />
                   <p className="text-sm font-bold text-foreground">Binance Pay · {storeBinanceCoin}</p>
                 </div>
-                <div className="p-3 rounded-lg bg-background/80 border border-[#F0B90B]/25">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                <div className="p-3 rounded-lg bg-background border border-border">
+                  <p className="text-[10px] uppercase tracking-wider text-foreground/70 font-bold">
                     Send exactly
                   </p>
-                  <p className="text-2xl font-black text-[#F0B90B] tabular-nums">
+                  <p className="text-2xl font-black text-[#B8860B] dark:text-[#F0B90B] tabular-nums">
                     {usdtQuote.formatted}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Converted from order total with safety margin (never less)
-                  </p>
                 </div>
-                <div className="text-sm space-y-1.5">
+                <div className="text-sm space-y-2">
                   <div>
-                    <span className="text-muted-foreground">Name:</span>{' '}
-                    <span className="font-medium">{storeBinanceName}</span>
+                    <span className="text-foreground/70">Name:</span>{' '}
+                    <span className="font-semibold text-foreground">{storeBinanceName}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <span className="text-muted-foreground">Binance ID:</span>{' '}
-                      <span className="font-mono font-medium">{storeBinanceId}</span>
+                    <div className="min-w-0">
+                      <span className="text-foreground/70">Binance ID:</span>{' '}
+                      <span className="font-mono font-semibold text-foreground">{storeBinanceId}</span>
                     </div>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-8 w-8 shrink-0 text-foreground"
                       onClick={() => copyToClipboard(storeBinanceId, 'Binance ID')}
                     >
                       <Copy className="w-3.5 h-3.5" />
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-[#F0B90B]/20">
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
                     <div>
-                      <p className="text-xs text-muted-foreground">Note / Order ID</p>
-                      <p className="font-mono font-bold text-[#F0B90B]">{orderId}</p>
+                      <p className="text-xs text-foreground/70">Note / Order ID</p>
+                      <p className="font-mono font-bold text-foreground">{orderId}</p>
                     </div>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-8 w-8 text-foreground"
                       onClick={() => copyToClipboard(orderId, 'Order ID')}
                     >
                       <Copy className="w-3.5 h-3.5" />
@@ -492,7 +492,7 @@ const PaymentMethodSelector = ({
                 </div>
 
                 <div>
-                  <Label htmlFor="binance-id" className="text-sm">
+                  <Label htmlFor="binance-id" className="text-sm text-foreground">
                     Your Binance ID <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -500,39 +500,39 @@ const PaymentMethodSelector = ({
                     placeholder="Enter your Binance ID"
                     value={binanceId}
                     onChange={(e) => onBinanceIdChange(e.target.value)}
-                    className="mt-1.5 h-12 bg-secondary/50 border-border"
+                    className="mt-1.5 h-12 bg-background border-border text-foreground"
                   />
                 </div>
               </div>
             )}
 
             {cryptoSelection?.kind === 'wallet' && (
-              <div className="p-4 rounded-lg bg-violet-500/10 border border-violet-500/25 space-y-3">
+              <div className="p-4 rounded-lg bg-card border border-violet-500/40 space-y-3 text-foreground">
                 <p className="text-sm font-bold text-foreground">
                   {cryptoSelection.wallet.symbol} · {cryptoSelection.wallet.network}
                 </p>
-                <div className="p-3 rounded-lg bg-background/80 border border-violet-500/25">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                <div className="p-3 rounded-lg bg-background border border-border">
+                  <p className="text-[10px] uppercase tracking-wider text-foreground/70 font-bold">
                     Send exactly
                   </p>
-                  <p className="text-2xl font-black text-violet-600 dark:text-violet-400 tabular-nums">
+                  <p className="text-2xl font-black text-violet-700 dark:text-violet-300 tabular-nums">
                     {selectedWalletQuote?.formatted || '—'}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Network must match · amount rounded up with safety buffer
+                  <p className="text-[11px] text-foreground/70 mt-0.5">
+                    Use the correct network only
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Deposit address</p>
+                  <p className="text-xs text-foreground/70 mb-1 font-medium">Deposit address</p>
                   <div className="flex items-start gap-2">
-                    <p className="flex-1 text-xs font-mono break-all font-medium bg-secondary/50 p-2 rounded-lg border border-border">
+                    <p className="flex-1 text-xs font-mono break-all font-semibold text-foreground bg-background p-2 rounded-lg border border-border">
                       {cryptoSelection.wallet.address}
                     </p>
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="shrink-0"
+                      className="shrink-0 text-foreground"
                       onClick={() =>
                         copyToClipboard(cryptoSelection.wallet.address, 'Wallet address')
                       }
@@ -543,15 +543,16 @@ const PaymentMethodSelector = ({
                 </div>
                 <div className="flex items-center justify-between pt-1">
                   <div>
-                    <p className="text-xs text-muted-foreground">Memo / Order ID (if field available)</p>
-                    <p className="font-mono font-bold text-violet-600 dark:text-violet-400 text-sm">
+                    <p className="text-xs text-foreground/70">Memo / Order ID (if available)</p>
+                    <p className="font-mono font-bold text-foreground text-sm">
                       {orderId}
                     </p>
                   </div>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
+                    className="text-foreground"
                     onClick={() => copyToClipboard(orderId, 'Order ID')}
                   >
                     <Copy className="w-4 h-4" />
@@ -593,16 +594,15 @@ const PaymentMethodSelector = ({
 
       {/* Crypto options modal */}
       <Dialog open={cryptoModalOpen} onOpenChange={setCryptoModalOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto bg-card text-foreground border-border">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Pay with crypto</DialogTitle>
-            <DialogDescription>
-              Choose Binance Pay or an on-chain wallet. Amounts are converted from your LKR total and
-              rounded <strong>up</strong> so the store is fully covered.
+            <DialogTitle className="text-xl font-bold text-foreground">Pay with crypto</DialogTitle>
+            <DialogDescription className="text-foreground/70">
+              Choose Binance Pay or a wallet transfer, then send the exact amount shown.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex gap-2 p-1 rounded-xl bg-secondary/50 border border-border">
+          <div className="flex gap-2 p-1 rounded-xl bg-secondary border border-border">
             <button
               type="button"
               onClick={() => setModalTab('binance')}
@@ -610,7 +610,7 @@ const PaymentMethodSelector = ({
                 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors',
                 modalTab === 'binance'
                   ? 'bg-[#F0B90B] text-black shadow'
-                  : 'text-muted-foreground hover:text-foreground',
+                  : 'text-foreground/70 hover:text-foreground',
               )}
             >
               Binance Pay
@@ -621,8 +621,8 @@ const PaymentMethodSelector = ({
               className={cn(
                 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors',
                 modalTab === 'wallets'
-                  ? 'bg-violet-500 text-white shadow'
-                  : 'text-muted-foreground hover:text-foreground',
+                  ? 'bg-violet-600 text-white shadow'
+                  : 'text-foreground/70 hover:text-foreground',
               )}
             >
               Wallet transfer
@@ -630,34 +630,33 @@ const PaymentMethodSelector = ({
           </div>
 
           {(ratesLoading || isFetching) && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching live market rates…
+            <p className="text-xs text-foreground/70 flex items-center gap-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Updating amount…
             </p>
           )}
 
           {modalTab === 'binance' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl border border-[#F0B90B]/30 bg-[#F0B90B]/10">
-                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+            <div className="space-y-4 text-foreground">
+              <div className="p-4 rounded-xl border border-border bg-background">
+                <p className="text-xs text-foreground/70 font-semibold uppercase tracking-wider">
                   You will send
                 </p>
-                <p className="text-3xl font-black text-[#F0B90B] tabular-nums mt-1">
+                <p className="text-3xl font-black text-[#B8860B] dark:text-[#F0B90B] tabular-nums mt-1">
                   {usdtQuote.formatted}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  ≈ order total with {cryptoSettings.markup_percent}% safety buffer + ceil
-                </p>
               </div>
-              <div className="text-sm space-y-2 p-3 rounded-xl bg-secondary/40 border border-border">
+              <div className="text-sm space-y-2.5 p-4 rounded-xl bg-background border border-border">
                 <p>
-                  <span className="text-muted-foreground">Pay to:</span>{' '}
-                  <strong>{storeBinanceName}</strong>
+                  <span className="text-foreground/70">Pay to:</span>{' '}
+                  <strong className="text-foreground font-semibold">{storeBinanceName}</strong>
                 </p>
                 <p className="font-mono">
-                  <span className="text-muted-foreground">ID:</span> {storeBinanceId}
+                  <span className="text-foreground/70">ID:</span>{' '}
+                  <strong className="text-foreground font-semibold">{storeBinanceId}</strong>
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Coin:</span> {storeBinanceCoin}
+                  <span className="text-foreground/70">Coin:</span>{' '}
+                  <strong className="text-foreground font-semibold">{storeBinanceCoin}</strong>
                 </p>
               </div>
               <Button
@@ -672,15 +671,14 @@ const PaymentMethodSelector = ({
           )}
 
           {modalTab === 'wallets' && (
-            <div className="space-y-3">
+            <div className="space-y-3 text-foreground">
               {wallets.length === 0 ? (
-                <div className="p-6 text-center rounded-xl border border-dashed border-border">
-                  <Wallet className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
+                <div className="p-6 text-center rounded-xl border border-dashed border-border bg-background">
+                  <Wallet className="w-8 h-8 mx-auto text-foreground/50 mb-2" />
                   <p className="text-sm font-medium text-foreground">No wallets enabled yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Admin can add addresses under Settings → Payment → Crypto wallets.
+                  <p className="text-xs text-foreground/70 mt-1">
+                    Please use Binance Pay for now.
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">Use Binance Pay for now.</p>
                 </div>
               ) : (
                 wallets.map((w) => {
@@ -690,25 +688,25 @@ const PaymentMethodSelector = ({
                       key={w.id}
                       type="button"
                       onClick={() => selectWallet(w)}
-                      className="w-full text-left p-4 rounded-xl border border-border hover:border-violet-500/50 hover:bg-violet-500/5 transition-colors"
+                      className="w-full text-left p-4 rounded-xl border border-border bg-background hover:border-violet-500/60 hover:bg-violet-500/5 transition-colors text-foreground"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-bold text-foreground">
                             {w.symbol}{' '}
-                            <span className="text-muted-foreground font-medium text-sm">
+                            <span className="text-foreground/70 font-medium text-sm">
                               · {w.network}
                             </span>
                           </p>
-                          <p className="text-[11px] font-mono text-muted-foreground mt-1 truncate max-w-[240px]">
+                          <p className="text-[11px] font-mono text-foreground/70 mt-1 truncate max-w-[240px]">
                             {w.address.slice(0, 12)}…{w.address.slice(-8)}
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="font-black text-violet-600 dark:text-violet-400 tabular-nums">
+                          <p className="font-black text-violet-700 dark:text-violet-300 tabular-nums">
                             {q.formatted}
                           </p>
-                          <p className="text-[10px] text-muted-foreground">send this amount</p>
+                          <p className="text-[10px] text-foreground/70">send this amount</p>
                         </div>
                       </div>
                     </button>
