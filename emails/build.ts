@@ -19,7 +19,7 @@ async function buildAllTemplates() {
         {
             key: 'order_confirmation',
             name: 'Order Confirmation',
-            subject: 'Order confirmed · Snippy Mart #{{order_id}}',
+            subject: 'Order confirmed - Snippy Mart #{{order_id}}',
             component: OrderConfirmationEmail({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
@@ -33,7 +33,7 @@ async function buildAllTemplates() {
         {
             key: 'order_delivered',
             name: 'Order Delivered',
-            subject: 'Your order has been delivered · {{order_id}}',
+            subject: 'Your order has been delivered - {{order_id}}',
             component: OrderDelivered({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
@@ -47,7 +47,7 @@ async function buildAllTemplates() {
         {
             key: 'payment_rejected',
             name: 'Payment Rejected',
-            subject: 'Payment issue · Action required for {{order_id}}',
+            subject: 'Payment issue - Action required for {{order_id}}',
             component: PaymentRejected({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
@@ -61,7 +61,7 @@ async function buildAllTemplates() {
         {
             key: 'status_update',
             name: 'Status Update',
-            subject: 'Order update · {{order_id}}',
+            subject: 'Order update - {{order_id}}',
             component: StatusUpdate({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
