@@ -318,6 +318,7 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          display_order: number
           id: string
           image_url: string | null
           is_active: boolean | null
@@ -332,6 +333,7 @@ export type Database = {
           category: string
           created_at?: string
           description: string
+          display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean | null
@@ -346,6 +348,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean | null
@@ -382,6 +385,39 @@ export type Database = {
         }
         Relationships: []
       }
+      short_links: {
+        Row: {
+          click_count: number
+          created_at: string
+          destination_url: string
+          id: string
+          is_active: boolean
+          slug: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          click_count?: number
+          created_at?: string
+          destination_url: string
+          id?: string
+          is_active?: boolean
+          slug: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          click_count?: number
+          created_at?: string
+          destination_url?: string
+          id?: string
+          is_active?: boolean
+          slug?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -414,6 +450,12 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_short_link_clicks: {
+        Args: {
+          link_slug: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

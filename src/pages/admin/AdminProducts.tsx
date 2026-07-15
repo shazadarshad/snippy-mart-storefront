@@ -1,5 +1,9 @@
 import { useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, Search, Upload, Loader2, X, Eye, EyeOff, Star, Package, Image as ImageIcon, ArrowUp, ArrowDown, FileSpreadsheet, Download } from 'lucide-react';
+import {
+  Plus, Pencil, Trash2, Search, Upload, Loader2, X, Eye, EyeOff, Star, Package,
+  Image as ImageIcon, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, GripVertical,
+  FileSpreadsheet, Download,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +38,7 @@ import {
   useDeleteProduct,
   useUploadProductImage,
   useMoveProduct,
+  useReorderProducts,
   type Product,
   type ProductFormData,
   type StockStatus,
@@ -205,6 +210,7 @@ const AdminProducts = () => {
   const deleteProduct = useDeleteProduct();
   const uploadImage = useUploadProductImage();
   const moveProduct = useMoveProduct();
+  const reorderProducts = useReorderProducts();
   const addPricingPlan = useAddPricingPlan();
   const deletePricingPlan = useDeletePricingPlan();
   const addPricingPlanVariant = useAddPricingPlanVariant();
@@ -219,6 +225,10 @@ const AdminProducts = () => {
   const [importError, setImportError] = useState<string | null>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const isReordering = moveProduct.isPending || reorderProducts.isPending;
+  const canReorder = !searchQuery.trim();
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     description: '',
@@ -245,6 +255,62 @@ const AdminProducts = () => {
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const applyOrder = (orderedIds: string[]) => {
+    reorderProducts.mutate(orderedIds);
+  };
+
+  const moveInList = (productId: string, toIndex: number) => {
+    const ids = products.map((p) => p.id);
+    const fromIndex = ids.indexOf(productId);
+    if (fromIndex === -1 || toIndex < 0 || toIndex >= ids.length || fromIndex === toIndex) return;
+    const next = [...ids];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    applyOrder(next);
+  };
+
+  const handleDragStart = (e: React.DragEvent, productId: string) => {
+    if (!canReorder || isReordering) {
+      e.preventDefault();
+      return;
+    }
+    setDragId(productId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', productId);
+    // Helps some browsers show a proper drag ghost
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget.closest('tr') || e.currentTarget, 24, 24);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, productId: string) => {
+    if (!canReorder || !dragId || dragId === productId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverId !== productId) setDragOverId(productId);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!canReorder || !dragId || dragId === targetId) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+    const ids = products.map((p) => p.id);
+    const fromIndex = ids.indexOf(dragId);
+    const toIndex = ids.indexOf(targetId);
+    setDragId(null);
+    setDragOverId(null);
+    if (fromIndex === -1 || toIndex === -1) return;
+    moveInList(dragId, toIndex);
+  };
+
+  const handleDragEnd = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
 
   const getProductPricingPlans = (productId: string) => {
     return allPricingPlans.filter(p => p.product_id === productId);
@@ -1152,16 +1218,32 @@ const AdminProducts = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Search */}
-      <div className="relative max-w-md mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-12 bg-card border-border"
-        />
+      {/* Search + order tip */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+        <div className="relative max-w-md flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-12 bg-card border-border"
+          />
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/40 border border-border rounded-xl px-3 py-2.5">
+          <GripVertical className="w-4 h-4 shrink-0 text-primary" />
+          {canReorder ? (
+            <span>
+              <span className="font-semibold text-foreground">Drag ⋮⋮</span> or use ↑↓ / top-bottom.
+              This order is what shoppers see on the storefront.
+            </span>
+          ) : (
+            <span>Clear the search box to reorder products (drag is disabled while filtering).</span>
+          )}
+          {isReordering && (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-primary ml-1 shrink-0" />
+          )}
+        </div>
       </div>
 
       {/* Loading State */}
@@ -1177,6 +1259,8 @@ const AdminProducts = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-secondary/50">
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-3 w-14">#</th>
+                    <th className="text-left text-sm font-medium text-muted-foreground py-4 px-2 w-10"></th>
                     <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Product</th>
                     <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Category</th>
                     <th className="text-left text-sm font-medium text-muted-foreground py-4 px-4">Price</th>
@@ -1189,8 +1273,50 @@ const AdminProducts = () => {
                   {filteredProducts.map((product) => {
                     const productPlans = getProductPricingPlans(product.id);
                     const productImages = getProductGalleryImages(product.id);
+                    const fullIndex = products.findIndex((p) => p.id === product.id);
+                    const isFirst = fullIndex === 0;
+                    const isLast = fullIndex === products.length - 1;
+                    const isDragging = dragId === product.id;
+                    const isDropTarget = dragOverId === product.id && dragId !== product.id;
+
                     return (
-                      <tr key={product.id} className={cn("border-t border-border", !product.is_active && "opacity-60")}>
+                      <tr
+                        key={product.id}
+                        onDragOver={(e) => handleDragOver(e, product.id)}
+                        onDrop={(e) => handleDrop(e, product.id)}
+                        onDragLeave={() => {
+                          if (dragOverId === product.id) setDragOverId(null);
+                        }}
+                        className={cn(
+                          "border-t border-border transition-colors",
+                          !product.is_active && "opacity-60",
+                          isDragging && "opacity-40 bg-primary/5",
+                          isDropTarget && "bg-primary/10 ring-1 ring-inset ring-primary/40",
+                        )}
+                      >
+                        <td className="py-4 px-3">
+                          <span className="inline-flex items-center justify-center min-w-[1.75rem] h-7 px-1.5 rounded-lg bg-secondary text-xs font-black text-muted-foreground tabular-nums">
+                            {fullIndex + 1}
+                          </span>
+                        </td>
+                        <td className="py-4 px-1">
+                          <button
+                            type="button"
+                            draggable={canReorder && !isReordering}
+                            onDragStart={(e) => handleDragStart(e, product.id)}
+                            onDragEnd={handleDragEnd}
+                            disabled={!canReorder || isReordering}
+                            title={canReorder ? 'Drag to reorder' : 'Clear search to drag-reorder'}
+                            className={cn(
+                              "p-1.5 rounded-lg text-muted-foreground transition-colors",
+                              canReorder && !isReordering
+                                ? "cursor-grab active:cursor-grabbing hover:bg-secondary hover:text-foreground"
+                                : "cursor-not-allowed opacity-40"
+                            )}
+                          >
+                            <GripVertical className="w-4 h-4" />
+                          </button>
+                        </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             <div className="relative w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
@@ -1198,6 +1324,7 @@ const AdminProducts = () => {
                                 src={product.image_url}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
+                                draggable={false}
                               />
                               {productImages.length > 0 && (
                                 <div className="absolute bottom-0 right-0 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center rounded-tl">
@@ -1265,28 +1392,53 @@ const AdminProducts = () => {
                           )}
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center justify-end gap-1">
+                          <div className="flex items-center justify-end gap-0.5">
+                            <div className="flex items-center mr-1 border-r border-border pr-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => moveProduct.mutate({ productId: product.id, direction: 'top' })}
+                                disabled={isReordering || !canReorder || isFirst}
+                                title="Move to top"
+                              >
+                                <ChevronsUp className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => moveProduct.mutate({ productId: product.id, direction: 'up' })}
+                                disabled={isReordering || !canReorder || isFirst}
+                                title="Move up"
+                              >
+                                <ArrowUp className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => moveProduct.mutate({ productId: product.id, direction: 'down' })}
+                                disabled={isReordering || !canReorder || isLast}
+                                title="Move down"
+                              >
+                                <ArrowDown className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => moveProduct.mutate({ productId: product.id, direction: 'bottom' })}
+                                disabled={isReordering || !canReorder || isLast}
+                                title="Move to bottom"
+                              >
+                                <ChevronsDown className="w-4 h-4" />
+                              </Button>
+                            </div>
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => moveProduct.mutate({ productId: product.id, direction: 'up' })}
-                              disabled={moveProduct.isPending || filteredProducts.indexOf(product) === 0}
-                              title="Move up"
-                            >
-                              <ArrowUp className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => moveProduct.mutate({ productId: product.id, direction: 'down' })}
-                              disabled={moveProduct.isPending || filteredProducts.indexOf(product) === filteredProducts.length - 1}
-                              title="Move down"
-                            >
-                              <ArrowDown className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
+                              className="h-8 w-8"
                               onClick={() => handleToggleActive(product)}
                               title={product.is_active ? 'Deactivate' : 'Activate'}
                             >
@@ -1299,6 +1451,7 @@ const AdminProducts = () => {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8"
                               onClick={() => handleToggleFeatured(product)}
                               title={product.is_featured ? 'Remove from featured' : 'Add to featured'}
                             >
@@ -1310,6 +1463,7 @@ const AdminProducts = () => {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8"
                               onClick={() => handleOpenDialog(product)}
                             >
                               <Pencil className="w-4 h-4" />
@@ -1317,7 +1471,7 @@ const AdminProducts = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-destructive hover:text-destructive"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
                               onClick={() => handleDelete(product.id)}
                               disabled={deleteProduct.isPending}
                             >

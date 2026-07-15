@@ -21,6 +21,7 @@ import {
   Brain,
   Upload,
   Zap,
+  Link2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,7 @@ const AdminLayout = () => {
     { name: 'AI Knowledge', path: '/admin/ai-knowledge', icon: Brain, badge: 'AI' },
     { name: 'Extension Upload', path: '/admin/extension-upload', icon: Upload },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag },
+    { name: 'Link Shortener', path: '/admin/link-shortener', icon: Link2 },
     { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
     { name: 'Email Templates', path: '/admin/email-templates', icon: FileText },
     { name: 'Policies', path: '/admin/policies', icon: FileText },

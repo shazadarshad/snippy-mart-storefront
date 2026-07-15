@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Star, AlertTriangle, ArrowUpRight } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
@@ -7,9 +8,16 @@ interface ProductCardProps {
   product: Product;
   className?: string;
   onViewDetails: (product: Product) => void;
+  /** Prioritize image decode for above-the-fold cards */
+  priority?: boolean;
 }
 
-const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) => {
+const ProductCard = memo(function ProductCard({
+  product,
+  className,
+  onViewDetails,
+  priority = false,
+}: ProductCardProps) {
   const { formatPrice } = useCurrency();
   const discount =
     product.old_price && product.old_price > product.price
@@ -36,12 +44,13 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
       disabled={soldOut}
       onClick={() => !soldOut && onViewDetails(product)}
       className={cn(
-        'group text-left w-full flex flex-col overflow-hidden rounded-3xl',
-        'border border-border/50 bg-card/90 backdrop-blur-sm',
-        'shadow-[var(--shadow-sm)] transition-all duration-500 ease-out',
-        'hover:border-primary/45 hover:shadow-[var(--shadow-md)] hover:shadow-primary/15 hover:-translate-y-1.5',
+        'group text-left w-full flex flex-col overflow-hidden rounded-3xl content-auto',
+        'border border-border/50 bg-card/90',
+        'shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] duration-200 ease-out',
+        'hover:border-primary/45 hover:shadow-[var(--shadow-md)] hover:shadow-primary/10 hover:-translate-y-1',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         'disabled:opacity-55 disabled:pointer-events-none disabled:hover:translate-y-0',
+        'will-change-transform',
         className
       )}
     >
@@ -49,11 +58,14 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
         <img
           src={product.image_url || '/placeholder.svg'}
           alt={product.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={priority ? 'high' : 'auto'}
+          width={400}
+          height={320}
+          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent opacity-90" />
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-tr from-primary/10 via-transparent to-accent/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent opacity-90 pointer-events-none" />
 
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
           {product.is_featured && (
@@ -69,8 +81,8 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           )}
         </div>
 
-        <div className="absolute top-3 right-3 translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/90 border border-border/80 backdrop-blur text-foreground shadow-lg">
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/90 border border-border/80 text-foreground shadow-lg">
             <ArrowUpRight className="w-4 h-4" />
           </span>
         </div>
@@ -100,7 +112,7 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
           </span>
         </div>
 
-        <h3 className="font-display font-semibold text-[15px] sm:text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-300">
+        <h3 className="font-display font-semibold text-[15px] sm:text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
           {product.name}
         </h3>
 
@@ -124,13 +136,13 @@ const ProductCard = ({ product, className, onViewDetails }: ProductCardProps) =>
               )}
             </div>
           </div>
-          <span className="mb-0.5 rounded-full bg-primary/10 border border-primary/15 px-3.5 py-1.5 text-[11px] font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300">
+          <span className="mb-0.5 rounded-full bg-primary/10 border border-primary/15 px-3.5 py-1.5 text-[11px] font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors duration-200">
             {soldOut ? 'Sold out' : 'View'}
           </span>
         </div>
       </div>
     </button>
   );
-};
+});
 
 export default ProductCard;

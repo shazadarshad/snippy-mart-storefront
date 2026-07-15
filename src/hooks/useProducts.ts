@@ -52,10 +52,16 @@ export interface ProductFormData {
 export const useProducts = (includeInactive = false) => {
   return useQuery({
     queryKey: ['products', includeInactive],
+    staleTime: 1000 * 60 * 5,
     queryFn: async () => {
+      // Public list: skip heavy unused columns; admin still gets full row
+      const select = includeInactive
+        ? '*'
+        : 'id,name,slug,description,price,old_price,category,categories,image_url,is_active,is_featured,stock_status,requirements,manual_fulfillment,use_variant_pricing,display_order,created_at';
+
       let query = supabase
         .from('products')
-        .select('*')
+        .select(select)
         .order('display_order', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false });
 
@@ -95,9 +101,21 @@ export const useAddProduct = () => {
 
   return useMutation({
     mutationFn: async (product: ProductFormData) => {
+      // New products go to the end of the storefront list
+      let display_order = product.display_order;
+      if (display_order == null) {
+        const { data: maxRow } = await supabase
+          .from('products')
+          .select('display_order')
+          .order('display_order', { ascending: false, nullsFirst: false })
+          .limit(1)
+          .maybeSingle();
+        display_order = (maxRow?.display_order ?? -1) + 1;
+      }
+
       const { data, error } = await supabase
         .from('products')
-        .insert([product])
+        .insert([{ ...product, display_order }])
         .select()
         .single();
 
@@ -226,14 +244,106 @@ export const useUploadProductImage = () => {
   });
 };
 
-// Move product order
+/** Persist a full product order as sequential display_order (0, 1, 2, …). */
+async function persistProductOrder(orderedIds: string[]) {
+  if (!orderedIds.length) return;
+
+  // Parallel updates are fine; each row is independent
+  const results = await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from('products').update({ display_order: index }).eq('id', id)
+    )
+  );
+
+  const firstError = results.find((r) => r.error)?.error;
+  if (firstError) throw firstError;
+}
+
+function applyOrderToCache(
+  products: Product[] | undefined,
+  orderedIds: string[]
+): Product[] | null {
+  if (!products?.length) return null;
+
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const ordered: Product[] = [];
+
+  orderedIds.forEach((id, index) => {
+    const p = byId.get(id);
+    if (p) {
+      ordered.push({ ...p, display_order: index });
+      byId.delete(id);
+    }
+  });
+
+  // Keep any products not in orderedIds at the end (shouldn't normally happen)
+  byId.forEach((p) => ordered.push(p));
+  return ordered;
+}
+
+/**
+ * Reorder all products by full ordered id list.
+ * Use for drag-and-drop and move-to-top/bottom.
+ */
+export const useReorderProducts = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      await persistProductOrder(orderedIds);
+      return { success: true as const };
+    },
+    onMutate: async (orderedIds) => {
+      await queryClient.cancelQueries({ queryKey: ['products'] });
+
+      const previousAdminProducts = queryClient.getQueryData<Product[]>(['products', true]);
+      const previousFrontendProducts = queryClient.getQueryData<Product[]>(['products', false]);
+
+      const nextAdmin = applyOrderToCache(previousAdminProducts, orderedIds);
+      if (nextAdmin) queryClient.setQueryData(['products', true], nextAdmin);
+
+      // Public cache only has active products — filter order to those ids
+      if (previousFrontendProducts) {
+        const activeIds = orderedIds.filter((id) =>
+          previousFrontendProducts.some((p) => p.id === id)
+        );
+        const nextFront = applyOrderToCache(previousFrontendProducts, activeIds);
+        if (nextFront) queryClient.setQueryData(['products', false], nextFront);
+      }
+
+      return { previousAdminProducts, previousFrontendProducts };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+    onError: (error: Error, _vars, context) => {
+      if (context?.previousAdminProducts) {
+        queryClient.setQueryData(['products', true], context.previousAdminProducts);
+      }
+      if (context?.previousFrontendProducts) {
+        queryClient.setQueryData(['products', false], context.previousFrontendProducts);
+      }
+      toast({ title: 'Could not save order', description: error.message, variant: 'destructive' });
+    },
+  });
+};
+
+export type MoveProductDirection = 'up' | 'down' | 'top' | 'bottom';
+
+/** Move one product relative to the full list, then reindex display_order. */
 export const useMoveProduct = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ productId, direction }: { productId: string; direction: 'up' | 'down' }) => {
-      // Get all products in display order
+    mutationFn: async ({
+      productId,
+      direction,
+    }: {
+      productId: string;
+      direction: MoveProductDirection;
+    }) => {
       const { data: allProducts, error: fetchError } = await supabase
         .from('products')
         .select('id, display_order')
@@ -241,91 +351,68 @@ export const useMoveProduct = () => {
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      if (!allProducts || allProducts.length === 0) throw new Error('No products found');
+      if (!allProducts?.length) throw new Error('No products found');
 
-      // Find indices
-      const currentIndex = allProducts.findIndex(p => p.id === productId);
+      const ids = allProducts.map((p) => p.id);
+      const currentIndex = ids.indexOf(productId);
       if (currentIndex === -1) throw new Error('Product not found');
 
-      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      let targetIndex = currentIndex;
+      if (direction === 'up') targetIndex = currentIndex - 1;
+      if (direction === 'down') targetIndex = currentIndex + 1;
+      if (direction === 'top') targetIndex = 0;
+      if (direction === 'bottom') targetIndex = ids.length - 1;
 
-      // Check bounds
       if (targetIndex < 0) throw new Error('Already at the top');
-      if (targetIndex >= allProducts.length) throw new Error('Already at the bottom');
+      if (targetIndex >= ids.length) throw new Error('Already at the bottom');
+      if (targetIndex === currentIndex) return { success: true as const };
 
-      const currentProduct = allProducts[currentIndex];
-      const targetProduct = allProducts[targetIndex];
+      const next = [...ids];
+      const [moved] = next.splice(currentIndex, 1);
+      next.splice(targetIndex, 0, moved);
 
-      // Simple swap of display_order values
-      const tempOrder = currentProduct.display_order;
-
-      // Update current product with target's order
-      const { error: err1 } = await supabase
-        .from('products')
-        .update({ display_order: targetProduct.display_order })
-        .eq('id', currentProduct.id);
-
-      if (err1) throw err1;
-
-      // Update target product with current's order
-      const { error: err2 } = await supabase
-        .from('products')
-        .update({ display_order: tempOrder })
-        .eq('id', targetProduct.id);
-
-      if (err2) throw err2;
-
-      return { success: true };
+      await persistProductOrder(next);
+      return { success: true as const };
     },
-    // Optimistic update - instant UI feedback for BOTH admin AND frontend
     onMutate: async ({ productId, direction }) => {
-      // Cancel ALL product queries (admin and frontend)
       await queryClient.cancelQueries({ queryKey: ['products'] });
 
-      // Snapshot previous values for BOTH caches
       const previousAdminProducts = queryClient.getQueryData<Product[]>(['products', true]);
       const previousFrontendProducts = queryClient.getQueryData<Product[]>(['products', false]);
 
-      // Helper function to swap products
-      const swapProducts = (products: Product[] | undefined) => {
-        if (!products) return null;
-
-        const newProducts = [...products];
-        const currentIndex = newProducts.findIndex(p => p.id === productId);
-
+      const reorderList = (products: Product[] | undefined) => {
+        if (!products?.length) return null;
+        const ids = products.map((p) => p.id);
+        const currentIndex = ids.indexOf(productId);
         if (currentIndex === -1) return null;
 
-        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        let targetIndex = currentIndex;
+        if (direction === 'up') targetIndex = currentIndex - 1;
+        if (direction === 'down') targetIndex = currentIndex + 1;
+        if (direction === 'top') targetIndex = 0;
+        if (direction === 'bottom') targetIndex = ids.length - 1;
+        if (targetIndex < 0 || targetIndex >= ids.length || targetIndex === currentIndex) {
+          return null;
+        }
 
-        if (targetIndex < 0 || targetIndex >= newProducts.length) return null;
-
-        // Swap items
-        [newProducts[currentIndex], newProducts[targetIndex]] =
-          [newProducts[targetIndex], newProducts[currentIndex]];
-
-        return newProducts;
+        const nextIds = [...ids];
+        const [moved] = nextIds.splice(currentIndex, 1);
+        nextIds.splice(targetIndex, 0, moved);
+        return applyOrderToCache(products, nextIds);
       };
 
-      // Optimistically update ADMIN cache
-      const newAdminProducts = swapProducts(previousAdminProducts);
-      if (newAdminProducts) {
-        queryClient.setQueryData(['products', true], newAdminProducts);
-      }
+      const newAdmin = reorderList(previousAdminProducts);
+      if (newAdmin) queryClient.setQueryData(['products', true], newAdmin);
 
-      // Optimistically update FRONTEND cache
-      const newFrontendProducts = swapProducts(previousFrontendProducts);
-      if (newFrontendProducts) {
-        queryClient.setQueryData(['products', false], newFrontendProducts);
-      }
+      const newFront = reorderList(previousFrontendProducts);
+      if (newFront) queryClient.setQueryData(['products', false], newFront);
 
       return { previousAdminProducts, previousFrontendProducts };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({ title: 'Order updated', description: 'Product order has been changed.' });
     },
-    onError: (error: Error, variables, context) => {
-      // Rollback BOTH caches on error
+    onError: (error: Error, _vars, context) => {
       if (context?.previousAdminProducts) {
         queryClient.setQueryData(['products', true], context.previousAdminProducts);
       }

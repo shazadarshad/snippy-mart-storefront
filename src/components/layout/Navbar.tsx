@@ -52,8 +52,8 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
         className={cn(
           'mx-auto max-w-6xl rounded-2xl border transition-all duration-300',
           scrolled
-            ? 'border-border/70 bg-background/90 backdrop-blur-2xl shadow-[var(--shadow-md)]'
-            : 'border-border/40 bg-background/70 backdrop-blur-xl'
+            ? 'border-border/70 bg-background/95 sm:bg-background/90 sm:backdrop-blur-xl shadow-[var(--shadow-md)]'
+            : 'border-border/40 bg-background/95 sm:bg-background/80 sm:backdrop-blur-md'
         )}
       >
         <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-5">

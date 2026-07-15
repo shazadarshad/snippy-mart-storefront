@@ -113,12 +113,34 @@ const OrderSuccessPage = () => {
     });
   };
 
-  if ((!sessionOrder && !liveOrder) || isLiveOrderLoading) {
+  // Only wait while we actually have an order id to look up
+  if (sessionOrder?.orderId && isLiveOrderLoading) {
     return (
       <div className="min-h-dvh page-mesh pt-28 pb-20 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground font-medium">Loading your order…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sessionOrder && !liveOrder) {
+    return (
+      <div className="min-h-dvh page-mesh pt-28 pb-20 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <p className="font-display text-xl font-bold mb-2">No order to show</p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Place an order or track an existing one.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button asChild className="rounded-xl">
+              <Link to="/products">Browse products</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link to="/track-order">Track order</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );

@@ -461,6 +461,78 @@
   .min-h-dvh {
     min-height: 100dvh;
   }
+
+  /* Skip layout/paint for off-screen product cards */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 360px;
+  }
+
+  /* Instant page mount fade (CSS only — no framer) */
+  .page-enter {
+    animation: page-enter 0.18s ease-out both;
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0.01;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes route-progress {
+  0% {
+    transform: scaleX(0.08);
+  }
+  60% {
+    transform: scaleX(0.72);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.animate-route-progress {
+  animation: route-progress 0.28s ease-out forwards;
+}
+
+/* Mobile: drop heavy blurs — main source of scroll jank */
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
+
+  .glass,
+  .glass-card,
+  .glass-navbar,
+  .glass-premium,
+  .glass-sm,
+  .surface-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .orb {
+    display: none;
+  }
+
+  .noise-overlay {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @keyframes float {

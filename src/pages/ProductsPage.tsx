@@ -21,28 +21,10 @@ import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
-import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '@/components/seo/SEO';
 
 type SortKey = 'featured' | 'price_asc' | 'price_desc' | 'name' | 'newest';
 type StockFilter = 'all' | 'in_stock' | 'limited' | 'out_of_stock';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: 'spring' as const, stiffness: 280, damping: 22 },
-  },
-};
 
 const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,7 +137,7 @@ const ProductsPage = () => {
         </div>
 
         {/* Toolbar */}
-        <div className="sticky top-[4.5rem] sm:top-20 z-30 mb-6 sm:mb-8 rounded-2xl border border-border/60 bg-background/90 backdrop-blur-2xl p-2.5 sm:p-4 shadow-md">
+        <div className="sticky top-[4.5rem] sm:top-20 z-30 mb-6 sm:mb-8 rounded-2xl border border-border/60 bg-background/95 sm:bg-background/90 sm:backdrop-blur-xl p-2.5 sm:p-4 shadow-md">
           <div className="flex flex-col gap-2.5 sm:gap-3">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -267,21 +249,16 @@ const ProductsPage = () => {
         {isLoading ? (
           <ProductsGridSkeleton count={8} />
         ) : filteredProducts.length > 0 ? (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${selectedCategory}-${sortKey}-${stockFilter}-${searchQuery}`}
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
-            >
-              {filteredProducts.map((product) => (
-                <motion.div key={product.id} variants={itemVariants}>
-                  <ProductCard product={product} onViewDetails={handleViewDetails} />
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+            {filteredProducts.map((product, i) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onViewDetails={handleViewDetails}
+                priority={i < 4}
+              />
+            ))}
+          </div>
         ) : (
           <div className="text-center py-16 sm:py-20 rounded-3xl border border-dashed border-border bg-card/40">
             <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">

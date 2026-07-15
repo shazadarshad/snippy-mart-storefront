@@ -12,6 +12,7 @@ interface SiteSetting {
 export const useSiteSettings = () => {
   return useQuery({
     queryKey: ['site-settings'],
+    staleTime: 1000 * 60 * 10,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('site_settings')

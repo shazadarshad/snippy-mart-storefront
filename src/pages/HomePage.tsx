@@ -17,17 +17,6 @@ import { useProducts, type Product } from '@/hooks/useProducts';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import SEO from '@/components/seo/SEO';
-import { motion } from 'framer-motion';
-
-const fade = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
-};
-
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
 
 const HomePage = () => {
   const { data: products = [], isLoading } = useProducts();
@@ -42,7 +31,7 @@ const HomePage = () => {
 
   const features = [
     { icon: Zap, title: 'Instant-ready delivery', body: 'Access after payment confirmation — no endless waiting.' },
-    { icon: Shield, title: 'Secure bank checkout', body: 'Transfer, upload proof, get a trackable Order ID.' },
+    { icon: Shield, title: 'Secure bank / Binance checkout', body: 'Pay, upload proof, get a trackable Order ID.' },
     { icon: BadgeCheck, title: 'Live order status', body: 'Payment confirmed → processing → completed, in real time.' },
     { icon: MessageCircle, title: 'Human WhatsApp help', body: 'Real support when you need it — not bots only.' },
   ];
@@ -53,38 +42,27 @@ const HomePage = () => {
         title="Premium Digital Subscriptions"
         description="Snippy Mart — premium digital subscriptions. Secure checkout, live tracking, WhatsApp support."
       />
-      <div className="fixed inset-0 noise-overlay pointer-events-none z-0" />
 
-      {/* Hero */}
+      {/* Hero — CSS only, no heavy motion libs on first paint */}
       <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-24">
-        <div className="absolute inset-0 dot-grid opacity-35 pointer-events-none" />
-        <div className="orb orb-primary w-[28rem] h-[28rem] -top-32 left-1/2 -translate-x-1/2 opacity-80" />
-        <div className="orb orb-accent w-72 h-72 top-20 right-0 opacity-50" />
-        <div className="orb orb-primary w-56 h-56 bottom-0 left-0 opacity-40" />
+        <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
+        <div className="orb orb-primary w-[22rem] h-[22rem] sm:w-[28rem] sm:h-[28rem] -top-32 left-1/2 -translate-x-1/2 opacity-70" />
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={stagger}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <motion.div variants={fade} className="inline-flex items-center gap-2 page-eyebrow mb-6">
+          <div className="max-w-4xl mx-auto text-center page-enter">
+            <div className="inline-flex items-center gap-2 page-eyebrow mb-6">
               <Sparkles className="w-3.5 h-3.5" />
               Premium digital marketplace
-            </motion.div>
-            <motion.h1 variants={fade} className="page-title mb-6">
+            </div>
+            <h1 className="page-title mb-6">
               Premium access.
               <br />
               <span className="gradient-text">Zero friction.</span>
-            </motion.h1>
-            <motion.p variants={fade} className="page-lead mx-auto mb-10">
+            </h1>
+            <p className="page-lead mx-auto mb-10">
               AI tools, design suites, streaming & more — priced right, checked out cleanly, tracked
               live.
-            </motion.p>
-            <motion.div
-              variants={fade}
-              className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center"
-            >
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
               <Button
                 size="xl"
                 className="h-14 rounded-2xl px-8 text-base font-semibold btn-glow shadow-lg shadow-primary/25"
@@ -98,7 +76,7 @@ const HomePage = () => {
               <Button
                 size="xl"
                 variant="outline"
-                className="h-14 rounded-2xl px-8 text-base border-border/70 bg-card/50 backdrop-blur-md hover:bg-card/80"
+                className="h-14 rounded-2xl px-8 text-base border-border/70 bg-card/80 hover:bg-card"
                 asChild
               >
                 <Link to="/track-order">
@@ -106,12 +84,9 @@ const HomePage = () => {
                   Track order
                 </Link>
               </Button>
-            </motion.div>
+            </div>
 
-            <motion.div
-              variants={fade}
-              className="mt-14 grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto"
-            >
+            <div className="mt-14 grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto">
               {[
                 { v: '2K+', l: 'Buyers' },
                 { v: '50+', l: 'Products' },
@@ -119,7 +94,7 @@ const HomePage = () => {
               ].map((s) => (
                 <div
                   key={s.l}
-                  className="rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md px-3 py-4 shadow-[var(--shadow-sm)] ring-1 ring-primary/5"
+                  className="rounded-2xl border border-border/50 bg-card/90 px-3 py-4 shadow-[var(--shadow-sm)] ring-1 ring-primary/5"
                 >
                   <p className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{s.v}</p>
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-1">
@@ -127,8 +102,8 @@ const HomePage = () => {
                   </p>
                 </div>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -143,27 +118,17 @@ const HomePage = () => {
               </h2>
             </div>
           </div>
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: '-80px' }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {features.map((f) => (
-              <motion.div
-                key={f.title}
-                variants={fade}
-                className="surface-card-interactive p-6 group"
-              >
+              <div key={f.title} className="surface-card-interactive p-6 group">
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <f.icon className="w-5 h-5" />
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.body}</p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -191,19 +156,16 @@ const HomePage = () => {
           {isLoading ? (
             <ProductsGridSkeleton count={8} />
           ) : popular.length > 0 ? (
-            <motion.div
-              variants={stagger}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: '-60px' }}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5"
-            >
-              {popular.map((p) => (
-                <motion.div key={p.id} variants={fade}>
-                  <ProductCard product={p} onViewDetails={openProduct} />
-                </motion.div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+              {popular.map((p, i) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  onViewDetails={openProduct}
+                  priority={i < 4}
+                />
               ))}
-            </motion.div>
+            </div>
           ) : (
             <div className="surface-card p-12 text-center text-muted-foreground">
               No featured products yet.{' '}

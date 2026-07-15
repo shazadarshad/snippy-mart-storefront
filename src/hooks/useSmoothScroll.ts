@@ -1,54 +1,66 @@
 import { useEffect } from 'react';
 import Lenis from 'lenis';
 
+/**
+ * Desktop-only smooth scroll. Disabled on touch / reduced-motion so phones
+ * stay native-snappy and never feel sticky mid-scroll.
+ */
 export const useSmoothScroll = () => {
-    useEffect(() => {
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            orientation: 'vertical',
-            gestureOrientation: 'vertical',
-            smoothWheel: true,
-            wheelMultiplier: 1,
-            touchMultiplier: 2,
-        });
+  useEffect(() => {
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // Expose lenis for specific components if needed
-        (window as any).lenis = lenis;
+    // Touch / coarse pointer → native scroll (biggest anti-jank win on mobile)
+    const isCoarse =
+      typeof window !== 'undefined' &&
+      (window.matchMedia('(pointer: coarse)').matches ||
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0);
 
-        function raf(time: number) {
-            lenis.raf(time);
-            requestAnimationFrame(raf);
-        }
+    if (prefersReduced || isCoarse) {
+      return;
+    }
 
-        requestAnimationFrame(raf);
+    const lenis = new Lenis({
+      duration: 0.85,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.5,
+    });
 
-        // Auto-stop Lenis when body scroll is locked by Radix or other modals
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                    const isLocked = document.body.style.overflow === 'hidden' ||
-                        document.body.hasAttribute('data-scroll-locked');
-                    if (isLocked) {
-                        lenis.stop();
-                    } else {
-                        lenis.start();
-                    }
-                }
-            });
-        });
+    (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
-        observer.observe(document.body, { attributes: true });
+    let rafId = 0;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+    rafId = requestAnimationFrame(raf);
 
-        // Also check initial state
-        if (document.body.style.overflow === 'hidden' || document.body.hasAttribute('data-scroll-locked')) {
-            lenis.stop();
-        }
+    const syncLock = () => {
+      const locked =
+        document.body.style.overflow === 'hidden' ||
+        document.body.hasAttribute('data-scroll-locked');
+      if (locked) lenis.stop();
+      else lenis.start();
+    };
 
-        return () => {
-            lenis.destroy();
-            observer.disconnect();
-            delete (window as any).lenis;
-        };
-    }, []);
+    const observer = new MutationObserver(syncLock);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style', 'data-scroll-locked'],
+    });
+    syncLock();
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      observer.disconnect();
+      delete (window as unknown as { lenis?: Lenis }).lenis;
+    };
+  }, []);
 };
