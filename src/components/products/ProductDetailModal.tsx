@@ -214,7 +214,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-[90vh] min-h-[50vh] p-0 gap-0 overflow-hidden bg-card border-border/50 rounded-[2rem] shadow-2xl">
+      <DialogContent className="max-w-5xl h-[90vh] min-h-[50vh] p-0 gap-0 overflow-hidden bg-card text-foreground border-border/50 rounded-[2rem] shadow-2xl">
         <DialogTitle className="sr-only">{product.name}</DialogTitle>
 
         {/* Content Wrapper */}
@@ -479,21 +479,21 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:flex-1 h-12 rounded-xl border-2 font-bold hover:bg-secondary/80 active:scale-95 transition-all"
+                  className="w-full sm:flex-1 h-12 rounded-xl border-2 border-border bg-card text-foreground font-bold hover:bg-secondary hover:text-foreground active:scale-95 transition-all"
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
                 >
-                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  <ShoppingCart className="w-5 h-5 mr-2 shrink-0" />
                   {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                 </Button>
                 <Button
                   variant="hero"
                   size="lg"
-                  className="w-full sm:flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all"
+                  className="w-full sm:flex-1 h-12 rounded-xl font-bold text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all"
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
                 >
-                  <Zap className="w-5 h-5 mr-2 fill-current" />
+                  <Zap className="w-5 h-5 mr-2 fill-current shrink-0" />
                   {isOutOfStock ? 'Unavailable' : 'Buy Now'}
                 </Button>
               </div>

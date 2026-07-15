@@ -739,7 +739,7 @@ const AdminProducts = () => {
             Add Product
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border custom-scrollbar">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card text-foreground border-border custom-scrollbar">
             <DialogHeader>
               <DialogTitle className="text-foreground">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
@@ -758,7 +758,7 @@ const AdminProducts = () => {
                   name="name"
                   value={formData.name ?? ''}
                   onChange={handleInputChange}
-                  className="mt-1.5 bg-secondary/50 border-border"
+                  className="mt-1.5 bg-background border-border text-foreground"
                   required
                 />
               </div>
@@ -776,7 +776,7 @@ const AdminProducts = () => {
                       name="description"
                       value={formData.description ?? ''}
                       onChange={handleInputChange}
-                      className="bg-secondary/50 border-border min-h-[150px] font-mono text-sm"
+                      className="bg-background border-border text-foreground min-h-[150px] font-mono text-sm"
                       placeholder="Use emoji headers and bullet points for best formatting&#10;&#10;🚀 PRODUCT TITLE&#10;&#10;✨ What's Included:&#10;✅ Feature 1&#10;✅ Feature 2&#10;✅ Feature 3"
                       required
                     />
@@ -800,7 +800,7 @@ const AdminProducts = () => {
                     step="0.01"
                     value={Number.isFinite(formData.price) ? formData.price : 0}
                     onChange={handleInputChange}
-                    className="mt-1.5 bg-secondary/50 border-border"
+                    className="mt-1.5 bg-background border-border text-foreground"
                     required
                   />
                 </div>
@@ -813,7 +813,7 @@ const AdminProducts = () => {
                     step="0.01"
                     value={formData.old_price ?? ''}
                     onChange={handleInputChange}
-                    className="mt-1.5 bg-secondary/50 border-border"
+                    className="mt-1.5 bg-background border-border text-foreground"
                   />
                 </div>
               </div>
@@ -826,7 +826,7 @@ const AdminProducts = () => {
                     name="category"
                     value={formData.category ?? ''}
                     onChange={handleInputChange}
-                    className="mt-1.5 bg-secondary/50 border-border"
+                    className="mt-1.5 bg-background border-border text-foreground"
                     required
                   />
                 </div>
@@ -836,7 +836,7 @@ const AdminProducts = () => {
                     value={formData.stock_status}
                     onValueChange={(value: StockStatus) => setFormData(prev => ({ ...prev, stock_status: value }))}
                   >
-                    <SelectTrigger className="mt-1.5 bg-secondary/50 border-border">
+                    <SelectTrigger className="mt-1.5 bg-background border-border text-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
