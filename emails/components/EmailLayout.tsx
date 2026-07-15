@@ -1,213 +1,208 @@
 import {
-    Body,
-    Container,
-    Head,
-    Heading,
-    Html,
-    Section,
-    Text,
-    Img,
-    Row,
-    Column,
+  Body,
+  Container,
+  Head,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Section,
+  Text,
 } from '@react-email/components';
 import * as React from 'react';
-// Icon import removed as we use logo image now
 
+/**
+ * Apple-inspired email shell:
+ * - System fonts (SF / -apple-system)
+ * - Soft light canvas, generous space
+ * - Fluid width for every client
+ * - Table-safe structure, no heavy glass/blur
+ */
 export type EmailTheme = 'green' | 'purple' | 'red' | 'blue' | 'cyan' | 'orange';
 
-interface ThemeColors {
-    primary: string;
-    primaryDark: string;
-    shadow: string;
-}
-
-const themeColors: Record<EmailTheme, ThemeColors> = {
-    green: {
-        primary: '#10b981',
-        primaryDark: '#059669',
-        shadow: 'rgba(16, 185, 129, 0.4)',
-    },
-    purple: {
-        primary: '#8b5cf6',
-        primaryDark: '#7c3aed',
-        shadow: 'rgba(139, 92, 246, 0.4)',
-    },
-    red: {
-        primary: '#ef4444',
-        primaryDark: '#dc2626',
-        shadow: 'rgba(239, 68, 68, 0.4)',
-    },
-    blue: {
-        primary: '#3b82f6',
-        primaryDark: '#2563eb',
-        shadow: 'rgba(59, 130, 246, 0.4)',
-    },
-    cyan: {
-        primary: '#06b6d4',
-        primaryDark: '#0891b2',
-        shadow: 'rgba(6, 182, 212, 0.4)',
-    },
-    orange: {
-        primary: '#f97316',
-        primaryDark: '#ea580c',
-        shadow: 'rgba(249, 115, 22, 0.4)',
-    },
+const accentByTheme: Record<EmailTheme, string> = {
+  green: '#34c759',
+  purple: '#af52de',
+  red: '#ff3b30',
+  blue: '#0071e3',
+  cyan: '#32ade6',
+  orange: '#ff9500',
 };
 
 interface EmailLayoutProps {
-    children: React.ReactNode;
-    theme: EmailTheme;
-    previewText: string;
+  children: React.ReactNode;
+  theme?: EmailTheme;
+  previewText: string;
 }
 
-export const EmailLayout = ({ children, theme, previewText }: EmailLayoutProps) => {
-    const colors = themeColors[theme];
+export const EmailLayout = ({
+  children,
+  theme = 'blue',
+  previewText,
+}: EmailLayoutProps) => {
+  const accent = accentByTheme[theme] || accentByTheme.blue;
 
-    return (
-        <Html>
-            <Head />
-            <Body style={main}>
-                <Container style={container}>
-                    <Section style={card}>
+  return (
+    <Html lang="en">
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
+      </Head>
+      <Preview>{previewText}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Brand bar */}
+          <Section style={brandBar}>
+            <table
+              role="presentation"
+              cellPadding={0}
+              cellSpacing={0}
+              border={0}
+              width="100%"
+            >
+              <tr>
+                <td align="center" style={{ padding: '0 0 8px' }}>
+                  <Img
+                    src="{{logo_url}}"
+                    width="44"
+                    height="44"
+                    alt="Snippy Mart"
+                    style={logoImg}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td align="center">
+                  <Text style={brandName}>
+                    Snippy{' '}
+                    <span style={{ color: accent, fontWeight: 600 }}>Mart</span>
+                  </Text>
+                </td>
+              </tr>
+            </table>
+          </Section>
 
-                        {/* Logo Header */}
-                        <Section style={header}>
-                            <table align="center" border={0} cellPadding={0} cellSpacing={0} role="presentation">
-                                <tr>
-                                    <td style={{ paddingRight: '12px' }}>
-                                        <Img
-                                            src="{{logo_url}}"
-                                            width="48"
-                                            height="48"
-                                            alt="Snippy Mart"
-                                            style={{ borderRadius: '12px', objectFit: 'contain' }}
-                                        />
-                                    </td>
-                                    <td>
-                                        <Heading style={{ ...logoText, margin: 0 }}>
-                                            Snippy <span style={{ color: colors.primary }}>Mart</span>
-                                        </Heading>
-                                    </td>
-                                </tr>
-                            </table>
-                        </Section>
+          {/* White content card */}
+          <Section style={card}>{children}</Section>
 
-                        {/* Content */}
-                        {children}
-
-                        {/* Footer */}
-                        <Section style={footer}>
-                            <Row>
-                                <Column align="center" style={{ paddingBottom: '15px' }}>
-                                    <table role="presentation" border={0} cellPadding={0} cellSpacing={0}>
-                                        <tr>
-                                            <td style={{ padding: '0 6px' }}>
-                                                <a href="https://snippymart.com" style={socialLink}>🌐</a>
-                                            </td>
-                                            <td style={{ padding: '0 6px' }}>
-                                                <a href="https://wa.me/94787767869" style={{ ...socialLink, background: 'rgba(37, 211, 102, 0.2)' }}>💬</a>
-                                            </td>
-                                            <td style={{ padding: '0 6px' }}>
-                                                <a href="https://instagram.com/snippymart" style={{ ...socialLink, background: 'rgba(228, 64, 95, 0.2)' }}>📸</a>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </Column>
-                            </Row>
-                            <Row>
-                                <Column align="center">
-                                    <Text style={footerText}>
-                                        Snippy Mart • Premium Digital Subscriptions
-                                    </Text>
-                                    <Text style={copyright}>
-                                        © 2026 All rights reserved
-                                    </Text>
-                                </Column>
-                            </Row>
-                        </Section>
-
-                    </Section>
-                </Container>
-            </Body>
-        </Html>
-    );
+          {/* Footer */}
+          <Section style={footer}>
+            <Text style={footerLinks}>
+              <Link href="https://snippymart.com" style={footerLink}>
+                Website
+              </Link>
+              <span style={footerDot}>·</span>
+              <Link href="https://wa.me/94787767869" style={footerLink}>
+                WhatsApp
+              </Link>
+              <span style={footerDot}>·</span>
+              <Link href="https://snippymart.com/track-order" style={footerLink}>
+                Track order
+              </Link>
+            </Text>
+            <Text style={footerFine}>
+              Snippy Mart · Premium digital subscriptions
+            </Text>
+            <Text style={footerFine}>© {new Date().getFullYear()} Snippy Mart</Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  );
 };
 
-// Styles
+// Shared Apple-like tokens (exported for templates)
+export const apple = {
+  text: '#1d1d1f',
+  secondary: '#6e6e73',
+  tertiary: '#86868b',
+  border: '#d2d2d7',
+  surface: '#f5f5f7',
+  white: '#ffffff',
+  blue: '#0071e3',
+  green: '#34c759',
+  red: '#ff3b30',
+  orange: '#ff9500',
+  purple: '#af52de',
+  font: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+};
+
 const main = {
-    backgroundColor: '#ffffff',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    padding: '20px 0',
+  backgroundColor: '#f5f5f7',
+  fontFamily: apple.font,
+  margin: '0',
+  padding: '0',
+  width: '100%',
+  WebkitTextSizeAdjust: '100%' as const,
 };
 
 const container = {
-    margin: '0 auto',
-    padding: '0 10px',
-    maxWidth: '600px',
+  margin: '0 auto',
+  maxWidth: '560px',
+  width: '100%',
+  padding: '32px 16px 48px',
+};
+
+const brandBar = {
+  padding: '8px 0 20px',
+  textAlign: 'center' as const,
+};
+
+const logoImg = {
+  borderRadius: '12px',
+  display: 'block',
+  margin: '0 auto',
+  objectFit: 'contain' as const,
+};
+
+const brandName = {
+  margin: '0',
+  color: apple.text,
+  fontSize: '20px',
+  fontWeight: '600' as const,
+  letterSpacing: '-0.4px',
+  lineHeight: '1.2',
 };
 
 const card = {
-    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-    borderRadius: '20px',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-    overflow: 'hidden',
-};
-
-const header = {
-    padding: '32px 24px 24px',
-    textAlign: 'center' as const,
-};
-
-const logoImage = {
-    margin: '0 auto 12px',
-    height: '48px',
-    display: 'block',
-    borderRadius: '12px',
-};
-
-const logoText = {
-    margin: '0',
-    color: '#ffffff',
-    fontSize: '26px',
-    fontWeight: '800',
-    letterSpacing: '-0.5px',
-};
-
-const logo = {
-    margin: '0',
-    color: '#ffffff',
-    fontSize: '26px',
-    fontWeight: '800',
-    letterSpacing: '-0.5px',
+  backgroundColor: apple.white,
+  borderRadius: '18px',
+  border: `1px solid ${apple.border}`,
+  // Subtle depth that works in most clients
+  boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
+  overflow: 'hidden' as const,
+  padding: '0',
 };
 
 const footer = {
-    padding: '28px 24px',
-    background: 'rgba(15, 23, 42, 0.5)',
-    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-    textAlign: 'center' as const,
+  padding: '28px 12px 0',
+  textAlign: 'center' as const,
 };
 
-const socialLink = {
-    display: 'inline-block',
-    width: '36px',
-    height: '36px',
-    background: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '50%',
-    textAlign: 'center' as const,
-    lineHeight: '36px',
-    textDecoration: 'none',
-    fontSize: '16px',
+const footerLinks = {
+  margin: '0 0 10px',
+  fontSize: '13px',
+  lineHeight: '20px',
+  color: apple.secondary,
 };
 
-const footerText = {
-    margin: '0 0 6px',
-    color: '#94a3b8',
-    fontSize: '12px',
+const footerLink = {
+  color: apple.blue,
+  textDecoration: 'none',
+  fontWeight: '500' as const,
 };
 
-const copyright = {
-    margin: '0',
-    color: '#64748b',
-    fontSize: '11px',
+const footerDot = {
+  color: apple.tertiary,
+  padding: '0 8px',
 };
+
+const footerFine = {
+  margin: '0 0 4px',
+  fontSize: '12px',
+  lineHeight: '18px',
+  color: apple.tertiary,
+};
+
+export default EmailLayout;

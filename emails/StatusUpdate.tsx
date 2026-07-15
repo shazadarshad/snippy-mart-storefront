@@ -1,205 +1,179 @@
-import {
-    Section,
-    Text,
-    Button,
-} from '@react-email/components';
+import { Section, Text, Link, Hr } from '@react-email/components';
 import * as React from 'react';
-import { EmailLayout } from './components/EmailLayout';
-import { Bell, Package, Truck, Clock, CheckCircle } from './components/icons';
+import { EmailLayout, apple } from './components/EmailLayout';
 
 interface StatusUpdateEmailProps {
-    customerName?: string;
-    orderId?: string;
-    currentStatus?: string;
-    statusMessage?: string;
-    estimatedDelivery?: string;
-    trackingUrl?: string;
+  customerName?: string;
+  orderId?: string;
+  currentStatus?: string;
+  statusMessage?: string;
+  estimatedDelivery?: string;
+  trackingUrl?: string;
 }
 
 export const StatusUpdate = ({
-    customerName = 'Valued Customer',
-    orderId = 'ORD-12345',
-    currentStatus = 'Processing',
-    statusMessage = 'Your order is being prepared for shipment',
-    estimatedDelivery = 'January 28, 2026',
-    trackingUrl = 'https://snippymart.com/track',
+  customerName = 'Valued Customer',
+  orderId = 'SNIP-2026-123456',
+  currentStatus = 'Processing',
+  statusMessage = 'Your order is being prepared.',
+  estimatedDelivery = 'Within 24 hours',
+  trackingUrl = 'https://snippymart.com/track-order',
 }: StatusUpdateEmailProps) => {
-    return (
-        <EmailLayout theme="purple" previewText={`Update on your order ${orderId} 📦`}>
-            {/* Bell Icon */}
-            <Section style={iconSection}>
-                <div style={bellIconBox}>
-                    <Bell color="#ffffff" size={48} />
-                </div>
-            </Section>
+  return (
+    <EmailLayout theme="purple" previewText={`Order update: ${orderId} is ${currentStatus}`}>
+      <Section style={padTop}>
+        <Text style={eyebrow}>Order update</Text>
+        <Text style={title}>Hi {customerName},</Text>
+        <Text style={body}>
+          There’s a new status on your order <strong style={{ color: apple.text }}>{orderId}</strong>.
+        </Text>
+      </Section>
 
-            {/* Heading */}
-            <Section style={section}>
-                <Text style={heading}>Order Update</Text>
-                <Text style={paragraph}>
-                    Hi <strong style={{ color: '#ffffff' }}>{customerName}</strong>,
-                </Text>
-                <Text style={paragraph}>
-                    We have an update on your order <strong>{orderId}</strong>.
-                </Text>
-            </Section>
+      <Section style={padX}>
+        <Section style={statusCard}>
+          <Text style={statusLabel}>Current status</Text>
+          <Text style={statusValue}>{currentStatus}</Text>
+          <Text style={statusMsg}>{statusMessage}</Text>
+        </Section>
+      </Section>
 
-            {/* Status Card */}
-            <Section style={section}>
-                <div style={statusCard}>
-                    <Text style={statusBadge}>{currentStatus}</Text>
-                    <Text style={statusMessageText}>{statusMessage}</Text>
-                </div>
-            </Section>
+      <Section style={padX}>
+        <Section style={infoCard}>
+          <Text style={rowLabel}>Estimated delivery</Text>
+          <Text style={rowValue}>{estimatedDelivery}</Text>
+          <Hr style={divider} />
+          <Text style={rowLabel}>Order ID</Text>
+          <Text style={rowValueMono}>{orderId}</Text>
+        </Section>
+      </Section>
 
-            {/* Estimated Delivery */}
-            <Section style={section}>
-                <div style={deliveryCard}>
-                    <div style={deliveryIconWrapper}>
-                        <Clock color="#8b5cf6" size={24} />
-                    </div>
-                    <div>
-                        <Text style={deliveryLabel}>Estimated Delivery</Text>
-                        <Text style={deliveryDate}>{estimatedDelivery}</Text>
-                    </div>
-                </div>
-            </Section>
+      <Section style={padBtn}>
+        <Link href={trackingUrl} style={primaryBtn}>
+          Track your order
+        </Link>
+      </Section>
 
-            {/* Track Button */}
-            <Section style={buttonSection}>
-                <Button href={trackingUrl} style={button}>
-                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                        Track Your Order
-                    </span>
-                </Button>
-            </Section>
-
-            {/* Thank You */}
-            <Section style={section}>
-                <Text style={thankYou}>
-                    Thank you for your patience! We'll notify you when your order ships.
-                </Text>
-            </Section>
-        </EmailLayout>
-    );
+      <Section style={padBottom}>
+        <Text style={fine}>We’ll message you again when something changes.</Text>
+      </Section>
+    </EmailLayout>
+  );
 };
 
 export default StatusUpdate;
 
-// Styles - Dark Mode Glassmorphism
-const section = {
-    padding: '0 24px 20px',
+const padTop = { padding: '32px 28px 8px' };
+const padX = { padding: '8px 20px' };
+const padBtn = { padding: '16px 28px 8px', textAlign: 'center' as const };
+const padBottom = { padding: '8px 28px 32px' };
+
+const eyebrow = {
+  margin: '0 0 8px',
+  fontSize: '13px',
+  fontWeight: '600' as const,
+  color: apple.purple,
+  letterSpacing: '0.02em',
+  textTransform: 'uppercase' as const,
 };
 
-const iconSection = {
-    textAlign: 'center' as const,
-    padding: '0 0 24px',
+const title = {
+  margin: '0 0 12px',
+  fontSize: '28px',
+  fontWeight: '700' as const,
+  color: apple.text,
+  letterSpacing: '-0.6px',
+  lineHeight: '1.15',
 };
 
-const bellIconBox = {
-    display: 'inline-block',
-    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-    borderRadius: '50%',
-    padding: '20px',
-    boxShadow: '0 10px 30px rgba(139, 92, 246, 0.3)',
-};
-
-const heading = {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '0 0 16px 0',
-    textAlign: 'center' as const,
-};
-
-const paragraph = {
-    fontSize: '16px',
-    lineHeight: '24px',
-    color: '#cbd5e1',
-    margin: '0 0 16px 0',
-    textAlign: 'center' as const,
+const body = {
+  margin: '0',
+  fontSize: '16px',
+  lineHeight: '24px',
+  color: apple.secondary,
 };
 
 const statusCard = {
-    background: 'rgba(15, 23, 42, 0.6)',
-    borderRadius: '16px',
-    padding: '24px',
-    textAlign: 'center' as const,
-    border: '1px solid rgba(139, 92, 246, 0.2)',
+  backgroundColor: 'rgba(175, 82, 222, 0.08)',
+  borderRadius: '14px',
+  padding: '22px 18px',
+  border: '1px solid rgba(175, 82, 222, 0.2)',
+  textAlign: 'center' as const,
 };
 
-const statusBadge = {
-    display: 'inline-block',
-    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-    color: '#ffffff',
-    padding: '8px 20px',
-    borderRadius: '20px',
-    fontSize: '14px',
-    fontWeight: '600',
-    margin: '0 0 12px 0',
+const statusLabel = {
+  margin: '0 0 6px',
+  fontSize: '12px',
+  fontWeight: '600' as const,
+  color: apple.tertiary,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.04em',
 };
 
-const statusMessageText = {
-    fontSize: '18px',
-    color: '#ffffff',
-    fontWeight: '600',
-    margin: '0',
+const statusValue = {
+  margin: '0 0 8px',
+  fontSize: '22px',
+  fontWeight: '700' as const,
+  color: apple.text,
+  letterSpacing: '-0.3px',
 };
 
-const deliveryCard = {
-    background: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: '16px',
-    padding: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    border: '1px solid rgba(139, 92, 246, 0.2)',
+const statusMsg = {
+  margin: '0',
+  fontSize: '15px',
+  lineHeight: '22px',
+  color: apple.secondary,
 };
 
-const deliveryIconWrapper = {
-    marginRight: '16px',
-    background: 'rgba(139, 92, 246, 0.2)',
-    borderRadius: '50%',
-    padding: '8px',
+const infoCard = {
+  backgroundColor: apple.surface,
+  borderRadius: '14px',
+  padding: '18px',
+  border: `1px solid ${apple.border}`,
 };
 
-const deliveryLabel = {
-    fontSize: '11px',
-    color: '#94a3b8',
-    margin: '0 0 4px 0',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '1px',
-    fontWeight: '600',
+const rowLabel = {
+  margin: '0 0 4px',
+  fontSize: '12px',
+  fontWeight: '600' as const,
+  color: apple.tertiary,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.02em',
 };
 
-const deliveryDate = {
-    fontSize: '18px',
-    color: '#ffffff',
-    fontWeight: '600',
-    margin: '0',
+const rowValue = {
+  margin: '0',
+  fontSize: '16px',
+  fontWeight: '600' as const,
+  color: apple.text,
 };
 
-const buttonSection = {
-    textAlign: 'center' as const,
-    margin: '12px 0 32px',
+const rowValueMono = {
+  ...rowValue,
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+  fontSize: '15px',
 };
 
-const button = {
-    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-    borderRadius: '12px',
-    color: '#ffffff',
-    fontSize: '16px',
-    fontWeight: '700',
-    textDecoration: 'none',
-    textAlign: 'center' as const,
-    padding: '16px 36px',
-    display: 'inline-block',
-    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.4)',
+const divider = {
+  borderColor: apple.border,
+  borderTop: `1px solid ${apple.border}`,
+  margin: '14px 0',
 };
 
-const thankYou = {
-    fontSize: '14px',
-    color: '#64748b',
-    textAlign: 'center' as const,
-    fontStyle: 'italic',
-    margin: '0',
+const primaryBtn = {
+  display: 'inline-block',
+  backgroundColor: apple.blue,
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600' as const,
+  textDecoration: 'none',
+  padding: '14px 28px',
+  borderRadius: '980px',
+};
+
+const fine = {
+  margin: '0',
+  fontSize: '13px',
+  lineHeight: '20px',
+  color: apple.tertiary,
+  textAlign: 'center' as const,
 };

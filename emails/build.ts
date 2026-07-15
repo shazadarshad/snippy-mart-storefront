@@ -19,7 +19,7 @@ async function buildAllTemplates() {
         {
             key: 'order_confirmation',
             name: 'Order Confirmation',
-            subject: '✅ Order Confirmed - Snippy Mart #{{order_id}}',
+            subject: 'Order confirmed · Snippy Mart #{{order_id}}',
             component: OrderConfirmationEmail({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
@@ -33,7 +33,7 @@ async function buildAllTemplates() {
         {
             key: 'order_delivered',
             name: 'Order Delivered',
-            subject: '🎉 Your Order Has Been Delivered - {{order_id}}',
+            subject: 'Your order has been delivered · {{order_id}}',
             component: OrderDelivered({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
@@ -47,7 +47,7 @@ async function buildAllTemplates() {
         {
             key: 'payment_rejected',
             name: 'Payment Rejected',
-            subject: '⚠️ Payment Issue - Action Required for {{order_id}}',
+            subject: 'Payment issue · Action required for {{order_id}}',
             component: PaymentRejected({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
@@ -61,7 +61,7 @@ async function buildAllTemplates() {
         {
             key: 'status_update',
             name: 'Status Update',
-            subject: '📦 Order Update - {{order_id}}',
+            subject: 'Order update · {{order_id}}',
             component: StatusUpdate({
                 customerName: '{{customer_name}}',
                 orderId: '{{order_id}}',
@@ -77,8 +77,8 @@ async function buildAllTemplates() {
 
     // Generate SQL for all templates
     let sqlStatements = `-- ═══════════════════════════════════════════════════════════════════════════
--- SNIPPY MART - COMPLETE EMAIL TEMPLATE SUITE
--- Modern React Email • Lucide Icons • Glassmorphism • Mobile Responsive
+-- SNIPPY MART - APPLE-STYLE EMAIL TEMPLATES
+-- Clean light design • SF system fonts • Mobile-first • All devices
 -- Generated: ${new Date().toISOString()}
 -- ═══════════════════════════════════════════════════════════════════════════
 
@@ -117,17 +117,18 @@ SET subject = EXCLUDED.subject,
         console.log(`✅ ${template.name} rendered successfully`);
     }
 
-    // Write SQL file
-    const sqlPath = join(__dirname, '../supabase/migrations/20260124_all_email_templates.sql');
+    // Write SQL file (new migration + legacy path for deploy docs)
+    const sqlPath = join(__dirname, '../supabase/migrations/20260715_apple_email_templates.sql');
+    const legacyPath = join(__dirname, '../supabase/migrations/20260124_all_email_templates.sql');
     writeFileSync(sqlPath, sqlStatements);
+    writeFileSync(legacyPath, sqlStatements);
 
     console.log('\n✅ ALL EMAIL TEMPLATES BUILT SUCCESSFULLY!');
     console.log(`📄 SQL migration: ${sqlPath}`);
     console.log('\n📝 Next steps:');
-    console.log('1. Copy the ENTIRE SQL file content');
-    console.log('2. Run it in Supabase SQL Editor');
-    console.log('3. All 4 templates will be deployed at once');
-    console.log('4. Test by placing an order\n');
+    console.log('1. Run the SQL migration in Supabase SQL Editor');
+    console.log('2. Or apply via Management API');
+    console.log('3. Test by placing an order\n');
 }
 
 buildAllTemplates().catch(console.error);

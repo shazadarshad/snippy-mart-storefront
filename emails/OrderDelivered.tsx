@@ -1,196 +1,151 @@
-import {
-    Section,
-    Text,
-    Row,
-    Column,
-} from '@react-email/components';
+import { Section, Text, Link, Hr } from '@react-email/components';
 import * as React from 'react';
-import { EmailLayout } from './components/EmailLayout';
-import { CheckCircle, Package, MapPin, Calendar } from './components/icons';
+import { EmailLayout, apple } from './components/EmailLayout';
 
 interface OrderDeliveredEmailProps {
-    customerName?: string;
-    orderId?: string;
-    deliveryDate?: string;
-    deliveryAddress?: string;
-    trackingNumber?: string;
+  customerName?: string;
+  orderId?: string;
+  deliveryDate?: string;
+  deliveryAddress?: string;
+  trackingNumber?: string;
 }
 
 export const OrderDelivered = ({
-    customerName = 'Valued Customer',
-    orderId = 'ORD-12345',
-    deliveryDate = 'January 24, 2026',
-    deliveryAddress = '123 Main Street, Colombo, Sri Lanka',
-    trackingNumber = 'TRK-67890',
+  customerName = 'Valued Customer',
+  orderId = 'SNIP-2026-123456',
+  deliveryDate = 'Today',
+  deliveryAddress = 'Digital delivery via WhatsApp / email',
+  trackingNumber = '—',
 }: OrderDeliveredEmailProps) => {
-    return (
-        <EmailLayout theme="blue" previewText={`Your order ${orderId} has been delivered! 🎉`}>
-            {/* Success Icon */}
-            <Section style={iconSection}>
-                <div style={successIconBox}>
-                    <CheckCircle color="#ffffff" size={48} />
-                </div>
-            </Section>
+  return (
+    <EmailLayout theme="blue" previewText={`Your order ${orderId} has been delivered`}>
+      <Section style={padTop}>
+        <Text style={eyebrow}>Delivered</Text>
+        <Text style={title}>You’re all set, {customerName}.</Text>
+        <Text style={body}>
+          Your order is complete. Enjoy your product — and keep your login details private.
+        </Text>
+      </Section>
 
-            {/* Heading */}
-            <Section style={section}>
-                <Text style={heading}>Delivery Confirmed!</Text>
-                <Text style={paragraph}>
-                    Hi <strong style={{ color: '#ffffff' }}>{customerName}</strong>,
-                </Text>
-                <Text style={paragraph}>
-                    Great news! Your order has been successfully delivered. We hope you love your purchase!
-                </Text>
-            </Section>
+      <Section style={padX}>
+        <Section style={infoCard}>
+          <Text style={rowLabel}>Order ID</Text>
+          <Text style={rowValueMono}>{orderId}</Text>
+          <Hr style={divider} />
+          <Text style={rowLabel}>Delivered on</Text>
+          <Text style={rowValue}>{deliveryDate}</Text>
+          <Hr style={divider} />
+          <Text style={rowLabel}>Delivery</Text>
+          <Text style={rowValue}>{deliveryAddress}</Text>
+          {trackingNumber && trackingNumber !== '—' && (
+            <>
+              <Hr style={divider} />
+              <Text style={rowLabel}>Reference</Text>
+              <Text style={rowValueMono}>{trackingNumber}</Text>
+            </>
+          )}
+        </Section>
+      </Section>
 
-            {/* Delivery Details Card */}
-            <Section style={section}>
-                <div style={detailsCard}>
-                    <Section style={detailRow}>
-                        <Row>
-                            <Column style={{ width: '32px' }}>
-                                <Package color="#3b82f6" size={20} />
-                            </Column>
-                            <Column>
-                                <Text style={detailLabel}>Order ID</Text>
-                                <Text style={detailValue}>{orderId}</Text>
-                            </Column>
-                        </Row>
-                    </Section>
-                    <Section style={detailRow}>
-                        <Row>
-                            <Column style={{ width: '32px' }}>
-                                <Calendar color="#3b82f6" size={20} />
-                            </Column>
-                            <Column>
-                                <Text style={detailLabel}>Delivered On</Text>
-                                <Text style={detailValue}>{deliveryDate}</Text>
-                            </Column>
-                        </Row>
-                    </Section>
-                    <Section>
-                        <Row>
-                            <Column style={{ width: '32px' }}>
-                                <MapPin color="#3b82f6" size={20} />
-                            </Column>
-                            <Column>
-                                <Text style={detailLabel}>Delivery Address</Text>
-                                <Text style={detailValue}>{deliveryAddress}</Text>
-                            </Column>
-                        </Row>
-                    </Section>
-                </div>
-            </Section>
+      <Section style={padBtn}>
+        <Link href="https://snippymart.com/products" style={primaryBtn}>
+          Browse more products
+        </Link>
+      </Section>
 
-            {/* Feedback Section */}
-            <Section style={feedbackSection}>
-                <Text style={feedbackHeading}>How was your experience?</Text>
-                <Text style={feedbackText}>
-                    We'd love to hear your feedback! Your opinion helps us improve our service.
-                </Text>
-            </Section>
-
-            {/* Thank You */}
-            <Section style={section}>
-                <Text style={thankYou}>
-                    Thank you for shopping with Snippy Mart!
-                </Text>
-            </Section>
-        </EmailLayout>
-    );
+      <Section style={padBottom}>
+        <Text style={fine}>
+          Need help? Reply on WhatsApp — we’re here for you.
+        </Text>
+      </Section>
+    </EmailLayout>
+  );
 };
 
 export default OrderDelivered;
 
-// Styles - Dark Mode Glassmorphism
-const section = {
-    padding: '0 24px 20px',
-    textAlign: 'center' as const,
+const padTop = { padding: '32px 28px 8px' };
+const padX = { padding: '8px 20px' };
+const padBtn = { padding: '16px 28px 8px', textAlign: 'center' as const };
+const padBottom = { padding: '8px 28px 32px' };
+
+const eyebrow = {
+  margin: '0 0 8px',
+  fontSize: '13px',
+  fontWeight: '600' as const,
+  color: apple.blue,
+  letterSpacing: '0.02em',
+  textTransform: 'uppercase' as const,
 };
 
-const iconSection = {
-    textAlign: 'center' as const,
-    padding: '0 0 24px',
+const title = {
+  margin: '0 0 12px',
+  fontSize: '28px',
+  fontWeight: '700' as const,
+  color: apple.text,
+  letterSpacing: '-0.6px',
+  lineHeight: '1.15',
 };
 
-const successIconBox = {
-    display: 'inline-block',
-    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-    borderRadius: '50%',
-    padding: '20px',
-    boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)',
+const body = {
+  margin: '0',
+  fontSize: '16px',
+  lineHeight: '24px',
+  color: apple.secondary,
 };
 
-const heading = {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '0 0 16px 0',
+const infoCard = {
+  backgroundColor: apple.surface,
+  borderRadius: '14px',
+  padding: '20px 18px',
+  border: `1px solid ${apple.border}`,
 };
 
-const paragraph = {
-    fontSize: '16px',
-    lineHeight: '24px',
-    color: '#cbd5e1',
-    margin: '0 0 16px 0',
+const rowLabel = {
+  margin: '0 0 4px',
+  fontSize: '12px',
+  fontWeight: '600' as const,
+  color: apple.tertiary,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.02em',
 };
 
-const detailsCard = {
-    background: 'rgba(15, 23, 42, 0.6)',
-    borderRadius: '16px',
-    padding: '24px',
-    border: '1px solid rgba(59, 130, 246, 0.2)',
-    textAlign: 'left' as const,
+const rowValue = {
+  margin: '0',
+  fontSize: '16px',
+  fontWeight: '500' as const,
+  color: apple.text,
+  lineHeight: '22px',
 };
 
-const detailRow = {
-    marginBottom: '16px',
-    paddingBottom: '16px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+const rowValueMono = {
+  ...rowValue,
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+  fontWeight: '600' as const,
+  fontSize: '15px',
 };
 
-const detailLabel = {
-    fontSize: '11px',
-    color: '#94a3b8',
-    margin: '0 0 4px 0',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '1px',
-    fontWeight: '600',
+const divider = {
+  borderColor: apple.border,
+  borderTop: `1px solid ${apple.border}`,
+  margin: '14px 0',
 };
 
-const detailValue = {
-    fontSize: '15px',
-    color: '#ffffff',
-    fontWeight: '600',
-    margin: '0',
+const primaryBtn = {
+  display: 'inline-block',
+  backgroundColor: apple.blue,
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600' as const,
+  textDecoration: 'none',
+  padding: '14px 28px',
+  borderRadius: '980px',
 };
 
-const feedbackSection = {
-    margin: '0 24px 24px',
-    padding: '20px',
-    background: 'rgba(59, 130, 246, 0.1)',
-    borderRadius: '12px',
-    textAlign: 'center' as const,
-    border: '1px dashed rgba(59, 130, 246, 0.3)',
-};
-
-const feedbackHeading = {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#ffffff',
-    margin: '0 0 8px 0',
-};
-
-const feedbackText = {
-    fontSize: '14px',
-    color: '#94a3b8',
-    margin: '0',
-};
-
-const thankYou = {
-    fontSize: '14px',
-    color: '#64748b',
-    textAlign: 'center' as const,
-    fontStyle: 'italic',
-    margin: '0',
+const fine = {
+  margin: '0',
+  fontSize: '13px',
+  lineHeight: '20px',
+  color: apple.tertiary,
+  textAlign: 'center' as const,
 };
