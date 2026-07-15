@@ -46,6 +46,7 @@ export interface ProductFormData {
   manual_fulfillment?: boolean;
   use_variant_pricing?: boolean;
   display_order?: number;
+  slug?: string;
 }
 
 // Fetch all products (active only for public, all for admin)

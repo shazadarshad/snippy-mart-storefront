@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -354,69 +353,121 @@ const AdminProducts = () => {
     setGalleryImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Helper to generate URL-friendly slug from product name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  const emptyForm = (): ProductFormData => ({
+    name: '',
+    description: '',
+    price: 0,
+    old_price: null,
+    category: '',
+    image_url: '/placeholder.svg',
+    is_active: true,
+    is_featured: false,
+    stock_status: 'in_stock',
+    requirements: { require_email: false, require_password: false },
+    manual_fulfillment: true,
+    use_variant_pricing: false,
+    slug: '',
+  });
+
+  /** Postgres numeric often arrives as string — normalize for controlled inputs */
+  const toNum = (v: unknown, fallback = 0): number => {
+    if (v == null || v === '') return fallback;
+    const n = typeof v === 'number' ? v : parseFloat(String(v));
+    return Number.isFinite(n) ? n : fallback;
+  };
+
+  const toNumOrNull = (v: unknown): number | null => {
+    if (v == null || v === '') return null;
+    const n = typeof v === 'number' ? v : parseFloat(String(v));
+    return Number.isFinite(n) ? n : null;
+  };
+
   const handleOpenDialog = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
       const productPlans = getProductPricingPlans(product.id);
       const productImages = getProductGalleryImages(product.id);
+
+      // Always coerce — blank inputs happen when value is null/undefined/string mismatches
+      const req = (product.requirements ?? {}) as ProductFormData['requirements'];
       setFormData({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        old_price: product.old_price ?? null,
-        category: product.category,
-        image_url: product.image_url,
+        name: product.name ?? '',
+        description: product.description ?? '',
+        price: toNum(product.price, 0),
+        old_price: toNumOrNull(product.old_price),
+        category: product.category ?? '',
+        image_url: product.image_url || '/placeholder.svg',
         is_active: product.is_active ?? true,
         is_featured: product.is_featured ?? false,
-        stock_status: product.stock_status ?? 'in_stock',
-        requirements: product.requirements ?? { require_email: false, require_password: false },
+        stock_status: (product.stock_status as StockStatus) || 'in_stock',
+        requirements: {
+          require_email: !!req?.require_email,
+          require_password: !!req?.require_password,
+          require_username: !!req?.require_username,
+        },
         manual_fulfillment: product.manual_fulfillment ?? true,
         use_variant_pricing: product.use_variant_pricing ?? false,
+        slug: product.slug || generateSlug(product.name || ''),
+        display_order: toNum(product.display_order, 0),
       });
-      setPricingPlans(productPlans.map(p => ({
-        id: p.id,
-        name: p.name,
-        duration: p.duration,
-        price: p.price,
-        old_price: p.old_price ?? null,
-        is_default: p.is_default,
-        variants: getPricingPlanVariants(p.id).map(v => ({
-          id: v.id,
-          name: v.name,
-          price: v.price,
-          old_price: v.old_price ?? null,
-          is_active: v.is_active,
-          stock_status: v.stock_status,
-        }))
-      })));
-      setExistingPlanIds(productPlans.map(p => p.id));
-      setGalleryImages(productImages.map(img => ({
-        id: img.id,
-        image_url: img.image_url,
-      })));
-      setExistingImageIds(productImages.map(img => img.id));
+      setPricingPlans(
+        productPlans.map((p) => ({
+          id: p.id,
+          name: p.name ?? '',
+          duration: p.duration ?? '',
+          price: toNum(p.price, 0),
+          old_price: toNumOrNull(p.old_price),
+          is_default: !!p.is_default,
+          variants: getPricingPlanVariants(p.id).map((v) => ({
+            id: v.id,
+            name: v.name ?? '',
+            price: toNum(v.price, 0),
+            old_price: toNumOrNull(v.old_price),
+            is_active: v.is_active ?? true,
+            stock_status: v.stock_status ?? 'in_stock',
+          })),
+        })),
+      );
+      setExistingPlanIds(productPlans.map((p) => p.id));
+      setGalleryImages(
+        productImages.map((img) => ({
+          id: img.id,
+          image_url: img.image_url,
+        })),
+      );
+      setExistingImageIds(productImages.map((img) => img.id));
     } else {
       setEditingProduct(null);
-      setFormData({
-        name: '',
-        description: '',
-        price: 0,
-        old_price: null,
-        category: '',
-        image_url: '/placeholder.svg',
-        is_active: true,
-        is_featured: false,
-        stock_status: 'in_stock',
-        requirements: { require_email: false, require_password: false },
-        manual_fulfillment: true,
-        use_variant_pricing: false,
-      });
+      setFormData(emptyForm());
       setPricingPlans([]);
       setExistingPlanIds([]);
       setGalleryImages([]);
       setExistingImageIds([]);
     }
     setIsDialogOpen(true);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      // Reset only on close so next open is clean
+      setEditingProduct(null);
+      setFormData(emptyForm());
+      setPricingPlans([]);
+      setExistingPlanIds([]);
+      setGalleryImages([]);
+      setExistingImageIds([]);
+    }
   };
 
   const handleAddPricingPlan = () => {
@@ -500,16 +551,6 @@ const AdminProducts = () => {
       }
       return plan;
     }));
-  };
-
-  // Helper to generate URL-friendly slug from product name
-  const generateSlug = (name: string): string => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single
-      .trim();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -693,26 +734,29 @@ const AdminProducts = () => {
             <FileSpreadsheet className="w-4 h-4 mr-2" />
             Import CSV
           </Button>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="hero" onClick={() => handleOpenDialog()}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Product
-            </Button>
-          </DialogTrigger>
+          <Button variant="hero" type="button" onClick={() => handleOpenDialog()}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Product
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border custom-scrollbar">
             <DialogHeader>
               <DialogTitle className="text-foreground">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            {/* key forces remount so fields always show loaded product values */}
+            <form
+              key={editingProduct?.id || 'new-product'}
+              onSubmit={handleSubmit}
+              className="space-y-4 mt-4"
+            >
               <div>
                 <Label htmlFor="name" className="text-foreground">Product Name</Label>
                 <Input
                   id="name"
                   name="name"
-                  value={formData.name}
+                  value={formData.name ?? ''}
                   onChange={handleInputChange}
                   className="mt-1.5 bg-secondary/50 border-border"
                   required
@@ -730,7 +774,7 @@ const AdminProducts = () => {
                     <Textarea
                       id="description"
                       name="description"
-                      value={formData.description}
+                      value={formData.description ?? ''}
                       onChange={handleInputChange}
                       className="bg-secondary/50 border-border min-h-[150px] font-mono text-sm"
                       placeholder="Use emoji headers and bullet points for best formatting&#10;&#10;🚀 PRODUCT TITLE&#10;&#10;✨ What's Included:&#10;✅ Feature 1&#10;✅ Feature 2&#10;✅ Feature 3"
@@ -738,7 +782,7 @@ const AdminProducts = () => {
                     />
                   </TabsContent>
                   <TabsContent value="preview" className="bg-secondary/30 border border-border rounded-lg p-4 min-h-[150px]">
-                    <FormattedDescription description={formData.description} />
+                    <FormattedDescription description={formData.description ?? ''} />
                     {!formData.description && (
                       <p className="text-sm text-muted-foreground italic">Type something in the 'Write' tab to see a preview...</p>
                     )}
@@ -754,7 +798,7 @@ const AdminProducts = () => {
                     name="price"
                     type="number"
                     step="0.01"
-                    value={formData.price}
+                    value={Number.isFinite(formData.price) ? formData.price : 0}
                     onChange={handleInputChange}
                     className="mt-1.5 bg-secondary/50 border-border"
                     required
@@ -780,7 +824,7 @@ const AdminProducts = () => {
                   <Input
                     id="category"
                     name="category"
-                    value={formData.category}
+                    value={formData.category ?? ''}
                     onChange={handleInputChange}
                     className="mt-1.5 bg-secondary/50 border-border"
                     required
