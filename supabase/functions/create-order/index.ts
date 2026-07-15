@@ -6,7 +6,7 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type PaymentMethod = "bank_transfer" | "binance_usdt";
+type PaymentMethod = "bank_transfer" | "binance_usdt" | "crypto_onchain" | "card";
 
 type CreateOrderBody = {
   order_number: string;
@@ -197,10 +197,12 @@ serve(async (req) => {
         const paymentMethodDisplay = body.payment_method === 'bank_transfer'
           ? 'Bank Transfer 🏦'
           : body.payment_method === 'binance_usdt'
-            ? 'Binance USDT ₿'
-            : body.payment_method === 'card'
-              ? 'Card Payment 💳'
-              : 'Pending';
+            ? 'Binance Pay ₿'
+            : body.payment_method === 'crypto_onchain'
+              ? 'Crypto Wallet 🔗'
+              : body.payment_method === 'card'
+                ? 'Card Payment 💳'
+                : 'Pending';
 
         const emailPayload = {
           to: body.customer_email,
@@ -247,10 +249,12 @@ serve(async (req) => {
     const paymentMethodDisplay = body.payment_method === 'bank_transfer'
       ? 'Bank Transfer'
       : body.payment_method === 'binance_usdt'
-        ? 'Binance USDT'
-        : body.payment_method === 'card'
-          ? 'Card Payment'
-          : 'Pending/Other';
+        ? 'Binance Pay'
+        : body.payment_method === 'crypto_onchain'
+          ? 'Crypto Wallet (on-chain)'
+          : body.payment_method === 'card'
+            ? 'Card Payment'
+            : 'Pending/Other';
 
     const itemsListHtml = body.items.map(i =>
       `<li>${i.product_name} x${i.quantity} - ${currencySymbol}${i.total_price}</li>`

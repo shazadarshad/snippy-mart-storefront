@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   Building2,
   Bitcoin,
@@ -11,15 +11,36 @@ import {
   CreditCard,
   Lock,
   ChevronDown,
+  Wallet,
+  ExternalLink,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/hooks/use-toast';
+import {
+  activeWallets,
+  parseCryptoSettings,
+  type CryptoWallet,
+} from '@/lib/cryptoPayments';
+import { quoteCrypto, quoteUsdt, useCryptoRates } from '@/hooks/useCryptoRates';
 
-export type PaymentMethod = 'bank_transfer' | 'binance_usdt' | 'card';
+export type PaymentMethod = 'bank_transfer' | 'binance_usdt' | 'crypto_onchain' | 'card';
+
+export type CryptoSelection =
+  | { kind: 'binance' }
+  | { kind: 'wallet'; wallet: CryptoWallet }
+  | null;
 
 interface PaymentMethodSelectorProps {
   selectedMethod: PaymentMethod | null;
@@ -29,6 +50,10 @@ interface PaymentMethodSelectorProps {
   proofFile: File | null;
   onProofFileChange: (file: File | null) => void;
   orderId: string;
+  /** Order total in LKR (catalog currency) for accurate crypto quotes */
+  totalLkr: number;
+  cryptoSelection: CryptoSelection;
+  onCryptoSelectionChange: (sel: CryptoSelection) => void;
   onPreRegister: () => Promise<void>;
   isPreRegistering: boolean;
 }
@@ -41,17 +66,45 @@ const PaymentMethodSelector = ({
   proofFile,
   onProofFileChange,
   orderId,
+  totalLkr,
+  cryptoSelection,
+  onCryptoSelectionChange,
 }: PaymentMethodSelectorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { data: settings } = useSiteSettings();
+  const [cryptoModalOpen, setCryptoModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<'binance' | 'wallets'>('binance');
+
+  const cryptoSettings = useMemo(
+    () =>
+      parseCryptoSettings(
+        settings?.crypto_wallets,
+        settings?.crypto_markup_percent,
+        settings?.crypto_lkr_per_usd,
+      ),
+    [settings],
+  );
+
+  const wallets = useMemo(() => activeWallets(cryptoSettings), [cryptoSettings]);
+  const coinIds = useMemo(() => {
+    const ids = wallets.map((w) => w.coingecko_id);
+    ids.push('tether');
+    return [...new Set(ids)];
+  }, [wallets]);
+
+  const { data: ratesData, isLoading: ratesLoading, isFetching } = useCryptoRates(coinIds);
+  const prices = ratesData?.prices;
+  const rateSource = ratesData?.source;
+
+  const usdtQuote = useMemo(
+    () => quoteUsdt(totalLkr, cryptoSettings, prices?.tether || 1),
+    [totalLkr, cryptoSettings, prices],
+  );
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied!',
-      description: `${label} copied to clipboard`,
-    });
+    toast({ title: 'Copied!', description: `${label} copied to clipboard` });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,9 +133,7 @@ const PaymentMethodSelector = ({
 
   const removeFile = () => {
     onProofFileChange(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const getFileIcon = () => {
@@ -102,11 +153,72 @@ const PaymentMethodSelector = ({
   const storeBinanceCoin = settings?.binance_coin || 'USDT';
 
   const isBank = selectedMethod === 'bank_transfer';
-  const isBinance = selectedMethod === 'binance_usdt';
+  const isCrypto =
+    selectedMethod === 'binance_usdt' || selectedMethod === 'crypto_onchain';
+
+  const selectBinance = () => {
+    onCryptoSelectionChange({ kind: 'binance' });
+    onMethodChange('binance_usdt');
+    setCryptoModalOpen(false);
+  };
+
+  const selectWallet = (wallet: CryptoWallet) => {
+    onCryptoSelectionChange({ kind: 'wallet', wallet });
+    onMethodChange('crypto_onchain');
+    setCryptoModalOpen(false);
+  };
+
+  const openCrypto = () => {
+    setCryptoModalOpen(true);
+    if (!isCrypto) {
+      // Don't set method until they pick inside modal
+    }
+  };
+
+  const ProofUpload = ({ accent = 'primary' }: { accent?: 'primary' | 'crypto' }) => (
+    <div>
+      <Label className="text-sm text-foreground">
+        Upload payment proof <span className="text-destructive">*</span>
+      </Label>
+      <p className="text-xs text-muted-foreground mb-2">
+        Screenshot of transfer / Binance confirmation (JPG, PNG, PDF · max 10MB)
+      </p>
+      {!proofFile ? (
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className={cn(
+            'w-full p-6 border-2 border-dashed rounded-xl transition-colors flex flex-col items-center gap-2',
+            accent === 'crypto'
+              ? 'border-border hover:border-[#F0B90B]/50 hover:bg-[#F0B90B]/5'
+              : 'border-border hover:border-primary/50 hover:bg-primary/5',
+          )}
+        >
+          <Upload className="w-8 h-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Click to upload proof</p>
+        </button>
+      ) : (
+        <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
+          {getFileIcon()}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">{proofFile.name}</p>
+            <p className="text-xs text-muted-foreground">{(proofFile.size / 1024).toFixed(1)} KB</p>
+          </div>
+          <Button type="button" variant="ghost" size="icon" onClick={removeFile}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const selectedWalletQuote =
+    cryptoSelection?.kind === 'wallet'
+      ? quoteCrypto(totalLkr, cryptoSelection.wallet, cryptoSettings, prices)
+      : null;
 
   return (
     <div className="space-y-4">
-      {/* Shared proof upload input (bank + binance) */}
       <input
         ref={fileInputRef}
         type="file"
@@ -119,30 +231,31 @@ const PaymentMethodSelector = ({
         Payment Method <span className="text-destructive">*</span>
       </Label>
       <p className="text-xs text-muted-foreground -mt-2">
-        Bank transfer or Binance Pay. Card payment is temporarily disabled.
+        Bank transfer or crypto (Binance Pay / on-chain wallets). Card is temporarily disabled.
       </p>
 
-      {/* Bank Transfer — only active method */}
+      {/* Bank Transfer */}
       <div
         className={cn(
           'border rounded-xl overflow-hidden transition-all duration-300 ease-out',
           isBank
             ? 'border-primary bg-primary/5 shadow-md shadow-primary/5'
-            : 'border-border hover:border-primary/50'
+            : 'border-border hover:border-primary/50',
         )}
       >
         <button
           type="button"
           className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => onMethodChange('bank_transfer')}
+          onClick={() => {
+            onMethodChange('bank_transfer');
+            onCryptoSelectionChange(null);
+          }}
         >
           <div className="flex items-center gap-3">
             <div
               className={cn(
                 'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
-                isBank
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-muted-foreground'
+                isBank ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground',
               )}
             >
               <Building2 className="w-5 h-5" />
@@ -166,11 +279,10 @@ const PaymentMethodSelector = ({
           )}
         </button>
 
-        {/* Always show bank details when bank is selected (default) */}
         <div
           className={cn(
             'overflow-hidden transition-all duration-300',
-            isBank ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+            isBank ? 'max-h-[900px] opacity-100' : 'max-h-0 opacity-0',
           )}
         >
           <div className="p-4 pt-0 space-y-4">
@@ -186,304 +298,427 @@ const PaymentMethodSelector = ({
             <div className="p-4 rounded-lg bg-secondary/50 border border-border">
               <p className="text-sm font-medium text-foreground mb-3">Bank Details</p>
               <div className="space-y-2.5 text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-muted-foreground">Bank:</span>{' '}
-                    <span className="font-medium text-foreground">{bankName}</span>
-                  </div>
+                <div>
+                  <span className="text-muted-foreground">Bank:</span>{' '}
+                  <span className="font-medium text-foreground">{bankName}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Branch:</span>{' '}
+                  <span className="font-medium text-foreground">{bankBranch}</span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-muted-foreground">Branch:</span>{' '}
-                    <span className="font-medium text-foreground">{bankBranch}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className="text-muted-foreground">Account Name:</span>{' '}
+                    <span className="text-muted-foreground">Account name:</span>{' '}
                     <span className="font-medium text-foreground">{bankAccountName}</span>
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 shrink-0"
+                    className="h-7 w-7"
                     onClick={() => copyToClipboard(bankAccountName, 'Account name')}
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </Button>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className="text-muted-foreground">Account Number:</span>{' '}
-                    <span className="font-medium text-foreground font-mono">
-                      {bankAccountNumber}
-                    </span>
+                  <div>
+                    <span className="text-muted-foreground">Account number:</span>{' '}
+                    <span className="font-medium text-foreground font-mono">{bankAccountNumber}</span>
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 shrink-0"
+                    className="h-7 w-7"
                     onClick={() => copyToClipboard(bankAccountNumber, 'Account number')}
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-border">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-muted-foreground">Your Order ID:</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => copyToClipboard(orderId, 'Order ID')}
-                  >
-                    <Copy className="w-3 h-3" />
-                  </Button>
-                </div>
-                <p className="text-sm font-mono font-bold text-primary">{orderId}</p>
-                <p className="text-xs text-primary/80 mt-1">
-                  Enter this Order ID as beneficiary remarks when transferring
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm text-foreground">
-                Upload Receipt <span className="text-destructive">*</span>
-              </Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Screenshot or photo of your payment receipt (JPG, PNG, PDF · max 10MB)
-              </p>
-
-              {!proofFile ? (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-6 border-2 border-dashed border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-colors flex flex-col items-center gap-2"
-                >
-                  <Upload className="w-8 h-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Click to upload receipt</p>
-                </button>
-              ) : (
-                <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
-                  {getFileIcon()}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {proofFile.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {(proofFile.size / 1024).toFixed(1)} KB
-                    </p>
+                <div className="mt-2 pt-2 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Order ID (remarks)</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => copyToClipboard(orderId, 'Order ID')}
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="flex-shrink-0"
-                    onClick={removeFile}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+                  <p className="text-sm font-mono font-bold text-primary">{orderId}</p>
                 </div>
-              )}
+              </div>
             </div>
+
+            <ProofUpload />
           </div>
         </div>
       </div>
 
-      {/* Binance USDT — enabled */}
+      {/* Crypto — opens modal */}
       <div
         className={cn(
           'border rounded-xl overflow-hidden transition-all duration-300 ease-out',
-          isBinance
-            ? 'border-[#F0B90B] bg-[#F0B90B]/5 shadow-md shadow-[#F0B90B]/5'
-            : 'border-border hover:border-[#F0B90B]/50 hover:bg-secondary/30'
+          isCrypto
+            ? 'border-violet-500 bg-violet-500/5 shadow-md shadow-violet-500/10'
+            : 'border-border hover:border-violet-500/50 hover:bg-secondary/30',
         )}
       >
         <button
           type="button"
           className="w-full p-4 flex items-center justify-between text-left"
-          onClick={() => onMethodChange(isBinance ? 'bank_transfer' : 'binance_usdt')}
+          onClick={() => {
+            if (isCrypto && cryptoSelection) {
+              // Toggle collapse by re-opening modal to change option
+              openCrypto();
+            } else {
+              openCrypto();
+            }
+          }}
         >
           <div className="flex items-center gap-3">
             <div
               className={cn(
                 'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
-                isBinance ? 'bg-[#F0B90B] text-black' : 'bg-secondary text-muted-foreground'
+                isCrypto ? 'bg-violet-500 text-white' : 'bg-secondary text-muted-foreground',
               )}
             >
-              <Bitcoin className="w-5 h-5" />
+              <Wallet className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-medium text-foreground">Binance {storeBinanceCoin}</p>
+                <p className="font-medium text-foreground">Crypto</p>
                 <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
                   Available
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">Pay with Binance Pay</p>
+              <p className="text-sm text-muted-foreground">
+                Binance Pay or on-chain wallet (USDT, BTC, ETH…)
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {isBinance && (
-              <div className="w-5 h-5 rounded-full bg-[#F0B90B] flex items-center justify-center">
-                <Check className="w-3 h-3 text-black" />
+            {isCrypto && (
+              <div className="w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                <Check className="w-3 h-3 text-white" />
               </div>
             )}
-            <ChevronDown
-              className={cn(
-                'w-5 h-5 text-muted-foreground transition-transform duration-300',
-                isBinance && 'rotate-180'
-              )}
-            />
+            <ExternalLink className="w-4 h-4 text-muted-foreground" />
           </div>
         </button>
 
+        {/* Selected crypto summary + proof */}
         <div
           className={cn(
             'overflow-hidden transition-all duration-300',
-            isBinance ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+            isCrypto && cryptoSelection ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0',
           )}
         >
           <div className="p-4 pt-0 space-y-4">
-            <div className="p-4 rounded-lg bg-[#F0B90B]/10 border border-[#F0B90B]/20">
-              <p className="text-sm font-medium text-foreground mb-3">Binance Pay Details</p>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Account Name:</span>{' '}
-                  <span className="font-medium text-foreground">{storeBinanceName}</span>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">
+                {ratesLoading || isFetching ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Updating live rates…
+                  </span>
+                ) : (
+                  <>
+                    Rates: {rateSource === 'live' ? 'live market' : 'fallback'} · amounts rounded{' '}
+                    <strong className="text-foreground">up</strong> + safety buffer
+                  </>
+                )}
+              </p>
+              <Button type="button" variant="outline" size="sm" onClick={openCrypto}>
+                Change option
+              </Button>
+            </div>
+
+            {cryptoSelection?.kind === 'binance' && (
+              <div className="p-4 rounded-lg bg-[#F0B90B]/10 border border-[#F0B90B]/20 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Bitcoin className="w-4 h-4 text-[#F0B90B]" />
+                  <p className="text-sm font-bold text-foreground">Binance Pay · {storeBinanceCoin}</p>
                 </div>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className="text-muted-foreground">Binance ID:</span>{' '}
-                    <span className="font-medium text-foreground font-mono">{storeBinanceId}</span>
+                <div className="p-3 rounded-lg bg-background/80 border border-[#F0B90B]/25">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                    Send exactly
+                  </p>
+                  <p className="text-2xl font-black text-[#F0B90B] tabular-nums">
+                    {usdtQuote.formatted}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Converted from order total with safety margin (never less)
+                  </p>
+                </div>
+                <div className="text-sm space-y-1.5">
+                  <div>
+                    <span className="text-muted-foreground">Name:</span>{' '}
+                    <span className="font-medium">{storeBinanceName}</span>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0"
-                    onClick={() => copyToClipboard(storeBinanceId, 'Binance ID')}
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </Button>
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <span className="text-muted-foreground">Binance ID:</span>{' '}
+                      <span className="font-mono font-medium">{storeBinanceId}</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => copyToClipboard(storeBinanceId, 'Binance ID')}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-[#F0B90B]/20">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Note / Order ID</p>
+                      <p className="font-mono font-bold text-[#F0B90B]">{orderId}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => copyToClipboard(orderId, 'Order ID')}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="binance-id" className="text-sm">
+                    Your Binance ID <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="binance-id"
+                    placeholder="Enter your Binance ID"
+                    value={binanceId}
+                    onChange={(e) => onBinanceIdChange(e.target.value)}
+                    className="mt-1.5 h-12 bg-secondary/50 border-border"
+                  />
+                </div>
+              </div>
+            )}
+
+            {cryptoSelection?.kind === 'wallet' && (
+              <div className="p-4 rounded-lg bg-violet-500/10 border border-violet-500/25 space-y-3">
+                <p className="text-sm font-bold text-foreground">
+                  {cryptoSelection.wallet.symbol} · {cryptoSelection.wallet.network}
+                </p>
+                <div className="p-3 rounded-lg bg-background/80 border border-violet-500/25">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                    Send exactly
+                  </p>
+                  <p className="text-2xl font-black text-violet-600 dark:text-violet-400 tabular-nums">
+                    {selectedWalletQuote?.formatted || '—'}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Network must match · amount rounded up with safety buffer
+                  </p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Coin:</span>{' '}
-                  <span className="font-medium text-foreground">{storeBinanceCoin}</span>
+                  <p className="text-xs text-muted-foreground mb-1">Deposit address</p>
+                  <div className="flex items-start gap-2">
+                    <p className="flex-1 text-xs font-mono break-all font-medium bg-secondary/50 p-2 rounded-lg border border-border">
+                      {cryptoSelection.wallet.address}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() =>
+                        copyToClipboard(cryptoSelection.wallet.address, 'Wallet address')
+                      }
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs mt-2 text-muted-foreground">
-                  Use Binance Pay to send {storeBinanceCoin} — instant and fee-free.
-                </p>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-[#F0B90B]/20">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-muted-foreground">Your Order ID:</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => copyToClipboard(orderId, 'Order ID')}
-                  >
-                    <Copy className="w-3 h-3" />
-                  </Button>
-                </div>
-                <p className="text-sm font-mono font-bold text-[#F0B90B]">{orderId}</p>
-                <p className="text-xs text-[#F0B90B]/80 mt-1">
-                  Enter this Order ID as the note when sending
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="binance-id" className="text-sm text-foreground">
-                Your Binance ID <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="binance-id"
-                type="text"
-                placeholder="Enter your Binance ID"
-                value={binanceId}
-                onChange={(e) => onBinanceIdChange(e.target.value)}
-                className="mt-1.5 h-12 bg-secondary/50 border-border"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                We need this to verify your payment
-              </p>
-            </div>
-
-            <div>
-              <Label className="text-sm text-foreground">
-                Upload Screenshot <span className="text-destructive">*</span>
-              </Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Upload a screenshot of your payment confirmation
-              </p>
-
-              {!proofFile ? (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-6 border-2 border-dashed border-border rounded-xl hover:border-[#F0B90B]/50 hover:bg-[#F0B90B]/5 transition-colors flex flex-col items-center gap-2"
-                >
-                  <Upload className="w-8 h-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Click to upload screenshot</p>
-                </button>
-              ) : (
-                <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
-                  {getFileIcon()}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{proofFile.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(proofFile.size / 1024).toFixed(1)} KB
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Memo / Order ID (if field available)</p>
+                    <p className="font-mono font-bold text-violet-600 dark:text-violet-400 text-sm">
+                      {orderId}
                     </p>
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="flex-shrink-0"
-                    onClick={removeFile}
+                    onClick={() => copyToClipboard(orderId, 'Order ID')}
                   >
-                    <X className="w-4 h-4" />
+                    <Copy className="w-4 h-4" />
                   </Button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            <ProofUpload accent="crypto" />
           </div>
         </div>
       </div>
 
-      {/* Card — still disabled */}
+      {/* Card disabled */}
       <div
         className="border border-border/60 rounded-xl overflow-hidden opacity-60 cursor-not-allowed bg-muted/20"
         aria-disabled="true"
       >
         <div className="w-full p-4 flex items-center justify-between text-left pointer-events-none select-none">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-secondary text-muted-foreground">
+            <div className="w-10 h-10 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-medium text-muted-foreground">Card Payment (Visa / Master)</p>
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                  <Lock className="w-3 h-3" />
-                  Temporarily disabled
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-muted-foreground">Card Payment</p>
+                <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  Unavailable
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">Not available right now</p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Lock className="w-3 h-3" /> Temporarily disabled
+              </p>
             </div>
           </div>
+          <ChevronDown className="w-5 h-5 text-muted-foreground opacity-40" />
         </div>
       </div>
+
+      {/* Crypto options modal */}
+      <Dialog open={cryptoModalOpen} onOpenChange={setCryptoModalOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Pay with crypto</DialogTitle>
+            <DialogDescription>
+              Choose Binance Pay or an on-chain wallet. Amounts are converted from your LKR total and
+              rounded <strong>up</strong> so the store is fully covered.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2 p-1 rounded-xl bg-secondary/50 border border-border">
+            <button
+              type="button"
+              onClick={() => setModalTab('binance')}
+              className={cn(
+                'flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors',
+                modalTab === 'binance'
+                  ? 'bg-[#F0B90B] text-black shadow'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              Binance Pay
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalTab('wallets')}
+              className={cn(
+                'flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors',
+                modalTab === 'wallets'
+                  ? 'bg-violet-500 text-white shadow'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              Wallet transfer
+            </button>
+          </div>
+
+          {(ratesLoading || isFetching) && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching live market rates…
+            </p>
+          )}
+
+          {modalTab === 'binance' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl border border-[#F0B90B]/30 bg-[#F0B90B]/10">
+                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                  You will send
+                </p>
+                <p className="text-3xl font-black text-[#F0B90B] tabular-nums mt-1">
+                  {usdtQuote.formatted}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  ≈ order total with {cryptoSettings.markup_percent}% safety buffer + ceil
+                </p>
+              </div>
+              <div className="text-sm space-y-2 p-3 rounded-xl bg-secondary/40 border border-border">
+                <p>
+                  <span className="text-muted-foreground">Pay to:</span>{' '}
+                  <strong>{storeBinanceName}</strong>
+                </p>
+                <p className="font-mono">
+                  <span className="text-muted-foreground">ID:</span> {storeBinanceId}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Coin:</span> {storeBinanceCoin}
+                </p>
+              </div>
+              <Button
+                type="button"
+                className="w-full h-12 font-bold bg-[#F0B90B] text-black hover:bg-[#F0B90B]/90"
+                onClick={selectBinance}
+              >
+                <Bitcoin className="w-4 h-4 mr-2" />
+                Use Binance Pay
+              </Button>
+            </div>
+          )}
+
+          {modalTab === 'wallets' && (
+            <div className="space-y-3">
+              {wallets.length === 0 ? (
+                <div className="p-6 text-center rounded-xl border border-dashed border-border">
+                  <Wallet className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
+                  <p className="text-sm font-medium text-foreground">No wallets enabled yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Admin can add addresses under Settings → Payment → Crypto wallets.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">Use Binance Pay for now.</p>
+                </div>
+              ) : (
+                wallets.map((w) => {
+                  const q = quoteCrypto(totalLkr, w, cryptoSettings, prices);
+                  return (
+                    <button
+                      key={w.id}
+                      type="button"
+                      onClick={() => selectWallet(w)}
+                      className="w-full text-left p-4 rounded-xl border border-border hover:border-violet-500/50 hover:bg-violet-500/5 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-foreground">
+                            {w.symbol}{' '}
+                            <span className="text-muted-foreground font-medium text-sm">
+                              · {w.network}
+                            </span>
+                          </p>
+                          <p className="text-[11px] font-mono text-muted-foreground mt-1 truncate max-w-[240px]">
+                            {w.address.slice(0, 12)}…{w.address.slice(-8)}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-black text-violet-600 dark:text-violet-400 tabular-nums">
+                            {q.formatted}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">send this amount</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

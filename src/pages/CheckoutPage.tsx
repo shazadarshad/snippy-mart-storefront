@@ -10,7 +10,10 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateOrder, useUpdateExistingOrder } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
-import PaymentMethodSelector, { type PaymentMethod } from '@/components/checkout/PaymentMethodSelector';
+import PaymentMethodSelector, {
+  type PaymentMethod,
+  type CryptoSelection,
+} from '@/components/checkout/PaymentMethodSelector';
 import { getCountry } from '@/lib/utils';
 import { CouponInput } from '@/components/checkout/CouponInput';
 
@@ -29,9 +32,9 @@ const CheckoutPage = () => {
     notes: '',
   });
   const [customerCredentials, setCustomerCredentials] = useState<Record<string, { email?: string; password?: string }>>({});
-  // Only bank transfer is active; Binance & card are disabled in the UI
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
   const [binanceId, setBinanceId] = useState('');
+  const [cryptoSelection, setCryptoSelection] = useState<CryptoSelection>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreRegistering, setIsPreRegistering] = useState(false);
@@ -193,11 +196,27 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (paymentMethod !== 'bank_transfer' && paymentMethod !== 'binance_usdt') {
+    if (
+      paymentMethod !== 'bank_transfer' &&
+      paymentMethod !== 'binance_usdt' &&
+      paymentMethod !== 'crypto_onchain'
+    ) {
       setPaymentMethod('bank_transfer');
       toast({
         title: 'Payment method unavailable',
-        description: 'Please use bank transfer or Binance Pay.',
+        description: 'Please use bank transfer or crypto payment.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (
+      (paymentMethod === 'binance_usdt' || paymentMethod === 'crypto_onchain') &&
+      !cryptoSelection
+    ) {
+      toast({
+        title: 'Choose a crypto option',
+        description: 'Open Crypto and select Binance Pay or a wallet address.',
         variant: 'destructive',
       });
       return;
@@ -207,9 +226,9 @@ const CheckoutPage = () => {
       toast({
         title: 'Payment proof required',
         description:
-          paymentMethod === 'binance_usdt'
-            ? 'Please upload your Binance payment screenshot.'
-            : 'Please upload your bank transfer receipt screenshot.',
+          paymentMethod === 'bank_transfer'
+            ? 'Please upload your bank transfer receipt screenshot.'
+            : 'Please upload your crypto payment screenshot / TX confirmation.',
         variant: 'destructive',
       });
       return;
@@ -275,6 +294,19 @@ const CheckoutPage = () => {
       // Create final payload
       const payload = await getOrderPayload();
 
+      // Enrich notes with crypto payment details for admin verification
+      let notesExtra = formData.notes || '';
+      if (paymentMethod === 'crypto_onchain' && cryptoSelection?.kind === 'wallet') {
+        const w = cryptoSelection.wallet;
+        notesExtra = [
+          notesExtra,
+          `[Crypto] ${w.symbol} ${w.network}`,
+          `Address: ${w.address}`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+      }
+
       Object.assign(payload, {
         payment_proof_url: paymentProofPath,
         binance_id: paymentMethod === 'binance_usdt' ? binanceId.trim() : undefined,
@@ -282,6 +314,7 @@ const CheckoutPage = () => {
         customer_name: formData.name || 'Customer',
         customer_whatsapp: formData.whatsapp,
         customer_email: formData.email || undefined,
+        notes: notesExtra || undefined,
       });
 
       // We always use createOrder (which is our create-order Edge Function)
@@ -511,18 +544,21 @@ const CheckoutPage = () => {
                 <PaymentMethodSelector
                   selectedMethod={paymentMethod}
                   onMethodChange={(m) => {
-                    if (m === 'bank_transfer' || m === 'binance_usdt') {
+                    if (m === 'bank_transfer' || m === 'binance_usdt' || m === 'crypto_onchain') {
                       setPaymentMethod(m);
                     } else if (m === null) {
                       setPaymentMethod('bank_transfer');
+                      setCryptoSelection(null);
                     }
-                    // card stays blocked
                   }}
                   binanceId={binanceId}
                   onBinanceIdChange={setBinanceId}
                   proofFile={proofFile}
                   onProofFileChange={setProofFile}
                   orderId={orderId}
+                  totalLkr={getFinalTotal()}
+                  cryptoSelection={cryptoSelection}
+                  onCryptoSelectionChange={setCryptoSelection}
                   onPreRegister={handlePreRegister}
                   isPreRegistering={isPreRegistering}
                 />
@@ -534,9 +570,9 @@ const CheckoutPage = () => {
                 <div className="text-sm">
                   <p className="font-medium text-foreground mb-1">How checkout works</p>
                   <p className="text-muted-foreground">
-                    Pay by bank transfer or Binance, put your Order ID in the remarks/note, upload
-                    the proof, then place the order. We verify payment and send your product details
-                    on WhatsApp.
+                    Pay by bank transfer or crypto (Binance / wallet). Put your Order ID in the
+                    remarks/note, send the exact converted amount, upload proof, then place the
+                    order. We verify payment and deliver on WhatsApp.
                   </p>
                 </div>
               </div>
