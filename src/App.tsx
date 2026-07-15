@@ -78,64 +78,66 @@ const AppContent = () => {
   useSmoothScroll();
 
   return (
-    <>
+    <div className="min-h-screen w-full bg-background text-foreground">
       <ScrollToTop />
       <TopProgressBar />
       {!isAdminRoute && <Navbar onCartOpen={() => setCartOpen(true)} />}
       {!isAdminRoute && <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
 
-      <Suspense fallback={<GlobalLoader />}>
-        <Routes location={location}>
-          <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-          <Route path="/products" element={<PageTransition><ProductsPage /></PageTransition>} />
-          <Route path="/product/:slug" element={<PageTransition><ProductPage /></PageTransition>} />
-          <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
-          <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
-          <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
-          <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
-          <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
-          <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
-          <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
-          <Route path="/download" element={<PageTransition><DownloadExtension /></PageTransition>} />
-          <Route path="/claude" element={<PageTransition><ClaudePage /></PageTransition>} />
+      <main className="min-h-screen w-full bg-background">
+        <Suspense fallback={<GlobalLoader />}>
+          <Routes location={location}>
+            <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+            <Route path="/products" element={<PageTransition><ProductsPage /></PageTransition>} />
+            <Route path="/product/:slug" element={<PageTransition><ProductPage /></PageTransition>} />
+            <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
+            <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
+            <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+            <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+            <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
+            <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+            <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+            <Route path="/download" element={<PageTransition><DownloadExtension /></PageTransition>} />
+            <Route path="/claude" element={<PageTransition><ClaudePage /></PageTransition>} />
 
-          <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
+            <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
 
-          {/* Shared View (Supplier) */}
-          <Route path="/shared/cursor-view/:token" element={<SharedCursorView />} />
+            {/* Shared View (Supplier) */}
+            <Route path="/shared/cursor-view/:token" element={<SharedCursorView />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="claude" element={<AdminClaude />} />
-            <Route path="fulfillment" element={<AdminFulfillment />} />
-            <Route path="testimonials" element={<AdminTestimonials />} />
-            <Route path="analytics" element={<AdminAnalytics />} />
-            <Route path="email-settings" element={<AdminEmailSettings />} />
-            <Route path="email-templates" element={<AdminEmailTemplates />} />
-            <Route path="inventory" element={<AdminInventory />} />
-            <Route path="coupons" element={<AdminCoupons />} />
-            <Route path="cursor-system" element={<AdminCursorSystem />} />
-            <Route path="policies" element={<AdminPolicies />} />
-            <Route path="whatsapp/products" element={<AdminWhatsAppProducts />} />
-            <Route path="whatsapp/settings" element={<AdminWhatsAppSettings />} />
-            <Route path="whatsapp/analytics" element={<AdminWhatsAppAnalytics />} />
-            <Route path="ai-knowledge" element={<AdminAIKnowledge />} />
-            <Route path="extension-upload" element={<AdminExtensionUpload />} />
-            <Route path="link-shortener" element={<AdminLinkShortener />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
+            {/* Admin Routes */}
+            <Route path="/admin/auth" element={<PageTransition><AdminAuthPage /></PageTransition>} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="claude" element={<AdminClaude />} />
+              <Route path="fulfillment" element={<AdminFulfillment />} />
+              <Route path="testimonials" element={<AdminTestimonials />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="email-settings" element={<AdminEmailSettings />} />
+              <Route path="email-templates" element={<AdminEmailTemplates />} />
+              <Route path="inventory" element={<AdminInventory />} />
+              <Route path="coupons" element={<AdminCoupons />} />
+              <Route path="cursor-system" element={<AdminCursorSystem />} />
+              <Route path="policies" element={<AdminPolicies />} />
+              <Route path="whatsapp/products" element={<AdminWhatsAppProducts />} />
+              <Route path="whatsapp/settings" element={<AdminWhatsAppSettings />} />
+              <Route path="whatsapp/analytics" element={<AdminWhatsAppAnalytics />} />
+              <Route path="ai-knowledge" element={<AdminAIKnowledge />} />
+              <Route path="extension-upload" element={<AdminExtensionUpload />} />
+              <Route path="link-shortener" element={<AdminLinkShortener />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
 
-          {/* Short links: snippymart.com/{code} — after static routes, before catch-all */}
-          <Route path="/:shortCode" element={<ShortLinkRedirect />} />
+            {/* Short links: snippymart.com/{code} — after static routes, before catch-all */}
+            <Route path="/:shortCode" element={<ShortLinkRedirect />} />
 
-          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-        </Routes>
-      </Suspense>
+            <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+          </Routes>
+        </Suspense>
+      </main>
 
       {!isAdminRoute && <Footer />}
       {!isAdminRoute && (
@@ -143,7 +145,7 @@ const AppContent = () => {
           <AIChatWidget />
         </Suspense>
       )}
-    </>
+    </div>
   );
 };
 
@@ -155,6 +157,7 @@ const App = () => (
         defaultTheme="light"
         enableSystem={false}
         storageKey="snippy-theme-v2"
+        disableTransitionOnChange
       >
         <HelmetProvider>
           <TooltipProvider>

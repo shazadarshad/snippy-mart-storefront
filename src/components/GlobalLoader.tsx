@@ -1,8 +1,8 @@
-/** Lightweight route-chunk fallback — no full-screen blur (felt like freezing). */
+/** Route-chunk fallback — always paint a real background (never blank/black). */
 const GlobalLoader = () => {
   return (
     <div
-      className="min-h-[40vh] flex items-center justify-center py-16"
+      className="min-h-screen w-full bg-background text-foreground flex items-center justify-center py-16"
       role="status"
       aria-label="Loading"
     >

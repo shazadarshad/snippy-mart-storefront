@@ -21,9 +21,13 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
   const { data: settings } = useSiteSettings();
 
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : 'unset';
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, [open]);
 
@@ -34,7 +38,11 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  useEffect(() => setOpen(false), [location.pathname]);
+  // Close mobile menu + unlock scroll on every route change
+  useEffect(() => {
+    setOpen(false);
+    document.body.style.overflow = '';
+  }, [location.pathname]);
 
   const logoUrl = settings?.logo_url;
   const storeName = settings?.store_name || 'Snippy Mart';
