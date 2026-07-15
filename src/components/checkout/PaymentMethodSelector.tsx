@@ -95,7 +95,6 @@ const PaymentMethodSelector = ({
 
   const { data: ratesData, isLoading: ratesLoading, isFetching } = useCryptoRates(coinIds);
   const prices = ratesData?.prices;
-  const rateSource = ratesData?.source;
 
   const usdtQuote = useMemo(
     () => quoteUsdt(totalLkr, cryptoSettings, prices?.tether || 1),
