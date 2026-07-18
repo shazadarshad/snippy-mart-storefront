@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { buildCustomerFacingProduct } from '@/lib/resellerProductCopy';
 
 /** Default API $ → cost LKR (panel still deducts USD) */
 export const RESELLER_USD_TO_LKR = 360;
@@ -376,71 +377,6 @@ function stockFromRemote(rp: ResellerRemoteProduct): 'in_stock' | 'limited' | 'o
   return 'in_stock';
 }
 
-function pickApiString(rp: ResellerRemoteProduct, keys: string[]): string | null {
-  for (const k of keys) {
-    const v = rp[k];
-    if (typeof v === 'string' && v.trim()) return v.trim();
-  }
-  return null;
-}
-
-function resolveApiImage(rp: ResellerRemoteProduct, name: string): string {
-  const candidates = [
-    pickApiString(rp, ['image_url', 'image', 'img', 'thumbnail', 'thumb', 'icon', 'cover', 'photo', 'logo']),
-  ].filter(Boolean) as string[];
-
-  for (const url of candidates) {
-    if (/^https?:\/\//i.test(url)) return url;
-    if (url.startsWith('//')) return `https:${url}`;
-  }
-
-  // Generated fallback avatar (no API image)
-  const label = encodeURIComponent(name.slice(0, 24) || 'Auto');
-  return `https://ui-avatars.com/api/?name=${label}&background=059669&color=fff&size=400&bold=true&format=png`;
-}
-
-function buildApiDescription(
-  rp: ResellerRemoteProduct,
-  name: string,
-  costLkr: number,
-  sellLkr: number,
-): string {
-  const fromApi = pickApiString(rp, [
-    'description',
-    'desc',
-    'details',
-    'detail',
-    'info',
-    'about',
-    'product_description',
-    'long_description',
-  ]);
-
-  if (fromApi) {
-    // Keep seller text; append short auto-delivery note if missing
-    if (/auto|instant|deliver/i.test(fromApi)) return fromApi;
-    return `${fromApi}\n\n⚡ Instant auto delivery after payment is confirmed. Track your order for credentials.`;
-  }
-
-  return [
-    `## ${name}`,
-    '',
-    '⚡ **Auto delivery** — credentials sent automatically after payment confirmation.',
-    '',
-    '### What you get',
-    '- Digital product delivered to your **Track Order** page',
-    '- Fast fulfillment from our automated system',
-    '- WhatsApp support if you need help',
-    '',
-    '### How it works',
-    '1. Place your order and complete payment',
-    '2. We confirm payment',
-    '3. Product is delivered automatically — no waiting for manual activation',
-    '',
-    '_This is an auto-fulfilled product._',
-  ].join('\n');
-}
-
 /**
  * Import seller-panel products as NEW catalog rows only.
  * Never updates/replaces existing store products.
@@ -519,28 +455,26 @@ export const useImportResellerProducts = () => {
       const rows = toAdd.map((rp) => {
         const usd = Number(rp.price);
         const costUsd = Number.isFinite(usd) && usd > 0 ? usd : 0;
-        const { costLkr, sellLkr } = calcApiCustomerPriceLkr(costUsd, {
+        const { sellLkr } = calcApiCustomerPriceLkr(costUsd, {
           rate,
           pricingMode,
           markupPercent: markup,
           minProfitLkr: minProfit,
         });
-        const name = String(rp.name || 'API Product').trim();
+        // Customer-facing title, description, branded image (Auto Product subtitle)
+        const face = buildCustomerFacingProduct(rp);
         const order = nextOrder++;
-        // Optional "was" price for discount feel (~12–18% above sell, rounded)
         const oldPrice = sellLkr > 0 ? roundSellLkr(sellLkr * 1.15) : null;
 
         return {
-          name,
-          slug: slugify(name, String(rp.id)),
-          description: buildApiDescription(rp, name, costLkr, sellLkr),
-          // Customer pays this (LKR, margin included)
+          name: face.name,
+          slug: slugify(face.name, String(rp.id)),
+          description: face.description,
           price: sellLkr,
           old_price: oldPrice,
-          // Your prepaid panel cost (USD) — only this is deducted on delivery
           reseller_cost_usd: costUsd,
           category: 'API Products',
-          image_url: resolveApiImage(rp, name),
+          image_url: face.image_url,
           is_active: markActive,
           is_featured: false,
           stock_status: stockFromRemote(rp),
@@ -579,3 +513,59 @@ export function isResellerApiProduct(product: {
 }): boolean {
   return !!(product.reseller_product_id && String(product.reseller_product_id).trim());
 }
+
+/**
+ * Re-generate polished titles, descriptions, and Auto Product images
+ * for already-imported API products (does not change prices).
+ */
+export const useRefreshResellerPresentation = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const res = await invokeReseller<{ ok: boolean; data: any }>({ action: 'products' });
+      if (!res.ok) {
+        throw new Error(res.data?.error || res.data?.message || 'Failed to load reseller products');
+      }
+      const raw = res.data;
+      let remote: ResellerRemoteProduct[] = [];
+      if (Array.isArray(raw)) remote = raw;
+      else if (Array.isArray(raw?.products)) remote = raw.products;
+      else if (Array.isArray(raw?.data)) remote = raw.data;
+
+      const remoteById = new Map(remote.map((r) => [String(r.id), r]));
+
+      const { data: localRows, error } = await (supabase as any)
+        .from('products')
+        .select('id, reseller_product_id, name')
+        .not('reseller_product_id', 'is', null);
+
+      if (error) throw error;
+
+      let updated = 0;
+      for (const row of localRows || []) {
+        const rid = String(row.reseller_product_id);
+        const rp = remoteById.get(rid) || {
+          id: rid,
+          name: row.name,
+        };
+        const face = buildCustomerFacingProduct(rp);
+        const { error: upErr } = await (supabase as any)
+          .from('products')
+          .update({
+            name: face.name,
+            description: face.description,
+            image_url: face.image_url,
+            // keep slug stable unless empty
+          })
+          .eq('id', row.id);
+        if (!upErr) updated++;
+      }
+
+      return { updated };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+};

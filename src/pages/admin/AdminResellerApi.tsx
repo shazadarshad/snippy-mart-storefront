@@ -25,6 +25,7 @@ import {
   useResellerProducts,
   useResellerDeliveries,
   useImportResellerProducts,
+  useRefreshResellerPresentation,
   isResellerApiProduct,
   calcApiCustomerPriceLkr,
   DEFAULT_SMART_TIERS,
@@ -69,6 +70,7 @@ const AdminResellerApi = () => {
     useResellerDeliveries(true);
   const { data: localProducts = [] } = useProducts(true);
   const importProducts = useImportResellerProducts();
+  const refreshPresentation = useRefreshResellerPresentation();
 
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
@@ -491,12 +493,39 @@ const AdminResellerApi = () => {
             </div>
             <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
               Adds seller catalog items as <strong>new</strong> products (never replaces yours).
-              Customer price uses your margin settings. Description/image taken from API when
-              available, otherwise auto-generated. Shows on the storefront Products page with an{' '}
-              <span className="font-semibold text-emerald-600">Auto</span> tag.
+              Titles, descriptions, and images are rewritten for customers (proper grammar + store
+              layout). Images are branded cards with an <strong>Auto Product</strong> subtitle.
+              Use <strong>Refresh titles and images</strong> to upgrade products already imported.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={apiLocalProducts.length === 0 || refreshPresentation.isPending}
+              onClick={async () => {
+                try {
+                  const res = await refreshPresentation.mutateAsync();
+                  toast({
+                    title: 'Store copy refreshed',
+                    description: `Updated titles, descriptions, and Auto images for ${res.updated} API product(s). Prices unchanged.`,
+                  });
+                } catch (e: any) {
+                  toast({
+                    title: 'Refresh failed',
+                    description: e.message,
+                    variant: 'destructive',
+                  });
+                }
+              }}
+            >
+              {refreshPresentation.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Refresh titles and images
+            </Button>
             <Button
               variant="outline"
               size="sm"
