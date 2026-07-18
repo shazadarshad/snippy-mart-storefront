@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MessageCircle, Info, ShoppingBag, ArrowLeft, ShieldCheck, Plus, Minus, Trash2, Zap, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useCartStore, generateOrderId } from '@/lib/store';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +15,7 @@ import PaymentMethodSelector, {
   type PaymentMethod,
   type CryptoSelection,
 } from '@/components/checkout/PaymentMethodSelector';
-import { getCountry } from '@/lib/utils';
+import { getCountry, cn } from '@/lib/utils';
 import { CouponInput } from '@/components/checkout/CouponInput';
 import { isResellerApiProduct } from '@/hooks/useResellerApi';
 
@@ -41,6 +42,7 @@ const CheckoutPage = () => {
   const [binanceId, setBinanceId] = useState('');
   const [cryptoSelection, setCryptoSelection] = useState<CryptoSelection>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreRegistering, setIsPreRegistering] = useState(false);
 
@@ -248,7 +250,15 @@ const CheckoutPage = () => {
       return;
     }
 
-
+    if (!acceptedPolicies) {
+      toast({
+        title: 'Please accept our policies',
+        description: 'You must agree to the Privacy Policy and Refund Policy before placing your order.',
+        variant: 'destructive',
+      });
+      document.getElementById('policy-accept')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
     // Validate required credentials
     for (const item of items) {
@@ -390,22 +400,22 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="min-h-dvh page-mesh pt-24 pb-safe pb-24 sm:pb-20">
-      <div className="container mx-auto px-3 sm:px-4">
+    <div className="min-h-dvh page-mesh pt-20 sm:pt-24 pb-safe pb-28 sm:pb-20">
+      <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
         {/* Back Button */}
         <Button
           variant="ghost"
-          className="mb-4 sm:mb-6 -ml-2"
+          className="mb-3 sm:mb-6 -ml-2 h-10 touch-manipulation"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-10">
           {/* Customer Details */}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground mb-4 sm:mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground mb-3 sm:mb-6">
               Checkout
             </h1>
 
@@ -617,12 +627,64 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
+              {/* Policy acceptance — required before submit */}
+              <div
+                id="policy-accept"
+                className={cn(
+                  'p-3.5 sm:p-4 rounded-2xl border transition-colors',
+                  acceptedPolicies
+                    ? 'bg-emerald-500/5 border-emerald-500/25'
+                    : 'bg-card border-border shadow-sm',
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="accept-policies"
+                    checked={acceptedPolicies}
+                    onCheckedChange={(v) => setAcceptedPolicies(v === true)}
+                    className="mt-0.5 h-5 w-5 shrink-0 touch-manipulation"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <Label
+                      htmlFor="accept-policies"
+                      className="text-sm font-medium text-foreground leading-snug cursor-pointer"
+                    >
+                      I have read and agree to the{' '}
+                      <Link
+                        to="/privacy-policy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary font-semibold underline underline-offset-2 hover:opacity-90"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Privacy Policy
+                      </Link>{' '}
+                      and{' '}
+                      <Link
+                        to="/refund-policy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary font-semibold underline underline-offset-2 hover:opacity-90"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Refund Policy
+                      </Link>
+                      <span className="text-destructive"> *</span>
+                    </Label>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                      Includes no refund for Non Warranty products and no refund for provider-side
+                      downtime or errors after delivery.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <Button
                 type="submit"
                 variant="hero"
                 size="xl"
                 className="w-full min-h-14 h-14 text-base font-bold text-primary-foreground touch-manipulation sticky bottom-2 sm:static z-10 shadow-lg shadow-primary/25"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !acceptedPolicies}
               >
                 {isSubmitting ? (
                   <>
@@ -642,6 +704,11 @@ const CheckoutPage = () => {
                   </>
                 )}
               </Button>
+              {!acceptedPolicies && (
+                <p className="text-center text-[11px] text-muted-foreground -mt-2">
+                  Tick the box above to enable Place Order
+                </p>
+              )}
             </form>
           </div>
 

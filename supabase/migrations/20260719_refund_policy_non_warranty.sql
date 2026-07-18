@@ -1,4 +1,4 @@
--- Refund policy: Non Warranty products never refundable after delivery
+-- Refund policy: Non Warranty + provider-level issues never refundable after delivery
 UPDATE public.policies
 SET
   content = '<h2>1. Digital Products Nature</h2>
@@ -22,6 +22,7 @@ SET
 <p>We do not issue refunds under the following circumstances:</p>
 <ul>
 <li><strong>Non Warranty products:</strong> Products listed or described as <strong>Non Warranty</strong>, <strong>No Warranty</strong>, or equivalent are <strong>not eligible for refund, replacement, or reissue under any circumstances</strong> after delivery or activation — including defects, downtime, expiry of redeem links, account issues, or change of mind.</li>
+<li><strong>Provider downtime or errors:</strong> We do <strong>not refund</strong> for outages, bugs, maintenance, bans, region blocks, or any other problems on the original service side (for example Google, Netflix, OpenAI, and similar). That is controlled by the provider, not by Snippy Mart.</li>
 <li>You simply changed your mind about the purchase</li>
 <li>You allow someone else to use your account</li>
 <li>You do not have sufficient technical knowledge to use the product</li>

@@ -61,6 +61,12 @@ const RefundPolicy = () => {
                         delivery or activation — including defects, downtime, expiry of redeem links, account issues, or
                         change of mind.
                     </li>
+                    <li>
+                        <strong>Provider downtime or errors:</strong> We do{' '}
+                        <strong>not refund</strong> for outages, bugs, maintenance, bans, region blocks, or any other
+                        problems on the original service side (for example Google, Netflix, OpenAI, and similar). That
+                        is controlled by the provider, not by Snippy Mart.
+                    </li>
                     <li>You simply changed your mind about the purchase</li>
                     <li>You allow someone else to use your account</li>
                     <li>You do not have sufficient technical knowledge to use the product</li>

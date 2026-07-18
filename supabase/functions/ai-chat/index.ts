@@ -243,7 +243,7 @@ serve(async (req) => {
 
     knowledgeBase += `## Policies (summary)\n\n`;
     knowledgeBase += `**Privacy**: We collect order/contact data for fulfillment only; we do not sell data. Full: https://snippymart.com/privacy-policy\n`;
-    knowledgeBase += `**Refunds**: Digital goods generally non-refundable after delivery; limited exceptions for non-delivery/major defects. Products marked Non Warranty / No Warranty are never refundable after delivery. Full: https://snippymart.com/refund-policy\n`;
+    knowledgeBase += `**Refunds**: Digital goods generally non-refundable after delivery; limited exceptions for non-delivery/major defects. Products marked Non Warranty / No Warranty are never refundable after delivery. No refunds for provider-level downtime, bugs, bans, or region blocks (Google/Netflix/etc.). Full: https://snippymart.com/refund-policy\n`;
     knowledgeBase += `**Terms**: Personal use; no reselling. Full: https://snippymart.com/terms-of-service\n\n`;
 
     knowledgeBase += `## How to Order\n\n`;
