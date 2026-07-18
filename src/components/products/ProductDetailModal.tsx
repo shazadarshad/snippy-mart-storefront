@@ -173,6 +173,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     variant_id: selectedVariant?.id,
     variant_name: selectedVariant?.name,
     requirements: product.requirements,
+    reseller_product_id: product.reseller_product_id ?? null,
   };
 
   const handleAddToCart = () => {

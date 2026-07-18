@@ -333,10 +333,18 @@ const CheckoutPage = () => {
           name: item.product.name,
           price: item.product.price,
           quantity: item.quantity,
+          productId: item.product.id,
+          isAuto: !!(item.product.reseller_product_id && String(item.product.reseller_product_id).trim()),
         })),
         total: getFinalTotal(),
         discount: getDiscountAmount(),
         paymentMethod,
+        hasAutoItems: items.some(
+          (item) => item.product.reseller_product_id && String(item.product.reseller_product_id).trim(),
+        ),
+        allAutoItems: items.every(
+          (item) => item.product.reseller_product_id && String(item.product.reseller_product_id).trim(),
+        ),
       };
 
       sessionStorage.setItem('lastOrder', JSON.stringify(orderData));

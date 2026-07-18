@@ -13,6 +13,7 @@ import {
   Package,
   Clock3,
   Sparkles,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -20,6 +21,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/hooks/use-toast';
 import { useTrackOrder } from '@/hooks/useOrders';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
+import { useOrderResellerDeliveries } from '@/hooks/useResellerApi';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
 import { buildClaudeOrderWhatsAppUrl } from '@/lib/claudePreorder';
 import { cn } from '@/lib/utils';
@@ -35,11 +37,18 @@ interface OrderData {
     name: string;
     price: number;
     quantity: number;
+    productId?: string;
+    isAuto?: boolean;
   }[];
   total: number;
   discount?: number;
   isPreOrder?: boolean;
   whatsappConfirmUrl?: string;
+  /** Cart contained at least one reseller Auto product */
+  hasAutoItems?: boolean;
+  /** Every cart line was an Auto product */
+  allAutoItems?: boolean;
+  paymentMethod?: string;
   preOrder?: {
     service: string;
     plan: string;
@@ -135,6 +144,7 @@ const OrderSuccessPage = () => {
     sessionOrder?.orderId || ''
   );
   const { assignment, isLoading: isAutomationLoading } = useOrderAutomation(liveOrder?.id);
+  const { data: resellerDeliveries = [] } = useOrderResellerDeliveries(liveOrder?.id);
 
   const copyToClipboard = (text: string, label: string = 'ID') => {
     navigator.clipboard.writeText(text);
@@ -182,7 +192,17 @@ const OrderSuccessPage = () => {
   const items = sessionOrder?.items || [];
   const isCompleted = liveOrder?.status === 'completed' || liveOrder?.status === 'delivered';
   const isPending = !liveOrder?.status || liveOrder?.status === 'pending';
+  const isProcessing = liveOrder?.status === 'processing' || liveOrder?.status === 'shipping';
   const showAutomation = assignment && (isCompleted || liveOrder?.status === 'processing');
+  const hasAutoItems =
+    !!sessionOrder?.hasAutoItems ||
+    !!sessionOrder?.allAutoItems ||
+    items.some((i) => i.isAuto) ||
+    resellerDeliveries.length > 0;
+  const allAutoItems =
+    !!sessionOrder?.allAutoItems ||
+    (items.length > 0 && items.every((i) => i.isAuto));
+  const hasResellerCodes = resellerDeliveries.some((d) => d.delivered_data);
 
   const getWhatsAppLink = () => {
     if (sessionOrder) {
@@ -195,12 +215,15 @@ const OrderSuccessPage = () => {
       if (rich) return rich;
     }
     const number = settings?.whatsapp_number || '94787767869';
-    const message = `Hello Snippy Mart! I just placed order ${orderId}. Please confirm.`;
+    const message = hasAutoItems
+      ? `Hello Snippy Mart! I paid for Auto order ${orderId}. Please confirm payment so I get my product on Track Order.`
+      : `Hello Snippy Mart! I just placed order ${orderId}. Please confirm.`;
     return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
   };
 
   const whatsAppHref = getWhatsAppLink();
-  const showWhatsAppCta = !isCompleted;
+  // Auto products: WhatsApp is optional help, not the main "get product" path
+  const showWhatsAppCta = !isCompleted && !allAutoItems;
 
   const getServiceIcon = (type: string) => {
     const t = type.toLowerCase();
@@ -226,11 +249,21 @@ const OrderSuccessPage = () => {
           </div>
 
           <h1 className="text-xl sm:text-4xl font-display font-bold tracking-tight text-foreground mb-1.5 sm:mb-2">
-            {sessionOrder?.isPreOrder ? 'Pre-order locked in' : 'Order confirmed'}
+            {sessionOrder?.isPreOrder
+              ? 'Pre-order locked in'
+              : hasResellerCodes || isCompleted
+                ? 'Order ready'
+                : 'Order confirmed'}
           </h1>
           <p className="text-xs sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-1">
-            Thanks{sessionOrder?.name ? `, ${sessionOrder.name}` : ''}! Tap WhatsApp below to send
-            your order details and finish confirmation.
+            Thanks{sessionOrder?.name ? `, ${sessionOrder.name}` : ''}!
+            {sessionOrder?.isPreOrder
+              ? ' Send details on WhatsApp so we can process your pre-order.'
+              : hasResellerCodes
+                ? ' Your Auto product is ready — copy credentials below or open Track Order anytime.'
+                : hasAutoItems
+                  ? ' Complete payment, then track this order. After we confirm payment, your product appears on Track Order automatically.'
+                  : ' Complete payment and use WhatsApp if you need help. We deliver after payment is confirmed.'}
           </p>
         </div>
 
@@ -286,7 +319,44 @@ const OrderSuccessPage = () => {
           </div>
         </div>
 
-        {/* Primary CTA — right under order summary so it's above the fold on mobile */}
+        {/* Primary CTAs */}
+        {hasAutoItems && !sessionOrder?.isPreOrder && (
+          <div className="mb-4 sm:mb-5 space-y-2">
+            <Button
+              variant="default"
+              size="xl"
+              className="w-full min-h-14 h-14 rounded-2xl text-base font-bold shadow-lg shadow-primary/25 touch-manipulation"
+              asChild
+            >
+              <Link to={`/track-order?orderId=${encodeURIComponent(orderId)}`}>
+                <Search className="w-5 h-5 mr-2 shrink-0" />
+                {hasResellerCodes || isCompleted
+                  ? 'View product on Track Order'
+                  : 'Track order for your product'}
+              </Link>
+            </Button>
+            <p className="text-center text-[11px] sm:text-xs text-muted-foreground px-2">
+              {hasResellerCodes
+                ? 'Credentials stay on Track Order — save this page or come back with your Order ID.'
+                : 'After payment is confirmed, your Auto product shows here. No WhatsApp needed for delivery.'}
+            </p>
+            {!isCompleted && (
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full h-12 rounded-2xl font-semibold"
+                asChild
+                disabled={isSettingsLoading}
+              >
+                <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Message us if you need help
+                </a>
+              </Button>
+            )}
+          </div>
+        )}
+
         {showWhatsAppCta && (
           <div className="mb-4 sm:mb-5 space-y-2">
             <Button
@@ -399,7 +469,58 @@ const OrderSuccessPage = () => {
           </div>
         )}
 
-        {/* Instant delivery credentials */}
+        {/* Reseller Auto delivery codes (when already delivered) */}
+        {hasResellerCodes && (
+          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 border-emerald-500/30">
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border/60">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-xl">
+                ⚡
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">Your product is ready</h3>
+                <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Auto delivery complete
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {resellerDeliveries.map((d) => (
+                <div
+                  key={d.id}
+                  className="rounded-xl bg-secondary/60 p-3 border border-border"
+                >
+                  {d.product_name && (
+                    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">
+                      {d.product_name}
+                    </p>
+                  )}
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-mono text-sm font-bold break-all whitespace-pre-wrap">
+                      {d.delivered_data}
+                    </p>
+                    {d.delivered_data && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => copyToClipboard(d.delivered_data!, 'Delivery code')}
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-3">
+              Keep Order ID <span className="font-mono font-bold text-foreground">{orderId}</span> — you
+              can always reopen Track Order to see this again.
+            </p>
+          </div>
+        )}
+
+        {/* Instant delivery credentials (inventory assignment) */}
         {isAutomationLoading ? (
           <div className="surface-card p-6 mb-4 sm:mb-5 flex items-center justify-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin text-primary" />
@@ -467,6 +588,49 @@ const OrderSuccessPage = () => {
               </div>
             )}
           </div>
+        ) : hasAutoItems && !hasResellerCodes ? (
+          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 border-emerald-500/20">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-1.5">
+                  Auto product — how you get it
+                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  This is not WhatsApp delivery. After we confirm your payment, the product is sent
+                  automatically to <strong className="text-foreground">Track Order</strong>.
+                </p>
+              </div>
+            </div>
+            <ol className="space-y-2 text-xs sm:text-sm text-muted-foreground mb-3 pl-1">
+              <li className="flex gap-2">
+                <span className="font-black text-emerald-600 shrink-0">1.</span>
+                <span>Complete your bank / crypto payment for this order.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-black text-emerald-600 shrink-0">2.</span>
+                <span>We verify payment (status leaves pending).</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-black text-emerald-600 shrink-0">3.</span>
+                <span>
+                  Open <strong className="text-foreground">Track Order</strong> with ID{' '}
+                  <span className="font-mono font-bold text-foreground">{orderId}</span> — your code /
+                  login appears there.
+                </span>
+              </li>
+            </ol>
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              {isPending
+                ? 'Status is pending — waiting for payment confirmation.'
+                : isProcessing
+                  ? 'Payment received — delivery in progress. Refresh Track Order.'
+                  : 'Save your Order ID for tracking.'}
+            </p>
+          </div>
         ) : (
           <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -481,7 +645,7 @@ const OrderSuccessPage = () => {
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {sessionOrder?.isPreOrder
                   ? 'We verify payment, then invite your email to a private Claude Team workspace.'
-                  : 'After we confirm payment, credentials go to WhatsApp (and email if provided).'}
+                  : 'After we confirm payment, we deliver your order. Track status anytime with your Order ID.'}
               </p>
             </div>
           </div>

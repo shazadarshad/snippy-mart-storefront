@@ -19,6 +19,9 @@ export interface Product {
   variant_id?: string;
   variant_name?: string;
 
+  /** Reseller auto-delivery product id (if set, this is an Auto product) */
+  reseller_product_id?: string | null;
+
   requirements?: {
     require_email?: boolean;
     require_password?: boolean;
