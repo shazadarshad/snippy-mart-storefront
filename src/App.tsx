@@ -13,6 +13,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import GlobalLoader from "./components/GlobalLoader";
 import TopProgressBar from "./components/TopProgressBar";
+import SiteVisitorTracker from "./components/SiteVisitorTracker";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
 import { CurrencyProvider } from "./hooks/useCurrency";
 
@@ -82,6 +83,7 @@ const AppContent = () => {
     <div className="min-h-screen w-full bg-background text-foreground">
       <ScrollToTop />
       <TopProgressBar />
+      {!isAdminRoute && <SiteVisitorTracker />}
       {!isAdminRoute && <Navbar onCartOpen={() => setCartOpen(true)} />}
       {!isAdminRoute && <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
 
