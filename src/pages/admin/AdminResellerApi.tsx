@@ -27,8 +27,11 @@ import {
   useImportResellerProducts,
   isResellerApiProduct,
   calcApiCustomerPriceLkr,
+  DEFAULT_SMART_TIERS,
   RESELLER_USD_TO_LKR,
   RESELLER_DEFAULT_MARKUP_PERCENT,
+  RESELLER_DEFAULT_MIN_PROFIT_LKR,
+  type ResellerPricingMode,
 } from '@/hooks/useResellerApi';
 import { useProducts } from '@/hooks/useProducts';
 import { cn, formatDateTime } from '@/lib/utils';
@@ -40,6 +43,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const AdminResellerApi = () => {
   const { toast } = useToast();
@@ -67,6 +77,8 @@ const AdminResellerApi = () => {
   const [autoComplete, setAutoComplete] = useState(true);
   const [usdToLkr, setUsdToLkr] = useState(String(RESELLER_USD_TO_LKR));
   const [markupPercent, setMarkupPercent] = useState(String(RESELLER_DEFAULT_MARKUP_PERCENT));
+  const [pricingMode, setPricingMode] = useState<ResellerPricingMode>('smart');
+  const [minProfitLkr, setMinProfitLkr] = useState(String(RESELLER_DEFAULT_MIN_PROFIT_LKR));
   const [selectedRemote, setSelectedRemote] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -77,6 +89,8 @@ const AdminResellerApi = () => {
     setAutoComplete(settings.auto_complete_on_success !== false);
     setUsdToLkr(String(settings.usd_to_lkr ?? RESELLER_USD_TO_LKR));
     setMarkupPercent(String(settings.markup_percent ?? RESELLER_DEFAULT_MARKUP_PERCENT));
+    setPricingMode(settings.pricing_mode === 'fixed' ? 'fixed' : 'smart');
+    setMinProfitLkr(String(settings.min_profit_lkr ?? RESELLER_DEFAULT_MIN_PROFIT_LKR));
   }, [settings]);
 
   const rateNum = Number(usdToLkr) > 0 ? Number(usdToLkr) : RESELLER_USD_TO_LKR;
@@ -84,7 +98,17 @@ const AdminResellerApi = () => {
     Number.isFinite(Number(markupPercent)) && Number(markupPercent) >= 0
       ? Number(markupPercent)
       : RESELLER_DEFAULT_MARKUP_PERCENT;
-  const examplePricing = calcApiCustomerPriceLkr(1, { rate: rateNum, markupPercent: markupNum });
+  const minProfitNum =
+    Number.isFinite(Number(minProfitLkr)) && Number(minProfitLkr) >= 0
+      ? Number(minProfitLkr)
+      : RESELLER_DEFAULT_MIN_PROFIT_LKR;
+  const priceOpts = {
+    rate: rateNum,
+    pricingMode,
+    markupPercent: markupNum,
+    minProfitLkr: minProfitNum,
+  };
+  const exampleCosts = [300, 500, 1200, 2500, 5000, 10000];
 
   const existingResellerIds = useMemo(() => {
     const set = new Set<string>();
@@ -111,6 +135,8 @@ const AdminResellerApi = () => {
         auto_complete_on_success: autoComplete,
         usd_to_lkr: rateNum,
         markup_percent: markupNum,
+        pricing_mode: pricingMode,
+        min_profit_lkr: minProfitNum,
       });
       setApiKey('');
       toast({
@@ -289,19 +315,34 @@ const AdminResellerApi = () => {
           </div>
         </div>
 
-        {/* Margin: cost vs customer sell */}
+        {/* Margin: smart tiers vs fixed % */}
         <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-4">
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-              Customer margin
+              Customer margin (smart pricing)
             </p>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Panel deducts only the API <strong>$ cost</strong> from your prepaid balance. Customers
-              pay sell price in LKR (cost × rate + your markup). Example: cost Rs. 500 → show Rs. 900
-              at 80% markup.
+              Panel only deducts API <strong>$ cost</strong>. Customers pay a higher LKR sell price.
+              <strong> Smart mode</strong> uses lower % on expensive products and higher % on cheap
+              ones + a minimum profit floor — not one fixed % for everything.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Pricing mode</Label>
+              <Select
+                value={pricingMode}
+                onValueChange={(v) => setPricingMode(v as ResellerPricingMode)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="smart">Smart tiers (recommended)</SelectItem>
+                  <SelectItem value="fixed">Fixed % all products</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>USD → LKR rate (cost)</Label>
               <Input
@@ -311,27 +352,102 @@ const AdminResellerApi = () => {
                 value={usdToLkr}
                 onChange={(e) => setUsdToLkr(e.target.value)}
               />
-              <p className="text-[11px] text-muted-foreground">Default 360 · $1 cost = Rs. {rateNum}</p>
+              <p className="text-[11px] text-muted-foreground">$1 cost = Rs. {rateNum}</p>
             </div>
             <div className="space-y-2">
-              <Label>Markup % on cost LKR</Label>
+              <Label>Min profit (LKR)</Label>
+              <Input
+                type="number"
+                min={0}
+                step={50}
+                value={minProfitLkr}
+                onChange={(e) => setMinProfitLkr(e.target.value)}
+              />
+              <p className="text-[11px] text-muted-foreground">Never profit less than this</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Fixed markup % {pricingMode === 'smart' && '(only if Fixed mode)'}</Label>
               <Input
                 type="number"
                 min={0}
                 step={1}
                 value={markupPercent}
                 onChange={(e) => setMarkupPercent(e.target.value)}
+                disabled={pricingMode === 'smart'}
               />
-              <p className="text-[11px] text-muted-foreground">
-                80% → cost 500 shows 900 · Your profit keeps the margin
-              </p>
             </div>
           </div>
-          <div className="text-xs rounded-lg bg-background/80 border border-border px-3 py-2 font-mono">
-            $1 API → cost Rs. {examplePricing.costLkr.toLocaleString()} → customer Rs.{' '}
-            {examplePricing.sellLkr.toLocaleString()} (profit Rs.{' '}
-            {examplePricing.profitLkr.toLocaleString()})
+
+          {pricingMode === 'smart' && (
+            <div className="overflow-x-auto rounded-lg border border-border bg-background/80">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>If your cost LKR is…</TableHead>
+                    <TableHead>Markup used</TableHead>
+                    <TableHead>Example cost → sell</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {DEFAULT_SMART_TIERS.map((t, i) => {
+                    const sample =
+                      i === 0
+                        ? Math.round(t.upToCostLkr * 0.75)
+                        : Math.round(
+                            (DEFAULT_SMART_TIERS[i - 1].upToCostLkr +
+                              Math.min(t.upToCostLkr, 20000)) /
+                              2,
+                          );
+                    const costSample = Math.min(sample, t.upToCostLkr === 1e12 ? 12000 : t.upToCostLkr);
+                    // reverse from cost LKR to fake USD for calc
+                    const fakeUsd = costSample / rateNum;
+                    const p = calcApiCustomerPriceLkr(fakeUsd, priceOpts);
+                    const label =
+                      t.upToCostLkr >= 1e11
+                        ? 'Above previous band'
+                        : `Up to Rs. ${t.upToCostLkr.toLocaleString()}`;
+                    return (
+                      <TableRow key={t.upToCostLkr}>
+                        <TableCell className="text-xs font-medium">{label}</TableCell>
+                        <TableCell className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                          {t.markupPercent}%
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          Rs. {p.costLkr.toLocaleString()} →{' '}
+                          <span className="font-bold text-foreground">
+                            Rs. {p.sellLkr.toLocaleString()}
+                          </span>{' '}
+                          (profit {p.profitLkr.toLocaleString()})
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {exampleCosts.map((cost) => {
+              const p = calcApiCustomerPriceLkr(cost / rateNum, priceOpts);
+              return (
+                <div
+                  key={cost}
+                  className="rounded-lg border border-border bg-background/80 px-2 py-2 text-[10px]"
+                >
+                  <p className="text-muted-foreground">Cost {cost.toLocaleString()}</p>
+                  <p className="font-black text-sm text-foreground">
+                    Rs. {p.sellLkr.toLocaleString()}
+                  </p>
+                  <p className="text-emerald-600">+{p.markupPercent}% · profit {p.profitLkr}</p>
+                </div>
+              );
+            })}
           </div>
+          <p className="text-[11px] text-muted-foreground">
+            Prices round up to nearest Rs. 50. You can still edit any product sell price manually in
+            Admin → Products after import.
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-6">
@@ -442,7 +558,7 @@ const AdminResellerApi = () => {
                   const already = existingResellerIds.has(id);
                   const usd = Number(rp.price);
                   const pricing = Number.isFinite(usd)
-                    ? calcApiCustomerPriceLkr(usd, { rate: rateNum, markupPercent: markupNum })
+                    ? calcApiCustomerPriceLkr(usd, priceOpts)
                     : null;
                   return (
                     <TableRow

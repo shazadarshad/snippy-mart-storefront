@@ -73,7 +73,9 @@ async function getSettings(supabaseAdmin: ReturnType<typeof createClient>) {
       auto_deliver_on_processing: true,
       auto_complete_on_success: true,
       usd_to_lkr: 360,
-      markup_percent: 80,
+      markup_percent: 50,
+      pricing_mode: "smart",
+      min_profit_lkr: 200,
     }
   );
 }
@@ -485,7 +487,12 @@ serve(async (req) => {
         markup_percent:
           s.markup_percent != null && Number.isFinite(Number(s.markup_percent))
             ? Number(s.markup_percent)
-            : 80,
+            : 50,
+        pricing_mode: s.pricing_mode === "fixed" ? "fixed" : "smart",
+        min_profit_lkr:
+          s.min_profit_lkr != null && Number.isFinite(Number(s.min_profit_lkr))
+            ? Number(s.min_profit_lkr)
+            : 200,
       });
     }
 
@@ -499,6 +506,14 @@ serve(async (req) => {
       const usdToLkrRaw = body.usd_to_lkr != null ? Number(body.usd_to_lkr) : Number(current.usd_to_lkr);
       const markupRaw =
         body.markup_percent != null ? Number(body.markup_percent) : Number(current.markup_percent);
+      const minProfitRaw =
+        body.min_profit_lkr != null ? Number(body.min_profit_lkr) : Number(current.min_profit_lkr);
+      const pricingMode =
+        body.pricing_mode === "fixed" || body.pricing_mode === "smart"
+          ? body.pricing_mode
+          : current.pricing_mode === "fixed"
+            ? "fixed"
+            : "smart";
 
       const payload = {
         id: 1,
@@ -517,7 +532,9 @@ serve(async (req) => {
             ? !!body.auto_complete_on_success
             : current.auto_complete_on_success !== false,
         usd_to_lkr: Number.isFinite(usdToLkrRaw) && usdToLkrRaw > 0 ? usdToLkrRaw : 360,
-        markup_percent: Number.isFinite(markupRaw) && markupRaw >= 0 ? markupRaw : 80,
+        markup_percent: Number.isFinite(markupRaw) && markupRaw >= 0 ? markupRaw : 50,
+        pricing_mode: pricingMode,
+        min_profit_lkr: Number.isFinite(minProfitRaw) && minProfitRaw >= 0 ? minProfitRaw : 200,
         updated_at: new Date().toISOString(),
       };
 
@@ -537,6 +554,8 @@ serve(async (req) => {
         auto_complete_on_success: payload.auto_complete_on_success,
         usd_to_lkr: payload.usd_to_lkr,
         markup_percent: payload.markup_percent,
+        pricing_mode: payload.pricing_mode,
+        min_profit_lkr: payload.min_profit_lkr,
       });
     }
 

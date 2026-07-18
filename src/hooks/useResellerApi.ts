@@ -4,28 +4,105 @@ import { supabase } from '@/integrations/supabase/client';
 /** Default API $ → cost LKR (panel still deducts USD) */
 export const RESELLER_USD_TO_LKR = 360;
 
-/** Default customer markup on cost LKR. 80% → cost 500 shows 900 */
-export const RESELLER_DEFAULT_MARKUP_PERCENT = 80;
+/** Only used when pricing_mode = fixed */
+export const RESELLER_DEFAULT_MARKUP_PERCENT = 50;
+
+/** Minimum profit in LKR so tiny items still make sense */
+export const RESELLER_DEFAULT_MIN_PROFIT_LKR = 200;
+
+export type ResellerPricingMode = 'smart' | 'fixed';
+
+/**
+ * Smart tiers: cheaper products need higher %; expensive ones use lower %.
+ * upToCostLkr = apply this markup when cost_lkr is <= this (ordered ascending).
+ * Last tier should use a huge upTo (Infinity handled as 1e12).
+ */
+export type MarkupTier = Array<{ upToCostLkr: number; markupPercent: number }>;
+
+export const DEFAULT_SMART_TIERS: MarkupTier = [
+  { upToCostLkr: 400, markupPercent: 100 }, // cost 300 → +100% → 600 (+ min profit)
+  { upToCostLkr: 800, markupPercent: 75 }, // cost 500 → +75% → 875
+  { upToCostLkr: 1500, markupPercent: 55 }, // cost 1200 → +55%
+  { upToCostLkr: 3000, markupPercent: 40 },
+  { upToCostLkr: 6000, markupPercent: 28 },
+  { upToCostLkr: 1e12, markupPercent: 18 }, // expensive: thinner margin
+];
+
+export function markupPercentForCostLkr(
+  costLkr: number,
+  tiers: MarkupTier = DEFAULT_SMART_TIERS,
+): number {
+  const sorted = [...tiers].sort((a, b) => a.upToCostLkr - b.upToCostLkr);
+  for (const t of sorted) {
+    if (costLkr <= t.upToCostLkr) return t.markupPercent;
+  }
+  return sorted[sorted.length - 1]?.markupPercent ?? 20;
+}
+
+/** Round sell price to a clean shop amount (nearest 50, always >= raw) */
+export function roundSellLkr(amount: number): number {
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  const stepped = Math.ceil(amount / 50) * 50;
+  // Prefer friendly endings for mid prices (e.g. 890 → 900 feel is fine via 50s)
+  return Math.max(50, stepped);
+}
+
+export type ApiPriceOpts = {
+  rate?: number;
+  /** smart (tiered) or fixed single % */
+  pricingMode?: ResellerPricingMode;
+  /** used only in fixed mode */
+  markupPercent?: number;
+  minProfitLkr?: number;
+  tiers?: MarkupTier;
+};
 
 /**
  * cost_lkr = usd × rate
- * sell_lkr = cost_lkr × (1 + markup%/100)
- * Example: $ cost → 500 LKR cost, 80% markup → customer sees 900 LKR.
- * Prepaid panel only deducts the API $ amount (your cost).
+ * SMART: markup % depends on cost band + min profit floor + round to 50s
+ * FIXED: single markup % (legacy)
+ * Panel still only deducts API $ — margin is yours.
  */
 export function calcApiCustomerPriceLkr(
   costUsd: number,
-  opts?: { rate?: number; markupPercent?: number },
-): { costLkr: number; sellLkr: number; profitLkr: number } {
+  opts?: ApiPriceOpts,
+): {
+  costLkr: number;
+  sellLkr: number;
+  profitLkr: number;
+  markupPercent: number;
+  pricingMode: ResellerPricingMode;
+} {
   const rate = opts?.rate ?? RESELLER_USD_TO_LKR;
-  const markup = opts?.markupPercent ?? RESELLER_DEFAULT_MARKUP_PERCENT;
+  const mode: ResellerPricingMode = opts?.pricingMode === 'fixed' ? 'fixed' : 'smart';
+  const minProfit = opts?.minProfitLkr ?? RESELLER_DEFAULT_MIN_PROFIT_LKR;
   const usd = Number(costUsd);
+
   if (!Number.isFinite(usd) || usd <= 0) {
-    return { costLkr: 0, sellLkr: 0, profitLkr: 0 };
+    return { costLkr: 0, sellLkr: 0, profitLkr: 0, markupPercent: 0, pricingMode: mode };
   }
+
   const costLkr = Math.round(usd * rate);
-  const sellLkr = Math.round(costLkr * (1 + Number(markup) / 100));
-  return { costLkr, sellLkr, profitLkr: Math.max(0, sellLkr - costLkr) };
+
+  let markup: number;
+  if (mode === 'fixed') {
+    markup = opts?.markupPercent ?? RESELLER_DEFAULT_MARKUP_PERCENT;
+  } else {
+    markup = markupPercentForCostLkr(costLkr, opts?.tiers ?? DEFAULT_SMART_TIERS);
+  }
+
+  const fromPercent = costLkr * (1 + Number(markup) / 100);
+  const fromMinProfit = costLkr + Math.max(0, minProfit);
+  const rawSell = Math.max(fromPercent, fromMinProfit);
+  const sellLkr = roundSellLkr(rawSell);
+
+  return {
+    costLkr,
+    sellLkr,
+    profitLkr: Math.max(0, sellLkr - costLkr),
+    markupPercent: markup,
+    pricingMode: mode,
+  };
 }
 
 /**
@@ -71,6 +148,8 @@ export type ResellerSettings = {
   api_key_preview: string | null;
   usd_to_lkr?: number;
   markup_percent?: number;
+  pricing_mode?: ResellerPricingMode;
+  min_profit_lkr?: number;
 };
 
 export type ResellerRemoteProduct = {
@@ -145,6 +224,8 @@ export const useSaveResellerSettings = () => {
       auto_complete_on_success?: boolean;
       usd_to_lkr?: number;
       markup_percent?: number;
+      pricing_mode?: ResellerPricingMode;
+      min_profit_lkr?: number;
     }) => invokeReseller({ action: 'save_settings', ...payload }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reseller'] });
@@ -374,10 +455,16 @@ export const useImportResellerProducts = () => {
     mutationFn: async (opts?: { productIds?: string[]; markActive?: boolean }) => {
       const settings = await invokeReseller<ResellerSettings>({ action: 'get_settings' });
       const rate = Number(settings.usd_to_lkr) || RESELLER_USD_TO_LKR;
+      const pricingMode: ResellerPricingMode =
+        settings.pricing_mode === 'fixed' ? 'fixed' : 'smart';
       const markup =
         settings.markup_percent != null
           ? Number(settings.markup_percent)
           : RESELLER_DEFAULT_MARKUP_PERCENT;
+      const minProfit =
+        settings.min_profit_lkr != null
+          ? Number(settings.min_profit_lkr)
+          : RESELLER_DEFAULT_MIN_PROFIT_LKR;
 
       const res = await invokeReseller<{ ok: boolean; data: any }>({ action: 'products' });
       if (!res.ok) {
@@ -434,12 +521,14 @@ export const useImportResellerProducts = () => {
         const costUsd = Number.isFinite(usd) && usd > 0 ? usd : 0;
         const { costLkr, sellLkr } = calcApiCustomerPriceLkr(costUsd, {
           rate,
+          pricingMode,
           markupPercent: markup,
+          minProfitLkr: minProfit,
         });
         const name = String(rp.name || 'API Product').trim();
         const order = nextOrder++;
-        // Optional "was" price for discount feel (~15% above sell)
-        const oldPrice = sellLkr > 0 ? Math.round(sellLkr * 1.15) : null;
+        // Optional "was" price for discount feel (~12–18% above sell, rounded)
+        const oldPrice = sellLkr > 0 ? roundSellLkr(sellLkr * 1.15) : null;
 
         return {
           name,
