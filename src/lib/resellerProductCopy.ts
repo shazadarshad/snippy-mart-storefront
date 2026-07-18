@@ -446,50 +446,90 @@ export function polishProductDescription(opts: {
   return out.replace(/\n{3,}/g, '\n\n').trim();
 }
 
+/** Derive dark brand-v2 background pair from accent hex (matches store brand-v2 tiles). */
+function darkBrandBackground(accentHex: string): [string, string] {
+  const h = accentHex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16) || 16;
+  const g = parseInt(h.slice(2, 4), 16) || 16;
+  const b = parseInt(h.slice(4, 6), 16) || 24;
+  const c1 = `#${[r, g, b]
+    .map((v) => Math.max(8, Math.round(v * 0.12)).toString(16).padStart(2, '0'))
+    .join('')}`;
+  const c2 = `#${[r, g, b]
+    .map((v) => Math.max(14, Math.round(v * 0.22)).toString(16).padStart(2, '0'))
+    .join('')}`;
+  return [c1, c2];
+}
+
 /**
- * Generate a store-style product card image (SVG data URL)
- * with main title + "Auto Product" subtitle — matches card aspect ratio feel.
+ * Exact brand-v2 layout used by normal store products:
+ * 800×800 · dark gradient · radial glow · logo rings · title · SNIPPY MART
  */
+function buildBrandV2Svg(opts: {
+  title: string;
+  accent: string;
+  uid: string;
+  /** Inner logo markup already sized for 24×24 viewBox, or null for monogram */
+  logoInner: string | null;
+}): string {
+  const polished = polishProductTitle(opts.title);
+  // Prefer splitting duration onto second line (like "Canva Pro" / "1 Year")
+  let lines = wrapTitleLines(polished, 22, 2);
+  const durMatch = polished.match(/^(.*?)(\d+\s+(?:Months?|Years?|Days?|Weeks?|Hours?))$/i);
+  if (durMatch?.[1]?.trim() && durMatch[2]) {
+    lines = [durMatch[1].trim(), durMatch[2].trim()];
+  }
+
+  const [bg1, bg2] = darkBrandBackground(opts.accent);
+  const accent = opts.accent.replace('#', '');
+  const id = opts.uid.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) || 'x';
+
+  const titleSvg = lines
+    .map((line, i) => {
+      const y = 560 + i * 44;
+      return `<text x="400" y="${y}" text-anchor="middle" fill="#FFFFFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="700" letter-spacing="-0.4">${escapeXml(line)}</text>`;
+    })
+    .join('\n  ');
+
+  const monogram = (polished.replace(/[^A-Za-z0-9]/g, '').charAt(0) || 'A').toUpperCase();
+  const logoGroup = opts.logoInner
+    ? `<g transform="translate(-70,-70) scale(5.833)">${opts.logoInner}</g>`
+    : `<text text-anchor="middle" dominant-baseline="central" fill="#${accent}" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="64" font-weight="800">${escapeXml(monogram)}</text>`;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="bg-${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${bg1}"/>
+      <stop offset="100%" stop-color="${bg2}"/>
+    </linearGradient>
+    <radialGradient id="glow-${id}" cx="50%" cy="32%" r="50%">
+      <stop offset="0%" stop-color="#${accent}" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="${bg1}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg-${id})"/>
+  <rect width="800" height="800" fill="url(#glow-${id})"/>
+  <g transform="translate(400, 300)">
+    <circle r="110" fill="#FFFFFF" fill-opacity="0.08"/>
+    <circle r="96" fill="#FFFFFF" fill-opacity="0.06" stroke="#${accent}" stroke-opacity="0.45" stroke-width="2"/>
+    ${logoGroup}
+  </g>
+  ${titleSvg}
+  <text x="400" y="730" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="600" letter-spacing="4">SNIPPY MART</text>
+</svg>`;
+}
+
+/** Fallback brand-v2 tile when no official logo is available */
 export function buildAutoProductImageDataUrl(title: string): string {
   const polished = polishProductTitle(title);
-  const [c1, c2, c3] = GRADIENTS[hashStr(polished) % GRADIENTS.length];
-  const lines = wrapTitleLines(polished, 16, 3);
-  const initial = (polished.replace(/[^A-Za-z0-9]/g, '').charAt(0) || 'A').toUpperCase();
-
-  const titleBottom = lines
-    .map((line, i) => {
-      const y = 500 + i * 34;
-      return `<text x="40" y="${y}" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="30" font-weight="800">${escapeXml(line)}</text>`;
-    })
-    .join('');
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="640" viewBox="0 0 800 640">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="${c1}"/>
-      <stop offset="55%" stop-color="${c2}"/>
-      <stop offset="100%" stop-color="${c3}"/>
-    </linearGradient>
-    <linearGradient id="fade" x1="0%" y1="35%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.72"/>
-    </linearGradient>
-  </defs>
-  <rect width="800" height="640" fill="url(#bg)"/>
-  <circle cx="640" cy="120" r="160" fill="#ffffff" fill-opacity="0.1"/>
-  <circle cx="120" cy="520" r="200" fill="#000000" fill-opacity="0.15"/>
-  <circle cx="400" cy="220" r="90" fill="#ffffff" fill-opacity="0.14"/>
-  <circle cx="400" cy="220" r="72" fill="#ffffff" fill-opacity="0.92"/>
-  <text x="400" y="245" text-anchor="middle" fill="${c1}" font-family="system-ui,Segoe UI,sans-serif" font-size="52" font-weight="800">${escapeXml(initial)}</text>
-  <rect width="800" height="640" fill="url(#fade)"/>
-  <rect x="40" y="36" rx="16" ry="16" width="118" height="34" fill="#059669"/>
-  <text x="99" y="58" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="800" letter-spacing="1">AUTO</text>
-  ${titleBottom}
-  <text x="40" y="${500 + lines.length * 34 + 28}" fill="#a7f3d0" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">AUTO PRODUCT</text>
-</svg>`;
-
-  // Use encodeURIComponent for reliable data URL (UTF-8 safe)
+  const [, , accent] = GRADIENTS[hashStr(polished) % GRADIENTS.length];
+  const svg = buildBrandV2Svg({
+    title: polished,
+    accent: accent.replace('#', ''),
+    uid: hashStr(polished).toString(16),
+    logoInner: null,
+  });
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
@@ -565,85 +605,69 @@ export function detectBrandLogo(title: string): BrandLogo | null {
   return null;
 }
 
-/** Official logo URL (SVG) from Simple Icons CDN */
+/** Official logo URL (SVG) from Simple Icons via jsDelivr (stable) */
 export function officialLogoUrl(brand: BrandLogo): string {
-  return `https://cdn.simpleicons.org/${brand.slug}/${brand.color}`;
+  return `https://cdn.jsdelivr.net/npm/simple-icons@11.15.0/icons/${brand.slug}.svg`;
 }
 
-async function fetchLogoAsDataUri(brand: BrandLogo): Promise<string | null> {
+/** Logo path fill — pure black logos need white on dark brand-v2 tiles */
+function logoPathFill(brand: BrandLogo): string {
+  const c = brand.color.toLowerCase().replace('#', '');
+  if (c === '000000' || c === '000' || c === '181717') return 'FFFFFF';
+  return brand.color.replace('#', '');
+}
+
+/** Ring/glow accent — avoid pure black on dark backgrounds */
+function brandAccentForTile(brand: BrandLogo): string {
+  const c = brand.color.toLowerCase().replace('#', '');
+  if (c === '000000' || c === '000' || c === '181717') return '94A3B8';
+  return brand.color.replace('#', '');
+}
+
+/** Fetch Simple Icons SVG and return inner path markup (24×24) for brand-v2 embedding */
+async function fetchLogoInnerPaths(brand: BrandLogo): Promise<string | null> {
   try {
-    const url = officialLogoUrl(brand);
-    const res = await fetch(url);
+    const res = await fetch(officialLogoUrl(brand));
     if (!res.ok) return null;
     const svgText = await res.text();
-    // Inline as base64 so it works inside data: SVG used as <img src>
-    const b64 =
-      typeof btoa === 'function'
-        ? btoa(unescape(encodeURIComponent(svgText)))
-        : Buffer.from(svgText, 'utf-8').toString('base64');
-    return `data:image/svg+xml;base64,${b64}`;
+    const paths = [...svgText.matchAll(/<path\b[^>]*>/gi)].map((m) => m[0]);
+    if (!paths.length) return null;
+    const fill = logoPathFill(brand);
+    return paths
+      .map((p) => {
+        if (/\sfill=/i.test(p)) {
+          return p.replace(/\sfill="[^"]*"/i, ` fill="#${fill}"`);
+        }
+        return p.replace(/<path\b/i, `<path fill="#${fill}"`);
+      })
+      .join('');
   } catch {
     return null;
   }
 }
 
 /**
- * Full-bleed product image (like normal store cards): brand-colored cover,
- * large logo, soft gradient, title bottom-left — works with object-cover.
+ * brand-v2 tile with official logo (same structure as Canva/NordVPN/Claude store images).
  */
 export function buildOfficialLogoProductImage(
   title: string,
   brand: BrandLogo,
-  logoDataUri: string | null,
+  logoInner: string | null,
 ): string {
-  const polished = polishProductTitle(title);
-  const lines = wrapTitleLines(polished, 20, 2);
-  const titleSvg = lines
-    .map((line, i) => {
-      const y = 520 + i * 34;
-      return `<text x="40" y="${y}" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="30" font-weight="800">${escapeXml(line)}</text>`;
-    })
-    .join('');
-
-  // White logo plate + brand logo (or monogram)
-  const logoBlock = logoDataUri
-    ? `<rect x="280" y="140" width="240" height="240" rx="48" fill="#ffffff" fill-opacity="0.96"/>
-       <image href="${logoDataUri}" xlink:href="${logoDataUri}" x="330" y="190" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>`
-    : `<rect x="280" y="140" width="240" height="240" rx="48" fill="#ffffff" fill-opacity="0.96"/>
-       <text x="400" y="290" text-anchor="middle" fill="#${brand.color}" font-family="system-ui,Segoe UI,sans-serif" font-size="72" font-weight="800">${escapeXml(brand.label.slice(0, 1))}</text>`;
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="640" viewBox="0 0 800 640">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#${brand.color}" stop-opacity="0.95"/>
-      <stop offset="55%" stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </linearGradient>
-    <linearGradient id="fade" x1="0%" y1="40%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.75"/>
-    </linearGradient>
-  </defs>
-  <rect width="800" height="640" fill="url(#bg)"/>
-  <circle cx="650" cy="120" r="200" fill="#ffffff" fill-opacity="0.08"/>
-  <circle cx="100" cy="500" r="160" fill="#${brand.color}" fill-opacity="0.25"/>
-  ${logoBlock}
-  <rect width="800" height="640" fill="url(#fade)"/>
-  <rect x="40" y="36" rx="16" ry="16" width="118" height="34" fill="#059669"/>
-  <text x="99" y="58" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="800" letter-spacing="1">AUTO</text>
-  ${titleSvg}
-  <text x="40" y="${520 + lines.length * 34 + 28}" fill="#a7f3d0" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">AUTO PRODUCT</text>
-</svg>`;
-
+  const svg = buildBrandV2Svg({
+    title,
+    accent: brandAccentForTile(brand),
+    uid: brand.slug + hashStr(title).toString(16).slice(0, 4),
+    logoInner,
+  });
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 /**
- * Resolve product image (async so we can inline official logos):
- * 1) Official brand logo card
+ * Resolve product image:
+ * 1) brand-v2 official logo tile (matches normal products)
  * 2) API image if present
- * 3) Generated gradient fallback
+ * 3) brand-v2 monogram fallback
  */
 export async function resolveCustomerProductImage(
   title: string,
@@ -651,12 +675,13 @@ export async function resolveCustomerProductImage(
 ): Promise<string> {
   const brand = detectBrandLogo(title);
   if (brand) {
-    const logoData = await fetchLogoAsDataUri(brand);
-    return buildOfficialLogoProductImage(title, brand, logoData);
+    const logoInner = await fetchLogoInnerPaths(brand);
+    return buildOfficialLogoProductImage(title, brand, logoInner);
   }
 
+  // Prefer API image only if it looks like a real hosted asset (not junk)
   const api = rp ? pickApiImageField(rp) : null;
-  if (api) return api;
+  if (api && !api.startsWith('data:')) return api;
 
   return buildAutoProductImageDataUrl(title);
 }
