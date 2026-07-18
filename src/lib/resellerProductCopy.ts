@@ -91,12 +91,12 @@ export function polishProductTitle(raw: string): string {
   ];
   for (const [re, rep] of brandMap) s = s.replace(re, rep);
 
-  // Expand duration shorthand
+  // Expand duration shorthand (12m → 12 Month)
   s = s
+    .replace(/\b(\d+)\s*m\b/gi, '$1 Month')
     .replace(/\b(\d+)\s*mo(nth)?s?\b/gi, '$1 Month')
     .replace(/\b(\d+)\s*yr?s?\b/gi, '$1 Year')
     .replace(/\b(\d+)\s*d(ays?)?\b/gi, '$1 Day')
-    .replace(/\b1 Month\b/gi, '1 Month')
     .replace(/\bpremium\b/gi, 'Premium')
     .replace(/\bprem\b/gi, 'Premium')
     .replace(/\bpro\b/gi, 'Pro')
@@ -107,7 +107,8 @@ export function polishProductTitle(raw: string): string {
     .replace(/\baccount\b/gi, 'Account')
     .replace(/\blicen[cs]e\b/gi, 'License')
     .replace(/\bsubscriptions?\b/gi, 'Subscription')
-    .replace(/\bsubs\b/gi, 'Subscription');
+    .replace(/\bsubs\b/gi, 'Subscription')
+    .replace(/\bfactory\b/gi, 'Factory');
 
   // Title case (keep small words lowercase unless first)
   const small = new Set(['a', 'an', 'and', 'or', 'the', 'of', 'for', 'to', 'in', 'on', 'with']);
@@ -134,56 +135,152 @@ export function polishProductTitle(raw: string): string {
   return s;
 }
 
+/**
+ * Strip Telegram custom-emoji / seller panel junk:
+ * {ce:5413879192267805083}, {ce:123:⚡}, leftover "ce:123}", etc.
+ */
+function stripEntityJunk(s: string): string {
+  return s
+    // Full {ce:id} or {ce:id:emoji} or {any:digits...}
+    .replace(/\{ce:\d+(?::[^}]*)?\}/gi, ' ')
+    .replace(/\{[a-z]{1,8}:\d+(?::[^}]*)?\}/gi, ' ')
+    // Broken leftovers after partial strip: ce:5413...} or {ce:123
+    .replace(/\bce:\d+\}?/gi, ' ')
+    .replace(/\{ce:\d*/gi, ' ')
+    .replace(/\{\d{6,}\}/g, ' ')
+    // Random long digit blobs in braces
+    .replace(/\{[^}]{0,40}\d{8,}[^}]{0,40}\}/g, ' ')
+    // Zero-width / special spaces
+    .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, ' ');
+}
+
 function cleanApiText(raw: string): string {
-  return raw
+  let s = String(raw || '');
+  s = stripEntityJunk(s);
+  s = s
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
     .replace(/\\n/g, '\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '\n• ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"');
+
+  s = stripEntityJunk(s);
+
+  // Split glued seller phrases into separate lines
+  s = s
+    .replace(
+      /\s*(?=(?:Duration|Warranty|Type|Plan|Account|Delivery|Region|Note|Valid|Includes?)\s*:)/gi,
+      '\n',
+    )
+    .replace(/\s+(?=Official\s+Coupon)/gi, '\n')
+    .replace(/\s+(?=No\s+Warranty)/gi, '\n')
+    .replace(/\s+(?=On\s+Your\s+Account)/gi, '\n')
+    .replace(/\s+(?=Instant\s+Deliver)/gi, '\n')
+    .replace(/\s+(?=Auto\s+Deliver)/gi, '\n');
+
+  s = stripEntityJunk(s);
+
+  return s
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]{2,}/g, ' ')
+    .replace(/[|]{2,}/g, ' ')
     .trim();
+}
+
+function looksDirty(text: string): boolean {
+  if (!text || text.length < 8) return true;
+  if (/\{?ce:\d+/i.test(text)) return true;
+  if (/\{[^}]{6,}\}/.test(text)) return true;
+  // Too many digits in braces residue
+  if ((text.match(/\d{10,}/g) || []).length >= 1) return true;
+  // Mostly symbols / garbage ratio
+  const letters = (text.match(/[a-zA-Z]/g) || []).length;
+  if (letters < 12) return true;
+  return false;
 }
 
 function sentenceCase(line: string): string {
   const t = line.trim();
   if (!t) return '';
-  // Don't mangle all-caps short headers
   if (t.length < 40 && t === t.toUpperCase() && /[A-Z]/.test(t)) {
     return t.charAt(0) + t.slice(1).toLowerCase();
   }
-  // Capitalize first letter
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
-function extractBullets(text: string): string[] {
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
-  const bullets: string[] = [];
-  for (const line of lines) {
-    const m = line.match(/^(?:[-*•✅✓✔▪▸●◦·]|\d+[.)])\s*(.+)$/);
-    if (m?.[1]) {
-      let b = sentenceCase(m[1].replace(/\s+/g, ' '));
-      if (b && !/[.!?]$/.test(b)) b += '.';
-      if (b.length > 8) bullets.push(b);
+/** Pull useful facts from messy seller text */
+function extractFacts(text: string): string[] {
+  const facts: string[] = [];
+  const cleaned = cleanApiText(text);
+  const src = stripEntityJunk(cleaned || text);
+
+  // Duration: only the number + unit (never the rest of the blob)
+  const dur = src.match(
+    /duration\s*:\s*(\d+)\s*(months?|years?|days?|mo|m|yrs?|y|d)?\b/i,
+  );
+  if (dur) {
+    const n = dur[1];
+    const unitRaw = (dur[2] || 'month').toLowerCase();
+    let unit = 'Month';
+    if (/^y/.test(unitRaw)) unit = Number(n) === 1 ? 'Year' : 'Years';
+    else if (/^d/.test(unitRaw)) unit = Number(n) === 1 ? 'Day' : 'Days';
+    else unit = Number(n) === 1 ? 'Month' : 'Months';
+    facts.push(`Duration: **${n} ${unit}**.`);
+  } else {
+    const dur2 = src.match(/\b(\d+)\s*(months?|years?|days?)\b/i);
+    if (dur2) {
+      facts.push(`Duration: **${dur2[1]} ${sentenceCase(dur2[2])}**.`);
     }
   }
-  return bullets.slice(0, 8);
-}
 
-function extractParagraphs(text: string): string[] {
-  return text
-    .split(/\n\n+/)
-    .map((p) => p.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim())
-    .filter((p) => p.length > 20 && !/^(?:[-*•]|\d+[.)])/.test(p))
-    .map(sentenceCase)
-    .slice(0, 3);
+  if (/(?:official\s+)?coupon\s*code/i.test(src)) {
+    facts.push('Includes an **official coupon / activation code**.');
+  }
+  if (/no\s+warranty\s+after\s+activation/i.test(src)) {
+    facts.push('**No warranty after activation** — follow the product rules carefully.');
+  } else if (/warranty\s*:\s*([^\n{]+)/i.test(src)) {
+    const w = src.match(/warranty\s*:\s*([^\n{]+)/i);
+    if (w?.[1]) {
+      const v = stripEntityJunk(w[1]).split(/\n/)[0].trim().slice(0, 80);
+      if (v && !looksDirty(v)) facts.push(`Warranty: **${sentenceCase(v)}**.`);
+    }
+  }
+  if (/on\s+your\s+(own\s+)?account/i.test(src)) {
+    facts.push('Activated **on your own account** (you keep ownership).');
+  }
+  if (/\bprivate\b/i.test(src) && /account/i.test(src)) {
+    facts.push('**Private account** style access where applicable.');
+  }
+  if (/instant|auto\s*deliver/i.test(src)) {
+    facts.push('**Instant auto delivery** after payment confirmation.');
+  }
+
+  // Short clean lines only (never paste dirty blobs)
+  for (const line of src.split('\n')) {
+    const t = stripEntityJunk(line).replace(/\s+/g, ' ').trim();
+    if (looksDirty(t) || t.length < 14 || t.length > 120) continue;
+    if (/^(duration|warranty|plan|type|region)\s*:/i.test(t)) continue;
+    if (/coupon|no warranty|on your account/i.test(t)) continue;
+    const m = t.match(/^(?:[-*•✅✓✔▪▸●◦·]|\d+[.)])\s*(.+)$/);
+    if (m?.[1] && !looksDirty(m[1])) {
+      let b = sentenceCase(stripEntityJunk(m[1]));
+      if (!/[.!?]$/.test(b)) b += '.';
+      if (!facts.some((f) => f.toLowerCase().includes(b.toLowerCase().slice(0, 18)))) {
+        facts.push(b);
+      }
+    }
+  }
+
+  return facts.slice(0, 6);
 }
 
 function guessCategoryHints(title: string): { emoji: string; kind: string; benefits: string[] } {
@@ -256,7 +353,7 @@ function guessCategoryHints(title: string): { emoji: string; kind: string; benef
 
 /**
  * Build a polished storefront description (works with FormattedDescription).
- * Uses API text when available as source material, then rewrites cleanly.
+ * Never dumps raw seller/Telegram text — only extracted clean facts + our copy.
  */
 export function polishProductDescription(opts: {
   title: string;
@@ -264,28 +361,16 @@ export function polishProductDescription(opts: {
 }): string {
   const title = opts.title;
   const hints = guessCategoryHints(title);
-  const raw = opts.apiDescription ? cleanApiText(opts.apiDescription) : '';
-  const apiBullets = raw ? extractBullets(raw) : [];
-  const apiParas = raw ? extractParagraphs(raw) : [];
+  const apiRaw = opts.apiDescription || '';
+  const facts = apiRaw ? extractFacts(apiRaw) : [];
 
-  // Opening blurb
-  let intro =
-    apiParas[0] ||
-    `Get **${title}** — a premium ${hints.kind} from Snippy Mart with fast auto delivery.`;
+  // Always write our own intro (API intros are often full of junk)
+  const intro = `Get **${title}** — a premium ${hints.kind} from Snippy Mart with fast auto delivery after payment confirmation.`;
 
-  // Don't start with broken seller junk
-  intro = intro
-    .replace(/^\W+/, '')
-    .replace(/\b(reseller|wholesale only|do not resell publicly)\b/gi, '')
-    .trim();
-  if (intro.length < 30) {
-    intro = `Get **${title}** — a premium ${hints.kind} with instant auto fulfillment after payment.`;
-  }
-  if (!/[.!?]$/.test(intro)) intro += '.';
-
-  const bullets =
-    apiBullets.length >= 2
-      ? apiBullets
+  // Prefer extracted facts; fall back to category benefits
+  const whatYouGet =
+    facts.length > 0
+      ? facts
       : hints.benefits.map((b) => (b.endsWith('.') ? b : `${b}.`));
 
   const lines = [
@@ -294,7 +379,14 @@ export function polishProductDescription(opts: {
     intro,
     '',
     '✨ What you get',
-    ...bullets.map((b) => `✅ ${b.replace(/^[✅✓✔]\s*/, '')}`),
+    ...whatYouGet.map((b) => {
+      // Strip leading bullet markers only — never eat markdown **bold**
+      const body = b
+        .replace(/^(?:✅|✓|✔|•|-|\*(?!\*))\s+/, '')
+        .replace(/^✅\s*/, '')
+        .trim();
+      return `✅ ${body}`;
+    }),
     '',
     '🚀 How it works',
     '✅ Place your order and complete payment on Snippy Mart.',
@@ -307,7 +399,11 @@ export function polishProductDescription(opts: {
     '✅ Delivery details appear on your Track Order page when ready.',
   ];
 
-  return lines.join('\n');
+  // Final safety: never leave ce: junk in output
+  return stripEntityJunk(lines.join('\n'))
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 /**
