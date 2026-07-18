@@ -41,12 +41,18 @@ const modalVariants = {
   }
 };
 
-const StockIndicator = ({ status }: { status?: string }) => {
-  if (!status || status === 'in_stock') {
+const StockIndicator = ({
+  status,
+  count,
+}: {
+  status?: string;
+  count?: number | null;
+}) => {
+  if (status === 'out_of_stock') {
     return (
-      <div className="flex items-center gap-2 text-green-500">
-        <Package className="w-4 h-4" />
-        <span className="text-sm font-medium">In Stock</span>
+      <div className="flex items-center gap-2 text-red-500">
+        <AlertTriangle className="w-4 h-4" />
+        <span className="text-sm font-medium">Out of Stock</span>
       </div>
     );
   }
@@ -54,14 +60,18 @@ const StockIndicator = ({ status }: { status?: string }) => {
     return (
       <div className="flex items-center gap-2 text-amber-500">
         <AlertTriangle className="w-4 h-4" />
-        <span className="text-sm font-medium">Limited Availability</span>
+        <span className="text-sm font-medium">
+          {count != null && count > 0 ? `Only ${count} left` : 'Limited Availability'}
+        </span>
       </div>
     );
   }
   return (
-    <div className="flex items-center gap-2 text-red-500">
-      <AlertTriangle className="w-4 h-4" />
-      <span className="text-sm font-medium">Out of Stock</span>
+    <div className="flex items-center gap-2 text-green-500">
+      <Package className="w-4 h-4" />
+      <span className="text-sm font-medium">
+        {count != null && count > 0 ? `${count} in stock` : 'In Stock'}
+      </span>
     </div>
   );
 };
@@ -357,7 +367,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                     </span>
                   )}
                 </div>
-                <StockIndicator status={product.stock_status} />
+                <StockIndicator status={product.stock_status} count={product.reseller_stock} />
               </div>
 
               {/* Title */}

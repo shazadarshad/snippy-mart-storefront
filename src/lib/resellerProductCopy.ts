@@ -91,12 +91,23 @@ export function polishProductTitle(raw: string): string {
   ];
   for (const [re, rep] of brandMap) s = s.replace(re, rep);
 
-  // Expand duration shorthand (12m → 12 Month)
+  // Expand duration shorthand BEFORE title-case
+  // 12m / 12mo / 12mos → 12 Months | 1m → 1 Month
+  const unit = (n: string, one: string, many: string) =>
+    `${n} ${Number(n) === 1 ? one : many}`;
+
   s = s
-    .replace(/\b(\d+)\s*m\b/gi, '$1 Month')
-    .replace(/\b(\d+)\s*mo(nth)?s?\b/gi, '$1 Month')
-    .replace(/\b(\d+)\s*yr?s?\b/gi, '$1 Year')
-    .replace(/\b(\d+)\s*d(ays?)?\b/gi, '$1 Day')
+    .replace(/\b(\d+)\s*mos?\b/gi, (_, n) => unit(n, 'Month', 'Months'))
+    .replace(/\b(\d+)\s*m\b/gi, (_, n) => unit(n, 'Month', 'Months'))
+    .replace(/\b(\d+)\s*months?\b/gi, (_, n) => unit(n, 'Month', 'Months'))
+    .replace(/\b(\d+)\s*yrs?\b/gi, (_, n) => unit(n, 'Year', 'Years'))
+    .replace(/\b(\d+)\s*y\b/gi, (_, n) => unit(n, 'Year', 'Years'))
+    .replace(/\b(\d+)\s*years?\b/gi, (_, n) => unit(n, 'Year', 'Years'))
+    .replace(/\b(\d+)\s*days?\b/gi, (_, n) => unit(n, 'Day', 'Days'))
+    .replace(/\b(\d+)\s*d\b/gi, (_, n) => unit(n, 'Day', 'Days'))
+    .replace(/\b(\d+)\s*wks?\b/gi, (_, n) => unit(n, 'Week', 'Weeks'))
+    .replace(/\b(\d+)\s*weeks?\b/gi, (_, n) => unit(n, 'Week', 'Weeks'))
+    .replace(/\b(\d+)\s*hrs?\b/gi, (_, n) => unit(n, 'Hour', 'Hours'))
     .replace(/\bpremium\b/gi, 'Premium')
     .replace(/\bprem\b/gi, 'Premium')
     .replace(/\bpro\b/gi, 'Pro')
@@ -112,16 +123,40 @@ export function polishProductTitle(raw: string): string {
 
   // Title case (keep small words lowercase unless first)
   const small = new Set(['a', 'an', 'and', 'or', 'the', 'of', 'for', 'to', 'in', 'on', 'with']);
+  const keep = new Set([
+    'ChatGPT',
+    'YouTube',
+    'Office',
+    'Midjourney',
+    'CapCut',
+    'GPT-4',
+    'Disney+',
+    'Month',
+    'Months',
+    'Year',
+    'Years',
+    'Day',
+    'Days',
+    'Week',
+    'Weeks',
+    'Hour',
+    'Hours',
+  ]);
   const parts = s.split(/\s+/);
   s = parts
     .map((w, i) => {
-      if (/^[A-Z0-9+.-]{2,}$/.test(w) && /[A-Z]/.test(w) && /[0-9+]/.test(w)) return w; // GPT-4, Disney+
+      if (keep.has(w)) return w;
+      if (/^[A-Z0-9+.-]{2,}$/.test(w) && /[A-Z]/.test(w) && /[0-9+]/.test(w)) return w;
       if (/^(ChatGPT|YouTube|Office|Midjourney|CapCut|GPT-4|Disney\+)$/i.test(w)) {
         return w.replace(/^chatgpt$/i, 'ChatGPT').replace(/^youtube$/i, 'YouTube');
       }
+      // Preserve already expanded units
+      if (/^(Months?|Years?|Days?|Weeks?|Hours?)$/i.test(w)) {
+        const lower = w.toLowerCase();
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      }
       const lower = w.toLowerCase();
       if (i > 0 && small.has(lower)) return lower;
-      // Keep brand tokens already fixed
       if (/^[A-Z][a-z]+[A-Z]/.test(w) || w.includes('+')) return w;
       return lower.charAt(0).toUpperCase() + lower.slice(1);
     })
@@ -129,7 +164,13 @@ export function polishProductTitle(raw: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Ensure useful suffix if too bare
+  // Fix "1 Months" → "1 Month" if any slipped through
+  s = s
+    .replace(/\b1 Months\b/g, '1 Month')
+    .replace(/\b1 Years\b/g, '1 Year')
+    .replace(/\b1 Days\b/g, '1 Day')
+    .replace(/\b1 Weeks\b/g, '1 Week');
+
   if (s.length < 3) s = 'Digital Product';
 
   return s;
@@ -500,33 +541,235 @@ export function pickApiImageField(rp: Record<string, unknown>): string | null {
   return null;
 }
 
+/** Brand → official logo (Simple Icons CDN) + brand color */
+type BrandLogo = { slug: string; color: string; label: string; match: RegExp };
+
+const BRAND_LOGOS: BrandLogo[] = [
+  { slug: 'netflix', color: 'E50914', label: 'Netflix', match: /\bnetflix\b/i },
+  { slug: 'spotify', color: '1DB954', label: 'Spotify', match: /\bspotify\b/i },
+  { slug: 'youtube', color: 'FF0000', label: 'YouTube', match: /\byoutube\b/i },
+  { slug: 'disneyplus', color: '113CCF', label: 'Disney+', match: /\bdisney\+?\b/i },
+  { slug: 'primevideo', color: '00A8E1', label: 'Prime Video', match: /\bprime\b/i },
+  { slug: 'hulu', color: '1CE783', label: 'Hulu', match: /\bhulu\b/i },
+  { slug: 'openai', color: '412991', label: 'ChatGPT', match: /\bchatgpt\b|\bgpt\b|\bopenai\b/i },
+  { slug: 'anthropic', color: 'D4A27F', label: 'Claude', match: /\bclaude\b|\banthropic\b/i },
+  { slug: 'google', color: '4285F4', label: 'Google', match: /\bgoogle\b|\bgemini\b/i },
+  { slug: 'cursor', color: '000000', label: 'Cursor', match: /\bcursor\b/i },
+  { slug: 'canva', color: '00C4CC', label: 'Canva', match: /\bcanva\b/i },
+  { slug: 'adobe', color: 'FF0000', label: 'Adobe', match: /\badobe\b|\bphotoshop\b|\bpremiere\b/i },
+  { slug: 'figma', color: 'F24E1E', label: 'Figma', match: /\bfigma\b/i },
+  { slug: 'microsoft', color: '5E5E5E', label: 'Microsoft', match: /\bmicrosoft\b|\boffice\b|\bcopilot\b/i },
+  { slug: 'notion', color: '000000', label: 'Notion', match: /\bnotion\b/i },
+  { slug: 'grammarly', color: '15C39A', label: 'Grammarly', match: /\bgrammarly\b/i },
+  { slug: 'capcut', color: '000000', label: 'CapCut', match: /\bcapcut\b/i },
+  { slug: 'midjourney', color: '000000', label: 'Midjourney', match: /\bmidjourney\b/i },
+  { slug: 'github', color: '181717', label: 'GitHub', match: /\bgithub\b|\bcopilot\b/i },
+  { slug: 'steam', color: '000000', label: 'Steam', match: /\bsteam\b/i },
+  { slug: 'playstation', color: '003791', label: 'PlayStation', match: /\bplaystation\b|\bpsn\b|\bps\s?[45]\b/i },
+  { slug: 'xbox', color: '107C10', label: 'Xbox', match: /\bxbox\b|\bgame\s*pass\b/i },
+  { slug: 'apple', color: '000000', label: 'Apple', match: /\bapple\b|\bicloud\b|\bapple\s*music\b/i },
+  { slug: 'duolingo', color: '58CC02', label: 'Duolingo', match: /\bduolingo\b/i },
+  { slug: 'linkedin', color: '0A66C2', label: 'LinkedIn', match: /\blinkedin\b/i },
+  { slug: 'instagram', color: 'E4405F', label: 'Instagram', match: /\binstagram\b|\big\b/i },
+  { slug: 'telegram', color: '26A5E4', label: 'Telegram', match: /\btelegram\b/i },
+  { slug: 'whatsapp', color: '25D366', label: 'WhatsApp', match: /\bwhatsapp\b/i },
+];
+
+export function detectBrandLogo(title: string): BrandLogo | null {
+  for (const b of BRAND_LOGOS) {
+    if (b.match.test(title)) return b;
+  }
+  return null;
+}
+
+/** Official logo URL (SVG) from Simple Icons CDN */
+export function officialLogoUrl(brand: BrandLogo): string {
+  return `https://cdn.simpleicons.org/${brand.slug}/${brand.color}`;
+}
+
+async function fetchLogoAsDataUri(brand: BrandLogo): Promise<string | null> {
+  try {
+    const url = officialLogoUrl(brand);
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const svgText = await res.text();
+    // Inline as base64 so it works inside data: SVG used as <img src>
+    const b64 =
+      typeof btoa === 'function'
+        ? btoa(unescape(encodeURIComponent(svgText)))
+        : Buffer.from(svgText, 'utf-8').toString('base64');
+    return `data:image/svg+xml;base64,${b64}`;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Prefer a generated branded card (with Auto Product subtitle).
- * If API image exists and looks usable, we still generate our card so
- * storefront stays consistent — set preferApiImage true to keep seller art.
+ * Product tile like store cards: soft bg, official logo center, title, Auto Product subtitle.
  */
-export function resolveCustomerProductImage(
+export function buildOfficialLogoProductImage(
+  title: string,
+  brand: BrandLogo,
+  logoDataUri: string | null,
+): string {
+  const polished = polishProductTitle(title);
+  const lines = wrapTitleLines(polished, 22, 2);
+  const titleSvg = lines
+    .map((line, i) => {
+      const y = 420 + i * 32;
+      return `<text x="400" y="${y}" text-anchor="middle" fill="#0f172a" font-family="system-ui,Segoe UI,sans-serif" font-size="26" font-weight="800">${escapeXml(line)}</text>`;
+    })
+    .join('');
+
+  const logoBlock = logoDataUri
+    ? `<image href="${logoDataUri}" xlink:href="${logoDataUri}" x="330" y="190" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>`
+    : `<text x="400" y="270" text-anchor="middle" fill="#${brand.color}" font-family="system-ui,Segoe UI,sans-serif" font-size="48" font-weight="800">${escapeXml(brand.label.slice(0, 1))}</text>`;
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="640" viewBox="0 0 800 640">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="800" height="640" fill="url(#bg)"/>
+  <circle cx="700" cy="80" r="140" fill="#${brand.color}" fill-opacity="0.08"/>
+  <circle cx="80" cy="560" r="120" fill="#${brand.color}" fill-opacity="0.06"/>
+
+  <rect x="40" y="36" rx="18" ry="18" width="132" height="36" fill="#059669"/>
+  <text x="106" y="60" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="800" letter-spacing="0.5">AUTO</text>
+
+  <rect x="260" y="120" width="280" height="280" rx="40" fill="#ffffff" filter="url(#shadow)"/>
+  <rect x="260" y="120" width="280" height="280" rx="40" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  ${logoBlock}
+
+  ${titleSvg}
+  <text x="400" y="${420 + lines.length * 32 + 28}" text-anchor="middle" fill="#059669" font-family="system-ui,Segoe UI,sans-serif" font-size="16" font-weight="700" letter-spacing="2">AUTO PRODUCT</text>
+  <text x="400" y="${420 + lines.length * 32 + 52}" text-anchor="middle" fill="#64748b" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="500">Instant delivery · Snippy Mart</text>
+</svg>`;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+/**
+ * Resolve product image (async so we can inline official logos):
+ * 1) Official brand logo card
+ * 2) API image if present
+ * 3) Generated gradient fallback
+ */
+export async function resolveCustomerProductImage(
   title: string,
   rp?: Record<string, unknown>,
-  preferApiImage = false,
-): string {
-  if (preferApiImage && rp) {
-    const api = pickApiImageField(rp);
-    if (api) return api;
+): Promise<string> {
+  const brand = detectBrandLogo(title);
+  if (brand) {
+    const logoData = await fetchLogoAsDataUri(brand);
+    return buildOfficialLogoProductImage(title, brand, logoData);
   }
+
+  const api = rp ? pickApiImageField(rp) : null;
+  if (api) return api;
+
   return buildAutoProductImageDataUrl(title);
 }
 
-export function buildCustomerFacingProduct(rp: {
+/** Parse API stock into count + status */
+export function parseRemoteStock(rp: Record<string, unknown>): {
+  stock_status: 'in_stock' | 'limited' | 'out_of_stock';
+  reseller_stock: number | null;
+} {
+  const keys = ['stock', 'quantity', 'qty', 'available', 'available_stock', 'stock_count', 'inventory'];
+  let raw: unknown = null;
+  for (const k of keys) {
+    if (rp[k] != null && rp[k] !== '') {
+      raw = rp[k];
+      break;
+    }
+  }
+
+  if (raw == null) {
+    // manual_delivery products may still be orderable
+    if (rp.manual_delivery === true) {
+      return { stock_status: 'in_stock', reseller_stock: null };
+    }
+    return { stock_status: 'in_stock', reseller_stock: null };
+  }
+
+  if (typeof raw === 'boolean') {
+    return {
+      stock_status: raw ? 'in_stock' : 'out_of_stock',
+      reseller_stock: raw ? null : 0,
+    };
+  }
+
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    const n = Math.max(0, Math.floor(raw));
+    if (n <= 0) return { stock_status: 'out_of_stock', reseller_stock: 0 };
+    if (n <= 5) return { stock_status: 'limited', reseller_stock: n };
+    return { stock_status: 'in_stock', reseller_stock: n };
+  }
+
+  const s = String(raw).trim().toLowerCase();
+  if (!s || s === 'null' || s === 'undefined') {
+    return { stock_status: 'in_stock', reseller_stock: null };
+  }
+  if (
+    s === '0' ||
+    s.includes('out') ||
+    s === 'sold' ||
+    s === 'unavailable' ||
+    s === 'false' ||
+    s === 'no'
+  ) {
+    return { stock_status: 'out_of_stock', reseller_stock: 0 };
+  }
+  if (s.includes('limit') || s.includes('low') || s.includes('few')) {
+    const n = parseInt(s.replace(/\D/g, ''), 10);
+    return {
+      stock_status: 'limited',
+      reseller_stock: Number.isFinite(n) && n > 0 ? n : null,
+    };
+  }
+  if (s.includes('in stock') || s === 'yes' || s === 'true' || s === 'available') {
+    return { stock_status: 'in_stock', reseller_stock: null };
+  }
+
+  const n = parseInt(s.replace(/,/g, ''), 10);
+  if (Number.isFinite(n)) {
+    if (n <= 0) return { stock_status: 'out_of_stock', reseller_stock: 0 };
+    if (n <= 5) return { stock_status: 'limited', reseller_stock: n };
+    return { stock_status: 'in_stock', reseller_stock: n };
+  }
+
+  return { stock_status: 'in_stock', reseller_stock: null };
+}
+
+export async function buildCustomerFacingProduct(rp: {
   id?: string;
   name?: string;
   [key: string]: unknown;
-}): { name: string; description: string; image_url: string } {
+}): Promise<{
+  name: string;
+  description: string;
+  image_url: string;
+  stock_status: 'in_stock' | 'limited' | 'out_of_stock';
+  reseller_stock: number | null;
+}> {
   const rawName = String(rp.name || 'Digital Product');
   const name = polishProductTitle(rawName);
   const apiDesc = pickApiDescriptionField(rp);
   const description = polishProductDescription({ title: name, apiDescription: apiDesc });
-  // Always generate branded image with Auto Product subtitle for consistency
-  const image_url = resolveCustomerProductImage(name, rp, false);
-  return { name, description, image_url };
+  const image_url = await resolveCustomerProductImage(name, rp);
+  const stock = parseRemoteStock(rp);
+  return {
+    name,
+    description,
+    image_url,
+    stock_status: stock.stock_status,
+    reseller_stock: stock.reseller_stock,
+  };
 }

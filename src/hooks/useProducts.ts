@@ -29,6 +29,8 @@ export interface Product {
   reseller_product_id?: string | null;
   /** Seller panel cost in USD (what prepaid balance deducts). Customer sees `price` in LKR. */
   reseller_cost_usd?: number | null;
+  /** Live stock count from reseller API when known */
+  reseller_stock?: number | null;
   use_variant_pricing?: boolean; // Toggle for showing pricing grid vs simple flow
   display_order?: number; // Manual sort order (lower = higher priority)
   created_at?: string;
@@ -64,7 +66,7 @@ export const useProducts = (includeInactive = false) => {
       // Public list: skip heavy unused columns; admin still gets full row
       const select = includeInactive
         ? '*'
-        : 'id,name,slug,description,price,old_price,category,categories,image_url,is_active,is_featured,stock_status,requirements,manual_fulfillment,reseller_product_id,reseller_cost_usd,use_variant_pricing,display_order,created_at';
+        : 'id,name,slug,description,price,old_price,category,categories,image_url,is_active,is_featured,stock_status,requirements,manual_fulfillment,reseller_product_id,reseller_cost_usd,reseller_stock,use_variant_pricing,display_order,created_at';
 
       let query = supabase
         .from('products')

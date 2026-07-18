@@ -356,27 +356,6 @@ function slugify(name: string, resellerId: string) {
   return `${base || 'api-product'}-api-${suffix}`;
 }
 
-function stockFromRemote(rp: ResellerRemoteProduct): 'in_stock' | 'limited' | 'out_of_stock' {
-  const s = rp.stock;
-  if (s == null) return 'in_stock';
-  if (typeof s === 'string') {
-    const lower = s.toLowerCase();
-    if (lower.includes('out') || lower === '0') return 'out_of_stock';
-    if (lower.includes('limit') || lower.includes('low')) return 'limited';
-    const n = parseInt(s, 10);
-    if (Number.isFinite(n)) {
-      if (n <= 0) return 'out_of_stock';
-      if (n <= 5) return 'limited';
-    }
-    return 'in_stock';
-  }
-  if (typeof s === 'number') {
-    if (s <= 0) return 'out_of_stock';
-    if (s <= 5) return 'limited';
-  }
-  return 'in_stock';
-}
-
 /**
  * Import seller-panel products as NEW catalog rows only.
  * Never updates/replaces existing store products.
@@ -452,7 +431,8 @@ export const useImportResellerProducts = () => {
       let nextOrder = (maxRow?.display_order ?? -1) + 1;
       const markActive = opts?.markActive !== false;
 
-      const rows = toAdd.map((rp) => {
+      const rows = [];
+      for (const rp of toAdd) {
         const usd = Number(rp.price);
         const costUsd = Number.isFinite(usd) && usd > 0 ? usd : 0;
         const { sellLkr } = calcApiCustomerPriceLkr(costUsd, {
@@ -461,12 +441,11 @@ export const useImportResellerProducts = () => {
           markupPercent: markup,
           minProfitLkr: minProfit,
         });
-        // Customer-facing title, description, branded image (Auto Product subtitle)
-        const face = buildCustomerFacingProduct(rp);
+        const face = await buildCustomerFacingProduct(rp);
         const order = nextOrder++;
         const oldPrice = sellLkr > 0 ? roundSellLkr(sellLkr * 1.15) : null;
 
-        return {
+        rows.push({
           name: face.name,
           slug: slugify(face.name, String(rp.id)),
           description: face.description,
@@ -475,16 +454,17 @@ export const useImportResellerProducts = () => {
           reseller_cost_usd: costUsd,
           category: 'API Products',
           image_url: face.image_url,
-          is_active: markActive,
+          is_active: markActive && face.stock_status !== 'out_of_stock',
           is_featured: false,
-          stock_status: stockFromRemote(rp),
+          stock_status: face.stock_status,
+          reseller_stock: face.reseller_stock,
           manual_fulfillment: false,
           use_variant_pricing: false,
           reseller_product_id: String(rp.id),
           display_order: order,
           requirements: { require_email: false, require_password: false },
-        };
-      });
+        });
+      }
 
       const CHUNK = 40;
       let added = 0;
@@ -549,14 +529,15 @@ export const useRefreshResellerPresentation = () => {
           id: rid,
           name: row.name,
         };
-        const face = buildCustomerFacingProduct(rp);
+        const face = await buildCustomerFacingProduct(rp);
         const { error: upErr } = await (supabase as any)
           .from('products')
           .update({
             name: face.name,
             description: face.description,
             image_url: face.image_url,
-            // keep slug stable unless empty
+            stock_status: face.stock_status,
+            reseller_stock: face.reseller_stock,
           })
           .eq('id', row.id);
         if (!upErr) updated++;

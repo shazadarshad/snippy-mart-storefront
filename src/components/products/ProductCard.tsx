@@ -118,7 +118,15 @@ const ProductCard = memo(function ProductCard({
                 soldOut ? 'bg-destructive' : limited ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
               )}
             />
-            {soldOut ? 'Sold out' : limited ? 'Limited' : 'In stock'}
+            {soldOut
+              ? 'Sold out'
+              : product.reseller_stock != null && product.reseller_stock > 0
+                ? limited
+                  ? `${product.reseller_stock} left`
+                  : `${product.reseller_stock} in stock`
+                : limited
+                  ? 'Limited'
+                  : 'In stock'}
           </span>
         </div>
 
