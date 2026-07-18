@@ -671,10 +671,6 @@ const CheckoutPage = () => {
                       </Link>
                       <span className="text-destructive"> *</span>
                     </Label>
-                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                      Includes no refund for Non Warranty products and no refund for provider-side
-                      downtime or errors after delivery.
-                    </p>
                   </div>
                 </div>
               </div>
