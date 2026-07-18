@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy, Zap, Mail, Wallet, BadgeCheck } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy, Zap, Mail, Wallet, BadgeCheck, XCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +34,11 @@ import { useOrders, useUpdateOrderStatus, useDeleteOrder, useDeleteOrderProof, t
 import { useToast } from '@/hooks/use-toast';
 import { cn, formatDateTime } from '@/lib/utils';
 import { useInventoryAccounts, useManualAssignOrder } from '@/hooks/useInventory';
-import { useDeliverOrderViaReseller } from '@/hooks/useResellerApi';
+import {
+  useDeliverOrderViaReseller,
+  useOrderResellerDeliveryLog,
+  summarizeDeliverResult,
+} from '@/hooks/useResellerApi';
 import {
   applyClaudeWorkflowToNotes,
   claudeStageLabel,
@@ -125,6 +129,11 @@ const AdminOrders = () => {
   const deleteOrder = useDeleteOrder();
   const deleteProof = useDeleteOrderProof();
   const deliverReseller = useDeliverOrderViaReseller();
+  const {
+    data: orderDeliveryLog = [],
+    refetch: refetchDeliveryLog,
+    isLoading: deliveryLogLoading,
+  } = useOrderResellerDeliveryLog(selectedOrder?.id);
 
   const [statusUpdate, setStatusUpdate] = useState<{ order: Order; newStatus: OrderStatus; message: string } | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -285,24 +294,64 @@ const AdminOrders = () => {
 
     setIsUpdatingStatus(true);
     try {
-      // 1. Update Database
-      await updateStatus.mutateAsync({ orderId: statusUpdate.order.id, status: statusUpdate.newStatus });
+      // 1. Update Database (+ auto-deliver if → processing)
+      const result = await updateStatus.mutateAsync({
+        orderId: statusUpdate.order.id,
+        status: statusUpdate.newStatus,
+      });
 
       // 2. Trigger Edge Function for Email
-      // We do this manually here for immediate feedback, but it also supports Webhooks
       await supabase.functions.invoke('handle-order-status-change', {
         body: {
           order: { ...statusUpdate.order, status: statusUpdate.newStatus },
           old_order: statusUpdate.order,
-          custom_message: statusUpdate.message
-        }
+          custom_message: statusUpdate.message,
+        },
       });
 
-      toast({
-        title: 'Status updated & Email sent',
-        description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(statusUpdate.newStatus)}.`,
-      });
+      const delivery = result?.delivery;
+      if (delivery && (delivery.failed || delivery.delivered || delivery.error)) {
+        const failLines = (delivery.results || [])
+          .filter((r) => r.status === 'failed')
+          .map((r) => `${r.product_name || 'Item'}: ${r.error || 'failed'}`);
+        const okLines = (delivery.results || [])
+          .filter((r) => r.status === 'delivered' || r.status === 'already_delivered')
+          .map((r) => r.product_name || 'Item');
+
+        if ((delivery.failed ?? 0) > 0 || delivery.error) {
+          toast({
+            title: 'Status updated — Auto delivery FAILED',
+            description:
+              failLines.join(' · ') ||
+              delivery.error ||
+              'Reseller delivery failed (e.g. insufficient balance). Open the order for details.',
+            variant: 'destructive',
+          });
+        } else if ((delivery.delivered ?? 0) > 0) {
+          toast({
+            title: 'Status updated — Auto delivery OK',
+            description: `Delivered: ${okLines.join(', ') || delivery.delivered}. Order ${statusUpdate.order.order_number} → ${adminStatusLabel(result.order.status as OrderStatus)}.`,
+          });
+        } else {
+          toast({
+            title: 'Status updated',
+            description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(statusUpdate.newStatus)}. ${delivery.skipped ? 'No API products to auto-deliver.' : ''}`,
+          });
+        }
+        if (selectedOrder?.id === statusUpdate.order.id) {
+          setSelectedOrder((prev) =>
+            prev ? { ...prev, status: result.order.status as OrderStatus } : prev,
+          );
+          refetchDeliveryLog();
+        }
+      } else {
+        toast({
+          title: 'Status updated & Email sent',
+          description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(statusUpdate.newStatus)}.`,
+        });
+      }
       setStatusUpdate(null);
+      refetch();
     } catch (error: any) {
       toast({
         title: 'Error updating status',
@@ -1196,19 +1245,102 @@ const AdminOrders = () => {
                   </div>
                 </div>
 
-                {/* Reseller API auto-delivery */}
+                {/* Reseller API auto-delivery + per-order errors */}
                 {!isClaudePreOrder(selectedOrder) && (
                   <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/20 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Wallet className="w-5 h-5 text-emerald-500" />
-                      <h3 className="text-sm font-black uppercase tracking-widest text-foreground">
-                        Reseller API delivery
-                      </h3>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Wallet className="w-5 h-5 text-emerald-500" />
+                        <h3 className="text-sm font-black uppercase tracking-widest text-foreground">
+                          Reseller API delivery
+                        </h3>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs"
+                        onClick={() => refetchDeliveryLog()}
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                        Refresh log
+                      </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Orders mapped products from your prepaid seller panel (idempotent — safe to retry).
-                      Also runs automatically when status is set to <span className="font-semibold">processing</span> if enabled in Reseller API settings.
+                      Auto-runs when status → <span className="font-semibold">processing</span>.
+                      Failures (e.g. insufficient balance) show below for this order.
                     </p>
+
+                    {/* Delivery log for THIS order */}
+                    {deliveryLogLoading ? (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading delivery log…
+                      </div>
+                    ) : orderDeliveryLog.length > 0 ? (
+                      <div className="space-y-2">
+                        {orderDeliveryLog.map((d) => {
+                          const failed = d.status === 'failed';
+                          const ok = d.status === 'delivered';
+                          return (
+                            <div
+                              key={d.id}
+                              className={cn(
+                                'p-3 rounded-xl border text-sm',
+                                failed && 'bg-destructive/10 border-destructive/30',
+                                ok && 'bg-emerald-500/10 border-emerald-500/25',
+                                !failed && !ok && 'bg-secondary/40 border-border',
+                              )}
+                            >
+                              <div className="flex items-start gap-2">
+                                {failed ? (
+                                  <XCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                                ) : ok ? (
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                ) : (
+                                  <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                )}
+                                <div className="min-w-0 flex-1 space-y-1">
+                                  <p className="font-bold text-foreground">
+                                    {d.product_name || 'Product'}{' '}
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                                      {d.status}
+                                    </span>
+                                  </p>
+                                  {failed && d.error_message && (
+                                    <p className="text-destructive font-semibold text-xs break-words">
+                                      {d.error_message}
+                                    </p>
+                                  )}
+                                  {ok && d.delivered_data && (
+                                    <p className="font-mono text-xs break-all text-foreground">
+                                      {d.delivered_data}
+                                    </p>
+                                  )}
+                                  {d.vendor_order_id && (
+                                    <p className="text-[10px] text-muted-foreground font-mono">
+                                      Vendor: {d.vendor_order_id}
+                                      {d.amount != null ? ` · $${Number(d.amount).toFixed(2)}` : ''}
+                                    </p>
+                                  )}
+                                  <p className="text-[10px] text-muted-foreground">
+                                    {formatDateTime(d.updated_at || d.created_at)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-xl border border-dashed border-border text-xs text-muted-foreground flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>
+                          No delivery attempts logged for this order yet. Set status to{' '}
+                          <strong>processing</strong> or click deliver below.
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
@@ -1219,30 +1351,27 @@ const AdminOrders = () => {
                             const res = await deliverReseller.mutateAsync({ orderId: selectedOrder.id });
                             const delivered = res.delivered ?? 0;
                             const failed = res.failed ?? 0;
-                            const skipped = res.skipped ?? 0;
+                            const summary = summarizeDeliverResult(res);
                             toast({
-                              title: delivered > 0 ? 'Reseller delivery done' : 'No items delivered',
-                              description: `Delivered: ${delivered} · Failed: ${failed} · Skipped (unmapped): ${skipped}${
-                                res.order_status ? ` · Status: ${res.order_status}` : ''
-                              }`,
-                              variant: failed > 0 && delivered === 0 ? 'destructive' : 'default',
+                              title:
+                                failed > 0 && delivered === 0
+                                  ? 'Reseller delivery FAILED'
+                                  : failed > 0
+                                    ? 'Partial delivery'
+                                    : delivered > 0
+                                      ? 'Reseller delivery done'
+                                      : 'No items delivered',
+                              description: summary,
+                              variant: failed > 0 ? 'destructive' : 'default',
                             });
                             refetch();
-                            if (res.results) {
-                              const firstDelivered = res.results.find(
-                                (r: any) => r.delivered_data && (r.status === 'delivered' || r.status === 'already_delivered'),
+                            refetchDeliveryLog();
+                            if (res.order_status) {
+                              setSelectedOrder((prev) =>
+                                prev
+                                  ? { ...prev, status: res.order_status as OrderStatus }
+                                  : prev,
                               );
-                              if (firstDelivered?.delivered_data) {
-                                setSelectedOrder((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        status: (res.order_status as OrderStatus) || prev.status,
-                                        notes: `${prev.notes || ''}\n[Reseller] ${firstDelivered.product_name}: ${firstDelivered.delivered_data}`.trim(),
-                                      }
-                                    : prev,
-                                );
-                              }
                             }
                           } catch (e: any) {
                             toast({
@@ -1250,6 +1379,7 @@ const AdminOrders = () => {
                               description: e.message,
                               variant: 'destructive',
                             });
+                            refetchDeliveryLog();
                           }
                         }}
                       >

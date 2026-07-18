@@ -297,36 +297,106 @@ export const useResellerDeliveries = (enabled = true) => {
   });
 };
 
+export type ResellerDeliverResult = {
+  success: boolean;
+  error?: string;
+  delivered?: number;
+  failed?: number;
+  skipped?: number;
+  order_status?: string;
+  order_id?: string;
+  results?: Array<{
+    order_item_id?: string;
+    product_name?: string;
+    status?: string;
+    error?: string;
+    delivered_data?: string;
+    reason?: string;
+  }>;
+};
+
+/** Admin: delivery log for one order (failed + delivered) */
+export const useOrderResellerDeliveryLog = (orderId: string | undefined) => {
+  return useQuery({
+    queryKey: ['reseller', 'order-log', orderId],
+    enabled: !!orderId,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('reseller_deliveries')
+        .select(
+          'id, product_name, status, error_message, delivered_data, vendor_order_id, amount, external_order_id, created_at, updated_at',
+        )
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as Array<{
+        id: string;
+        product_name: string | null;
+        status: string;
+        error_message: string | null;
+        delivered_data: string | null;
+        vendor_order_id: string | null;
+        amount: number | null;
+        external_order_id: string;
+        created_at: string;
+        updated_at: string;
+      }>;
+    },
+  });
+};
+
+export function summarizeDeliverResult(res: ResellerDeliverResult): string {
+  const fails = (res.results || []).filter((r) => r.status === 'failed');
+  if (fails.length) {
+    return fails
+      .map((r) => `${r.product_name || 'Item'}: ${r.error || 'failed'}`)
+      .join(' · ');
+  }
+  if (res.error) return res.error;
+  if (res.failed && res.failed > 0) return `${res.failed} item(s) failed to deliver`;
+  if (res.delivered && res.delivered > 0) {
+    return `Delivered ${res.delivered} item(s)${res.skipped ? ` · ${res.skipped} skipped (not API)` : ''}`;
+  }
+  if (res.skipped && !res.delivered) return 'No API products on this order (nothing to auto-deliver)';
+  return 'No delivery action';
+}
+
 export const useDeliverOrderViaReseller = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ orderId, force }: { orderId: string; force?: boolean }) => {
-      const res = await invokeReseller<{
-        success: boolean;
-        error?: string;
-        delivered?: number;
-        failed?: number;
-        skipped?: number;
-        order_status?: string;
-        results?: any[];
-      }>({
-        action: 'deliver_order',
-        order_id: orderId,
-        force: !!force,
+      // Raw invoke — keep JSON body even when edge returns 400 (failed delivery)
+      const { data, error } = await supabase.functions.invoke('reseller-fulfill', {
+        body: {
+          action: 'deliver_order',
+          order_id: orderId,
+          force: !!force,
+        },
       });
 
-      if (res.error && !res.delivered) {
-        throw new Error(res.error);
+      let res = (data || {}) as ResellerDeliverResult;
+
+      if (error && !data) {
+        const anyErr = error as any;
+        if (anyErr?.context) {
+          try {
+            const body = await anyErr.context.json();
+            res = body as ResellerDeliverResult;
+          } catch {
+            throw new Error(error.message || 'Delivery failed');
+          }
+        } else {
+          throw new Error(error.message || 'Delivery failed');
+        }
       }
-      if (res.failed && res.failed > 0 && !res.delivered) {
-        const first = res.results?.find((r) => r.status === 'failed');
-        throw new Error(first?.error || res.error || 'Delivery failed');
-      }
+
+      // Prefer structured body over throw so UI can show per-item errors
       return res;
     },
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['reseller'] });
+      qc.invalidateQueries({ queryKey: ['reseller', 'order-log', vars.orderId] });
     },
   });
 };

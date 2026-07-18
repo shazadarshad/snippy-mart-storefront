@@ -228,6 +228,25 @@ export const useUpdateExistingOrder = () => {
   });
 };
 
+export type OrderStatusUpdateResult = {
+  order: Order;
+  /** Present when status → processing triggered reseller auto-deliver */
+  delivery?: {
+    success?: boolean;
+    error?: string;
+    delivered?: number;
+    failed?: number;
+    skipped?: number;
+    order_status?: string;
+    results?: Array<{
+      product_name?: string;
+      status?: string;
+      error?: string;
+      delivered_data?: string;
+    }>;
+  } | null;
+};
+
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
 
@@ -242,6 +261,8 @@ export const useUpdateOrderStatus = () => {
 
       if (error) throw error;
 
+      let delivery: OrderStatusUpdateResult['delivery'] = null;
+
       // Auto-deliver mapped reseller products when payment is confirmed (processing)
       if (status === 'processing' && data?.id) {
         try {
@@ -253,31 +274,69 @@ export const useUpdateOrderStatus = () => {
               'reseller-fulfill',
               { body: { action: 'deliver_order', order_id: data.id } },
             );
+
             if (deliverError) {
-              console.warn('[reseller] auto-deliver invoke error', deliverError);
-            } else if (deliverResult?.failed > 0) {
-              console.warn('[reseller] auto-deliver partial/fail', deliverResult);
-            } else if (deliverResult?.delivered > 0) {
-              console.log('[reseller] auto-delivered', deliverResult);
+              let msg = deliverError.message || 'Auto-delivery request failed';
+              const anyErr = deliverError as any;
+              if (anyErr?.context) {
+                try {
+                  const body = await anyErr.context.json();
+                  msg =
+                    body?.error ||
+                    body?.results?.find((r: any) => r.status === 'failed')?.error ||
+                    msg;
+                  delivery = {
+                    success: false,
+                    error: msg,
+                    failed: body?.failed ?? 1,
+                    delivered: body?.delivered ?? 0,
+                    skipped: body?.skipped ?? 0,
+                    results: body?.results,
+                  };
+                } catch {
+                  delivery = { success: false, error: msg, failed: 1, delivered: 0 };
+                }
+              } else {
+                delivery = { success: false, error: msg, failed: 1, delivered: 0 };
+              }
+            } else if (deliverResult) {
+              delivery = {
+                success: !!deliverResult.success,
+                error: deliverResult.error,
+                delivered: deliverResult.delivered ?? 0,
+                failed: deliverResult.failed ?? 0,
+                skipped: deliverResult.skipped ?? 0,
+                order_status: deliverResult.order_status,
+                results: deliverResult.results,
+              };
             }
-            // Re-fetch order in case status flipped to completed
-            const { data: refreshed } = await supabase
-              .from('orders')
-              .select('*')
-              .eq('id', orderId)
-              .single();
-            if (refreshed) return refreshed;
           }
-        } catch (e) {
-          console.warn('[reseller] auto-deliver skipped/failed', e);
+        } catch (e: any) {
+          delivery = {
+            success: false,
+            error: e?.message || 'Auto-delivery failed',
+            failed: 1,
+            delivered: 0,
+          };
         }
       }
 
-      return data;
+      // Re-fetch order in case status flipped to completed
+      const { data: refreshed } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
+
+      return {
+        order: (refreshed || data) as Order,
+        delivery,
+      } satisfies OrderStatusUpdateResult;
     },
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['reseller'] });
+      queryClient.invalidateQueries({ queryKey: ['reseller', 'order-log', vars.orderId] });
     },
   });
 };
