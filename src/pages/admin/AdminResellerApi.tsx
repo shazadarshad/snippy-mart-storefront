@@ -589,6 +589,14 @@ const AdminResellerApi = () => {
           </div>
         )}
 
+        {!isEnabled && settings?.has_api_key && (
+          <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-sm text-amber-900 dark:text-amber-100">
+            <strong>Auto-delivery switch is OFF.</strong> Turn on “Enable auto-delivery” below and
+            click <strong>Save settings</strong>. Admin “Deliver via Reseller API” still works with
+            your API key even if this is off.
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row flex-wrap gap-6">
           <div className="flex items-center gap-3">
             <Switch checked={isEnabled} onCheckedChange={setIsEnabled} id="reseller-enabled" />

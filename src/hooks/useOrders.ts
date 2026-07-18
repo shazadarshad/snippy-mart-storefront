@@ -269,10 +269,37 @@ export const useUpdateOrderStatus = () => {
           const { data: settings } = await supabase.functions.invoke('reseller-fulfill', {
             body: { action: 'get_settings' },
           });
-          if (settings?.is_enabled && settings?.auto_deliver_on_processing && settings?.has_api_key) {
+
+          if (!settings?.has_api_key) {
+            delivery = {
+              success: false,
+              error:
+                'Reseller API key not configured. Save your key under Admin → Reseller API, then use “Deliver via Reseller API”.',
+              failed: 0,
+              delivered: 0,
+              skipped: 0,
+            };
+          } else if (settings?.auto_deliver_on_processing === false) {
+            delivery = {
+              success: false,
+              error:
+                'Auto-deliver on processing is OFF. Turn it on in Reseller API settings, or click “Deliver via Reseller API” on this order.',
+              failed: 0,
+              delivered: 0,
+              skipped: 0,
+            };
+          } else {
+            // Always attempt when key + auto-deliver are on.
+            // bypass_enabled so a forgotten “Enable auto-delivery” toggle does not block customers.
             const { data: deliverResult, error: deliverError } = await supabase.functions.invoke(
               'reseller-fulfill',
-              { body: { action: 'deliver_order', order_id: data.id } },
+              {
+                body: {
+                  action: 'deliver_order',
+                  order_id: data.id,
+                  bypass_enabled: true,
+                },
+              },
             );
 
             if (deliverError) {
@@ -301,7 +328,7 @@ export const useUpdateOrderStatus = () => {
               }
             } else if (deliverResult) {
               delivery = {
-                success: !!deliverResult.success,
+                success: !!deliverResult.success || (deliverResult.delivered ?? 0) > 0,
                 error: deliverResult.error,
                 delivered: deliverResult.delivered ?? 0,
                 failed: deliverResult.failed ?? 0,
@@ -335,8 +362,10 @@ export const useUpdateOrderStatus = () => {
     },
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders', 'track'] });
       queryClient.invalidateQueries({ queryKey: ['reseller'] });
       queryClient.invalidateQueries({ queryKey: ['reseller', 'order-log', vars.orderId] });
+      queryClient.invalidateQueries({ queryKey: ['reseller', 'order-deliveries', vars.orderId] });
     },
   });
 };

@@ -138,15 +138,29 @@ type OrderItemRow = {
 async function deliverOrder(
   supabaseAdmin: ReturnType<typeof createClient>,
   orderId: string,
-  options: { force?: boolean } = {},
+  options: { force?: boolean; bypassEnabled?: boolean } = {},
 ) {
   const settings = await getSettings(supabaseAdmin);
 
-  if (!settings.is_enabled && !options.force) {
-    return { success: false, error: "Reseller API is disabled in settings" };
-  }
   if (!settings.api_key) {
-    return { success: false, error: "Reseller API key not configured" };
+    return {
+      success: false,
+      error: "Reseller API key not configured. Save your key under Admin → Reseller API.",
+    };
+  }
+
+  // is_enabled gates normal automation. Admin actions pass bypassEnabled.
+  // force also bypasses and re-orders already-delivered lines (use carefully).
+  if (!settings.is_enabled && !options.force && !options.bypassEnabled) {
+    return {
+      success: false,
+      error:
+        "Reseller API is disabled in settings. Turn ON “Enable auto-delivery” under Admin → Reseller API and click Save — or use Deliver again (admin bypass).",
+      delivered: 0,
+      failed: 0,
+      skipped: 0,
+      results: [],
+    };
   }
 
   const baseUrl = settings.base_url || DEFAULT_BASE;
@@ -251,20 +265,48 @@ async function deliverOrder(
     );
 
     const payload = apiResult.data ?? {};
+
+    // Pull delivery text from common reseller response shapes
     const deliveredDataRaw =
       payload.data ??
       payload.delivered_data ??
       payload.delivery ??
+      payload.code ??
+      payload.codes ??
+      payload.credentials ??
+      payload.account ??
+      payload.result ??
       (typeof payload === "string" ? payload : null);
 
     const isDelivered =
       apiResult.ok &&
       (payload.status === "delivered" ||
+        payload.status === "success" ||
+        payload.success === true ||
         deliveredDataRaw != null ||
         !!payload.order_id);
 
-    const deliveredData =
-      deliveredDataRaw != null ? String(deliveredDataRaw) : isDelivered ? "" : null;
+    let deliveredData: string | null = null;
+    if (deliveredDataRaw != null) {
+      if (typeof deliveredDataRaw === "string") {
+        deliveredData = deliveredDataRaw;
+      } else if (typeof deliveredDataRaw === "object") {
+        try {
+          deliveredData = JSON.stringify(deliveredDataRaw);
+        } catch {
+          deliveredData = String(deliveredDataRaw);
+        }
+      } else {
+        deliveredData = String(deliveredDataRaw);
+      }
+    } else if (isDelivered) {
+      // Order accepted but no code field — store full payload so Track can still show something
+      try {
+        deliveredData = JSON.stringify(payload);
+      } catch {
+        deliveredData = "";
+      }
+    }
 
     const vendorOrderId = payload.order_id ?? payload.vendor_order_id ?? null;
     const amount = payload.amount != null ? Number(payload.amount) : null;
@@ -613,8 +655,18 @@ serve(async (req) => {
       if (!orderId) return json({ error: "order_id required" }, 400);
       const result = await deliverOrder(supabaseAdmin, orderId, {
         force: !!body.force,
+        // Admin UI / status→processing may bypass the is_enabled toggle when a key exists
+        bypassEnabled: !!body.bypass_enabled || !!body.bypassEnabled,
       });
-      return json(result, result.success || result.delivered ? 200 : 400);
+      // Always 200 with structured body so the client can show per-item errors
+      // (non-2xx often strips JSON in supabase-js)
+      const http =
+        result.success || (result.delivered && result.delivered > 0) || result.results
+          ? 200
+          : result.error && !result.results
+            ? 400
+            : 200;
+      return json(result, http);
     }
 
     if (action === "list_deliveries") {

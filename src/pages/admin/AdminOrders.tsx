@@ -1348,7 +1348,12 @@ const AdminOrders = () => {
                         disabled={deliverReseller.isPending}
                         onClick={async () => {
                           try {
-                            const res = await deliverReseller.mutateAsync({ orderId: selectedOrder.id });
+                            // bypass_enabled: deliver even if “Enable auto-delivery” toggle is off
+                            // (does NOT re-charge already-delivered lines unless force:true)
+                            const res = await deliverReseller.mutateAsync({
+                              orderId: selectedOrder.id,
+                              bypassEnabled: true,
+                            });
                             const delivered = res.delivered ?? 0;
                             const failed = res.failed ?? 0;
                             const summary = summarizeDeliverResult(res);

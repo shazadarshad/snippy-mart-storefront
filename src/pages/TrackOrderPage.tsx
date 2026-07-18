@@ -43,10 +43,24 @@ const TrackOrderPage = () => {
   const [searchParams] = useSearchParams();
   const [orderId, setOrderId] = useState(searchParams.get('orderId') || '');
   const [searchId, setSearchId] = useState(searchParams.get('orderId') || '');
-  const { data: order, isLoading, isFetched, refetch, isFetching } = useTrackOrder(searchId);
+  const {
+    data: order,
+    isLoading,
+    isFetched,
+    refetch,
+    isFetching,
+  } = useTrackOrder(searchId);
   const { data: settings } = useSiteSettings();
   const automation = useOrderAutomation(order?.id);
-  const { data: resellerDeliveries = [] } = useOrderResellerDeliveries(order?.id);
+  const waitingForAutoDelivery =
+    !!order &&
+    (order.status === 'pending' ||
+      order.status === 'processing' ||
+      order.status === 'shipping');
+  const { data: resellerDeliveries = [], refetch: refetchResellerDeliveries } =
+    useOrderResellerDeliveries(order?.id, {
+      pollWhileWaiting: waitingForAutoDelivery,
+    });
 
   useEffect(() => {
     const id = searchParams.get('orderId');
@@ -261,7 +275,10 @@ const TrackOrderPage = () => {
                     variant="outline"
                     size="sm"
                     className="shrink-0 h-9"
-                    onClick={() => refetch()}
+                    onClick={() => {
+                      void refetch();
+                      void refetchResellerDeliveries();
+                    }}
                     disabled={isFetching}
                   >
                     {isFetching ? 'Updating…' : 'Refresh'}

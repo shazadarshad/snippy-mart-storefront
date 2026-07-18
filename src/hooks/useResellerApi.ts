@@ -364,13 +364,25 @@ export function summarizeDeliverResult(res: ResellerDeliverResult): string {
 export const useDeliverOrderViaReseller = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ orderId, force }: { orderId: string; force?: boolean }) => {
+    mutationFn: async ({
+      orderId,
+      force,
+      bypassEnabled,
+    }: {
+      orderId: string;
+      /** Re-order even if already delivered (charges panel again) */
+      force?: boolean;
+      /** Ignore is_enabled toggle (admin manual deliver / status change) */
+      bypassEnabled?: boolean;
+    }) => {
       // Raw invoke — keep JSON body even when edge returns 400 (failed delivery)
       const { data, error } = await supabase.functions.invoke('reseller-fulfill', {
         body: {
           action: 'deliver_order',
           order_id: orderId,
           force: !!force,
+          // Default true for admin button so disabled toggle does not block delivery
+          bypass_enabled: bypassEnabled !== false,
         },
       });
 
@@ -397,15 +409,28 @@ export const useDeliverOrderViaReseller = () => {
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['reseller'] });
       qc.invalidateQueries({ queryKey: ['reseller', 'order-log', vars.orderId] });
+      qc.invalidateQueries({ queryKey: ['reseller', 'order-deliveries', vars.orderId] });
+      qc.invalidateQueries({ queryKey: ['orders', 'track'] });
     },
   });
 };
 
 /** Public track-order: delivered credentials for this order */
-export const useOrderResellerDeliveries = (orderId: string | undefined) => {
+export const useOrderResellerDeliveries = (
+  orderId: string | undefined,
+  opts?: { pollWhileWaiting?: boolean },
+) => {
   return useQuery({
     queryKey: ['reseller', 'order-deliveries', orderId],
     enabled: !!orderId,
+    // While waiting for admin to confirm payment / API to deliver, poll so Track updates
+    refetchInterval: (q) => {
+      if (!opts?.pollWhileWaiting) return false;
+      const rows = q.state.data as Array<{ delivered_data?: string | null }> | undefined;
+      const hasPayload = !!rows?.some((r) => r.delivered_data);
+      return hasPayload ? false : 4000;
+    },
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data, error } = await (supabase as any).rpc('get_order_reseller_deliveries', {
         p_order_id: orderId,
