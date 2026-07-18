@@ -92,22 +92,22 @@ export function polishProductTitle(raw: string): string {
   for (const [re, rep] of brandMap) s = s.replace(re, rep);
 
   // Expand duration shorthand BEFORE title-case
+  // IMPORTANT: do NOT use \b between digit and unit letter — "12m" has no boundary there.
   // 12m / 12mo / 12mos → 12 Months | 1m → 1 Month
   const unit = (n: string, one: string, many: string) =>
     `${n} ${Number(n) === 1 ? one : many}`;
 
   s = s
-    .replace(/\b(\d+)\s*mos?\b/gi, (_, n) => unit(n, 'Month', 'Months'))
-    .replace(/\b(\d+)\s*m\b/gi, (_, n) => unit(n, 'Month', 'Months'))
-    .replace(/\b(\d+)\s*months?\b/gi, (_, n) => unit(n, 'Month', 'Months'))
-    .replace(/\b(\d+)\s*yrs?\b/gi, (_, n) => unit(n, 'Year', 'Years'))
-    .replace(/\b(\d+)\s*y\b/gi, (_, n) => unit(n, 'Year', 'Years'))
-    .replace(/\b(\d+)\s*years?\b/gi, (_, n) => unit(n, 'Year', 'Years'))
-    .replace(/\b(\d+)\s*days?\b/gi, (_, n) => unit(n, 'Day', 'Days'))
-    .replace(/\b(\d+)\s*d\b/gi, (_, n) => unit(n, 'Day', 'Days'))
-    .replace(/\b(\d+)\s*wks?\b/gi, (_, n) => unit(n, 'Week', 'Weeks'))
-    .replace(/\b(\d+)\s*weeks?\b/gi, (_, n) => unit(n, 'Week', 'Weeks'))
-    .replace(/\b(\d+)\s*hrs?\b/gi, (_, n) => unit(n, 'Hour', 'Hours'))
+    // months (longest first) — allow glued forms like 12m / Factory12m
+    .replace(/(\d+)\s*(?:months?|mos?|m)(?![a-z])/gi, (_, n) => ` ${unit(n, 'Month', 'Months')} `)
+    .replace(/(\d+)\s*(?:years?|yrs?|y)(?![a-z])/gi, (_, n) => ` ${unit(n, 'Year', 'Years')} `)
+    .replace(/(\d+)\s*(?:weeks?|wks?|w)(?![a-z])/gi, (_, n) => ` ${unit(n, 'Week', 'Weeks')} `)
+    .replace(/(\d+)\s*(?:days?|d)(?![a-z])/gi, (_, n) => ` ${unit(n, 'Day', 'Days')} `)
+    .replace(/(\d+)\s*(?:hours?|hrs?|h)(?![a-z])/gi, (_, n) => ` ${unit(n, 'Hour', 'Hours')} `)
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  s = s
     .replace(/\bpremium\b/gi, 'Premium')
     .replace(/\bprem\b/gi, 'Premium')
     .replace(/\bpro\b/gi, 'Pro')

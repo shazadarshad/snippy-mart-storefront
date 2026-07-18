@@ -506,9 +506,15 @@ const AdminResellerApi = () => {
               onClick={async () => {
                 try {
                   const res = await refreshPresentation.mutateAsync();
+                  const sample =
+                    res.samples?.length > 0
+                      ? ` Examples: ${res.samples.slice(0, 2).join('; ')}`
+                      : ' Titles already clean or re-applied.';
                   toast({
-                    title: 'Store copy refreshed',
-                    description: `Updated titles, descriptions, and Auto images for ${res.updated} API product(s). Prices unchanged.`,
+                    title: `Refreshed ${res.updated} product(s)`,
+                    description: `Titles, descriptions, stock, and images updated. Prices unchanged.${sample}${
+                      res.failed ? ` (${res.failed} failed)` : ''
+                    }${res.errors?.length ? ` ${res.errors[0]}` : ''}`,
                   });
                 } catch (e: any) {
                   toast({

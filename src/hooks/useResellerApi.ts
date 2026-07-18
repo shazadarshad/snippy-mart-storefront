@@ -513,7 +513,12 @@ export const useRefreshResellerPresentation = () => {
       else if (Array.isArray(raw?.products)) remote = raw.products;
       else if (Array.isArray(raw?.data)) remote = raw.data;
 
-      const remoteById = new Map(remote.map((r) => [String(r.id), r]));
+      // Match by string id and lowercase
+      const remoteById = new Map<string, ResellerRemoteProduct>();
+      for (const r of remote) {
+        remoteById.set(String(r.id), r);
+        remoteById.set(String(r.id).toLowerCase(), r);
+      }
 
       const { data: localRows, error } = await (supabase as any)
         .from('products')
@@ -521,29 +526,80 @@ export const useRefreshResellerPresentation = () => {
         .not('reseller_product_id', 'is', null);
 
       if (error) throw error;
-
-      let updated = 0;
-      for (const row of localRows || []) {
-        const rid = String(row.reseller_product_id);
-        const rp = remoteById.get(rid) || {
-          id: rid,
-          name: row.name,
-        };
-        const face = await buildCustomerFacingProduct(rp);
-        const { error: upErr } = await (supabase as any)
-          .from('products')
-          .update({
-            name: face.name,
-            description: face.description,
-            image_url: face.image_url,
-            stock_status: face.stock_status,
-            reseller_stock: face.reseller_stock,
-          })
-          .eq('id', row.id);
-        if (!upErr) updated++;
+      if (!localRows?.length) {
+        throw new Error('No API products found in your catalog to refresh.');
       }
 
-      return { updated };
+      let updated = 0;
+      let failed = 0;
+      const samples: string[] = [];
+      const errors: string[] = [];
+
+      for (const row of localRows) {
+        const rid = String(row.reseller_product_id);
+        const rp =
+          remoteById.get(rid) ||
+          remoteById.get(rid.toLowerCase()) ||
+          ({
+            id: rid,
+            name: row.name, // re-polish even without live API row
+          } as ResellerRemoteProduct);
+
+        // Prefer raw API name when available so 12m expands correctly
+        const sourceName = String(rp.name || row.name || 'Digital Product');
+        const face = await buildCustomerFacingProduct({
+          ...rp,
+          name: sourceName,
+        });
+
+        // 1) Always try core fields first (name/description/stock) — small payload
+        const coreUpdate: Record<string, unknown> = {
+          name: face.name,
+          description: face.description,
+          stock_status: face.stock_status,
+        };
+        if (face.reseller_stock != null) {
+          coreUpdate.reseller_stock = face.reseller_stock;
+        } else {
+          coreUpdate.reseller_stock = null;
+        }
+
+        const { error: coreErr } = await (supabase as any)
+          .from('products')
+          .update(coreUpdate)
+          .eq('id', row.id);
+
+        if (coreErr) {
+          failed++;
+          if (errors.length < 3) errors.push(`${row.name}: ${coreErr.message}`);
+          continue;
+        }
+
+        // 2) Image separately (can be large data-URI) — don't block title update
+        if (face.image_url) {
+          const { error: imgErr } = await (supabase as any)
+            .from('products')
+            .update({ image_url: face.image_url })
+            .eq('id', row.id);
+          if (imgErr && errors.length < 3) {
+            errors.push(`Image for ${face.name}: ${imgErr.message}`);
+          }
+        }
+
+        updated++;
+        if (samples.length < 5 && row.name !== face.name) {
+          samples.push(`"${row.name}" → "${face.name}"`);
+        }
+      }
+
+      if (updated === 0) {
+        throw new Error(
+          errors[0] ||
+            'No products updated. Check you are logged in as admin and products have reseller IDs.',
+        );
+      }
+
+      return { updated, failed, samples, errors };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['products'] });
