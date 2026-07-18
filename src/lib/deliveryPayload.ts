@@ -11,7 +11,8 @@ export type DeliveryKind =
   | 'json'
   | 'multiline'
   | 'code'
-  | 'text';
+  | 'text'
+  | 'empty';
 
 export type ParsedField = {
   label: string;
@@ -31,17 +32,23 @@ export type ParsedDelivery = {
   steps: string[];
   /** Extra tip under the card */
   tip?: string;
+  /** No usable payload */
+  incomplete?: boolean;
 };
 
 const URL_RE = /https?:\/\/[^\s<>"']+/i;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+
+function cleanUrl(u: string): string {
+  return u.replace(/[),.\]}'"]+$/g, '').trim();
+}
 
 function looksLikeUrl(s: string): boolean {
   return /^https?:\/\//i.test(s.trim()) || URL_RE.test(s.trim());
 }
 
 function extractUrls(s: string): string[] {
-  return s.match(/https?:\/\/[^\s<>"']+/gi) || [];
+  return (s.match(/https?:\/\/[^\s<>"']+/gi) || []).map(cleanUrl).filter(Boolean);
 }
 
 function tryParseJson(raw: string): Record<string, unknown> | null {
@@ -57,17 +64,49 @@ function tryParseJson(raw: string): Record<string, unknown> | null {
   return null;
 }
 
-function splitLogin(line: string): { user: string; pass: string } | null {
-  // email:pass | user|pass | user / pass | user pass (if email first)
-  const m =
-    line.match(/^([^\s:|/]+@[^\s:|/]+)\s*[:|/]\s*(.+)$/) ||
-    line.match(/^([^\s:|/]+)\s*[:|/]\s*(.{4,})$/) ||
-    line.match(/^(user(name)?|email|login)\s*[:=]\s*(.+)$/i);
-  if (m) {
-    if (m[3] != null) return null; // handled separately
-    return { user: m[1].trim(), pass: m[2].trim() };
+function mapKeyLabel(k: string): string {
+  const low = k.toLowerCase();
+  if (/pass/.test(low)) return 'Password';
+  if (/email|user|login/.test(low)) return 'Username / email';
+  if (/code|coupon|voucher|pin/.test(low)) return 'Code';
+  if (/url|link|redeem/.test(low)) return 'Redeem link';
+  return k.replace(/_/g, ' ');
+}
+
+/** Flatten one level of nested objects into fields */
+function fieldsFromObject(obj: Record<string, unknown>, prefix = ''): ParsedField[] {
+  const fields: ParsedField[] = [];
+  for (const [k, v] of Object.entries(obj)) {
+    if (v == null) continue;
+    if (typeof v === 'object' && !Array.isArray(v)) {
+      fields.push(...fieldsFromObject(v as Record<string, unknown>, prefix ? `${prefix} ${k}` : k));
+      continue;
+    }
+    if (typeof v === 'object') continue;
+    const value = String(v).trim();
+    if (!value) continue;
+    const label = mapKeyLabel(prefix ? `${prefix}_${k}` : k);
+    const low = label.toLowerCase();
+    fields.push({
+      label,
+      value,
+      copyable: true,
+      isSecret: /pass|pin|secret|token|key/i.test(low),
+      isUrl: looksLikeUrl(value),
+    });
   }
-  // user:pass with key labels on separate lines handled in multiline
+  return fields;
+}
+
+function splitLogin(line: string): { user: string; pass: string } | null {
+  const t = line.trim();
+  // email:pass | user|pass
+  const m =
+    t.match(/^([^\s:|/]+@[^\s:|/]+)\s*[:|/]\s*(.+)$/) ||
+    t.match(/^([^\s:|/]+)\s*[:|/]\s*(.{4,})$/);
+  if (m) return { user: m[1].trim(), pass: m[2].trim() };
+
+  // labeled single field is not a full login pair
   return null;
 }
 
@@ -93,6 +132,20 @@ function parseKeyValueLines(text: string): ParsedField[] {
   return fields;
 }
 
+function emptyResult(product: string): ParsedDelivery {
+  return {
+    kind: 'empty',
+    title: product,
+    fields: [],
+    incomplete: true,
+    steps: [
+      'Nothing usable was found in this delivery.',
+      'Contact support with your Order ID so we can re-check or reissue.',
+    ],
+    tip: 'Save your Order ID — support needs it to help you.',
+  };
+}
+
 /**
  * Turn raw API delivery string into structured UI model.
  */
@@ -103,46 +156,23 @@ export function parseDeliveryPayload(
   const data = String(raw || '').trim();
   const product = productName || 'Your product';
 
-  if (!data) {
-    return {
-      kind: 'text',
-      title: product,
-      fields: [],
-      steps: ['Contact support with your Order ID if nothing appears here.'],
-    };
-  }
+  if (!data) return emptyResult(product);
 
   // JSON object from API
   const json = tryParseJson(data);
   if (json) {
-    const fields: ParsedField[] = [];
-    const mapKey = (k: string) => {
-      const low = k.toLowerCase();
-      if (/pass/.test(low)) return 'Password';
-      if (/email|user|login/.test(low)) return 'Username / email';
-      if (/code|coupon|voucher|pin/.test(low)) return 'Code';
-      if (/url|link|redeem/.test(low)) return 'Redeem link';
-      return k.replace(/_/g, ' ');
-    };
-    for (const [k, v] of Object.entries(json)) {
-      if (v == null || typeof v === 'object') continue;
-      const value = String(v);
-      const label = mapKey(k);
-      fields.push({
-        label,
-        value,
-        copyable: true,
-        isSecret: /pass|pin|secret|token/i.test(k),
-        isUrl: looksLikeUrl(value),
-      });
-    }
+    const fields = fieldsFromObject(json);
+    if (fields.length === 0) return emptyResult(product);
+
     const hasUrl = fields.some((f) => f.isUrl);
     const hasLogin = fields.some((f) => /user|email|login/i.test(f.label));
+    const hasPass = fields.some((f) => /pass/i.test(f.label));
     const hasCode = fields.some((f) => /code|coupon/i.test(f.label));
     return {
-      kind: hasUrl ? 'url' : hasLogin ? 'login' : hasCode ? 'coupon' : 'json',
+      kind: hasUrl ? 'url' : hasLogin || hasPass ? 'login' : hasCode ? 'coupon' : 'json',
       title: product,
-      primary: fields.find((f) => f.isUrl)?.value || fields.find((f) => /code/i.test(f.label))?.value,
+      primary:
+        fields.find((f) => f.isUrl)?.value || fields.find((f) => /code/i.test(f.label))?.value,
       fields,
       steps: hasUrl
         ? [
@@ -150,7 +180,7 @@ export function parseDeliveryPayload(
             'Sign in or complete the page as prompted.',
             'If the link expires, contact support with your Order ID.',
           ]
-        : hasLogin
+        : hasLogin || hasPass
           ? [
               'Copy the username/email and password.',
               'Open the service website or app and sign in.',
@@ -170,7 +200,7 @@ export function parseDeliveryPayload(
 
   // Pure URL / redeem link
   if (onlyUrl || (urls.length === 1 && data.length < 200 && looksLikeUrl(data))) {
-    const url = urls[0] || data.trim();
+    const url = cleanUrl(urls[0] || data.trim());
     return {
       kind: 'url',
       title: product,
@@ -232,6 +262,21 @@ export function parseDeliveryPayload(
         'Change the password after first login if possible.',
       ],
       tip: 'Never share these details. Save your Order ID to recover this page later.',
+    };
+  }
+
+  // Single email only
+  if (EMAIL_RE.test(data) && !data.includes('\n')) {
+    return {
+      kind: 'email_only',
+      title: product,
+      fields: [{ label: 'Email / account', value: data, copyable: true }],
+      steps: [
+        'Copy this email/account identifier.',
+        'Use it as instructed for this product.',
+        'Contact support with your Order ID if something is missing (e.g. password).',
+      ],
+      tip: 'Save your Order ID to reopen Track Order later.',
     };
   }
 
@@ -332,6 +377,8 @@ export function deliveryKindBadge(kind: DeliveryKind): string {
       return 'Account email';
     case 'code':
       return 'Access code';
+    case 'empty':
+      return 'Incomplete';
     case 'json':
     case 'multiline':
       return 'Delivery details';

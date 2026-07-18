@@ -174,6 +174,9 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     variant_name: selectedVariant?.name,
     requirements: product.requirements,
     reseller_product_id: product.reseller_product_id ?? null,
+    reseller_stock: product.reseller_stock ?? null,
+    stock_status: currentStockStatus ?? product.stock_status ?? null,
+    manual_fulfillment: product.manual_fulfillment ?? null,
   };
 
   const handleAddToCart = () => {
@@ -374,7 +377,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                     </span>
                   )}
                 </div>
-                <StockIndicator status={product.stock_status} count={product.reseller_stock} />
+                <StockIndicator status={currentStockStatus} count={product.reseller_stock} />
               </div>
 
               {/* Title + price (always visible, including API products without plans) */}

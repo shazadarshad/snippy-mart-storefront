@@ -23,6 +23,7 @@ import { useTrackOrder } from '@/hooks/useOrders';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
 import { useOrderResellerDeliveries } from '@/hooks/useResellerApi';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
+import { DeliveryPayloadCard } from '@/components/delivery/DeliveryPayloadCard';
 import { buildClaudeOrderWhatsAppUrl } from '@/lib/claudePreorder';
 import { cn } from '@/lib/utils';
 import SEO from '@/components/seo/SEO';
@@ -144,7 +145,9 @@ const OrderSuccessPage = () => {
     sessionOrder?.orderId || ''
   );
   const { assignment, isLoading: isAutomationLoading } = useOrderAutomation(liveOrder?.id);
-  const { data: resellerDeliveries = [] } = useOrderResellerDeliveries(liveOrder?.id);
+  const { data: resellerDeliveries = [] } = useOrderResellerDeliveries(liveOrder?.id, {
+    pollWhileWaiting: true,
+  });
 
   const copyToClipboard = (text: string, label: string = 'ID') => {
     navigator.clipboard.writeText(text);
@@ -222,8 +225,9 @@ const OrderSuccessPage = () => {
   };
 
   const whatsAppHref = getWhatsAppLink();
-  // Auto products: WhatsApp is optional help, not the main "get product" path
+  // Auto-only: WhatsApp is optional. Mixed/manual: WhatsApp is primary help path.
   const showWhatsAppCta = !isCompleted && !allAutoItems;
+  const isMixedCart = hasAutoItems && !allAutoItems;
 
   const getServiceIcon = (type: string) => {
     const t = type.toLowerCase();
@@ -306,7 +310,7 @@ const OrderSuccessPage = () => {
           </div>
           <div className="surface-card p-3 sm:p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-              Total paid
+              {isPending ? 'Order total' : isCompleted || isProcessing ? 'Paid' : 'Order total'}
             </p>
             <p className="text-sm sm:text-base font-bold text-foreground tabular-nums">
               {formatPrice(total)}
@@ -338,7 +342,9 @@ const OrderSuccessPage = () => {
             <p className="text-center text-[11px] sm:text-xs text-muted-foreground px-2">
               {hasResellerCodes
                 ? 'Credentials stay on Track Order — save this page or come back with your Order ID.'
-                : 'After payment is confirmed, your Auto product shows here. No WhatsApp needed for delivery.'}
+                : isMixedCart
+                  ? 'Auto items appear on Track Order after payment is confirmed. Other items may still need support/WhatsApp.'
+                  : 'After payment is confirmed, your Auto product shows on Track Order. WhatsApp is only for help — not delivery.'}
             </p>
             {!isCompleted && (
               <Button
@@ -394,8 +400,15 @@ const OrderSuccessPage = () => {
                   key={`${item.name}-${i}`}
                   className="flex items-start justify-between gap-3 text-sm border-b border-border/50 last:border-0 pb-2.5 last:pb-0"
                 >
-                  <span className="text-foreground font-medium leading-snug">
-                    {item.name}
+                  <span className="text-foreground font-medium leading-snug min-w-0">
+                    <span className="inline-flex flex-wrap items-center gap-1.5">
+                      {item.name}
+                      {item.isAuto && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                          Auto
+                        </span>
+                      )}
+                    </span>
                     {item.quantity > 1 && (
                       <span className="text-muted-foreground font-normal"> ×{item.quantity}</span>
                     )}
@@ -469,51 +482,24 @@ const OrderSuccessPage = () => {
           </div>
         )}
 
-        {/* Reseller Auto delivery codes (when already delivered) */}
+        {/* Reseller Auto delivery (same rich card as Track Order) */}
         {hasResellerCodes && (
-          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 border-emerald-500/30">
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border/60">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-xl">
-                ⚡
-              </div>
-              <div>
-                <h3 className="font-bold text-foreground">Your product is ready</h3>
-                <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Auto delivery complete
-                </p>
-              </div>
+          <div className="mb-4 sm:mb-5 space-y-3">
+            <div className="flex items-center gap-2 px-1">
+              <Zap className="w-4 h-4 text-emerald-600" />
+              <h3 className="text-sm font-bold text-foreground">Your Auto delivery</h3>
             </div>
-            <div className="space-y-2">
-              {resellerDeliveries.map((d) => (
-                <div
+            {resellerDeliveries.map((d) =>
+              d.delivered_data ? (
+                <DeliveryPayloadCard
                   key={d.id}
-                  className="rounded-xl bg-secondary/60 p-3 border border-border"
-                >
-                  {d.product_name && (
-                    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">
-                      {d.product_name}
-                    </p>
-                  )}
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-mono text-sm font-bold break-all whitespace-pre-wrap">
-                      {d.delivered_data}
-                    </p>
-                    {d.delivered_data && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 shrink-0"
-                        onClick={() => copyToClipboard(d.delivered_data!, 'Delivery code')}
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-3">
+                  deliveredData={d.delivered_data}
+                  productName={d.product_name}
+                  vendorOrderId={d.vendor_order_id}
+                />
+              ) : null,
+            )}
+            <p className="text-[11px] text-muted-foreground px-1">
               Keep Order ID <span className="font-mono font-bold text-foreground">{orderId}</span> — you
               can always reopen Track Order to see this again.
             </p>
@@ -587,6 +573,29 @@ const OrderSuccessPage = () => {
                 </div>
               </div>
             )}
+          </div>
+        ) : hasAutoItems && !hasResellerCodes && isMixedCart ? (
+          <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 border-primary/20 space-y-3">
+            <p className="text-sm font-bold text-foreground">Mixed order — two delivery paths</p>
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3">
+              <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5" /> Auto products
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                After payment is confirmed, open <strong className="text-foreground">Track Order</strong>{' '}
+                with <span className="font-mono font-bold text-foreground">{orderId}</span> for codes,
+                links, or logins.
+              </p>
+            </div>
+            <div className="rounded-xl bg-secondary/50 border border-border p-3">
+              <p className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5" /> Other products
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                These may take longer (usually 1–24 hours). WhatsApp helps if you need support —
+                delivery is not only on Track Order for non-Auto lines.
+              </p>
+            </div>
           </div>
         ) : hasAutoItems && !hasResellerCodes ? (
           <div className="surface-card p-4 sm:p-5 mb-4 sm:mb-5 border-emerald-500/20">

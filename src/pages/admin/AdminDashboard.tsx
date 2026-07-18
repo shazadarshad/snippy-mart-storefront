@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useOrderStats, useRecentOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
+import { adminStatusLabel } from '@/lib/orderStatus';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -175,8 +176,8 @@ const AdminDashboard = () => {
                         {order.order_items?.map(item => item.product_name).join(', ') || '-'}
                       </td>
                       <td className="py-3 px-2">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                          {order.status}
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                          {adminStatusLabel(order.status)}
                         </span>
                       </td>
                       <td className="py-3 px-2 text-right text-sm font-medium text-foreground">

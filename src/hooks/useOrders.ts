@@ -279,25 +279,32 @@ export const useUpdateOrderStatus = () => {
               delivered: 0,
               skipped: 0,
             };
+          } else if (!settings?.is_enabled) {
+            delivery = {
+              success: false,
+              error:
+                'Auto-delivery is OFF. Turn ON “Enable auto-delivery” in Reseller API settings and Save — or click “Deliver via Reseller API” on this order (manual override).',
+              failed: 0,
+              delivered: 0,
+              skipped: 0,
+            };
           } else if (settings?.auto_deliver_on_processing === false) {
             delivery = {
               success: false,
               error:
-                'Auto-deliver on processing is OFF. Turn it on in Reseller API settings, or click “Deliver via Reseller API” on this order.',
+                'Auto-deliver when status → processing is OFF. Enable it in Reseller API settings, or click “Deliver via Reseller API” on this order.',
               failed: 0,
               delivered: 0,
               skipped: 0,
             };
           } else {
-            // Always attempt when key + auto-deliver are on.
-            // bypass_enabled so a forgotten “Enable auto-delivery” toggle does not block customers.
+            // Automation path: respects is_enabled (no bypass). Admin Deliver button uses bypass.
             const { data: deliverResult, error: deliverError } = await supabase.functions.invoke(
               'reseller-fulfill',
               {
                 body: {
                   action: 'deliver_order',
                   order_id: data.id,
-                  bypass_enabled: true,
                 },
               },
             );
@@ -462,5 +469,15 @@ export const useTrackOrder = (query: string) => {
       return data as Order | null;
     },
     enabled: !!query,
+    // Live status while payment/delivery in progress
+    refetchInterval: (q) => {
+      const st = (q.state.data as Order | null | undefined)?.status;
+      if (!st) return false;
+      if (st === 'pending' || st === 'processing' || st === 'shipping' || st === 'on_hold') {
+        return 5000;
+      }
+      return false;
+    },
+    refetchOnWindowFocus: true,
   });
 };

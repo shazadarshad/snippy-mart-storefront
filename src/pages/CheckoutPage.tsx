@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Info, ShoppingBag, ArrowLeft, ShieldCheck, Plus, Minus, Trash2 } from 'lucide-react';
+import { MessageCircle, Info, ShoppingBag, ArrowLeft, ShieldCheck, Plus, Minus, Trash2, Zap, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,11 +16,16 @@ import PaymentMethodSelector, {
 } from '@/components/checkout/PaymentMethodSelector';
 import { getCountry } from '@/lib/utils';
 import { CouponInput } from '@/components/checkout/CouponInput';
+import { isResellerApiProduct } from '@/hooks/useResellerApi';
 
 const CheckoutPage = () => {
   const { formatPrice, currency, currencyInfo } = useCurrency();
   const navigate = useNavigate();
   const { items, getTotal, clearCart, getDiscountAmount, getFinalTotal, appliedCoupon, updateQuantity, removeItem } = useCartStore();
+  const hasAutoItems = items.some((item) => isResellerApiProduct(item.product));
+  const allAutoItems =
+    items.length > 0 && items.every((item) => isResellerApiProduct(item.product));
+  const isMixedCart = hasAutoItems && !allAutoItems;
   const { toast } = useToast();
   const createOrder = useCreateOrder();
   const updateOrder = useUpdateExistingOrder();
@@ -467,7 +472,11 @@ const CheckoutPage = () => {
                       inputMode="email"
                     />
                     <p className="text-xs text-foreground/70 mt-1">
-                      We'll send order confirmation and product delivery to this email
+                      {allAutoItems
+                        ? 'Optional status updates. Auto products are delivered on Track Order (save your Order ID).'
+                        : hasAutoItems
+                          ? 'Optional updates. Auto products appear on Track Order; other items may need WhatsApp/support.'
+                          : "We'll send order confirmation updates to this email when available."}
                     </p>
                   </div>
 
@@ -579,14 +588,31 @@ const CheckoutPage = () => {
                 />
               </div>
 
-              {/* Info Box */}
+              {/* Info Box — adaptive by cart type */}
               <div className="flex items-start gap-3 p-3.5 sm:p-4 rounded-xl bg-primary/10 border border-primary/20">
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="text-sm min-w-0">
                   <p className="font-medium text-foreground mb-1">How checkout works</p>
                   <p className="text-foreground/70 text-xs sm:text-sm leading-relaxed">
-                    Pay by bank or crypto, put your Order ID in the note, upload proof, then place
-                    the order. We verify and deliver on WhatsApp.
+                    {allAutoItems ? (
+                      <>
+                        Pay by bank or crypto, put your <strong className="text-foreground">Order ID</strong> in
+                        the transfer note, upload proof, then place the order. After we confirm payment,
+                        your product appears on <strong className="text-foreground">Track Order</strong> —
+                        save your Order ID.
+                      </>
+                    ) : isMixedCart ? (
+                      <>
+                        Pay and upload proof, then place the order. <strong className="text-foreground">Auto</strong>{' '}
+                        items deliver on Track Order after payment is confirmed. Other items may need
+                        WhatsApp or manual fulfillment.
+                      </>
+                    ) : (
+                      <>
+                        Pay by bank or crypto, put your Order ID in the note, upload proof, then place
+                        the order. We verify payment and deliver — WhatsApp helps if you need support.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -606,7 +632,13 @@ const CheckoutPage = () => {
                 ) : (
                   <>
                     Place Order
-                    <MessageCircle className="w-5 h-5 ml-2" />
+                    {allAutoItems ? (
+                      <Zap className="w-5 h-5 ml-2" />
+                    ) : isMixedCart ? (
+                      <Package className="w-5 h-5 ml-2" />
+                    ) : (
+                      <MessageCircle className="w-5 h-5 ml-2" />
+                    )}
                   </>
                 )}
               </Button>

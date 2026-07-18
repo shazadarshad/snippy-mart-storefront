@@ -100,7 +100,10 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                     {item.product.plan_name && (
                       <p className="text-xs text-muted-foreground truncate">Plan: {item.product.plan_name}</p>
                     )}
-                    <p className="text-sm text-muted-foreground">{formatPrice(item.product.price)}/mo</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatPrice(item.product.price)}
+                      {item.product.reseller_product_id ? '' : ''}
+                    </p>
                     <div className="flex items-center gap-3 mt-3">
                       <button
                         className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-secondary active:scale-90 transition-all"

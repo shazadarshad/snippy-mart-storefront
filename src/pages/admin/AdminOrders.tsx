@@ -300,16 +300,31 @@ const AdminOrders = () => {
         status: statusUpdate.newStatus,
       });
 
-      // 2. Trigger Edge Function for Email
-      await supabase.functions.invoke('handle-order-status-change', {
-        body: {
-          order: { ...statusUpdate.order, status: statusUpdate.newStatus },
-          old_order: statusUpdate.order,
-          custom_message: statusUpdate.message,
-        },
-      });
+      // Final status may flip to completed after auto-delivery
+      const finalStatus = (result.order?.status || statusUpdate.newStatus) as OrderStatus;
+
+      // 2. Email with FINAL status (not the dialog request if delivery completed the order)
+      let emailOk = false;
+      try {
+        const { error: emailErr } = await supabase.functions.invoke('handle-order-status-change', {
+          body: {
+            order: { ...statusUpdate.order, ...result.order, status: finalStatus },
+            old_order: statusUpdate.order,
+            custom_message: statusUpdate.message,
+          },
+        });
+        emailOk = !emailErr;
+      } catch {
+        emailOk = false;
+      }
 
       const delivery = result?.delivery;
+      const counts =
+        delivery != null
+          ? ` · Auto: ${delivery.delivered ?? 0} ok / ${delivery.failed ?? 0} fail / ${delivery.skipped ?? 0} skip`
+          : '';
+      const emailNote = emailOk ? ' Email sent.' : ' (email skipped or failed)';
+
       if (delivery && (delivery.failed || delivery.delivered || delivery.error)) {
         const failLines = (delivery.results || [])
           .filter((r) => r.status === 'failed')
@@ -322,32 +337,34 @@ const AdminOrders = () => {
           toast({
             title: 'Status updated — Auto delivery FAILED',
             description:
-              failLines.join(' · ') ||
-              delivery.error ||
-              'Reseller delivery failed (e.g. insufficient balance). Open the order for details.',
+              (failLines.join(' · ') ||
+                delivery.error ||
+                'Reseller delivery failed. Open the order for details.') + counts + emailNote,
             variant: 'destructive',
           });
         } else if ((delivery.delivered ?? 0) > 0) {
           toast({
             title: 'Status updated — Auto delivery OK',
-            description: `Delivered: ${okLines.join(', ') || delivery.delivered}. Order ${statusUpdate.order.order_number} → ${adminStatusLabel(result.order.status as OrderStatus)}.`,
+            description: `Delivered: ${okLines.join(', ') || delivery.delivered}. → ${adminStatusLabel(finalStatus)}.${counts}${emailNote}`,
           });
         } else {
           toast({
             title: 'Status updated',
-            description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(statusUpdate.newStatus)}. ${delivery.skipped ? 'No API products to auto-deliver.' : ''}`,
+            description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(finalStatus)}.${counts}${emailNote}${
+              delivery.error ? ` ${delivery.error}` : ''
+            }`,
           });
         }
         if (selectedOrder?.id === statusUpdate.order.id) {
           setSelectedOrder((prev) =>
-            prev ? { ...prev, status: result.order.status as OrderStatus } : prev,
+            prev ? { ...prev, status: finalStatus } : prev,
           );
           refetchDeliveryLog();
         }
       } else {
         toast({
-          title: 'Status updated & Email sent',
-          description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(statusUpdate.newStatus)}.`,
+          title: emailOk ? 'Status updated & email sent' : 'Status updated',
+          description: `Order ${statusUpdate.order.order_number} → ${adminStatusLabel(finalStatus)}.${emailNote}`,
         });
       }
       setStatusUpdate(null);
@@ -742,7 +759,7 @@ const AdminOrders = () => {
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-mono text-sm font-black text-foreground">{order.order_number}</span>
                         <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(order.status)}`}>
-                          {order.status}
+                          {adminStatusLabel(order.status)}
                         </div>
                         {claude && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-orange-500/15 text-orange-400 border border-orange-500/30">
@@ -864,7 +881,7 @@ const AdminOrders = () => {
                     : 'Secured Entry • Verified System'}
                 </p>
                 <div className={`absolute top-4 right-4 md:top-6 md:right-6 px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-xs font-black uppercase border-2 ${getStatusColor(selectedOrder.status)} bg-white shadow-xl`}>
-                  {selectedOrder.status}
+                  {adminStatusLabel(selectedOrder.status)}
                 </div>
               </div>
 
@@ -1267,8 +1284,9 @@ const AdminOrders = () => {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Auto-runs when status → <span className="font-semibold">processing</span>.
-                      Failures (e.g. insufficient balance) show below for this order.
+                      Auto-runs when status → <span className="font-semibold">Payment confirmed</span>{' '}
+                      if Enable auto-delivery is ON. This button always works with your API key
+                      (manual override — does not re-charge already delivered lines).
                     </p>
 
                     {/* Delivery log for THIS order */}
@@ -1280,7 +1298,9 @@ const AdminOrders = () => {
                       <div className="space-y-2">
                         {orderDeliveryLog.map((d) => {
                           const failed = d.status === 'failed';
-                          const ok = d.status === 'delivered';
+                          const ok = d.status === 'delivered' && !!String(d.delivered_data || '').trim();
+                          const emptyOk =
+                            d.status === 'delivered' && !String(d.delivered_data || '').trim();
                           return (
                             <div
                               key={d.id}
@@ -1288,27 +1308,59 @@ const AdminOrders = () => {
                                 'p-3 rounded-xl border text-sm',
                                 failed && 'bg-destructive/10 border-destructive/30',
                                 ok && 'bg-emerald-500/10 border-emerald-500/25',
-                                !failed && !ok && 'bg-secondary/40 border-border',
+                                emptyOk && 'bg-amber-500/10 border-amber-500/30',
+                                !failed && !ok && !emptyOk && 'bg-secondary/40 border-border',
                               )}
                             >
                               <div className="flex items-start gap-2">
-                                {failed ? (
-                                  <XCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                                {failed || emptyOk ? (
+                                  failed ? (
+                                    <XCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                                  ) : (
+                                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                  )
                                 ) : ok ? (
                                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                                 ) : (
                                   <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                                 )}
                                 <div className="min-w-0 flex-1 space-y-1">
-                                  <p className="font-bold text-foreground">
-                                    {d.product_name || 'Product'}{' '}
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                                      {d.status}
-                                    </span>
-                                  </p>
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="font-bold text-foreground">
+                                      {d.product_name || 'Product'}{' '}
+                                      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                                        {emptyOk ? 'empty payload' : d.status}
+                                      </span>
+                                    </p>
+                                    {(failed && d.error_message) || (ok && d.delivered_data) ? (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 px-2 shrink-0"
+                                        onClick={() => {
+                                          const text = failed
+                                            ? d.error_message || ''
+                                            : d.delivered_data || '';
+                                          navigator.clipboard.writeText(text);
+                                          toast({
+                                            title: 'Copied',
+                                            description: failed ? 'Error copied' : 'Delivery copied',
+                                          });
+                                        }}
+                                      >
+                                        <Copy className="w-3.5 h-3.5" />
+                                      </Button>
+                                    ) : null}
+                                  </div>
                                   {failed && d.error_message && (
                                     <p className="text-destructive font-semibold text-xs break-words">
                                       {d.error_message}
+                                    </p>
+                                  )}
+                                  {emptyOk && (
+                                    <p className="text-amber-700 dark:text-amber-400 font-semibold text-xs">
+                                      Marked delivered but no code/link saved. Click Deliver to retry.
                                     </p>
                                   )}
                                   {ok && d.delivered_data && (
@@ -1335,8 +1387,9 @@ const AdminOrders = () => {
                       <div className="p-3 rounded-xl border border-dashed border-border text-xs text-muted-foreground flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                         <span>
-                          No delivery attempts logged for this order yet. Set status to{' '}
-                          <strong>processing</strong> or click deliver below.
+                          No delivery attempts yet. Set status to{' '}
+                          <strong>Payment confirmed</strong> (with auto-delivery ON) or click
+                          deliver below.
                         </span>
                       </div>
                     )}
@@ -1348,14 +1401,13 @@ const AdminOrders = () => {
                         disabled={deliverReseller.isPending}
                         onClick={async () => {
                           try {
-                            // bypass_enabled: deliver even if “Enable auto-delivery” toggle is off
-                            // (does NOT re-charge already-delivered lines unless force:true)
                             const res = await deliverReseller.mutateAsync({
                               orderId: selectedOrder.id,
                               bypassEnabled: true,
                             });
                             const delivered = res.delivered ?? 0;
                             const failed = res.failed ?? 0;
+                            const skipped = res.skipped ?? 0;
                             const summary = summarizeDeliverResult(res);
                             toast({
                               title:
@@ -1366,7 +1418,7 @@ const AdminOrders = () => {
                                     : delivered > 0
                                       ? 'Reseller delivery done'
                                       : 'No items delivered',
-                              description: summary,
+                              description: `${summary} (${delivered} ok / ${failed} fail / ${skipped} skip)`,
                               variant: failed > 0 ? 'destructive' : 'default',
                             });
                             refetch();

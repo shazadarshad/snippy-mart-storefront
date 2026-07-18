@@ -158,19 +158,24 @@ const TrackOrderPage = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSearch} className="relative mb-8 md:mb-12 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <Input
-              type="text"
-              placeholder="Order ID (e.g., SNIP-2026-829680)"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              className="pl-11 md:pl-12 h-14 md:h-16 text-base md:text-lg bg-card border-border rounded-2xl shadow-xl focus:ring-primary/20 transition-all font-mono"
-            />
+          <form
+            onSubmit={handleSearch}
+            className="mb-8 md:mb-12 flex flex-col sm:flex-row gap-2 sm:relative sm:group"
+          >
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                type="text"
+                placeholder="Order ID (e.g., SNIP-2026-829680)"
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                className="pl-11 md:pl-12 h-14 md:h-16 text-base md:text-lg bg-card border-border rounded-2xl shadow-xl focus:ring-primary/20 transition-all font-mono w-full"
+              />
+            </div>
             <Button
               type="submit"
               variant="hero"
-              className="absolute right-1.5 top-1.5 bottom-1.5 px-4 md:px-8 rounded-xl text-sm md:text-base"
+              className="h-14 md:h-16 px-8 rounded-2xl text-sm md:text-base shrink-0 w-full sm:w-auto"
               disabled={isLoading}
             >
               {isLoading ? '...' : 'Track'}
@@ -499,33 +504,74 @@ const TrackOrderPage = () => {
                     </div>
                   )}
 
-                  {/* Auto product: waiting for payment / delivery */}
+                  {/* Auto product: waiting / missing delivery */}
                   {resellerDeliveries.length === 0 &&
                     (order.order_items || []).some(
                       (item: any) => item.products?.reseller_product_id,
-                    ) &&
-                    (order.status === 'pending' ||
-                      order.status === 'processing' ||
-                      order.status === 'shipping') && (
-                      <div className="bg-card border border-emerald-500/20 p-5 md:p-6 rounded-[2rem] shadow-xl">
+                    ) && (
+                      <div
+                        className={cn(
+                          'bg-card p-5 md:p-6 rounded-[2rem] shadow-xl border',
+                          order.status === 'completed' || order.status === 'cancelled'
+                            ? 'border-amber-500/30'
+                            : 'border-emerald-500/20',
+                        )}
+                      >
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
-                            <Zap className="w-5 h-5 text-emerald-600" />
+                          <div
+                            className={cn(
+                              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                              order.status === 'completed' || order.status === 'cancelled'
+                                ? 'bg-amber-500/15'
+                                : 'bg-emerald-500/15',
+                            )}
+                          >
+                            <Zap
+                              className={cn(
+                                'w-5 h-5',
+                                order.status === 'completed' || order.status === 'cancelled'
+                                  ? 'text-amber-600'
+                                  : 'text-emerald-600',
+                              )}
+                            />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <h3 className="text-sm font-black uppercase tracking-widest text-foreground mb-1">
                               Auto product delivery
                             </h3>
                             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
                               {order.status === 'pending'
-                                ? 'Waiting for payment confirmation. Once we confirm your payment, your code, redeem link, or login will appear on this Track Order page.'
-                                : 'Payment is being processed. Your product will show here automatically when delivery completes — refresh this page in a few minutes.'}
+                                ? 'Waiting for payment confirmation. Once we confirm your payment, your code, redeem link, or login will appear here automatically.'
+                                : order.status === 'processing' || order.status === 'shipping'
+                                  ? 'Payment is being processed. This page updates live — your product appears here when delivery completes.'
+                                  : order.status === 'completed'
+                                    ? 'This order is marked complete, but no Auto credentials are on file yet. Contact support with your Order ID so we can check or reissue.'
+                                    : 'No Auto delivery is available for this status. Contact support with your Order ID if you need help.'}
                             </p>
-                            <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal pl-4">
-                              <li>Save Order ID <span className="font-mono font-bold text-foreground">{order.order_number}</span></li>
+                            <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal pl-4 mb-3">
+                              <li>
+                                Save Order ID{' '}
+                                <span className="font-mono font-bold text-foreground">
+                                  {order.order_number}
+                                </span>
+                              </li>
                               <li>Complete payment if you have not already</li>
-                              <li>Come back here and refresh until delivery appears</li>
+                              <li>Stay on this page or tap Refresh — status updates automatically</li>
                             </ol>
+                            {(order.status === 'completed' ||
+                              order.status === 'cancelled' ||
+                              order.status === 'on_hold') && (
+                              <Button variant="outline" size="sm" className="rounded-xl" asChild>
+                                <a
+                                  href={getWhatsAppLink(order.order_number)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <MessageCircle className="w-4 h-4 mr-2" />
+                                  Contact support
+                                </a>
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -588,8 +634,13 @@ const TrackOrderPage = () => {
                               <Package className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold text-foreground text-sm truncate">
+                              <p className="font-bold text-foreground text-sm truncate flex items-center gap-1.5 flex-wrap">
                                 {item.product_name}
+                                {item.products?.reseller_product_id && (
+                                  <span className="inline-flex px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                                    Auto
+                                  </span>
+                                )}
                               </p>
                               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                 {item.plan_name || 'Standard'} · Qty x{item.quantity}

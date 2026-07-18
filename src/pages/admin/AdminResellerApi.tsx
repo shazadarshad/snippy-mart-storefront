@@ -591,9 +591,10 @@ const AdminResellerApi = () => {
 
         {!isEnabled && settings?.has_api_key && (
           <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-sm text-amber-900 dark:text-amber-100">
-            <strong>Auto-delivery switch is OFF.</strong> Turn on “Enable auto-delivery” below and
-            click <strong>Save settings</strong>. Admin “Deliver via Reseller API” still works with
-            your API key even if this is off.
+            <strong>Master switch is OFF.</strong> Status → Payment confirmed will{' '}
+            <em>not</em> auto-deliver. Turn on “Enable auto-delivery” and click{' '}
+            <strong>Save settings</strong>. You can still deliver one order from Admin → Orders using
+            “Deliver via Reseller API”.
           </div>
         )}
 
@@ -601,13 +602,13 @@ const AdminResellerApi = () => {
           <div className="flex items-center gap-3">
             <Switch checked={isEnabled} onCheckedChange={setIsEnabled} id="reseller-enabled" />
             <Label htmlFor="reseller-enabled" className="cursor-pointer">
-              Enable auto-delivery
+              Enable auto-delivery (master)
             </Label>
           </div>
           <div className="flex items-center gap-3">
             <Switch checked={autoDeliver} onCheckedChange={setAutoDeliver} id="auto-deliver" />
             <Label htmlFor="auto-deliver" className="cursor-pointer">
-              Auto-deliver when status → processing
+              When status → Payment confirmed (only if master is ON)
             </Label>
           </div>
           <div className="flex items-center gap-3">

@@ -132,8 +132,86 @@ type OrderItemRow = {
     id: string;
     name: string;
     reseller_product_id: string | null;
+    manual_fulfillment?: boolean | null;
   } | null;
 };
+
+/** True if payload has a real code/link/login customers can use */
+function extractUsableDelivery(payload: any): string | null {
+  if (payload == null) return null;
+  if (typeof payload === "string") {
+    const t = payload.trim();
+    return t.length > 0 ? t : null;
+  }
+  if (typeof payload !== "object") {
+    const t = String(payload).trim();
+    return t.length > 0 ? t : null;
+  }
+
+  const pick = (v: unknown): string | null => {
+    if (v == null) return null;
+    if (typeof v === "string") {
+      const t = v.trim();
+      return t.length > 0 ? t : null;
+    }
+    if (typeof v === "number" || typeof v === "boolean") return String(v);
+    if (typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      const nested: Record<string, unknown> = {};
+      for (const [k, val] of Object.entries(o)) {
+        if (val == null || typeof val === "object") continue;
+        nested[k] = val;
+      }
+      if (Object.keys(nested).length === 0) return null;
+      try {
+        return JSON.stringify(nested);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const keys = [
+    "data",
+    "delivered_data",
+    "delivery",
+    "code",
+    "codes",
+    "coupon",
+    "credentials",
+    "account",
+    "result",
+    "login",
+    "email",
+    "password",
+    "link",
+    "url",
+    "redeem_link",
+  ];
+  for (const k of keys) {
+    const got = pick(payload[k]);
+    if (got) return got;
+  }
+
+  const useful: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(payload)) {
+    if (/^(status|success|ok|order_id|vendor_order_id|amount|idempotent|message|error|raw)$/i.test(k)) {
+      continue;
+    }
+    if (v == null || typeof v === "object") continue;
+    const s = String(v).trim();
+    if (s) useful[k] = s;
+  }
+  if (Object.keys(useful).length > 0) {
+    try {
+      return JSON.stringify(useful);
+    } catch {
+      /* fall through */
+    }
+  }
+  return null;
+}
 
 async function deliverOrder(
   supabaseAdmin: ReturnType<typeof createClient>,
@@ -182,7 +260,8 @@ async function deliverOrder(
         products (
           id,
           name,
-          reseller_product_id
+          reseller_product_id,
+          manual_fulfillment
         )
       )
     `,
@@ -196,22 +275,30 @@ async function deliverOrder(
 
   const items = (order.order_items || []) as OrderItemRow[];
 
-  // Resolve reseller ids (prefer joined products; fallback product lookup)
   const results: Array<Record<string, unknown>> = [];
   let deliveredCount = 0;
   let failedCount = 0;
   let skippedCount = 0;
+  /** True if any line still needs inventory / manual admin work */
+  let hasManualLines = false;
 
   for (const item of items) {
     let resellerProductId = item.products?.reseller_product_id ?? null;
+    let manualFulfillment = item.products?.manual_fulfillment;
 
-    if (!resellerProductId && item.product_id) {
+    if ((!resellerProductId || manualFulfillment == null) && item.product_id) {
       const { data: prod } = await supabaseAdmin
         .from("products")
-        .select("reseller_product_id")
+        .select("reseller_product_id, manual_fulfillment")
         .eq("id", item.product_id)
         .maybeSingle();
-      resellerProductId = prod?.reseller_product_id ?? null;
+      if (!resellerProductId) resellerProductId = prod?.reseller_product_id ?? null;
+      if (manualFulfillment == null) manualFulfillment = prod?.manual_fulfillment;
+    }
+
+    // Inventory / manual products stay for admin — do not auto-complete order later
+    if (!resellerProductId && manualFulfillment !== false) {
+      hasManualLines = true;
     }
 
     if (!resellerProductId) {
@@ -228,7 +315,7 @@ async function deliverOrder(
     const externalOrderId = `${order.order_number}:${item.id}`;
     const quantity = Math.max(1, Number(item.quantity) || 1);
 
-    // Skip if already successfully delivered (unless force — still uses same external id = idempotent)
+    // Skip if already successfully delivered with real payload (unless force)
     if (!options.force) {
       const { data: existing } = await supabaseAdmin
         .from("reseller_deliveries")
@@ -237,7 +324,7 @@ async function deliverOrder(
         .eq("status", "delivered")
         .maybeSingle();
 
-      if (existing) {
+      if (existing && String(existing.delivered_data || "").trim()) {
         deliveredCount++;
         results.push({
           order_item_id: item.id,
@@ -265,54 +352,22 @@ async function deliverOrder(
     );
 
     const payload = apiResult.data ?? {};
+    const deliveredData = extractUsableDelivery(payload);
 
-    // Pull delivery text from common reseller response shapes
-    const deliveredDataRaw =
-      payload.data ??
-      payload.delivered_data ??
-      payload.delivery ??
-      payload.code ??
-      payload.codes ??
-      payload.credentials ??
-      payload.account ??
-      payload.result ??
-      (typeof payload === "string" ? payload : null);
-
-    const isDelivered =
+    const apiLooksOk =
       apiResult.ok &&
       (payload.status === "delivered" ||
         payload.status === "success" ||
         payload.success === true ||
-        deliveredDataRaw != null ||
+        deliveredData != null ||
         !!payload.order_id);
-
-    let deliveredData: string | null = null;
-    if (deliveredDataRaw != null) {
-      if (typeof deliveredDataRaw === "string") {
-        deliveredData = deliveredDataRaw;
-      } else if (typeof deliveredDataRaw === "object") {
-        try {
-          deliveredData = JSON.stringify(deliveredDataRaw);
-        } catch {
-          deliveredData = String(deliveredDataRaw);
-        }
-      } else {
-        deliveredData = String(deliveredDataRaw);
-      }
-    } else if (isDelivered) {
-      // Order accepted but no code field — store full payload so Track can still show something
-      try {
-        deliveredData = JSON.stringify(payload);
-      } catch {
-        deliveredData = "";
-      }
-    }
 
     const vendorOrderId = payload.order_id ?? payload.vendor_order_id ?? null;
     const amount = payload.amount != null ? Number(payload.amount) : null;
     const idempotentReplay = !!payload.idempotent_replay;
 
-    if (isDelivered) {
+    // Real success = usable customer payload only (never empty / junk-only)
+    if (apiLooksOk && deliveredData) {
       const row = {
         order_id: order.id,
         order_item_id: item.id,
@@ -357,18 +412,19 @@ async function deliverOrder(
         idempotent_replay: idempotentReplay,
       });
     } else {
-      const errMsg =
-        payload?.error ||
-        payload?.message ||
-        (apiResult.status === 402
-          ? "Insufficient balance on reseller panel"
-          : apiResult.status === 409
-            ? "Out of stock or conflict"
-            : apiResult.status === 429
-              ? "Rate limit exceeded"
-              : apiResult.status === 401
-                ? "Invalid or revoked API key"
-                : `Reseller API error (${apiResult.status})`);
+      const errMsg = !apiResult.ok
+        ? payload?.error ||
+          payload?.message ||
+          (apiResult.status === 402
+            ? "Insufficient balance on reseller panel"
+            : apiResult.status === 409
+              ? "Out of stock or conflict"
+              : apiResult.status === 429
+                ? "Rate limit exceeded"
+                : apiResult.status === 401
+                  ? "Invalid or revoked API key"
+                  : `Reseller API error (${apiResult.status})`)
+        : "Panel accepted the order but returned no code, link, or login. Retry Deliver or contact the seller panel.";
 
       const failRow = {
         order_id: order.id,
@@ -377,7 +433,7 @@ async function deliverOrder(
         product_name: item.product_name,
         reseller_product_id: resellerProductId,
         external_order_id: externalOrderId,
-        vendor_order_id: null,
+        vendor_order_id: vendorOrderId != null ? String(vendorOrderId) : null,
         delivered_data: null,
         amount: null,
         status: "failed" as const,
@@ -403,23 +459,25 @@ async function deliverOrder(
     }
   }
 
-  // Auto-complete when all mapped items delivered and no failures
+  // Auto-complete only when EVERY reseller line delivered AND no manual inventory remains
   let orderStatus = order.status;
   const mappedAttempted = items.length - skippedCount;
 
-  if (
+  const canAutoComplete =
     settings.auto_complete_on_success &&
     mappedAttempted > 0 &&
     failedCount === 0 &&
-    deliveredCount >= mappedAttempted
-  ) {
-    // Build delivery summary for notes
+    deliveredCount >= mappedAttempted &&
+    !hasManualLines;
+
+  if (canAutoComplete) {
     const deliveredLines = results
       .filter((r) => r.status === "delivered" || r.status === "already_delivered")
-      .map(
-        (r) =>
-          `• ${r.product_name}: ${r.delivered_data}${r.vendor_order_id ? ` (${r.vendor_order_id})` : ""}`,
-      );
+      .map((r) => {
+        const data = r.delivered_data != null ? String(r.delivered_data) : "(see Track Order)";
+        const short = data.length > 120 ? data.slice(0, 120) + "…" : data;
+        return `• ${r.product_name}: ${short}${r.vendor_order_id ? ` (${r.vendor_order_id})` : ""}`;
+      });
 
     const { data: currentOrder } = await supabaseAdmin
       .from("orders")
@@ -442,7 +500,6 @@ async function deliverOrder(
     if (!statusError) {
       orderStatus = "completed";
 
-      // Best-effort customer email
       try {
         await supabaseAdmin.functions.invoke("handle-order-status-change", {
           body: {
@@ -453,13 +510,34 @@ async function deliverOrder(
             },
             old_order: { ...order, status: order.status },
             custom_message:
-              "Your product has been delivered automatically. Check Track Order or the details below.",
+              "Your Auto product has been delivered. Open Track Order with your Order ID to view codes, links, or logins.",
           },
         });
       } catch (e) {
         console.error("[reseller-fulfill] email notify failed", e);
       }
     }
+  } else if (
+    settings.auto_complete_on_success &&
+    mappedAttempted > 0 &&
+    failedCount === 0 &&
+    deliveredCount >= mappedAttempted &&
+    hasManualLines
+  ) {
+    const { data: currentOrder } = await supabaseAdmin
+      .from("orders")
+      .select("notes")
+      .eq("id", order.id)
+      .single();
+    const stamp =
+      `\n\n[Reseller auto-delivery ${new Date().toISOString()}] Auto items delivered; order left in progress (manual items remain).`;
+    await supabaseAdmin
+      .from("orders")
+      .update({
+        notes: ((currentOrder?.notes || "") + stamp).trim(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", order.id);
   }
 
   return {

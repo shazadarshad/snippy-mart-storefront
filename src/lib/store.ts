@@ -21,12 +21,23 @@ export interface Product {
 
   /** Reseller auto-delivery product id (if set, this is an Auto product) */
   reseller_product_id?: string | null;
+  /** Live stock from reseller panel (when known) */
+  reseller_stock?: number | null;
+  stock_status?: 'in_stock' | 'limited' | 'out_of_stock' | string | null;
+  manual_fulfillment?: boolean | null;
 
   requirements?: {
     require_email?: boolean;
     require_password?: boolean;
     require_username?: boolean;
   } | null;
+}
+
+function maxQtyForProduct(product: Product): number | null {
+  const n = product.reseller_stock;
+  if (n == null || !Number.isFinite(Number(n))) return null;
+  const q = Math.floor(Number(n));
+  return q > 0 ? q : null;
 }
 
 export interface Coupon {
@@ -87,16 +98,37 @@ export const useCartStore = create<CartStore>()(
       appliedCoupon: null,
       addItem: (product) => {
         const cartItemId = getCartItemId(product);
+        const maxQ = maxQtyForProduct(product);
         set((state) => {
           const existingItem = state.items.find((item) => item.id === cartItemId);
           if (existingItem) {
+            const next = existingItem.quantity + 1;
+            const qty = maxQ != null ? Math.min(next, maxQ) : next;
             return {
               items: state.items.map((item) =>
-                item.id === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
+                item.id === cartItemId
+                  ? {
+                      ...item,
+                      quantity: qty,
+                      // refresh stock fields if product re-added with newer data
+                      product: {
+                        ...item.product,
+                        reseller_product_id:
+                          product.reseller_product_id ?? item.product.reseller_product_id,
+                        reseller_stock: product.reseller_stock ?? item.product.reseller_stock,
+                        stock_status: product.stock_status ?? item.product.stock_status,
+                      },
+                    }
+                  : item,
               ),
             };
           }
-          return { items: [...state.items, { id: cartItemId, product, quantity: 1 }] };
+          return {
+            items: [
+              ...state.items,
+              { id: cartItemId, product, quantity: maxQ != null ? Math.min(1, maxQ) : 1 },
+            ],
+          };
         });
       },
       removeItem: (cartItemId) => {
@@ -106,7 +138,13 @@ export const useCartStore = create<CartStore>()(
       },
       updateQuantity: (cartItemId, quantity) => {
         set((state) => ({
-          items: state.items.map((item) => (item.id === cartItemId ? { ...item, quantity } : item)),
+          items: state.items.map((item) => {
+            if (item.id !== cartItemId) return item;
+            const maxQ = maxQtyForProduct(item.product);
+            let q = Math.max(1, Math.floor(quantity) || 1);
+            if (maxQ != null) q = Math.min(q, maxQ);
+            return { ...item, quantity: q };
+          }),
         }));
       },
       clearCart: () => set({ items: [] }),
@@ -142,7 +180,7 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'snippy-cart',
-      version: 3,
+      version: 4,
       migrate: (persistedState: any) => {
         const state = (persistedState?.state ?? persistedState) as any;
         const items = Array.isArray(state?.items) ? state.items : [];
@@ -187,13 +225,26 @@ export const useCartStore = create<CartStore>()(
             plan_name,
             variant_id,
             variant_name,
+            // Keep Auto product identity across reloads / version bumps
+            reseller_product_id: legacyProduct.reseller_product_id ?? null,
+            reseller_stock:
+              legacyProduct.reseller_stock != null
+                ? Number(legacyProduct.reseller_stock)
+                : null,
+            stock_status: legacyProduct.stock_status ?? null,
+            manual_fulfillment: legacyProduct.manual_fulfillment ?? null,
+            requirements: legacyProduct.requirements ?? null,
           };
 
           const id = getCartItemId(product);
+          let quantity = Math.max(1, Number(raw?.quantity ?? 1) || 1);
+          const maxQ = maxQtyForProduct(product);
+          if (maxQ != null) quantity = Math.min(quantity, maxQ);
+
           return {
             id,
             product,
-            quantity: Number(raw?.quantity ?? 1),
+            quantity,
           } satisfies CartItem;
         });
 

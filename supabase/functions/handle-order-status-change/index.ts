@@ -89,7 +89,7 @@ serve(async (req: Request) => {
                 month: 'long',
                 day: 'numeric',
             }),
-            tracking_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/track?order=${order.order_number}`,
+            tracking_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/track-order?orderId=${encodeURIComponent(order.order_number)}`,
         };
 
         // Custom logic for specific statuses
@@ -139,23 +139,35 @@ serve(async (req: Request) => {
                 retry_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/checkout?retry=${order.order_number}`,
             };
         }
-        else if (order.status === 'processing' || order.status === 'shipped') {
+        else if (
+            order.status === 'processing' ||
+            order.status === 'shipping' ||
+            order.status === 'shipped'
+        ) {
             templateKey = "status_update";
             const statusMessages: Record<string, string> = {
-                processing: 'Your order is being prepared for shipment',
-                shipped: 'Your order is on its way to you!',
+                processing: 'Payment confirmed — we are processing your order. Auto products appear on Track Order when ready.',
+                shipping: 'Your order is being prepared.',
+                shipped: 'Your order is being prepared.',
+            };
+            const statusLabels: Record<string, string> = {
+                processing: 'Payment confirmed',
+                shipping: 'Order processing',
+                shipped: 'Order processing',
             };
 
             variables = {
                 ...commonVariables,
-                current_status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+                current_status:
+                    statusLabels[order.status] ||
+                    order.status.charAt(0).toUpperCase() + order.status.slice(1),
                 status_message: custom_message || statusMessages[order.status] || 'Your order status has been updated',
                 estimated_delivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
                 }),
-                tracking_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/track?order=${order.order_number}`,
+                tracking_url: `${Deno.env.get('FRONTEND_URL') || 'https://snippymart.com'}/track-order?orderId=${encodeURIComponent(order.order_number)}`,
             };
         }
 
