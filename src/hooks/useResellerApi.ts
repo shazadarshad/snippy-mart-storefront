@@ -121,8 +121,8 @@ export function calcApiCustomerPriceLkr(
 
 /**
  * Customer-facing price in LKR.
- * API products: `price` is already sell LKR (margin applied on import).
- * Legacy API rows (USD in price, no cost column): fall back to $ × 360 × markup.
+ * API products: `price` is always the customer sell price in LKR (xx99).
+ * Only tiny values (&lt; 50) are treated as legacy USD cost leftovers.
  */
 export function productPriceInLkr(
   product: {
@@ -134,19 +134,16 @@ export function productPriceInLkr(
   field: 'price' | 'old_price' = 'price',
 ): number {
   const raw = field === 'old_price' ? product.old_price : product.price;
-  if (raw == null || raw === undefined) return 0;
+  if (raw == null || raw === undefined || raw === '') return 0;
   const n = Number(raw);
-  if (!Number.isFinite(n)) return 0;
+  if (!Number.isFinite(n) || n <= 0) return 0;
 
-  if (!product.reseller_product_id) return n;
+  // Normal store products + API sell prices (LKR)
+  if (!product.reseller_product_id) return Math.round(n);
 
-  // New model: sell price already in LKR
-  if (product.reseller_cost_usd != null && Number(product.reseller_cost_usd) > 0) {
-    return Math.round(n);
-  }
-
-  // Legacy: price stored as USD from API
-  if (n > 0 && n < 200) {
+  // API product: price column is customer LKR (e.g. 4699). Never hide it.
+  // Only convert tiny leftovers that look like raw USD (&lt; 50).
+  if (n < 50 && product.reseller_cost_usd == null) {
     return calcApiCustomerPriceLkr(n).sellLkr;
   }
 

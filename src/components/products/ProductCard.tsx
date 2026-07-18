@@ -67,11 +67,7 @@ const ProductCard = memo(function ProductCard({
           fetchPriority={priority ? 'high' : 'auto'}
           width={400}
           height={320}
-          className={cn(
-            'h-full w-full transition-transform duration-300 ease-out group-hover:scale-105',
-            // Auto products often use logo tiles — keep full logo visible
-            isAuto ? 'object-contain bg-slate-100 p-2' : 'object-cover',
-          )}
+          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent opacity-90 pointer-events-none" />
 

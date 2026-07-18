@@ -135,17 +135,20 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     ? allVariants.filter(v => v.plan_id === selectedPlan.id && v.is_active)
     : [];
 
-  // Calculate Display Price (LKR). API products: $ × 360 for customers.
+  // Calculate Display Price (LKR).
   // Priority: Selected Variant Price > Selected Plan Price > Product Base Price
+  // API products store customer sell price already in LKR on product.price
   const rawPrice = selectedVariant?.price ?? selectedPlan?.price ?? product.price;
   const rawOldPrice = selectedVariant?.old_price ?? selectedPlan?.old_price ?? product.old_price;
   const priceSource = {
     price: rawPrice,
     old_price: rawOldPrice,
     reseller_product_id: product.reseller_product_id,
+    reseller_cost_usd: product.reseller_cost_usd,
   };
   const currentPrice = productPriceInLkr(priceSource, 'price');
   const currentOldPrice = rawOldPrice != null ? productPriceInLkr(priceSource, 'old_price') : null;
+  const hasPlans = pricingPlans.length > 0;
 
   // Stock Status Logic
   // If variant selected, use its stock. Else use product stock.
@@ -370,10 +373,23 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <StockIndicator status={product.stock_status} count={product.reseller_stock} />
               </div>
 
-              {/* Title */}
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-3 sm:mb-4 leading-snug pr-1">
+              {/* Title + price (always visible, including API products without plans) */}
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-2 leading-snug pr-1">
                 {product.name}
               </h2>
+              <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
+                <span className="text-2xl sm:text-3xl font-display font-black text-foreground tabular-nums">
+                  {currentPrice > 0 ? formatPrice(currentPrice) : '—'}
+                </span>
+                {currentOldPrice != null && currentOldPrice > currentPrice && (
+                  <span className="text-sm text-muted-foreground line-through tabular-nums">
+                    {formatPrice(currentOldPrice)}
+                  </span>
+                )}
+                {discount > 0 && (
+                  <span className="text-xs font-bold text-primary">−{discount}%</span>
+                )}
+              </div>
 
               {/* Share Buttons */}
               <div className="flex items-center gap-2 mb-4">
@@ -515,11 +531,13 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
             {/* Actions Footer — sticky on mobile with safe area */}
             <div className="flex-shrink-0 border-t border-border bg-card/95 backdrop-blur-sm px-3.5 sm:px-6 md:px-8 pt-3 sm:pt-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-6">
-              {/* Selected Plan Summary */}
-              {selectedPlan && (
-                <div className="flex items-center justify-between gap-2 mb-3 p-2.5 sm:p-3 rounded-xl bg-secondary/60">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Selected</p>
+              {/* Always show price — API products have no plans so this is required */}
+              <div className="flex items-center justify-between gap-2 mb-3 p-2.5 sm:p-3 rounded-xl bg-secondary/60">
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    {selectedPlan ? 'Selected' : 'Price'}
+                  </p>
+                  {selectedPlan ? (
                     <div className="flex flex-wrap gap-1 items-center">
                       <p className="text-sm font-semibold text-foreground truncate">{selectedPlan.name}</p>
                       {selectedVariant && (
@@ -529,19 +547,23 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                         </>
                       )}
                     </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums">
-                      {formatPrice(currentPrice)}
+                  ) : (
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {isResellerApiProduct(product) ? 'Auto delivery' : hasPlans ? 'Choose a plan' : 'One-time'}
                     </p>
-                    {currentOldPrice && (
-                      <p className="text-xs text-muted-foreground line-through tabular-nums">
-                        {formatPrice(currentOldPrice)}
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
-              )}
+                <div className="text-right shrink-0">
+                  <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums">
+                    {currentPrice > 0 ? formatPrice(currentPrice) : '—'}
+                  </p>
+                  {currentOldPrice != null && currentOldPrice > currentPrice && (
+                    <p className="text-xs text-muted-foreground line-through tabular-nums">
+                      {formatPrice(currentOldPrice)}
+                    </p>
+                  )}
+                </div>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <Button

@@ -456,10 +456,10 @@ export function buildAutoProductImageDataUrl(title: string): string {
   const lines = wrapTitleLines(polished, 16, 3);
   const initial = (polished.replace(/[^A-Za-z0-9]/g, '').charAt(0) || 'A').toUpperCase();
 
-  const titleSvg = lines
+  const titleBottom = lines
     .map((line, i) => {
-      const y = 210 + i * 36;
-      return `<text x="40" y="${y}" fill="white" font-family="system-ui,Segoe UI,sans-serif" font-size="28" font-weight="800">${escapeXml(line)}</text>`;
+      const y = 500 + i * 34;
+      return `<text x="40" y="${y}" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="30" font-weight="800">${escapeXml(line)}</text>`;
     })
     .join('');
 
@@ -471,38 +471,22 @@ export function buildAutoProductImageDataUrl(title: string): string {
       <stop offset="55%" stop-color="${c2}"/>
       <stop offset="100%" stop-color="${c3}"/>
     </linearGradient>
-    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    <linearGradient id="fade" x1="0%" y1="35%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.72"/>
     </linearGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="24" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
   </defs>
   <rect width="800" height="640" fill="url(#bg)"/>
-  <circle cx="640" cy="120" r="160" fill="#ffffff" fill-opacity="0.08"/>
-  <circle cx="120" cy="520" r="200" fill="#000000" fill-opacity="0.12"/>
-  <rect width="800" height="640" fill="url(#shine)"/>
-
-  <!-- Badge -->
-  <rect x="40" y="40" rx="20" ry="20" width="148" height="40" fill="#000000" fill-opacity="0.28"/>
-  <text x="60" y="66" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="700" letter-spacing="0.5">⚡ AUTO</text>
-
-  <!-- Icon circle -->
-  <circle cx="400" cy="130" r="52" fill="#ffffff" fill-opacity="0.16"/>
-  <circle cx="400" cy="130" r="44" fill="#ffffff" fill-opacity="0.92"/>
-  <text x="400" y="146" text-anchor="middle" fill="${c1}" font-family="system-ui,Segoe UI,sans-serif" font-size="40" font-weight="800">${escapeXml(initial)}</text>
-
-  ${titleSvg}
-
-  <!-- Subtitle -->
-  <text x="40" y="${210 + lines.length * 36 + 28}" fill="#ffffff" fill-opacity="0.92" font-family="system-ui,Segoe UI,sans-serif" font-size="18" font-weight="600" letter-spacing="1.5">AUTO PRODUCT</text>
-  <text x="40" y="${210 + lines.length * 36 + 56}" fill="#ffffff" fill-opacity="0.7" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="500">Instant delivery · Snippy Mart</text>
-
-  <!-- Bottom bar -->
-  <rect x="0" y="580" width="800" height="60" fill="#000000" fill-opacity="0.22"/>
-  <text x="40" y="616" fill="#ffffff" fill-opacity="0.85" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="600">snippymart.com</text>
+  <circle cx="640" cy="120" r="160" fill="#ffffff" fill-opacity="0.1"/>
+  <circle cx="120" cy="520" r="200" fill="#000000" fill-opacity="0.15"/>
+  <circle cx="400" cy="220" r="90" fill="#ffffff" fill-opacity="0.14"/>
+  <circle cx="400" cy="220" r="72" fill="#ffffff" fill-opacity="0.92"/>
+  <text x="400" y="245" text-anchor="middle" fill="${c1}" font-family="system-ui,Segoe UI,sans-serif" font-size="52" font-weight="800">${escapeXml(initial)}</text>
+  <rect width="800" height="640" fill="url(#fade)"/>
+  <rect x="40" y="36" rx="16" ry="16" width="118" height="34" fill="#059669"/>
+  <text x="99" y="58" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="800" letter-spacing="1">AUTO</text>
+  ${titleBottom}
+  <text x="40" y="${500 + lines.length * 34 + 28}" fill="#a7f3d0" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">AUTO PRODUCT</text>
 </svg>`;
 
   // Use encodeURIComponent for reliable data URL (UTF-8 safe)
@@ -604,7 +588,8 @@ async function fetchLogoAsDataUri(brand: BrandLogo): Promise<string | null> {
 }
 
 /**
- * Product tile like store cards: soft bg, official logo center, title, Auto Product subtitle.
+ * Full-bleed product image (like normal store cards): brand-colored cover,
+ * large logo, soft gradient, title bottom-left — works with object-cover.
  */
 export function buildOfficialLogoProductImage(
   title: string,
@@ -612,43 +597,43 @@ export function buildOfficialLogoProductImage(
   logoDataUri: string | null,
 ): string {
   const polished = polishProductTitle(title);
-  const lines = wrapTitleLines(polished, 22, 2);
+  const lines = wrapTitleLines(polished, 20, 2);
   const titleSvg = lines
     .map((line, i) => {
-      const y = 420 + i * 32;
-      return `<text x="400" y="${y}" text-anchor="middle" fill="#0f172a" font-family="system-ui,Segoe UI,sans-serif" font-size="26" font-weight="800">${escapeXml(line)}</text>`;
+      const y = 520 + i * 34;
+      return `<text x="40" y="${y}" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="30" font-weight="800">${escapeXml(line)}</text>`;
     })
     .join('');
 
+  // White logo plate + brand logo (or monogram)
   const logoBlock = logoDataUri
-    ? `<image href="${logoDataUri}" xlink:href="${logoDataUri}" x="330" y="190" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>`
-    : `<text x="400" y="270" text-anchor="middle" fill="#${brand.color}" font-family="system-ui,Segoe UI,sans-serif" font-size="48" font-weight="800">${escapeXml(brand.label.slice(0, 1))}</text>`;
+    ? `<rect x="280" y="140" width="240" height="240" rx="48" fill="#ffffff" fill-opacity="0.96"/>
+       <image href="${logoDataUri}" xlink:href="${logoDataUri}" x="330" y="190" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>`
+    : `<rect x="280" y="140" width="240" height="240" rx="48" fill="#ffffff" fill-opacity="0.96"/>
+       <text x="400" y="290" text-anchor="middle" fill="#${brand.color}" font-family="system-ui,Segoe UI,sans-serif" font-size="72" font-weight="800">${escapeXml(brand.label.slice(0, 1))}</text>`;
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="640" viewBox="0 0 800 640">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f8fafc"/>
-      <stop offset="100%" stop-color="#e2e8f0"/>
+      <stop offset="0%" stop-color="#${brand.color}" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.12"/>
-    </filter>
+    <linearGradient id="fade" x1="0%" y1="40%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.75"/>
+    </linearGradient>
   </defs>
   <rect width="800" height="640" fill="url(#bg)"/>
-  <circle cx="700" cy="80" r="140" fill="#${brand.color}" fill-opacity="0.08"/>
-  <circle cx="80" cy="560" r="120" fill="#${brand.color}" fill-opacity="0.06"/>
-
-  <rect x="40" y="36" rx="18" ry="18" width="132" height="36" fill="#059669"/>
-  <text x="106" y="60" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="800" letter-spacing="0.5">AUTO</text>
-
-  <rect x="260" y="120" width="280" height="280" rx="40" fill="#ffffff" filter="url(#shadow)"/>
-  <rect x="260" y="120" width="280" height="280" rx="40" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <circle cx="650" cy="120" r="200" fill="#ffffff" fill-opacity="0.08"/>
+  <circle cx="100" cy="500" r="160" fill="#${brand.color}" fill-opacity="0.25"/>
   ${logoBlock}
-
+  <rect width="800" height="640" fill="url(#fade)"/>
+  <rect x="40" y="36" rx="16" ry="16" width="118" height="34" fill="#059669"/>
+  <text x="99" y="58" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="800" letter-spacing="1">AUTO</text>
   ${titleSvg}
-  <text x="400" y="${420 + lines.length * 32 + 28}" text-anchor="middle" fill="#059669" font-family="system-ui,Segoe UI,sans-serif" font-size="16" font-weight="700" letter-spacing="2">AUTO PRODUCT</text>
-  <text x="400" y="${420 + lines.length * 32 + 52}" text-anchor="middle" fill="#64748b" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="500">Instant delivery · Snippy Mart</text>
+  <text x="40" y="${520 + lines.length * 34 + 28}" fill="#a7f3d0" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">AUTO PRODUCT</text>
 </svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
