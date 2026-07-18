@@ -40,12 +40,24 @@ export function markupPercentForCostLkr(
   return sorted[sorted.length - 1]?.markupPercent ?? 20;
 }
 
-/** Round sell price to a clean shop amount (nearest 50, always >= raw) */
+/**
+ * Charm price ending in 99 (LKR, no cents).
+ * Examples: 368 → 399, 400 → 499, 99 → 99, 1 → 99, 1200 → 1299
+ */
 export function roundSellLkr(amount: number): number {
   if (!Number.isFinite(amount) || amount <= 0) return 0;
-  const stepped = Math.ceil(amount / 50) * 50;
-  // Prefer friendly endings for mid prices (e.g. 890 → 900 feel is fine via 50s)
-  return Math.max(50, stepped);
+  const n = Math.ceil(amount);
+  if (n <= 99) return 99;
+  // Already a .99 price
+  if (n % 100 === 99) return n;
+  // Jump up to this hundred's 99, or next if already past it
+  // 368 → floor(368/100)=3 → 399
+  // 400 → floor(400/100)=4 → 499
+  // 301 → 399
+  const bucket = Math.floor(n / 100);
+  const candidate = bucket * 100 + 99;
+  if (candidate >= n) return candidate;
+  return (bucket + 1) * 100 + 99;
 }
 
 export type ApiPriceOpts = {
@@ -60,9 +72,10 @@ export type ApiPriceOpts = {
 
 /**
  * cost_lkr = usd × rate
- * SMART: markup % depends on cost band + min profit floor + round to 50s
+ * SMART: markup % depends on cost band + min profit floor + round to xx99
  * FIXED: single markup % (legacy)
  * Panel still only deducts API $ — margin is yours.
+ * You can override products.price anytime in Admin (custom customer price).
  */
 export function calcApiCustomerPriceLkr(
   costUsd: number,
@@ -493,6 +506,78 @@ export function isResellerApiProduct(product: {
 }): boolean {
   return !!(product.reseller_product_id && String(product.reseller_product_id).trim());
 }
+
+/**
+ * Round every API product's customer sell price up to xx99.
+ * Does not change reseller_cost_usd (panel cost).
+ */
+export const useRoundApiPricesTo99 = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data: rows, error } = await (supabase as any)
+        .from('products')
+        .select('id, name, price, reseller_product_id')
+        .not('reseller_product_id', 'is', null);
+      if (error) throw error;
+      if (!rows?.length) throw new Error('No API products found');
+
+      let updated = 0;
+      const samples: string[] = [];
+      for (const row of rows) {
+        const before = Number(row.price) || 0;
+        const after = roundSellLkr(before);
+        if (before === after) continue;
+        const { error: upErr } = await (supabase as any)
+          .from('products')
+          .update({
+            price: after,
+            // keep a crossed-out "was" slightly higher when useful
+            old_price: roundSellLkr(after * 1.12),
+          })
+          .eq('id', row.id);
+        if (!upErr) {
+          updated++;
+          if (samples.length < 5) {
+            samples.push(`${row.name}: Rs.${before} → Rs.${after}`);
+          }
+        }
+      }
+      return { updated, total: rows.length, samples };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+};
+
+/** Set custom customer LKR price for one API product (admin). */
+export const useSetApiProductPrice = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      productId,
+      priceLkr,
+    }: {
+      productId: string;
+      priceLkr: number;
+    }) => {
+      const price = roundSellLkr(Number(priceLkr));
+      if (!price || price < 99) throw new Error('Price must be at least Rs. 99');
+      const { data, error } = await (supabase as any)
+        .from('products')
+        .update({ price })
+        .eq('id', productId)
+        .select('id, name, price')
+        .single();
+      if (error) throw error;
+      return data as { id: string; name: string; price: number };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+};
 
 /**
  * Re-generate polished titles, descriptions, and Auto Product images

@@ -243,6 +243,7 @@ const AdminProducts = () => {
     requirements: { require_email: false, require_password: false },
     manual_fulfillment: true,
     reseller_product_id: null,
+    reseller_cost_usd: null,
     use_variant_pricing: false,
   });
   const [pricingPlans, setPricingPlans] = useState<PricingPlanInput[]>([]);
@@ -388,6 +389,7 @@ const AdminProducts = () => {
     requirements: { require_email: false, require_password: false },
     manual_fulfillment: true,
     reseller_product_id: null,
+    reseller_cost_usd: null,
     use_variant_pricing: false,
     slug: '',
   });
@@ -430,6 +432,7 @@ const AdminProducts = () => {
         },
         manual_fulfillment: product.manual_fulfillment ?? true,
         reseller_product_id: product.reseller_product_id ?? null,
+        reseller_cost_usd: product.reseller_cost_usd ?? null,
         use_variant_pricing: product.use_variant_pricing ?? false,
         slug: product.slug || generateSlug(product.name || ''),
         display_order: toNum(product.display_order, 0),
@@ -806,17 +809,29 @@ const AdminProducts = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price" className="text-foreground">Base Price (Rs.)</Label>
+                  <Label htmlFor="price" className="text-foreground">
+                    {formData.reseller_product_id
+                      ? 'Customer sell price (Rs.)'
+                      : 'Base Price (Rs.)'}
+                  </Label>
                   <Input
                     id="price"
                     name="price"
                     type="number"
-                    step="0.01"
+                    step="1"
                     value={Number.isFinite(formData.price) ? formData.price : 0}
                     onChange={handleInputChange}
                     className="mt-1.5 bg-background border-border text-foreground"
                     required
                   />
+                  {formData.reseller_product_id && (
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">
+                      This is what customers pay (LKR). Prefer endings like 399, 499, 999.
+                      {formData.reseller_cost_usd != null && (
+                        <> Panel cost stays ${Number(formData.reseller_cost_usd).toFixed(2)} USDT.</>
+                      )}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="old_price" className="text-foreground">Old Price (Rs.)</Label>
@@ -824,7 +839,7 @@ const AdminProducts = () => {
                     id="old_price"
                     name="old_price"
                     type="number"
-                    step="0.01"
+                    step="1"
                     value={formData.old_price ?? ''}
                     onChange={handleInputChange}
                     className="mt-1.5 bg-background border-border text-foreground"

@@ -26,8 +26,11 @@ import {
   useResellerDeliveries,
   useImportResellerProducts,
   useRefreshResellerPresentation,
+  useRoundApiPricesTo99,
+  useSetApiProductPrice,
   isResellerApiProduct,
   calcApiCustomerPriceLkr,
+  roundSellLkr,
   DEFAULT_SMART_TIERS,
   RESELLER_USD_TO_LKR,
   RESELLER_DEFAULT_MARKUP_PERCENT,
@@ -71,6 +74,9 @@ const AdminResellerApi = () => {
   const { data: localProducts = [] } = useProducts(true);
   const importProducts = useImportResellerProducts();
   const refreshPresentation = useRefreshResellerPresentation();
+  const roundTo99 = useRoundApiPricesTo99();
+  const setApiPrice = useSetApiProductPrice();
+  const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
 
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
@@ -447,10 +453,141 @@ const AdminResellerApi = () => {
             })}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Prices round up to nearest Rs. 50. You can still edit any product sell price manually in
-            Admin → Products after import.
+            Sell prices round up to <strong>xx99</strong> (e.g. 368 → 399, 400 → 499). You can set a
+            custom customer price per product below or in Admin → Products — that does not change
+            panel cost.
           </p>
+          <div className="flex flex-wrap gap-2 text-[10px] font-mono text-muted-foreground">
+            {[368, 420, 500, 890, 1200].map((n) => (
+              <span key={n} className="px-2 py-1 rounded bg-background border border-border">
+                {n} → {roundSellLkr(n)}
+              </span>
+            ))}
+          </div>
         </div>
+
+        {/* Custom customer prices for imported API products */}
+        {apiLocalProducts.length > 0 && (
+          <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider">Custom customer prices</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Set what users pay (LKR). Panel still charges API $ only. Saves as xx99.
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={roundTo99.isPending}
+                onClick={async () => {
+                  try {
+                    const res = await roundTo99.mutateAsync();
+                    toast({
+                      title: `Rounded ${res.updated} price(s) to .99`,
+                      description:
+                        res.samples?.length > 0
+                          ? res.samples.join(' · ')
+                          : `Checked ${res.total} API products.`,
+                    });
+                  } catch (e: any) {
+                    toast({
+                      title: 'Round failed',
+                      description: e.message,
+                      variant: 'destructive',
+                    });
+                  }
+                }}
+              >
+                {roundTo99.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : null}
+                Round all existing to .99
+              </Button>
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Panel cost</TableHead>
+                    <TableHead>Customer price (LKR)</TableHead>
+                    <TableHead className="w-28"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {apiLocalProducts.map((p: any) => {
+                    const draft =
+                      priceDrafts[p.id] ??
+                      String(Math.round(Number(p.price) || 0));
+                    return (
+                      <TableRow key={p.id}>
+                        <TableCell className="text-sm font-medium max-w-[200px]">
+                          <span className="line-clamp-2">{p.name}</span>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {p.reseller_cost_usd != null
+                            ? `$${Number(p.reseller_cost_usd).toFixed(2)}`
+                            : '—'}
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            step="1"
+                            min={99}
+                            className="h-9 w-28 font-mono"
+                            value={draft}
+                            onChange={(e) =>
+                              setPriceDrafts((prev) => ({
+                                ...prev,
+                                [p.id]: e.target.value,
+                              }))
+                            }
+                          />
+                          <span className="text-[10px] text-muted-foreground ml-2">
+                            → {roundSellLkr(Number(draft) || 0)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={setApiPrice.isPending}
+                            onClick={async () => {
+                              try {
+                                const saved = await setApiPrice.mutateAsync({
+                                  productId: p.id,
+                                  priceLkr: Number(draft),
+                                });
+                                setPriceDrafts((prev) => ({
+                                  ...prev,
+                                  [p.id]: String(saved.price),
+                                }));
+                                toast({
+                                  title: 'Price saved',
+                                  description: `${saved.name}: Rs. ${saved.price}`,
+                                });
+                              } catch (e: any) {
+                                toast({
+                                  title: 'Save failed',
+                                  description: e.message,
+                                  variant: 'destructive',
+                                });
+                              }
+                            }}
+                          >
+                            Save
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-6">
           <div className="flex items-center gap-3">
