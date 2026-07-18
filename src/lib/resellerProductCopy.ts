@@ -123,39 +123,29 @@ export function polishProductTitle(raw: string): string {
 
   // Title case (keep small words lowercase unless first)
   const small = new Set(['a', 'an', 'and', 'or', 'the', 'of', 'for', 'to', 'in', 'on', 'with']);
-  const keep = new Set([
-    'ChatGPT',
-    'YouTube',
-    'Office',
-    'Midjourney',
-    'CapCut',
-    'GPT-4',
-    'Disney+',
-    'Month',
-    'Months',
-    'Year',
-    'Years',
-    'Day',
-    'Days',
-    'Week',
-    'Weeks',
-    'Hour',
-    'Hours',
-  ]);
+  const keepExact: Record<string, string> = {
+    ai: 'AI',
+    chatgpt: 'ChatGPT',
+    youtube: 'YouTube',
+    gpt: 'GPT',
+    'gpt-4': 'GPT-4',
+    'disney+': 'Disney+',
+    midjourney: 'Midjourney',
+    capcut: 'CapCut',
+    api: 'API',
+    vpn: 'VPN',
+    pro: 'Pro',
+    plus: 'Plus',
+  };
   const parts = s.split(/\s+/);
   s = parts
     .map((w, i) => {
-      if (keep.has(w)) return w;
-      if (/^[A-Z0-9+.-]{2,}$/.test(w) && /[A-Z]/.test(w) && /[0-9+]/.test(w)) return w;
-      if (/^(ChatGPT|YouTube|Office|Midjourney|CapCut|GPT-4|Disney\+)$/i.test(w)) {
-        return w.replace(/^chatgpt$/i, 'ChatGPT').replace(/^youtube$/i, 'YouTube');
-      }
-      // Preserve already expanded units
+      const lower = w.toLowerCase();
+      if (keepExact[lower]) return keepExact[lower];
       if (/^(Months?|Years?|Days?|Weeks?|Hours?)$/i.test(w)) {
-        const lower = w.toLowerCase();
         return lower.charAt(0).toUpperCase() + lower.slice(1);
       }
-      const lower = w.toLowerCase();
+      if (/^[A-Z0-9+.-]{2,}$/.test(w) && /[A-Z]/.test(w) && /[0-9+]/.test(w)) return w;
       if (i > 0 && small.has(lower)) return lower;
       if (/^[A-Z][a-z]+[A-Z]/.test(w) || w.includes('+')) return w;
       return lower.charAt(0).toUpperCase() + lower.slice(1);
@@ -222,15 +212,15 @@ function cleanApiText(raw: string): string {
 
   s = stripEntityJunk(s);
 
-  // Split glued seller phrases into separate lines
+  // Split only on clear field labels (Label:) or strong phrase starts — not mid-sentence
   s = s
     .replace(
-      /\s*(?=(?:Duration|Warranty|Type|Plan|Account|Delivery|Region|Note|Valid|Includes?)\s*:)/gi,
+      /\s*(?=(?:Duration|Warranty|Type|Plan|Delivery|Region|Note|Valid|Includes?)\s*:)/gi,
       '\n',
     )
-    .replace(/\s+(?=Official\s+Coupon)/gi, '\n')
-    .replace(/\s+(?=No\s+Warranty)/gi, '\n')
-    .replace(/\s+(?=On\s+Your\s+Account)/gi, '\n')
+    .replace(/\s+(?=Official\s+Coupon\s+Code\b)/gi, '\n')
+    .replace(/\s+(?=No\s+Warranty\s+After\b)/gi, '\n')
+    .replace(/\s+(?=On\s+Your\s+(?:Own\s+)?Account\b)/gi, '\n')
     .replace(/\s+(?=Instant\s+Deliver)/gi, '\n')
     .replace(/\s+(?=Auto\s+Deliver)/gi, '\n');
 
@@ -396,11 +386,11 @@ export function polishProductDescription(opts: {
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
 
-  // Turn remaining long single-line blobs into readable lines
+  // Turn remaining long single-line blobs into readable lines (labels only)
   if (body && !body.includes('\n') && body.length > 80) {
     body = body
       .replace(
-        /\s+(?=(?:Duration|Warranty|Type|Plan|Account|Delivery|Region|Note|Valid|Includes?|Official|No Warranty|On Your|Instant|Auto)\b)/gi,
+        /\s+(?=(?:Duration|Warranty|Type|Plan|Delivery|Region|Note|Valid|Includes?)\s*:|(?:Official\s+Coupon\s+Code|No\s+Warranty\s+After|On\s+Your\s+(?:Own\s+)?Account)\b)/gi,
         '\n',
       )
       .trim();
