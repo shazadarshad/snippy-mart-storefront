@@ -44,12 +44,23 @@ const RefundPolicy = () => {
                     <li><strong>Product Not-As-Described:</strong> Such issues should be reported within 7 days of purchase with clear evidence proving the product is not as described on the website.</li>
                     <li><strong>Service Downtime:</strong> If the subscription service completely stops working within the warranty period and we cannot provide a replacement or fix within 48 hours.</li>
                 </ul>
+                <p>
+                    <strong>Important:</strong> Eligible refund cases above do <strong>not</strong> apply to products marked as{' '}
+                    <strong>Non Warranty</strong> / <strong>No Warranty</strong> (see section 4).
+                </p>
 
                 <h2>4. Non-Eligible Refund Cases</h2>
                 <p>
                     We do not issue refunds under the following circumstances:
                 </p>
                 <ul>
+                    <li>
+                        <strong>Non Warranty products:</strong> Products listed or described as{' '}
+                        <strong>Non Warranty</strong>, <strong>No Warranty</strong>, or equivalent are{' '}
+                        <strong>not eligible for refund, replacement, or reissue under any circumstances</strong> after
+                        delivery or activation — including defects, downtime, expiry of redeem links, account issues, or
+                        change of mind.
+                    </li>
                     <li>You simply changed your mind about the purchase</li>
                     <li>You allow someone else to use your account</li>
                     <li>You do not have sufficient technical knowledge to use the product</li>
