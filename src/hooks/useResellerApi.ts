@@ -674,7 +674,7 @@ export const useRefreshResellerPresentation = () => {
 
       const { data: localRows, error } = await (supabase as any)
         .from('products')
-        .select('id, reseller_product_id, name')
+        .select('id, reseller_product_id, name, description')
         .not('reseller_product_id', 'is', null);
 
       if (error) throw error;
@@ -684,6 +684,7 @@ export const useRefreshResellerPresentation = () => {
 
       let updated = 0;
       let failed = 0;
+      let descUpdated = 0;
       const samples: string[] = [];
       const errors: string[] = [];
 
@@ -699,17 +700,22 @@ export const useRefreshResellerPresentation = () => {
 
         // Prefer raw API name when available so 12m expands correctly
         const sourceName = String(rp.name || row.name || 'Digital Product');
+        // Each product polished from ITS own API payload only (never shared template)
         const face = await buildCustomerFacingProduct({
           ...rp,
           name: sourceName,
         });
 
-        // 1) Always try core fields first (name/description/stock) — small payload
+        // 1) Core fields — name/stock always; description ONLY when THIS product has API text
+        //    (avoids wiping a unique description with a generic empty fallback)
         const coreUpdate: Record<string, unknown> = {
           name: face.name,
-          description: face.description,
           stock_status: face.stock_status,
         };
+        if (face.hasApiDescription) {
+          coreUpdate.description = face.description;
+          descUpdated++;
+        }
         if (face.reseller_stock != null) {
           coreUpdate.reseller_stock = face.reseller_stock;
         } else {
@@ -751,7 +757,7 @@ export const useRefreshResellerPresentation = () => {
         );
       }
 
-      return { updated, failed, samples, errors };
+      return { updated, failed, descUpdated, samples, errors };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['products'] });

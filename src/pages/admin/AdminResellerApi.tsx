@@ -649,7 +649,7 @@ const AdminResellerApi = () => {
                       : ' Titles already clean or re-applied.';
                   toast({
                     title: `Refreshed ${res.updated} product(s)`,
-                    description: `Titles, descriptions, stock, and images updated. Prices unchanged.${sample}${
+                    description: `Titles, stock, and images updated. Descriptions rewritten per product from API (${res.descUpdated ?? 0} with API text). Prices unchanged.${sample}${
                       res.failed ? ` (${res.failed} failed)` : ''
                     }${res.errors?.length ? ` ${res.errors[0]}` : ''}`,
                   });

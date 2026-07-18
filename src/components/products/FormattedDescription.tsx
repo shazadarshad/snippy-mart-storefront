@@ -12,8 +12,12 @@ const BULLET_RE = /^(?:[\*\-•✅⭐✓✔▪▸●◦·☑]|\u2705|\u2713|\u27
 function isHeaderLine(trimmed: string, isBullet: boolean): boolean {
   if (isBullet || !trimmed) return false;
 
-  // Emoji-leading section titles
-  if (/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(trimmed)) {
+  // Emoji-leading section titles (short only — long how-to / notes stay body text)
+  if (
+    /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(trimmed) &&
+    trimmed.length <= 72 &&
+    !trimmed.includes('. ')
+  ) {
     return true;
   }
 
