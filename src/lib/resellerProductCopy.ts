@@ -212,17 +212,18 @@ function cleanApiText(raw: string): string {
 
   s = stripEntityJunk(s);
 
-  // Split only on clear field labels (Label:) or strong phrase starts — not mid-sentence
+  // Split only on clear field labels — never mid-sentence (e.g. "activated on your own account")
   s = s
     .replace(
       /\s*(?=(?:Duration|Warranty|Type|Plan|Delivery|Region|Note|Valid|Includes?)\s*:)/gi,
       '\n',
     )
-    .replace(/\s+(?=Official\s+Coupon\s+Code\b)/gi, '\n')
-    .replace(/\s+(?=No\s+Warranty\s+After\b)/gi, '\n')
-    .replace(/\s+(?=On\s+Your\s+(?:Own\s+)?Account\b)/gi, '\n')
-    .replace(/\s+(?=Instant\s+Deliver)/gi, '\n')
-    .replace(/\s+(?=Auto\s+Deliver)/gi, '\n');
+    // Capitalized seller field phrases only (API often sends Title Case fields)
+    .replace(/\s+(?=Official\s+Coupon\s+Code\b)/g, '\n')
+    .replace(/\s+(?=No\s+Warranty\s+After\b)/g, '\n')
+    .replace(/\s+(?=On\s+Your\s+(?:Own\s+)?Account\b)/g, '\n')
+    .replace(/\s+(?=Instant\s+Deliver)/g, '\n')
+    .replace(/\s+(?=Auto\s+Deliver)/g, '\n');
 
   s = stripEntityJunk(s);
 
@@ -386,11 +387,11 @@ export function polishProductDescription(opts: {
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
 
-  // Turn remaining long single-line blobs into readable lines (labels only)
+  // Turn remaining long single-line blobs into readable lines (Title-Case field labels only)
   if (body && !body.includes('\n') && body.length > 80) {
     body = body
       .replace(
-        /\s+(?=(?:Duration|Warranty|Type|Plan|Delivery|Region|Note|Valid|Includes?)\s*:|(?:Official\s+Coupon\s+Code|No\s+Warranty\s+After|On\s+Your\s+(?:Own\s+)?Account)\b)/gi,
+        /\s+(?=(?:Duration|Warranty|Type|Plan|Delivery|Region|Note|Valid|Includes?)\s*:|(?:Official\s+Coupon\s+Code|No\s+Warranty\s+After|On\s+Your\s+(?:Own\s+)?Account)\b)/g,
         '\n',
       )
       .trim();
