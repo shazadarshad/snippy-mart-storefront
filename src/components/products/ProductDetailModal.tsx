@@ -357,12 +357,15 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 )}
               </div>
 
-              {/* Category & Stock */}
+              {/* Category & Stock — hide internal "API Products" label from customers */}
               <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-3">
                 <div className="flex items-center flex-wrap gap-1.5">
-                  <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
-                    {product.category}
-                  </span>
+                  {product.category &&
+                    product.category.trim().toLowerCase() !== 'api products' && (
+                      <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
+                        {product.category}
+                      </span>
+                    )}
                   {isResellerApiProduct(product) && (
                     <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                       <Zap className="w-3 h-3 fill-current" />

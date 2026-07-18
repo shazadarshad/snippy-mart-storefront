@@ -101,7 +101,12 @@ const ProductCard = memo(function ProductCard({
       <div className="flex flex-1 flex-col gap-2.5 p-4 sm:p-5">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate rounded-lg bg-secondary/90 border border-border/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {product.category || 'Digital'}
+            {product.category &&
+            product.category.trim().toLowerCase() !== 'api products'
+              ? product.category
+              : isAuto
+                ? 'Digital'
+                : product.category || 'Digital'}
           </span>
           <span
             className={cn(
