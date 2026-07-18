@@ -375,8 +375,11 @@ function guessCategoryHints(title: string): { emoji: string; kind: string; benef
 }
 
 /**
- * Build a polished storefront description (works with FormattedDescription).
- * 100% our template — never pastes raw seller/Telegram text.
+ * Format API description for the storefront:
+ * - KEEP the real API content (duration, warranty, coupon, on own account, etc.)
+ * - Strip Telegram ce: junk only
+ * - Light structure for FormattedDescription (bullets / short lines)
+ * - Short Auto + Track Order note at the end (does not replace API text)
  */
 export function polishProductDescription(opts: {
   title: string;
@@ -384,66 +387,96 @@ export function polishProductDescription(opts: {
 }): string {
   const title = polishProductTitle(opts.title);
   const hints = guessCategoryHints(title);
+  const raw = opts.apiDescription || '';
 
-  // Only whitelisted keyword facts (duration, coupon, warranty…) — never raw blobs
-  const facts = extractFacts(opts.apiDescription || '');
+  // Clean junk but keep seller meaning
+  let body = cleanApiText(raw);
+  body = stripEntityJunk(body)
+    .replace(/\s+([:;,.])/g, '$1')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
 
-  const intro = `Get **${title}** — a premium ${hints.kind} from Snippy Mart with fast auto delivery after payment confirmation.`;
-
-  const whatYouGet =
-    facts.length > 0
-      ? facts
-      : hints.benefits.map((b) => (b.endsWith('.') ? b : `${b}.`));
-
-  const lines = [
-    `${hints.emoji} ${title}`,
-    '',
-    intro,
-    '',
-    '✨ What you get',
-    ...whatYouGet.map((b) => {
-      const body = String(b)
-        .replace(/^(?:✅|✓|✔|•)\s+/, '')
-        .trim();
-      return `✅ ${body}`;
-    }),
-    '',
-    '🚀 How it works',
-    '✅ Place your order and complete payment on Snippy Mart.',
-    '✅ We verify payment, then delivery runs automatically.',
-    '✅ Open Track Order to view your product credentials instantly.',
-    '',
-    '💡 Important',
-    '✅ This is an **Auto Product** — fulfilled by our automated system.',
-    '✅ Keep your Order ID ready if you contact WhatsApp support.',
-    '✅ Delivery details appear on your Track Order page when ready.',
-  ];
-
-  let out = lines.join('\n');
-
-  // Nuclear safety: if any junk leaked, fall back to pure template (no API facts)
-  if (hasSellerJunk(out) || /ce:\d+/i.test(out)) {
-    out = [
-      `${hints.emoji} ${title}`,
-      '',
-      intro,
-      '',
-      '✨ What you get',
-      ...hints.benefits.map((b) => `✅ ${b.endsWith('.') ? b : `${b}.`}`),
-      '',
-      '🚀 How it works',
-      '✅ Place your order and complete payment on Snippy Mart.',
-      '✅ We verify payment, then delivery runs automatically.',
-      '✅ Open Track Order to view your product credentials instantly.',
-      '',
-      '💡 Important',
-      '✅ This is an **Auto Product** — fulfilled by our automated system.',
-      '✅ Keep your Order ID ready if you contact WhatsApp support.',
-      '✅ Delivery details appear on your Track Order page when ready.',
-    ].join('\n');
+  // Turn remaining long single-line blobs into readable lines
+  if (body && !body.includes('\n') && body.length > 80) {
+    body = body
+      .replace(
+        /\s+(?=(?:Duration|Warranty|Type|Plan|Account|Delivery|Region|Note|Valid|Includes?|Official|No Warranty|On Your|Instant|Auto)\b)/gi,
+        '\n',
+      )
+      .trim();
   }
 
-  return out.replace(/\n{3,}/g, '\n\n').trim();
+  // Format each content line for the product modal
+  const contentLines: string[] = [];
+  if (body) {
+    for (const line of body.split(/\n+/)) {
+      let t = stripEntityJunk(line).replace(/\s+/g, ' ').trim();
+      if (!t || hasSellerJunk(t) || looksDirty(t) && t.length < 20) continue;
+      // Skip pure garbage leftovers
+      if (/^[\d\W]+$/.test(t)) continue;
+
+      // Expand short units inside description content too
+      t = t
+        .replace(/(\d+)\s*(?:months?|mos?|m)(?![a-z])/gi, (_, n) =>
+          `${n} ${Number(n) === 1 ? 'Month' : 'Months'}`,
+        )
+        .replace(/(\d+)\s*(?:years?|yrs?|y)(?![a-z])/gi, (_, n) =>
+          `${n} ${Number(n) === 1 ? 'Year' : 'Years'}`,
+        );
+
+      // Already a bullet / header-ish line
+      if (/^(?:[-*•✅✓✔]|#{1,3}\s|✨|🚀|💡|⚡)/.test(t)) {
+        contentLines.push(t.replace(/^[-*•]\s*/, '✅ '));
+        continue;
+      }
+      // Label: value → ✅ **Duration:** 12 Months
+      const m = t.match(/^([^:]{1,40}):\s*(.+)$/);
+      if (m) {
+        contentLines.push(`✅ **${m[1].trim()}:** ${m[2].trim()}`);
+        continue;
+      }
+      contentLines.push(`✅ ${t}`);
+    }
+  }
+
+  // If cleaning wiped everything, fall back to extracted keyword facts from original
+  if (contentLines.length === 0 && raw.trim()) {
+    const facts = extractFacts(raw);
+    for (const f of facts) {
+      contentLines.push(`✅ ${f.replace(/^\*\*|\*\*$/g, '')}`);
+    }
+  }
+
+  const lines: string[] = [`${hints.emoji} ${title}`, ''];
+
+  if (contentLines.length > 0) {
+    lines.push('✨ Product details', ...contentLines, '');
+  } else {
+    // No API text at all
+    lines.push(
+      `Get **${title}** — a premium ${hints.kind} with auto delivery after payment confirmation.`,
+      '',
+    );
+  }
+
+  // Short store note only — never replaces API content above
+  lines.push(
+    '🚀 Delivery',
+    '✅ Auto product: after we confirm payment, open **Track Order** with your Order ID to get your code, link, or login.',
+    '✅ Please save your Order ID from the success page.',
+  );
+
+  let out = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+
+  // Safety: strip any leftover ce: junk without deleting whole description
+  if (hasSellerJunk(out) || /ce:\d+/i.test(out)) {
+    out = stripEntityJunk(out)
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  return out;
 }
 
 /** Derive dark brand-v2 background pair from accent hex (matches store brand-v2 tiles). */
