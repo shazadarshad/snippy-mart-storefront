@@ -59,6 +59,7 @@ import {
   useDeletePricingPlanVariant,
 } from "@/hooks/usePricingPlans";
 import { useCurrency } from '@/hooks/useCurrency';
+import { isResellerApiProduct, productPriceInLkr } from '@/hooks/useResellerApi';
 import { cn } from '@/lib/utils';
 
 interface PricingPlanVariantInput {
@@ -227,7 +228,8 @@ const AdminProducts = () => {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const isReordering = moveProduct.isPending || reorderProducts.isPending;
-  const canReorder = !searchQuery.trim();
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'store' | 'api'>('all');
+  const canReorder = !searchQuery.trim() && sourceFilter === 'all';
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     description: '',
@@ -240,6 +242,7 @@ const AdminProducts = () => {
     stock_status: 'in_stock',
     requirements: { require_email: false, require_password: false },
     manual_fulfillment: true,
+    reseller_product_id: null,
     use_variant_pricing: false,
   });
   const [pricingPlans, setPricingPlans] = useState<PricingPlanInput[]>([]);
@@ -249,11 +252,20 @@ const AdminProducts = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const storeProductCount = products.filter((p) => !isResellerApiProduct(p)).length;
+  const apiProductCount = products.filter((p) => isResellerApiProduct(p)).length;
+
+  const filteredProducts = products.filter((p) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q);
+    if (!matchesSearch) return false;
+    if (sourceFilter === 'api') return isResellerApiProduct(p);
+    if (sourceFilter === 'store') return !isResellerApiProduct(p);
+    return true;
+  });
 
   const applyOrder = (orderedIds: string[]) => {
     reorderProducts.mutate(orderedIds);
@@ -375,6 +387,7 @@ const AdminProducts = () => {
     stock_status: 'in_stock',
     requirements: { require_email: false, require_password: false },
     manual_fulfillment: true,
+    reseller_product_id: null,
     use_variant_pricing: false,
     slug: '',
   });
@@ -416,6 +429,7 @@ const AdminProducts = () => {
           require_username: !!req?.require_username,
         },
         manual_fulfillment: product.manual_fulfillment ?? true,
+        reseller_product_id: product.reseller_product_id ?? null,
         use_variant_pricing: product.use_variant_pricing ?? false,
         slug: product.slug || generateSlug(product.name || ''),
         display_order: toNum(product.display_order, 0),
@@ -882,7 +896,7 @@ const AdminProducts = () => {
               </div>
 
               {/* Fulfillment Type */}
-              <div className="border p-4 rounded-lg bg-primary/5 border-primary/20">
+              <div className="border p-4 rounded-lg bg-primary/5 border-primary/20 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label className="text-foreground font-bold">Manual Fulfillment Console</Label>
@@ -895,6 +909,24 @@ const AdminProducts = () => {
                     checked={formData.manual_fulfillment}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, manual_fulfillment: checked }))}
                   />
+                </div>
+                <div className="space-y-1.5 pt-2 border-t border-primary/10">
+                  <Label className="text-foreground font-bold">Reseller API product ID</Label>
+                  <Input
+                    placeholder="UUID from seller panel (optional)"
+                    value={formData.reseller_product_id || ''}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        reseller_product_id: e.target.value.trim() || null,
+                      }))
+                    }
+                    className="font-mono text-xs"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    When set, payment confirmed (processing) can auto-order this product from your prepaid reseller panel. Map from{' '}
+                    <span className="font-semibold">Admin → Reseller API</span> or paste the UUID here.
+                  </p>
                 </div>
               </div>
 
@@ -1262,13 +1294,50 @@ const AdminProducts = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Source filter: store vs API products (API products are separate, not replacements) */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {(
+          [
+            { id: 'all' as const, label: 'All', count: products.length },
+            { id: 'store' as const, label: 'Store products', count: storeProductCount },
+            { id: 'api' as const, label: 'API products', count: apiProductCount },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setSourceFilter(tab.id)}
+            className={cn(
+              'px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide border transition-colors',
+              sourceFilter === tab.id
+                ? tab.id === 'api'
+                  ? 'bg-emerald-600 text-white border-emerald-600'
+                  : 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card border-border text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {tab.label}
+            <span className="ml-1.5 opacity-80 tabular-nums">({tab.count})</span>
+          </button>
+        ))}
+        <p className="text-[11px] text-muted-foreground w-full sm:w-auto sm:ml-2">
+          API products come from Reseller API import — they do not replace store products.
+        </p>
+      </div>
+
       {/* Search + order tip */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
         <div className="relative max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search products..."
+            placeholder={
+              sourceFilter === 'api'
+                ? 'Search API products...'
+                : sourceFilter === 'store'
+                  ? 'Search store products...'
+                  : 'Search products...'
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-12 bg-card border-border"
@@ -1282,7 +1351,11 @@ const AdminProducts = () => {
               This order is what shoppers see on the storefront.
             </span>
           ) : (
-            <span>Clear the search box to reorder products (drag is disabled while filtering).</span>
+            <span>
+              {sourceFilter !== 'all'
+                ? 'Switch filter to All and clear search to reorder.'
+                : 'Clear the search box to reorder products (drag is disabled while filtering).'}
+            </span>
           )}
           {isReordering && (
             <Loader2 className="w-3.5 h-3.5 animate-spin text-primary ml-1 shrink-0" />
@@ -1322,6 +1395,7 @@ const AdminProducts = () => {
                     const isLast = fullIndex === products.length - 1;
                     const isDragging = dragId === product.id;
                     const isDropTarget = dragOverId === product.id && dragId !== product.id;
+                    const isApi = isResellerApiProduct(product);
 
                     return (
                       <tr
@@ -1336,6 +1410,7 @@ const AdminProducts = () => {
                           !product.is_active && "opacity-60",
                           isDragging && "opacity-40 bg-primary/5",
                           isDropTarget && "bg-primary/10 ring-1 ring-inset ring-primary/40",
+                          isApi && "bg-emerald-500/[0.06]",
                         )}
                       >
                         <td className="py-4 px-3">
@@ -1377,27 +1452,58 @@ const AdminProducts = () => {
                               )}
                             </div>
                             <div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <p className="font-medium text-foreground">{product.name}</p>
+                                {isApi && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white">
+                                    API
+                                  </span>
+                                )}
                                 {product.is_featured && (
                                   <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
+                              {isApi && product.reseller_product_id && (
+                                <p className="text-[10px] font-mono text-emerald-700/80 dark:text-emerald-400/80 mt-0.5 truncate max-w-[220px]">
+                                  ID: {product.reseller_product_id}
+                                </p>
+                              )}
                             </div>
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                          <span
+                            className={cn(
+                              'px-2.5 py-1 rounded-full text-xs font-medium',
+                              isApi
+                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                : 'bg-primary/10 text-primary',
+                            )}
+                          >
                             {product.category}
                           </span>
                         </td>
                         <td className="py-4 px-4 font-medium text-foreground">
-                          {formatPrice(product.price)}
-                          {product.old_price && (
-                            <span className="ml-2 text-sm text-muted-foreground line-through">
-                              {formatPrice(product.old_price)}
-                            </span>
+                          {isApi ? (
+                            <div>
+                              <span>{formatPrice(productPriceInLkr(product))}</span>
+                              <span className="block text-[10px] text-muted-foreground font-normal">
+                                Customer sell
+                                {product.reseller_cost_usd != null && (
+                                  <> · cost ${Number(product.reseller_cost_usd).toFixed(2)}</>
+                                )}
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              {formatPrice(product.price)}
+                              {product.old_price && (
+                                <span className="ml-2 text-sm text-muted-foreground line-through">
+                                  {formatPrice(product.old_price)}
+                                </span>
+                              )}
+                            </>
                           )}
                         </td>
                         <td className="py-4 px-4">

@@ -241,10 +241,43 @@ export const useUpdateOrderStatus = () => {
         .single();
 
       if (error) throw error;
+
+      // Auto-deliver mapped reseller products when payment is confirmed (processing)
+      if (status === 'processing' && data?.id) {
+        try {
+          const { data: settings } = await supabase.functions.invoke('reseller-fulfill', {
+            body: { action: 'get_settings' },
+          });
+          if (settings?.is_enabled && settings?.auto_deliver_on_processing && settings?.has_api_key) {
+            const { data: deliverResult, error: deliverError } = await supabase.functions.invoke(
+              'reseller-fulfill',
+              { body: { action: 'deliver_order', order_id: data.id } },
+            );
+            if (deliverError) {
+              console.warn('[reseller] auto-deliver invoke error', deliverError);
+            } else if (deliverResult?.failed > 0) {
+              console.warn('[reseller] auto-deliver partial/fail', deliverResult);
+            } else if (deliverResult?.delivered > 0) {
+              console.log('[reseller] auto-delivered', deliverResult);
+            }
+            // Re-fetch order in case status flipped to completed
+            const { data: refreshed } = await supabase
+              .from('orders')
+              .select('*')
+              .eq('id', orderId)
+              .single();
+            if (refreshed) return refreshed;
+          }
+        } catch (e) {
+          console.warn('[reseller] auto-deliver skipped/failed', e);
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['reseller'] });
     },
   });
 };

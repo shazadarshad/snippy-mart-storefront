@@ -53,6 +53,7 @@ const AdminWhatsAppAnalytics = lazy(() => import("./pages/admin/AdminWhatsAppAna
 const AdminAIKnowledge = lazy(() => import("./pages/admin/AdminAIKnowledge"));
 const AdminExtensionUpload = lazy(() => import("./pages/admin/AdminExtensionUpload"));
 const AdminLinkShortener = lazy(() => import("./pages/admin/AdminLinkShortener"));
+const AdminResellerApi = lazy(() => import("./pages/admin/AdminResellerApi"));
 const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
 const DownloadExtension = lazy(() => import("./pages/DownloadExtension"));
 const ClaudePage = lazy(() => import("./pages/ClaudePage"));
@@ -128,6 +129,7 @@ const AppContent = () => {
               <Route path="ai-knowledge" element={<AdminAIKnowledge />} />
               <Route path="extension-upload" element={<AdminExtensionUpload />} />
               <Route path="link-shortener" element={<AdminLinkShortener />} />
+              <Route path="reseller-api" element={<AdminResellerApi />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 

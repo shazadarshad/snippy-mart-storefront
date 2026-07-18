@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useSearchAutocomplete } from '@/hooks/useSearchAutocomplete';
 import { useCurrency } from '@/hooks/useCurrency';
+import { productPriceInLkr } from '@/hooks/useResellerApi';
 import { cn } from '@/lib/utils';
 
 interface SearchAutocompleteProps {
@@ -143,7 +144,7 @@ const SearchAutocomplete = ({
                                                     {result.item.category}
                                                 </span>
                                                 <span className="text-sm font-bold text-foreground">
-                                                    {formatPrice(result.item.price)}
+                                                    {formatPrice(productPriceInLkr(result.item))}
                                                 </span>
                                             </div>
                                         </div>

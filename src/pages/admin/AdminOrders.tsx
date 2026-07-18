@@ -34,6 +34,7 @@ import { useOrders, useUpdateOrderStatus, useDeleteOrder, useDeleteOrderProof, t
 import { useToast } from '@/hooks/use-toast';
 import { cn, formatDateTime } from '@/lib/utils';
 import { useInventoryAccounts, useManualAssignOrder } from '@/hooks/useInventory';
+import { useDeliverOrderViaReseller } from '@/hooks/useResellerApi';
 import {
   applyClaudeWorkflowToNotes,
   claudeStageLabel,
@@ -123,6 +124,7 @@ const AdminOrders = () => {
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
   const deleteProof = useDeleteOrderProof();
+  const deliverReseller = useDeliverOrderViaReseller();
 
   const [statusUpdate, setStatusUpdate] = useState<{ order: Order; newStatus: OrderStatus; message: string } | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -1193,6 +1195,74 @@ const AdminOrders = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Reseller API auto-delivery */}
+                {!isClaudePreOrder(selectedOrder) && (
+                  <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/20 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-5 h-5 text-emerald-500" />
+                      <h3 className="text-sm font-black uppercase tracking-widest text-foreground">
+                        Reseller API delivery
+                      </h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Orders mapped products from your prepaid seller panel (idempotent — safe to retry).
+                      Also runs automatically when status is set to <span className="font-semibold">processing</span> if enabled in Reseller API settings.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        className="h-10 font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
+                        disabled={deliverReseller.isPending}
+                        onClick={async () => {
+                          try {
+                            const res = await deliverReseller.mutateAsync({ orderId: selectedOrder.id });
+                            const delivered = res.delivered ?? 0;
+                            const failed = res.failed ?? 0;
+                            const skipped = res.skipped ?? 0;
+                            toast({
+                              title: delivered > 0 ? 'Reseller delivery done' : 'No items delivered',
+                              description: `Delivered: ${delivered} · Failed: ${failed} · Skipped (unmapped): ${skipped}${
+                                res.order_status ? ` · Status: ${res.order_status}` : ''
+                              }`,
+                              variant: failed > 0 && delivered === 0 ? 'destructive' : 'default',
+                            });
+                            refetch();
+                            if (res.results) {
+                              const firstDelivered = res.results.find(
+                                (r: any) => r.delivered_data && (r.status === 'delivered' || r.status === 'already_delivered'),
+                              );
+                              if (firstDelivered?.delivered_data) {
+                                setSelectedOrder((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        status: (res.order_status as OrderStatus) || prev.status,
+                                        notes: `${prev.notes || ''}\n[Reseller] ${firstDelivered.product_name}: ${firstDelivered.delivered_data}`.trim(),
+                                      }
+                                    : prev,
+                                );
+                              }
+                            }
+                          } catch (e: any) {
+                            toast({
+                              title: 'Reseller delivery failed',
+                              description: e.message,
+                              variant: 'destructive',
+                            });
+                          }
+                        }}
+                      >
+                        {deliverReseller.isPending ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Zap className="w-4 h-4 mr-2" />
+                        )}
+                        Deliver via Reseller API
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Section: Fulfillment Console (Manual Assignment) — skip for Claude (own-account activation) */}
                 {(() => {

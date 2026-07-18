@@ -53,7 +53,9 @@ serve(async (req: Request) => {
             .eq('key', 'logo_url')
             .maybeSingle();
 
-        const logoUrl = settings?.value || 'https://snippymart.com/logo.png';
+        const logoUrl =
+            (settings?.value && String(settings.value).trim()) ||
+            `${supabaseUrl}/storage/v1/object/public/site-assets/logo-1768828286339.png`;
 
         // Helper to format payment method
         const formatPaymentMethod = (method: string) => {

@@ -19,6 +19,7 @@ import {
 import ProductCard from '@/components/products/ProductCard';
 import ProductDetailModal from '@/components/products/ProductDetailModal';
 import { useProducts, type Product } from '@/hooks/useProducts';
+import { productPriceInLkr } from '@/hooks/useResellerApi';
 import { cn } from '@/lib/utils';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import SEO from '@/components/seo/SEO';
@@ -67,9 +68,9 @@ const ProductsPage = () => {
     list = [...list].sort((a, b) => {
       switch (sortKey) {
         case 'price_asc':
-          return a.price - b.price;
+          return productPriceInLkr(a) - productPriceInLkr(b);
         case 'price_desc':
-          return b.price - a.price;
+          return productPriceInLkr(b) - productPriceInLkr(a);
         case 'name':
           return a.name.localeCompare(b.name);
         case 'newest':

@@ -73,6 +73,22 @@ async function buildAllTemplates() {
             description: 'Sent when order status changes (processing, shipped, etc)',
             variables: '["customer_name", "order_id", "current_status", "status_message", "estimated_delivery", "tracking_url", "logo_url"]',
         },
+        // Legacy key kept in DB so admin / old callers also get Apple UI
+        {
+            key: 'order_status_update',
+            name: 'Status Update',
+            subject: 'Order update - {{order_id}}',
+            component: StatusUpdate({
+                customerName: '{{customer_name}}',
+                orderId: '{{order_id}}',
+                currentStatus: '{{current_status}}',
+                statusMessage: '{{status_message}}',
+                estimatedDelivery: '{{estimated_delivery}}',
+                trackingUrl: '{{tracking_url}}',
+            }),
+            description: 'Legacy key alias — same Apple status update design',
+            variables: '["customer_name", "order_id", "current_status", "status_message", "estimated_delivery", "tracking_url", "logo_url"]',
+        },
     ];
 
     // Generate SQL for all templates

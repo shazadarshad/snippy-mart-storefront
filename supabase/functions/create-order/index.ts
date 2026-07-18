@@ -204,6 +204,16 @@ serve(async (req) => {
                 ? 'Card Payment 💳'
                 : 'Pending';
 
+        // Logo for email header (send-email also fills this as a fallback)
+        const { data: logoSetting } = await supabase
+          .from("site_settings")
+          .select("value")
+          .eq("key", "logo_url")
+          .maybeSingle();
+        const logoUrl =
+          (logoSetting?.value && String(logoSetting.value).trim()) ||
+          `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/site-assets/logo-1768828286339.png`;
+
         const emailPayload = {
           to: body.customer_email,
           templateId: template.id,
@@ -213,7 +223,8 @@ serve(async (req) => {
             order_id: body.order_number,
             total: totalFormatted,
             items: body.items.map(i => `${i.product_name} x${i.quantity}`).join(', '),
-            payment_method: paymentMethodDisplay
+            payment_method: paymentMethodDisplay,
+            logo_url: logoUrl,
           }
         };
 

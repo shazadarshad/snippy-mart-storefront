@@ -21,6 +21,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { formatDateTime, cn } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
+import { useOrderResellerDeliveries } from '@/hooks/useResellerApi';
 import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/seo/SEO';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
@@ -42,6 +43,7 @@ const TrackOrderPage = () => {
   const { data: order, isLoading, isFetched, refetch, isFetching } = useTrackOrder(searchId);
   const { data: settings } = useSiteSettings();
   const automation = useOrderAutomation(order?.id);
+  const { data: resellerDeliveries = [] } = useOrderResellerDeliveries(order?.id);
 
   useEffect(() => {
     const id = searchParams.get('orderId');
@@ -382,7 +384,7 @@ const TrackOrderPage = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 <div className="lg:col-span-2 space-y-6">
-                  {/* Auto delivery credentials */}
+                  {/* Auto delivery credentials (inventory accounts) */}
                   {(order.status === 'completed') && automation?.assignment && (
                     <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-xl">
                       <div className="flex items-center gap-3 mb-6 pb-5 border-b border-border/50">
@@ -437,6 +439,57 @@ const TrackOrderPage = () => {
                           <FormattedDescription description={automation.assignment.rules_template} />
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Reseller API delivered product data */}
+                  {resellerDeliveries.length > 0 && (
+                    <div className="bg-card border border-emerald-500/25 p-5 md:p-8 rounded-[2rem] shadow-xl">
+                      <div className="flex items-center gap-3 mb-6 pb-5 border-b border-border/50">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-xl">
+                          ⚡
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-black uppercase tracking-widest">
+                            Your digital delivery
+                          </h3>
+                          <p className="text-xs text-success font-bold">Ready to use</p>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        {resellerDeliveries.map((d) => (
+                          <div
+                            key={d.id}
+                            className="p-4 rounded-2xl bg-secondary/30 border border-border space-y-2"
+                          >
+                            {d.product_name && (
+                              <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                                {d.product_name}
+                              </p>
+                            )}
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-mono font-bold text-sm break-all whitespace-pre-wrap">
+                                {d.delivered_data}
+                              </p>
+                              {d.delivered_data && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 shrink-0"
+                                  onClick={() => copyText(d.delivered_data!, 'Delivery code')}
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                            {d.vendor_order_id && (
+                              <p className="text-[10px] text-muted-foreground font-mono">
+                                Ref: {d.vendor_order_id}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 

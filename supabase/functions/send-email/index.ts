@@ -60,6 +60,25 @@ serve(async (req: Request) => {
 
         console.log(`[send-email] ✅ Email settings found: ${settings.smtp_host}:${settings.smtp_port}`);
 
+        // Always resolve Snippy Mart logo for email header ({{logo_url}})
+        const DEFAULT_LOGO_URL =
+            `${supabaseUrl}/storage/v1/object/public/site-assets/logo-1768828286339.png`;
+        let logoUrl = variables.logo_url || "";
+        if (!logoUrl) {
+            const { data: logoSetting } = await supabase
+                .from("site_settings")
+                .select("value")
+                .eq("key", "logo_url")
+                .maybeSingle();
+            logoUrl = (logoSetting?.value && String(logoSetting.value).trim()) || DEFAULT_LOGO_URL;
+        }
+        // Merge so every template path gets the brand logo at the top
+        const mergedVariables: Record<string, string> = {
+            ...variables,
+            logo_url: logoUrl,
+        };
+        console.log(`[send-email] Logo URL for header: ${logoUrl}`);
+
         let emailSubject = subject || "";
         let emailHtml = html || "";
 
@@ -93,14 +112,14 @@ serve(async (req: Request) => {
             emailHtml = template.html_content;
 
             // Replace variables
-            console.log(`[send-email] Replacing ${Object.keys(variables).length} variables...`);
-            for (const [key, value] of Object.entries(variables)) {
+            console.log(`[send-email] Replacing ${Object.keys(mergedVariables).length} variables...`);
+            for (const [key, value] of Object.entries(mergedVariables)) {
                 const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-                emailSubject = emailSubject.replace(regex, value);
-                emailHtml = emailHtml.replace(regex, value);
+                emailSubject = emailSubject.replace(regex, value ?? "");
+                emailHtml = emailHtml.replace(regex, value ?? "");
             }
 
-            // If preview, add sample data
+            // If preview, add sample data (logo already replaced above)
             if (isPreview) {
                 emailHtml = emailHtml
                     .replace(/\{\{customer_name\}\}/g, "John Doe")
@@ -116,6 +135,10 @@ serve(async (req: Request) => {
                 emailSubject = emailSubject
                     .replace(/\{\{.*?\}\}/g, "PREVIEW");
             }
+        } else if (emailHtml) {
+            // Custom HTML emails: still inject logo if placeholder present
+            emailHtml = emailHtml.replace(/\{\{logo_url\}\}/g, logoUrl);
+            emailSubject = emailSubject.replace(/\{\{logo_url\}\}/g, logoUrl);
         }
 
         // Create SMTP client

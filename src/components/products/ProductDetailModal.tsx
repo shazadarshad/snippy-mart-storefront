@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useCartStore } from '@/lib/store';
 import { useCurrency } from '@/hooks/useCurrency';
+import { isResellerApiProduct, productPriceInLkr } from '@/hooks/useResellerApi';
 import { useToast } from '@/hooks/use-toast';
 import { usePricingPlans, usePricingPlanVariants, type PricingPlan, type PricingPlanVariant } from '@/hooks/usePricingPlans';
 import { useProductImages } from '@/hooks/useProductImages';
@@ -124,10 +125,17 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     ? allVariants.filter(v => v.plan_id === selectedPlan.id && v.is_active)
     : [];
 
-  // Calculate Display Price
+  // Calculate Display Price (LKR). API products: $ × 360 for customers.
   // Priority: Selected Variant Price > Selected Plan Price > Product Base Price
-  const currentPrice = selectedVariant?.price ?? selectedPlan?.price ?? product.price;
-  const currentOldPrice = selectedVariant?.old_price ?? selectedPlan?.old_price ?? product.old_price;
+  const rawPrice = selectedVariant?.price ?? selectedPlan?.price ?? product.price;
+  const rawOldPrice = selectedVariant?.old_price ?? selectedPlan?.old_price ?? product.old_price;
+  const priceSource = {
+    price: rawPrice,
+    old_price: rawOldPrice,
+    reseller_product_id: product.reseller_product_id,
+  };
+  const currentPrice = productPriceInLkr(priceSource, 'price');
+  const currentOldPrice = rawOldPrice != null ? productPriceInLkr(priceSource, 'old_price') : null;
 
   // Stock Status Logic
   // If variant selected, use its stock. Else use product stock.
@@ -142,6 +150,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     id: product.id,
     name: product.name,
     description: product.description,
+    // Cart always stores LKR (API $ already converted ×360)
     price: currentPrice,
     oldPrice: currentOldPrice ?? undefined,
     image: product.image_url,
@@ -337,9 +346,17 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
 
               {/* Category & Stock */}
               <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-3">
-                <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
-                  {product.category}
-                </span>
+                <div className="flex items-center flex-wrap gap-1.5">
+                  <span className="inline-block px-2 sm:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
+                    {product.category}
+                  </span>
+                  {isResellerApiProduct(product) && (
+                    <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                      <Zap className="w-3 h-3 fill-current" />
+                      Auto
+                    </span>
+                  )}
+                </div>
                 <StockIndicator status={product.stock_status} />
               </div>
 
@@ -401,11 +418,11 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                         {!product.use_variant_pricing && (
                           <div className="mt-1.5 flex items-center gap-2">
                             <span className="text-base sm:text-lg font-bold text-foreground">
-                              {formatPrice(plan.price)}
+                              {formatPrice(productPriceInLkr({ price: plan.price, reseller_product_id: product.reseller_product_id }))}
                             </span>
                             {plan.old_price && (
                               <span className="text-xs text-muted-foreground line-through">
-                                {formatPrice(plan.old_price)}
+                                {formatPrice(productPriceInLkr({ price: plan.old_price, reseller_product_id: product.reseller_product_id }))}
                               </span>
                             )}
                           </div>
@@ -457,7 +474,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                         <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
                           {variant.old_price && (
                             <div className="text-[11px] sm:text-xs text-muted-foreground/80 line-through font-medium">
-                              {formatPrice(variant.old_price)}
+                              {formatPrice(productPriceInLkr({ price: variant.old_price, reseller_product_id: product.reseller_product_id }))}
                             </div>
                           )}
                           <div className={cn(
@@ -466,7 +483,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                               ? "text-base sm:text-lg text-primary"
                               : "text-sm sm:text-base text-foreground"
                           )}>
-                            {formatPrice(variant.price)}
+                            {formatPrice(productPriceInLkr({ price: variant.price, reseller_product_id: product.reseller_product_id }))}
                           </div>
                           {variant.old_price && (
                             <div className="text-[10px] sm:text-xs font-semibold text-green-600 dark:text-green-500">

@@ -1,6 +1,7 @@
 import { memo } from 'react';
-import { Star, AlertTriangle, ArrowUpRight } from 'lucide-react';
+import { Star, AlertTriangle, ArrowUpRight, Zap } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
+import { isResellerApiProduct, productPriceInLkr } from '@/hooks/useResellerApi';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/hooks/useProducts';
 
@@ -19,12 +20,15 @@ const ProductCard = memo(function ProductCard({
   priority = false,
 }: ProductCardProps) {
   const { formatPrice } = useCurrency();
+  const priceLkr = productPriceInLkr(product, 'price');
+  const oldPriceLkr = product.old_price != null ? productPriceInLkr(product, 'old_price') : null;
   const discount =
-    product.old_price && product.old_price > product.price
-      ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
+    oldPriceLkr != null && oldPriceLkr > priceLkr
+      ? Math.round(((oldPriceLkr - priceLkr) / oldPriceLkr) * 100)
       : 0;
   const soldOut = product.stock_status === 'out_of_stock';
   const limited = product.stock_status === 'limited';
+  const isAuto = isResellerApiProduct(product);
 
   const teaser = (() => {
     if (!product.description) return '';
@@ -68,6 +72,12 @@ const ProductCard = memo(function ProductCard({
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent opacity-90 pointer-events-none" />
 
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+          {isAuto && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-md shadow-emerald-600/30">
+              <Zap className="w-3 h-3 fill-current" />
+              Auto
+            </span>
+          )}
           {product.is_featured && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-md shadow-amber-500/30">
               <Star className="w-3 h-3 fill-current" />
@@ -127,11 +137,11 @@ const ProductCard = memo(function ProductCard({
             </p>
             <div className="flex items-baseline gap-1.5">
               <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                {formatPrice(product.price)}
+                {formatPrice(priceLkr)}
               </span>
-              {product.old_price != null && product.old_price > product.price && (
+              {oldPriceLkr != null && oldPriceLkr > priceLkr && (
                 <span className="text-xs text-muted-foreground line-through">
-                  {formatPrice(product.old_price)}
+                  {formatPrice(oldPriceLkr)}
                 </span>
               )}
             </div>

@@ -65,8 +65,8 @@ export const EmailLayout = ({
                 <td align="center" style={{ padding: '0 0 8px' }}>
                   <Img
                     src="{{logo_url}}"
-                    width="44"
-                    height="44"
+                    width="56"
+                    height="56"
                     alt="Snippy Mart"
                     style={logoImg}
                   />
@@ -150,10 +150,12 @@ const brandBar = {
 };
 
 const logoImg = {
-  borderRadius: '12px',
+  borderRadius: '14px',
   display: 'block',
   margin: '0 auto',
   objectFit: 'contain' as const,
+  maxWidth: '56px',
+  height: 'auto',
 };
 
 const brandName = {

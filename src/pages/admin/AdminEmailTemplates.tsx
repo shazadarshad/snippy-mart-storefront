@@ -61,19 +61,25 @@ const AdminEmailTemplates = () => {
         // Replace variables with sample data for preview
         let html = template.html_content;
 
+        // Logo (site brand header)
+        html = html.replace(
+            /\{\{logo_url\}\}/g,
+            'https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/site-assets/logo-1768828286339.png',
+        );
+
         // Common variables
         html = html.replace(/\{\{customer_name\}\}/g, 'John Doe');
         html = html.replace(/\{\{order_id\}\}/g, 'ORD-12345678');
         html = html.replace(/\{\{total\}\}/g, '$29.99');
         html = html.replace(/\{\{product_name\}\}/g, 'Netflix Premium');
-        html = html.replace(/\{\{items\}\}/g, '<div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px;"><span style="color: #ffffff;">Netflix Premium (1 Month)</span> - <span style="color: #00b8d4;">$14.99</span></div>');
-        html = html.replace(/\{\{credentials\}\}/g, '<p style="color: #ffffff; margin: 0;"><strong>Email:</strong> user@example.com</p><p style="color: #ffffff; margin: 8px 0 0;"><strong>Password:</strong> SecurePass123</p>');
+        html = html.replace(/\{\{items\}\}/g, 'Netflix Premium (1 Month) x1');
+        html = html.replace(/\{\{credentials\}\}/g, '<p style="margin: 0;"><strong>Email:</strong> user@example.com</p><p style="margin: 8px 0 0;"><strong>Password:</strong> SecurePass123</p>');
         html = html.replace(/\{\{expiry_date\}\}/g, 'February 22, 2026');
         html = html.replace(/\{\{status\}\}/g, 'Processing');
         html = html.replace(/\{\{message\}\}/g, 'Your order is being processed and will be delivered shortly.');
         html = html.replace(/\{\{payment_method\}\}/g, 'Bank Transfer 🏦');
 
-        // New template variables
+        // Status / delivery / rejection variables
         html = html.replace(/\{\{delivery_date\}\}/g, 'January 24, 2026');
         html = html.replace(/\{\{delivery_address\}\}/g, '123 Main Street, Colombo, Sri Lanka');
         html = html.replace(/\{\{tracking_number\}\}/g, 'TRK-12345678');
