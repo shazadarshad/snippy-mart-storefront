@@ -13,6 +13,8 @@ import {
   Check,
   Clock,
   FileText,
+  Zap,
+  Bookmark,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +27,7 @@ import { useOrderResellerDeliveries } from '@/hooks/useResellerApi';
 import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/seo/SEO';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
+import { DeliveryPayloadCard } from '@/components/delivery/DeliveryPayloadCard';
 import { useToast } from '@/hooks/use-toast';
 import {
   TRACK_PIPELINE,
@@ -120,20 +123,32 @@ const TrackOrderPage = () => {
       />
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
+          <div className="text-center mb-6 md:mb-10">
             <h1 className="text-3xl md:text-5xl font-display font-black text-foreground mb-3">
               Track Your <span className="gradient-text">Order</span>
             </h1>
-            <p className="text-sm md:text-lg text-muted-foreground max-w-md mx-auto">
-              Enter your Order ID to see payment confirmation, processing, and completion status.
+            <p className="text-sm md:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
+              Enter your <strong className="text-foreground">Order ID</strong> to check status and
+              get Auto product codes, redeem links, or logins when ready.
             </p>
+          </div>
+
+          <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
+            <Bookmark className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-left text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <p className="font-bold text-foreground mb-0.5">Please save your Order ID</p>
+              <p>
+                Auto products are delivered only on this page. Without your Order ID you cannot load
+                credentials later. Screenshot it or copy it after checkout.
+              </p>
+            </div>
           </div>
 
           <form onSubmit={handleSearch} className="relative mb-8 md:mb-12 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
               type="text"
-              placeholder="Order ID (e.g., SNIP-2026-000001)"
+              placeholder="Order ID (e.g., SNIP-2026-829680)"
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               className="pl-11 md:pl-12 h-14 md:h-16 text-base md:text-lg bg-card border-border rounded-2xl shadow-xl focus:ring-primary/20 transition-all font-mono"
@@ -174,6 +189,31 @@ const TrackOrderPage = () => {
 
           {order && statusInfo && (
             <div className="space-y-6 md:space-y-8 animate-fade-in">
+              {/* Save Order ID — always first after lookup */}
+              <div className="bg-card border-2 border-primary/25 p-4 md:p-5 rounded-[1.5rem] shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1 flex items-center gap-1.5">
+                    <Bookmark className="w-3.5 h-3.5" />
+                    Save this Order ID
+                  </p>
+                  <p className="font-mono text-lg md:text-xl font-black text-foreground break-all">
+                    {order.order_number}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Required to open Track Order again for Auto product delivery.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="default"
+                  className="rounded-xl shrink-0 h-11 font-bold"
+                  onClick={() => copyText(order.order_number, 'Order ID')}
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Order ID
+                </Button>
+              </div>
+
               {/* Status hero */}
               <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
@@ -442,53 +482,72 @@ const TrackOrderPage = () => {
                     </div>
                   )}
 
-                  {/* Reseller API delivered product data */}
-                  {resellerDeliveries.length > 0 && (
-                    <div className="bg-card border border-emerald-500/25 p-5 md:p-8 rounded-[2rem] shadow-xl">
-                      <div className="flex items-center gap-3 mb-6 pb-5 border-b border-border/50">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-xl">
-                          ⚡
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-black uppercase tracking-widest">
-                            Your digital delivery
-                          </h3>
-                          <p className="text-xs text-success font-bold">Ready to use</p>
+                  {/* Auto product: waiting for payment / delivery */}
+                  {resellerDeliveries.length === 0 &&
+                    (order.order_items || []).some(
+                      (item: any) => item.products?.reseller_product_id,
+                    ) &&
+                    (order.status === 'pending' ||
+                      order.status === 'processing' ||
+                      order.status === 'shipping') && (
+                      <div className="bg-card border border-emerald-500/20 p-5 md:p-6 rounded-[2rem] shadow-xl">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+                            <Zap className="w-5 h-5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-foreground mb-1">
+                              Auto product delivery
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                              {order.status === 'pending'
+                                ? 'Waiting for payment confirmation. Once we confirm your payment, your code, redeem link, or login will appear on this Track Order page.'
+                                : 'Payment is being processed. Your product will show here automatically when delivery completes — refresh this page in a few minutes.'}
+                            </p>
+                            <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal pl-4">
+                              <li>Save Order ID <span className="font-mono font-bold text-foreground">{order.order_number}</span></li>
+                              <li>Complete payment if you have not already</li>
+                              <li>Come back here and refresh until delivery appears</li>
+                            </ol>
+                          </div>
                         </div>
                       </div>
-                      <div className="space-y-3">
-                        {resellerDeliveries.map((d) => (
-                          <div
-                            key={d.id}
-                            className="p-4 rounded-2xl bg-secondary/30 border border-border space-y-2"
-                          >
-                            {d.product_name && (
-                              <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                                {d.product_name}
-                              </p>
-                            )}
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="font-mono font-bold text-sm break-all whitespace-pre-wrap">
-                                {d.delivered_data}
-                              </p>
-                              {d.delivered_data && (
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8 shrink-0"
-                                  onClick={() => copyText(d.delivered_data!, 'Delivery code')}
-                                >
-                                  <Copy className="w-3.5 h-3.5" />
-                                </Button>
-                              )}
-                            </div>
-                            {d.vendor_order_id && (
-                              <p className="text-[10px] text-muted-foreground font-mono">
-                                Ref: {d.vendor_order_id}
-                              </p>
-                            )}
+                    )}
+
+                  {/* Reseller API delivery — formatted by type (coupon / link / login) */}
+                  {resellerDeliveries.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="bg-card border border-emerald-500/25 p-5 md:p-6 rounded-[2rem] shadow-xl">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-xl">
+                            ⚡
                           </div>
-                        ))}
+                          <div>
+                            <h3 className="text-sm font-black uppercase tracking-widest">
+                              Your Auto delivery
+                            </h3>
+                            <p className="text-xs text-success font-bold">
+                              {resellerDeliveries.length} item
+                              {resellerDeliveries.length > 1 ? 's' : ''} ready
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+                          Use the details below. This is the only place Auto products are delivered —
+                          keep your Order ID safe.
+                        </p>
+                        <div className="space-y-4">
+                          {resellerDeliveries.map((d) =>
+                            d.delivered_data ? (
+                              <DeliveryPayloadCard
+                                key={d.id}
+                                deliveredData={d.delivered_data}
+                                productName={d.product_name}
+                                vendorOrderId={d.vendor_order_id}
+                              />
+                            ) : null,
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}

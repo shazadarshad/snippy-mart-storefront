@@ -415,7 +415,10 @@ export const useTrackOrder = (query: string) => {
           currency_code,
           currency_symbol,
           currency_rate,
-          order_items (*)
+          order_items (
+            *,
+            products ( reseller_product_id, manual_fulfillment )
+          )
         `);
 
       if (isUUID) {
