@@ -130,30 +130,30 @@ const TrackOrderPage = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
+    <div className="min-h-dvh page-mesh pt-20 sm:pt-24 pb-safe pb-16 sm:pb-20">
       <SEO
         title="Track Order"
         description="Track your Snippy Mart order — payment confirmation, processing, and completion in real time."
       />
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-3 sm:px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-6 md:mb-10">
-            <h1 className="text-3xl md:text-5xl font-display font-black text-foreground mb-3">
+          <div className="text-center mb-5 md:mb-10">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-display font-black text-foreground mb-2 sm:mb-3">
               Track Your <span className="gradient-text">Order</span>
             </h1>
-            <p className="text-sm md:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
-              Enter your <strong className="text-foreground">Order ID</strong> to check status and
-              get Auto product codes, redeem links, or logins when ready.
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed px-1">
+              Enter your <strong className="text-foreground">Order ID</strong> for status and Auto
+              product codes, redeem links, or logins.
             </p>
           </div>
 
-          <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
+          <div className="mb-4 p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
             <Bookmark className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-left text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              <p className="font-bold text-foreground mb-0.5">Please save your Order ID</p>
+            <div className="text-left text-xs sm:text-sm text-muted-foreground leading-relaxed min-w-0">
+              <p className="font-bold text-foreground mb-0.5">Save your Order ID</p>
               <p>
-                Auto products are delivered only on this page. Without your Order ID you cannot load
-                credentials later. Screenshot it or copy it after checkout.
+                Auto products are delivered only here. Without your Order ID you cannot load
+                credentials later.
               </p>
             </div>
           </div>

@@ -25,6 +25,7 @@ import { useOrderResellerDeliveries } from '@/hooks/useResellerApi';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
 import { DeliveryPayloadCard } from '@/components/delivery/DeliveryPayloadCard';
 import { buildClaudeOrderWhatsAppUrl } from '@/lib/claudePreorder';
+import { getOrderStatusDisplay } from '@/lib/orderStatus';
 import { cn } from '@/lib/utils';
 import SEO from '@/components/seo/SEO';
 
@@ -239,12 +240,15 @@ const OrderSuccessPage = () => {
     return '🔑';
   };
 
+  const statusDisplay = getOrderStatusDisplay(liveOrder?.status || 'pending');
+  const StatusIcon = statusDisplay.icon;
+
   return (
-    <div className="min-h-dvh page-mesh pt-24 sm:pt-28 pb-safe pb-16 sm:pb-20">
+    <div className="min-h-dvh page-mesh pt-20 sm:pt-28 pb-safe pb-28 sm:pb-20">
       <SEO title="Order confirmed" description="Your Snippy Mart order was placed successfully." />
       <div className="container mx-auto px-3 sm:px-4 max-w-2xl">
-        {/* Success header — tighter on mobile */}
-        <div className="text-center mb-4 sm:mb-8">
+        {/* Success header */}
+        <div className="text-center mb-5 sm:mb-8">
           <div className="relative inline-flex mb-3 sm:mb-5">
             <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl scale-150" />
             <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/15">
@@ -252,111 +256,133 @@ const OrderSuccessPage = () => {
             </div>
           </div>
 
-          <h1 className="text-xl sm:text-4xl font-display font-bold tracking-tight text-foreground mb-1.5 sm:mb-2">
+          <h1 className="text-2xl sm:text-4xl font-display font-bold tracking-tight text-foreground mb-2">
             {sessionOrder?.isPreOrder
               ? 'Pre-order locked in'
               : hasResellerCodes || isCompleted
-                ? 'Order ready'
-                : 'Order confirmed'}
+                ? 'You\'re all set'
+                : 'Order placed'}
           </h1>
-          <p className="text-xs sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-1">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-1">
             Thanks{sessionOrder?.name ? `, ${sessionOrder.name}` : ''}!
             {sessionOrder?.isPreOrder
               ? ' Send details on WhatsApp so we can process your pre-order.'
               : hasResellerCodes
-                ? ' Your Auto product is ready — copy credentials below or open Track Order anytime.'
+                ? ' Your product is ready below — or open Track Order anytime with your Order ID.'
                 : hasAutoItems
-                  ? ' Complete payment, then track this order. After we confirm payment, your product appears on Track Order automatically.'
-                  : ' Complete payment and use WhatsApp if you need help. We deliver after payment is confirmed.'}
+                  ? ' Save your Order ID, finish payment, then open Track Order for your product.'
+                  : ' Save your Order ID. We deliver after payment is confirmed.'}
           </p>
         </div>
 
-        {/* Order ID card */}
-        <div className="surface-card p-3.5 sm:p-5 mb-3 sm:mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Order ID
-            </p>
-            <p className="font-mono text-base sm:text-xl font-bold text-primary break-all">{orderId}</p>
+        {/* Order ID — hero card */}
+        <div className="surface-card p-4 sm:p-5 mb-3 sm:mb-4 border-2 border-primary/20 shadow-md">
+          <div className="flex flex-col xs:flex-row sm:flex-row sm:items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-primary mb-1 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                Save this Order ID
+              </p>
+              <p className="font-mono text-lg sm:text-2xl font-black text-foreground break-all leading-tight">
+                {orderId}
+              </p>
+              {hasAutoItems && (
+                <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                  You need this ID to open Track Order and get Auto delivery.
+                </p>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="default"
+              className="rounded-xl shrink-0 h-11 sm:h-12 px-5 font-bold w-full sm:w-auto touch-manipulation"
+              onClick={() => copyToClipboard(orderId, 'Order ID')}
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Copy Order ID
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="rounded-xl shrink-0 h-10 text-foreground"
-            onClick={() => copyToClipboard(orderId, 'Order ID')}
-          >
-            <Copy className="w-4 h-4 mr-2" />
-            Copy ID
-          </Button>
         </div>
 
         {/* Status + total */}
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mb-3 sm:mb-5">
-          <div className="surface-card p-3 sm:p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mb-4 sm:mb-5">
+          <div className="surface-card p-3.5 sm:p-4 min-w-0">
+            <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
               Status
             </p>
-            <p
-              className={cn(
-                'text-sm font-bold capitalize',
-                isCompleted && 'text-emerald-600',
-                isPending && 'text-amber-600',
-                !isCompleted && !isPending && 'text-primary'
-              )}
-            >
-              {(liveOrder?.status || 'pending').replace(/_/g, ' ')}
-            </p>
+            <div className="flex items-center gap-2 min-w-0">
+              <StatusIcon
+                className={cn(
+                  'w-4 h-4 shrink-0',
+                  isCompleted && 'text-emerald-600',
+                  isPending && 'text-amber-600',
+                  !isCompleted && !isPending && 'text-primary',
+                )}
+              />
+              <p
+                className={cn(
+                  'text-xs sm:text-sm font-bold truncate',
+                  isCompleted && 'text-emerald-600',
+                  isPending && 'text-amber-600',
+                  !isCompleted && !isPending && 'text-primary',
+                )}
+                title={statusDisplay.title}
+              >
+                {statusDisplay.badge || statusDisplay.title}
+              </p>
+            </div>
           </div>
-          <div className="surface-card p-3 sm:p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-              {isPending ? 'Order total' : isCompleted || isProcessing ? 'Paid' : 'Order total'}
+          <div className="surface-card p-3.5 sm:p-4 min-w-0">
+            <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              {isPending ? 'Order total' : isCompleted || isProcessing ? 'Amount' : 'Order total'}
             </p>
-            <p className="text-sm sm:text-base font-bold text-foreground tabular-nums">
+            <p className="text-sm sm:text-lg font-black text-foreground tabular-nums truncate">
               {formatPrice(total)}
             </p>
             {(liveOrder?.discount_amount > 0 || (sessionOrder?.discount || 0) > 0) && (
-              <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+              <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">
                 Saved {formatPrice(liveOrder?.discount_amount || sessionOrder?.discount || 0)}
               </p>
             )}
           </div>
         </div>
 
-        {/* Primary CTAs */}
+        {/* Primary CTAs — Auto */}
         {hasAutoItems && !sessionOrder?.isPreOrder && (
-          <div className="mb-4 sm:mb-5 space-y-2">
+          <div className="mb-4 sm:mb-5 space-y-2.5">
             <Button
               variant="default"
               size="xl"
-              className="w-full min-h-14 h-14 rounded-2xl text-base font-bold shadow-lg shadow-primary/25 touch-manipulation"
+              className="w-full min-h-[3.25rem] sm:min-h-14 h-auto py-3.5 rounded-2xl text-[15px] sm:text-base font-bold shadow-lg shadow-primary/25 touch-manipulation"
               asChild
             >
               <Link to={`/track-order?orderId=${encodeURIComponent(orderId)}`}>
                 <Search className="w-5 h-5 mr-2 shrink-0" />
-                {hasResellerCodes || isCompleted
-                  ? 'View product on Track Order'
-                  : 'Track order for your product'}
+                <span className="text-left leading-snug">
+                  {hasResellerCodes || isCompleted
+                    ? 'Open Track Order — view product'
+                    : 'Open Track Order'}
+                </span>
               </Link>
             </Button>
-            <p className="text-center text-[11px] sm:text-xs text-muted-foreground px-2">
+            <p className="text-center text-[11px] sm:text-xs text-muted-foreground px-1 leading-relaxed">
               {hasResellerCodes
-                ? 'Credentials stay on Track Order — save this page or come back with your Order ID.'
+                ? 'Keep your Order ID. You can reopen Track Order anytime to see this delivery.'
                 : isMixedCart
-                  ? 'Auto items appear on Track Order after payment is confirmed. Other items may still need support/WhatsApp.'
-                  : 'After payment is confirmed, your Auto product shows on Track Order. WhatsApp is only for help — not delivery.'}
+                  ? 'Auto items appear on Track Order after we confirm payment. Other items may use WhatsApp/support.'
+                  : 'After we confirm payment, your code / link / login appears on Track Order — not WhatsApp.'}
             </p>
             {!isCompleted && (
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full h-12 rounded-2xl font-semibold"
+                className="w-full h-12 rounded-2xl font-semibold touch-manipulation"
                 asChild
                 disabled={isSettingsLoading}
               >
                 <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  Message us if you need help
+                  Need help? WhatsApp us
                 </a>
               </Button>
             )}
@@ -368,7 +394,7 @@ const OrderSuccessPage = () => {
             <Button
               variant="whatsapp"
               size="xl"
-              className="w-full min-h-14 h-14 rounded-2xl text-base font-bold shadow-lg shadow-[#25D366]/30 touch-manipulation text-white"
+              className="w-full min-h-[3.25rem] sm:min-h-14 h-auto py-3.5 rounded-2xl text-[15px] sm:text-base font-bold shadow-lg shadow-[#25D366]/30 touch-manipulation text-white"
               asChild
               disabled={isSettingsLoading}
             >
@@ -378,11 +404,11 @@ const OrderSuccessPage = () => {
                 ) : (
                   <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
                 )}
-                {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm order on WhatsApp'}
+                {sessionOrder?.isPreOrder ? 'Send order on WhatsApp' : 'Confirm on WhatsApp'}
               </a>
             </Button>
-            <p className="text-center text-[11px] sm:text-xs text-foreground/70 px-2">
-              Opens WhatsApp with your order details prefilled — one tap to send us.
+            <p className="text-center text-[11px] sm:text-xs text-muted-foreground px-2">
+              Opens WhatsApp with your order details ready to send.
             </p>
           </div>
         )}
@@ -661,62 +687,82 @@ const OrderSuccessPage = () => {
         )}
 
         {/* Secondary actions */}
-        <div className="space-y-3 mb-5 sm:mb-6">
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-            <Button
-              variant={isCompleted ? 'default' : 'outline'}
-              size="lg"
-              className="h-11 sm:h-12 rounded-2xl font-semibold text-foreground"
-              asChild
-            >
-              <Link to={`/track-order?orderId=${orderId}`}>
-                <Search className="w-4 h-4 mr-1.5 sm:mr-2" />
-                Track
-              </Link>
-            </Button>
+        <div className="space-y-2.5 mb-5 sm:mb-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            {!hasAutoItems && (
+              <Button
+                variant={isCompleted ? 'default' : 'outline'}
+                size="lg"
+                className="h-12 rounded-2xl font-semibold text-foreground touch-manipulation"
+                asChild
+              >
+                <Link to={`/track-order?orderId=${encodeURIComponent(orderId)}`}>
+                  <Search className="w-4 h-4 mr-2" />
+                  Track order
+                </Link>
+              </Button>
+            )}
             <Button
               variant="outline"
               size="lg"
-              className="h-11 sm:h-12 rounded-2xl font-semibold text-foreground"
+              className={cn(
+                'h-12 rounded-2xl font-semibold text-foreground touch-manipulation',
+                hasAutoItems && 'col-span-full sm:col-span-1',
+              )}
               asChild
             >
               <Link to="/products">
-                <Sparkles className="w-4 h-4 mr-1.5 sm:mr-2" />
+                <Sparkles className="w-4 h-4 mr-2" />
                 Shop more
               </Link>
             </Button>
+            {hasAutoItems && (
+              <Button
+                variant="ghost"
+                size="lg"
+                className="h-12 rounded-2xl font-semibold text-foreground/80 touch-manipulation"
+                asChild
+              >
+                <Link to="/">
+                  <Home className="w-4 h-4 mr-2" />
+                  Home
+                </Link>
+              </Button>
+            )}
           </div>
 
-          <Button variant="ghost" size="sm" className="w-full text-foreground/70" asChild>
-            <Link to="/">
-              <Home className="w-4 h-4 mr-2" />
-              Back to home
-            </Link>
-          </Button>
+          {!hasAutoItems && (
+            <Button variant="ghost" size="sm" className="w-full text-foreground/70" asChild>
+              <Link to="/">
+                <Home className="w-4 h-4 mr-2" />
+                Back to home
+              </Link>
+            </Button>
+          )}
         </div>
 
-        {/* WhatsApp community group */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[#25D366]/25 bg-gradient-to-br from-[#25D366]/12 via-card to-card p-5 sm:p-6 shadow-sm">
+        {/* WhatsApp community */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[#25D366]/25 bg-gradient-to-br from-[#25D366]/12 via-card to-card p-4 sm:p-6 shadow-sm">
           <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-[#25D366]/10 blur-2xl pointer-events-none" />
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-11 h-11 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-md shadow-[#25D366]/30">
+            <div className="flex items-start sm:items-center gap-3 mb-3">
+              <div className="w-11 h-11 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-md shadow-[#25D366]/30 shrink-0">
                 <Users className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <h3 className="font-bold text-foreground text-base sm:text-lg">
+              <div className="min-w-0">
+                <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight">
                   Join our WhatsApp group
                 </h3>
                 <p className="text-xs text-muted-foreground">Deals · updates · support</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-              Get flash sales, new product drops, and help from the Snippy Mart community.
+              Flash sales, new drops, and community help from Snippy Mart.
             </p>
             <Button
               variant="whatsapp"
               size="lg"
-              className="w-full sm:w-auto rounded-2xl font-bold px-6 h-11 shadow-md shadow-[#25D366]/25"
+              className="w-full rounded-2xl font-bold h-11 shadow-md shadow-[#25D366]/25 touch-manipulation"
               asChild
             >
               <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
@@ -727,20 +773,34 @@ const OrderSuccessPage = () => {
           </div>
         </div>
 
-        {!isCompleted && (
-          <p className="text-center text-xs text-muted-foreground mt-6 mb-2">
-            Need help?{' '}
-            <a
-              href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary font-semibold hover:underline"
-            >
-              Message support
-            </a>
-          </p>
-        )}
+        <p className="text-center text-xs text-muted-foreground mt-6 mb-2 px-2">
+          Need help?{' '}
+          <a
+            href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-semibold hover:underline"
+          >
+            Message support
+          </a>
+        </p>
       </div>
+
+      {/* Mobile sticky Track bar for Auto orders still waiting */}
+      {hasAutoItems && !sessionOrder?.isPreOrder && !hasResellerCodes && (
+        <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden pb-safe border-t border-border/80 bg-background/95 backdrop-blur-md px-3 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
+          <Button
+            variant="default"
+            className="w-full h-12 rounded-xl font-bold touch-manipulation"
+            asChild
+          >
+            <Link to={`/track-order?orderId=${encodeURIComponent(orderId)}`}>
+              <Search className="w-4 h-4 mr-2" />
+              Track Order · {orderId.length > 16 ? `${orderId.slice(0, 14)}…` : orderId}
+            </Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

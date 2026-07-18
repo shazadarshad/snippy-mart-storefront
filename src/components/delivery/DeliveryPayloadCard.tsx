@@ -117,7 +117,7 @@ export function DeliveryPayloadCard({
               <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1.5">
                 {f.label}
               </p>
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                 {f.isUrl && !f.isSecret ? (
                   <a
                     href={f.value}
@@ -132,12 +132,12 @@ export function DeliveryPayloadCard({
                     {display}
                   </p>
                 )}
-                <div className="flex flex-wrap gap-1 shrink-0 justify-end">
+                <div className="flex flex-wrap gap-1.5 shrink-0 sm:justify-end">
                   {f.isSecret && (
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-8 px-2"
+                      className="h-9 px-3 touch-manipulation"
                       type="button"
                       onClick={() =>
                         setRevealed((prev) => ({ ...prev, [i]: !prev[i] }))
@@ -152,7 +152,7 @@ export function DeliveryPayloadCard({
                     </Button>
                   )}
                   {f.isUrl && (
-                    <Button size="sm" variant="outline" className="h-8 px-2" asChild>
+                    <Button size="sm" variant="outline" className="h-9 px-3 touch-manipulation" asChild>
                       <a href={f.value} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="w-3.5 h-3.5 mr-1" />
                         Open
@@ -163,7 +163,7 @@ export function DeliveryPayloadCard({
                     <Button
                       size="sm"
                       variant="secondary"
-                      className="h-8 px-2"
+                      className="h-9 px-3 touch-manipulation"
                       type="button"
                       onClick={() => copy(f.value, f.label)}
                     >
