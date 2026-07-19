@@ -62,6 +62,7 @@ serve(async (req: Request) => {
             if (!method) return 'Pending Payment';
             switch (method) {
                 case 'bank_transfer': return 'Bank Transfer 🏦';
+                case 'upi': return 'UPI 🇮🇳';
                 case 'binance_usdt': return 'Binance USDT ₿';
                 case 'card': return 'Credit/Debit Card 💳';
                 default: return method.replace(/_/g, ' ').toUpperCase();
