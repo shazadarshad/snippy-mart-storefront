@@ -8,13 +8,13 @@ import {
   ArrowLeft,
   User,
   CreditCard,
-  ShieldCheck,
   Copy,
   Check,
   Clock,
   FileText,
   Zap,
   Bookmark,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,6 @@ import { formatDateTime, cn } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useOrderAutomation } from '@/hooks/useOrderAutomation';
 import { useOrderResellerDeliveries } from '@/hooks/useResellerApi';
-import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/seo/SEO';
 import { FormattedDescription } from '@/components/products/FormattedDescription';
 import { DeliveryPayloadCard } from '@/components/delivery/DeliveryPayloadCard';
@@ -36,6 +35,14 @@ import {
   isTrackStepDone,
 } from '@/lib/orderStatus';
 import { isClaudePreOrder, parseClaudePreOrder, formatLkrAdmin } from '@/lib/claudePreorder';
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground mb-2 px-0.5">
+      {children}
+    </p>
+  );
+}
 
 const TrackOrderPage = () => {
   const { formatPrice } = useCurrency();
@@ -112,8 +119,13 @@ const TrackOrderPage = () => {
   const statusInfo = order ? getOrderStatusDisplay(order.status) : null;
   const StatusIcon = statusInfo?.icon || Clock;
   const claude = order && isClaudePreOrder(order as any) ? parseClaudePreOrder(order as any) : null;
-  const progressPct =
-    statusInfo && statusInfo.step > 0 ? Math.min(100, (statusInfo.step / 4) * 100) : 0;
+
+  const hasAutoLine = (order?.order_items || []).some(
+    (item: any) => item.products?.reseller_product_id,
+  );
+  const hasResellerReady = resellerDeliveries.some((d) => d.delivered_data);
+  const hasInventoryReady =
+    order?.status === 'completed' && !!automation?.assignment;
 
   const formatMoney = (amount: number) => {
     if (order?.currency_code && order?.currency_rate) {
@@ -129,340 +141,217 @@ const TrackOrderPage = () => {
     return formatPrice(amount);
   };
 
+  const refreshAll = () => {
+    void refetch();
+    void refetchResellerDeliveries();
+  };
+
   return (
     <div className="min-h-dvh page-mesh pt-20 sm:pt-24 pb-safe pb-16 sm:pb-20">
       <SEO
         title="Track Order"
-        description="Track your Snippy Mart order — payment confirmation, processing, and completion in real time."
+        description="Track your Snippy Mart order and collect Auto product codes, links, or logins."
       />
       <div className="container mx-auto px-3 sm:px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-5 md:mb-10">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-display font-black text-foreground mb-2 sm:mb-3">
-              Track Your <span className="gradient-text">Order</span>
+        <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
+          {/* ── Header ── */}
+          <header className="text-center">
+            <h1 className="text-2xl sm:text-4xl font-display font-black text-foreground mb-2">
+              Track your <span className="gradient-text">order</span>
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed px-1">
-              Enter your <strong className="text-foreground">Order ID</strong> for status and Auto
-              product codes, redeem links, or logins.
+            <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+              Enter the Order ID from your success page to see status and collect your product.
             </p>
-          </div>
+          </header>
 
-          <div className="mb-4 p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
-            <Bookmark className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-left text-xs sm:text-sm text-muted-foreground leading-relaxed min-w-0">
-              <p className="font-bold text-foreground mb-0.5">Save your Order ID</p>
-              <p>
-                Auto products are delivered only here. Without your Order ID you cannot load
-                credentials later.
-              </p>
-            </div>
-          </div>
-
-          <form
-            onSubmit={handleSearch}
-            className="mb-8 md:mb-12 flex flex-col sm:flex-row gap-2 sm:relative sm:group"
-          >
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input
-                type="text"
-                placeholder="Order ID (e.g., SNIP-2026-829680)"
-                value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
-                className="pl-11 md:pl-12 h-14 md:h-16 text-base md:text-lg bg-card border-border rounded-2xl shadow-xl focus:ring-primary/20 transition-all font-mono w-full"
-              />
-            </div>
-            <Button
-              type="submit"
-              variant="hero"
-              className="h-14 md:h-16 px-8 rounded-2xl text-sm md:text-base shrink-0 w-full sm:w-auto"
-              disabled={isLoading}
+          {/* ── Search (always first) ── */}
+          <section>
+            <SectionLabel>Enter Order ID</SectionLabel>
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-col sm:flex-row gap-2 sm:group"
             >
-              {isLoading ? '...' : 'Track'}
-            </Button>
-          </form>
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input
+                  type="text"
+                  placeholder="e.g. SNIP-2026-829680"
+                  value={orderId}
+                  onChange={(e) => setOrderId(e.target.value)}
+                  className="pl-11 h-14 text-base bg-card border-border rounded-2xl shadow-md focus:ring-primary/20 font-mono w-full"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="hero"
+                className="h-14 px-8 rounded-2xl text-sm shrink-0 w-full sm:w-auto font-bold"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Looking…' : 'Track'}
+              </Button>
+            </form>
+          </section>
+
+          {/* ── How it works (only before a result) ── */}
+          {!order && !isLoading && (
+            <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Bookmark className="w-4 h-4 text-primary" />
+                <h2 className="text-sm font-bold text-foreground">How this works</h2>
+              </div>
+              <ol className="space-y-3">
+                {[
+                  {
+                    n: 1,
+                    t: 'Copy your Order ID',
+                    d: 'From the order success page after checkout.',
+                  },
+                  {
+                    n: 2,
+                    t: 'Wait about 30 minutes',
+                    d: 'We confirm payment, then Auto products deliver automatically.',
+                  },
+                  {
+                    n: 3,
+                    t: 'Paste the ID above and tap Track',
+                    d: 'Your code, link, or login appears on this page when ready — not on WhatsApp.',
+                  },
+                ].map((s) => (
+                  <li key={s.n} className="flex gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-black">
+                      {s.n}
+                    </span>
+                    <div className="min-w-0 pt-0.5">
+                      <p className="text-sm font-bold text-foreground">{s.t}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{s.d}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
 
           {isLoading && (
-            <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-              <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin mb-4" />
-              <p className="text-muted-foreground">Retrieving your order details...</p>
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin mb-4" />
+              <p className="text-sm text-muted-foreground">Loading your order…</p>
             </div>
           )}
 
           {isFetched && !order && !isLoading && (
-            <div className="p-8 rounded-3xl bg-destructive/5 border border-destructive/10 text-center animate-fade-in">
-              <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-2">Order Not Found</h3>
-              <p className="text-muted-foreground mb-6">
-                We couldn&apos;t find an order with ID{' '}
+            <div className="p-6 sm:p-8 rounded-2xl bg-destructive/5 border border-destructive/15 text-center">
+              <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-foreground mb-2">Order not found</h3>
+              <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">
+                No order matches{' '}
                 <span className="font-mono font-bold text-foreground">{searchId}</span>. Check the ID
-                or contact support.
+                and try again.
               </p>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="rounded-xl">
                 <a href={getWhatsAppLink(searchId)} target="_blank" rel="noopener noreferrer">
-                  Contact Support
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Contact support
                 </a>
               </Button>
             </div>
           )}
 
           {order && statusInfo && (
-            <div className="space-y-6 md:space-y-8 animate-fade-in">
-              {/* Save Order ID — always first after lookup */}
-              <div className="bg-card border-2 border-primary/25 p-4 md:p-5 rounded-[1.5rem] shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1 flex items-center gap-1.5">
-                    <Bookmark className="w-3.5 h-3.5" />
-                    Save this Order ID
-                  </p>
-                  <p className="font-mono text-lg md:text-xl font-black text-foreground break-all">
-                    {order.order_number}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Required to open Track Order again for Auto product delivery.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="default"
-                  className="rounded-xl shrink-0 h-11 font-bold"
-                  onClick={() => copyText(order.order_number, 'Order ID')}
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy Order ID
-                </Button>
-              </div>
-
-              {/* Status hero */}
-              <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
-
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 relative z-10">
-                  <div className="flex items-start gap-3 md:gap-4">
-                    <div
-                      className={cn(
-                        'w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center border-2 shrink-0 shadow-lg',
-                        statusInfo.color
-                      )}
+            <div className="space-y-5 sm:space-y-6 animate-fade-in">
+              {/* ── A. Order ID reminder ── */}
+              <section>
+                <SectionLabel>Your Order ID</SectionLabel>
+                <div className="bg-card border-2 border-primary/25 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-lg sm:text-xl font-black text-foreground break-all">
+                      {order.order_number}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Save this to open Track Order again later.
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      type="button"
+                      variant="default"
+                      className="rounded-xl h-11 font-bold flex-1 sm:flex-none"
+                      onClick={() => copyText(order.order_number, 'Order ID')}
                     >
-                      <StatusIcon
-                        className={cn(
-                          'w-6 h-6 md:w-7 md:h-7',
-                          order.status === 'shipping' && 'animate-spin'
-                        )}
-                      />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                        Current status
-                      </p>
-                      <h2 className="text-xl md:text-2xl font-display font-black text-foreground">
-                        {statusInfo.title}
-                      </h2>
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span
-                          className={cn(
-                            'inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border',
-                            statusInfo.color
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl h-11 font-semibold"
+                      onClick={refreshAll}
+                      disabled={isFetching}
+                    >
+                      <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
+                      <span className="sr-only sm:not-sr-only sm:ml-2">
+                        {isFetching ? '…' : 'Refresh'}
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              </section>
+
+              {/* ── B. Product first (what people came for) ── */}
+              {(hasResellerReady || hasInventoryReady || hasAutoLine) && (
+                <section>
+                  <SectionLabel>
+                    {hasResellerReady || hasInventoryReady ? 'Your product' : 'Product delivery'}
+                  </SectionLabel>
+
+                  {/* Ready: reseller */}
+                  {hasResellerReady && (
+                    <div className="space-y-3 mb-3">
+                      <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Zap className="w-4 h-4 text-emerald-600" />
+                          <p className="text-sm font-bold text-foreground">Auto delivery ready</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Copy the details below. This page is where Auto products are delivered.
+                        </p>
+                        <div className="space-y-3">
+                          {resellerDeliveries.map((d) =>
+                            d.delivered_data ? (
+                              <DeliveryPayloadCard
+                                key={d.id}
+                                deliveredData={d.delivered_data}
+                                productName={d.product_name}
+                                vendorOrderId={d.vendor_order_id}
+                              />
+                            ) : null,
                           )}
-                        >
-                          {statusInfo.badge}
-                        </span>
-                        {claude && (
-                          <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border bg-orange-500/10 text-orange-400 border-orange-500/30">
-                            Claude · {claude.plan}
-                          </span>
-                        )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0 h-9"
-                    onClick={() => {
-                      void refetch();
-                      void refetchResellerDeliveries();
-                    }}
-                    disabled={isFetching}
-                  >
-                    {isFetching ? 'Updating…' : 'Refresh'}
-                  </Button>
-                </div>
-
-                <p className="text-sm text-muted-foreground leading-relaxed mb-8 relative z-10 max-w-xl">
-                  {statusInfo.description}
-                </p>
-
-                {/* Pipeline — hide for cancelled/refunded */}
-                {statusInfo.step > 0 && !statusInfo.isNegative && (
-                  <div className="relative pt-2 pb-2 px-0 md:px-1">
-                    <div className="absolute top-[1.15rem] md:top-[1.35rem] left-[8%] right-[8%] h-1.5 bg-secondary rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary transition-all duration-700 ease-out rounded-full"
-                        style={{
-                          width:
-                            order.status === 'on_hold'
-                              ? '25%'
-                              : `${Math.max(0, ((statusInfo.step - 1) / 3) * 100)}%`,
-                        }}
-                      />
-                    </div>
-
-                    <div className="relative flex justify-between">
-                      {TRACK_PIPELINE.map((p) => {
-                        const done = isTrackStepDone(order.status, p.step);
-                        const current = isTrackStepCurrent(order.status, p.step);
-                        const Icon = p.icon;
-                        return (
-                          <div
-                            key={p.id}
-                            className="flex flex-col items-center gap-2 md:gap-3 relative z-10 w-[22%]"
-                          >
-                            <div
-                              className={cn(
-                                'w-9 h-9 md:w-11 md:h-11 rounded-full border-[3px] flex items-center justify-center transition-all duration-300 bg-card',
-                                current &&
-                                  'border-primary text-primary scale-110 shadow-lg shadow-primary/20 ring-4 ring-primary/10',
-                                done && !current && 'border-primary text-primary',
-                                !done && !current && 'border-border text-muted-foreground'
-                              )}
-                            >
-                              {done && !current ? (
-                                <Check className="w-4 h-4" />
-                              ) : (
-                                <Icon
-                                  className={cn(
-                                    'w-3.5 h-3.5 md:w-4 md:h-4',
-                                    current && p.id === 'processing' && 'animate-pulse'
-                                  )}
-                                />
-                              )}
-                            </div>
-                            <div className="text-center px-0.5">
-                              <p
-                                className={cn(
-                                  'text-[9px] md:text-[10px] font-black uppercase tracking-wide leading-tight',
-                                  current || done ? 'text-foreground' : 'text-muted-foreground opacity-60'
-                                )}
-                              >
-                                {p.shortLabel}
-                              </p>
-                              <p className="hidden sm:block text-[10px] text-muted-foreground mt-0.5 leading-snug">
-                                {p.fullLabel}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Step legend */}
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {TRACK_PIPELINE.map((p) => {
-                        const done = isTrackStepDone(order.status, p.step);
-                        const current = isTrackStepCurrent(order.status, p.step);
-                        return (
-                          <div
-                            key={`leg-${p.id}`}
-                            className={cn(
-                              'flex items-start gap-2 p-2.5 rounded-xl border text-left',
-                              current
-                                ? 'border-primary/30 bg-primary/5'
-                                : done
-                                  ? 'border-border bg-secondary/30'
-                                  : 'border-transparent opacity-50'
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                'w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-black',
-                                done || current
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-secondary text-muted-foreground'
-                              )}
-                            >
-                              {done && !current ? '✓' : p.step}
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-foreground">{p.fullLabel}</p>
-                              <p className="text-[11px] text-muted-foreground">{p.description}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {order.status === 'on_hold' && (
-                  <div className="mt-4 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-sm text-muted-foreground">
-                    Your order is on hold. Message us with Order ID{' '}
-                    <span className="font-mono font-bold text-foreground">{order.order_number}</span>.
-                  </div>
-                )}
-              </div>
-
-              {/* Claude extras */}
-              {claude && (
-                <div className="bg-card border border-orange-500/25 p-5 md:p-6 rounded-[2rem] space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-orange-400">
-                    Claude order details
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div className="p-3 rounded-xl bg-secondary/40 border border-border">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Plan</p>
-                      <p className="text-sm font-bold">{claude.plan}</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-secondary/40 border border-border">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">
-                        {claude.isFullPayment ? 'Paid' : 'Deposit'}
-                      </p>
-                      <p className="text-sm font-bold">{formatLkrAdmin(claude.deposit)}</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-secondary/40 border border-border">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Balance</p>
-                      <p className="text-sm font-bold">{formatLkrAdmin(claude.remaining)}</p>
-                    </div>
-                  </div>
-                  {claude.claudeEmail && (
-                    <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/15">
-                      <p className="text-[9px] uppercase font-bold text-orange-400 mb-1">
-                        Claude account email
-                      </p>
-                      <p className="font-mono text-sm font-bold break-all">{claude.claudeEmail}</p>
-                    </div>
                   )}
-                  {claude.stage && (
-                    <p className="text-xs text-muted-foreground">
-                      Internal workflow:{' '}
-                      <span className="font-semibold text-foreground capitalize">
-                        {claude.stage.replace(/_/g, ' ')}
-                      </span>
-                    </p>
-                  )}
-                </div>
-              )}
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                  {/* Auto delivery credentials (inventory accounts) */}
-                  {(order.status === 'completed') && automation?.assignment && (
-                    <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-xl">
-                      <div className="flex items-center gap-3 mb-6 pb-5 border-b border-border/50">
+                  {/* Ready: inventory assignment */}
+                  {hasInventoryReady && automation.assignment && (
+                    <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-sm mb-3">
+                      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border/50">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl">
                           {getServiceIcon(automation.assignment.service_type)}
                         </div>
                         <div>
-                          <h3 className="text-sm font-black uppercase tracking-widest">
+                          <h3 className="text-sm font-bold">
                             {automation.assignment.service_type || 'Account'} access
                           </h3>
-                          <p className="text-xs text-success font-bold">Ready</p>
+                          <p className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                            <Check className="w-3.5 h-3.5" /> Ready
+                          </p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="p-4 rounded-2xl bg-secondary/30 border border-border">
-                          <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl bg-secondary/40 border border-border">
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">
                             Email / Username
                           </p>
                           <div className="flex items-center justify-between gap-2">
@@ -479,8 +368,8 @@ const TrackOrderPage = () => {
                             </Button>
                           </div>
                         </div>
-                        <div className="p-4 rounded-2xl bg-secondary/30 border border-border">
-                          <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">
+                        <div className="p-3 rounded-xl bg-secondary/40 border border-border">
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">
                             Password
                           </p>
                           <div className="flex items-center justify-between gap-2">
@@ -497,67 +386,98 @@ const TrackOrderPage = () => {
                         </div>
                       </div>
                       {automation.assignment.rules_template && (
-                        <div className="mt-4 p-4 rounded-2xl bg-secondary/20 border border-border text-sm text-muted-foreground">
+                        <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15 text-sm text-muted-foreground">
                           <FormattedDescription description={automation.assignment.rules_template} />
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Auto product: waiting / missing delivery */}
-                  {resellerDeliveries.length === 0 &&
-                    (order.order_items || []).some(
-                      (item: any) => item.products?.reseller_product_id,
-                    ) && (
-                      <div
-                        className={cn(
-                          'bg-card p-5 md:p-6 rounded-[2rem] shadow-xl border',
-                          order.status === 'completed' || order.status === 'cancelled'
-                            ? 'border-amber-500/30'
-                            : 'border-emerald-500/20',
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
+                  {/* Waiting for Auto */}
+                  {!hasResellerReady && hasAutoLine && (
+                    <div
+                      className={cn(
+                        'rounded-2xl border p-4 sm:p-5 shadow-sm',
+                        order.status === 'completed' || order.status === 'cancelled'
+                          ? 'border-amber-500/30 bg-amber-500/[0.05]'
+                          : 'border-emerald-500/25 bg-emerald-500/[0.05]',
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={cn(
+                            'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                            order.status === 'completed' || order.status === 'cancelled'
+                              ? 'bg-amber-500/15'
+                              : 'bg-emerald-500/15',
+                          )}
+                        >
+                          <Zap
                             className={cn(
-                              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                              'w-5 h-5',
                               order.status === 'completed' || order.status === 'cancelled'
-                                ? 'bg-amber-500/15'
-                                : 'bg-emerald-500/15',
+                                ? 'text-amber-600'
+                                : 'text-emerald-600',
                             )}
-                          >
-                            <Zap
-                              className={cn(
-                                'w-5 h-5',
-                                order.status === 'completed' || order.status === 'cancelled'
-                                  ? 'text-amber-600'
-                                  : 'text-emerald-600',
-                              )}
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="text-sm font-black uppercase tracking-widest text-foreground mb-1">
-                              Auto product delivery
-                            </h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                              {order.status === 'pending'
-                                ? 'Waiting for payment confirmation. Once we confirm your payment, your code, redeem link, or login will appear here automatically.'
-                                : order.status === 'processing' || order.status === 'shipping'
-                                  ? 'Payment is being processed. This page updates live — your product appears here when delivery completes.'
-                                  : order.status === 'completed'
-                                    ? 'This order is marked complete, but no Auto credentials are on file yet. Contact support with your Order ID so we can check or reissue.'
-                                    : 'No Auto delivery is available for this status. Contact support with your Order ID if you need help.'}
-                            </p>
-                            <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal pl-4 mb-3">
-                              <li>
-                                Save Order ID{' '}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-bold text-foreground mb-1">
+                            {order.status === 'pending'
+                              ? 'Waiting for payment confirmation'
+                              : order.status === 'processing' || order.status === 'shipping'
+                                ? 'Delivery in progress'
+                                : order.status === 'completed'
+                                  ? 'Delivery missing — contact support'
+                                  : 'Auto delivery not available'}
+                          </h3>
+                          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                            {order.status === 'pending'
+                              ? 'After we confirm payment, your code / link / login usually appears here within about 30 minutes. Keep this Order ID and check again.'
+                              : order.status === 'processing' || order.status === 'shipping'
+                                ? 'Payment confirmed. Auto delivery is running. This page updates live — most products appear within about 30 minutes. Tap Refresh if needed.'
+                                : order.status === 'completed'
+                                  ? 'This order is complete, but no Auto product is on file yet. Message support with your Order ID.'
+                                  : 'No Auto delivery for this status. Contact support with your Order ID if you need help.'}
+                          </p>
+                          {(order.status === 'pending' ||
+                            order.status === 'processing' ||
+                            order.status === 'shipping') && (
+                            <ol className="text-xs text-muted-foreground space-y-1.5 mb-3 pl-0">
+                              <li className="flex gap-2">
+                                <span className="font-black text-emerald-600">1.</span>
+                                Keep Order ID{' '}
                                 <span className="font-mono font-bold text-foreground">
                                   {order.order_number}
                                 </span>
                               </li>
-                              <li>Complete payment if you have not already</li>
-                              <li>Stay on this page or tap Refresh — status updates automatically</li>
+                              <li className="flex gap-2">
+                                <span className="font-black text-emerald-600">2.</span>
+                                Allow about 30 minutes after payment
+                              </li>
+                              <li className="flex gap-2">
+                                <span className="font-black text-emerald-600">3.</span>
+                                Stay here or come back and track the same ID
+                              </li>
                             </ol>
+                          )}
+                          <div className="flex flex-wrap gap-2">
+                            {(order.status === 'pending' ||
+                              order.status === 'processing' ||
+                              order.status === 'shipping') && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-xl"
+                                onClick={refreshAll}
+                                disabled={isFetching}
+                              >
+                                <RefreshCw
+                                  className={cn('w-3.5 h-3.5 mr-1.5', isFetching && 'animate-spin')}
+                                />
+                                Refresh
+                              </Button>
+                            )}
                             {(order.status === 'completed' ||
                               order.status === 'cancelled' ||
                               order.status === 'on_hold') && (
@@ -575,156 +495,248 @@ const TrackOrderPage = () => {
                           </div>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
+                </section>
+              )}
 
-                  {/* Reseller API delivery — formatted by type (coupon / link / login) */}
-                  {resellerDeliveries.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="bg-card border border-emerald-500/25 p-5 md:p-6 rounded-[2rem] shadow-xl">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-xl">
-                            ⚡
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-black uppercase tracking-widest">
-                              Your Auto delivery
-                            </h3>
-                            <p className="text-xs text-success font-bold">
-                              {resellerDeliveries.length} item
-                              {resellerDeliveries.length > 1 ? 's' : ''} ready
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-                          Use the details below. This is the only place Auto products are delivered —
-                          keep your Order ID safe.
-                        </p>
-                        <div className="space-y-4">
-                          {resellerDeliveries.map((d) =>
-                            d.delivered_data ? (
-                              <DeliveryPayloadCard
-                                key={d.id}
-                                deliveredData={d.delivered_data}
-                                productName={d.product_name}
-                                vendorOrderId={d.vendor_order_id}
-                              />
-                            ) : null,
-                          )}
-                        </div>
+              {/* ── C. Status ── */}
+              <section>
+                <SectionLabel>Order status</SectionLabel>
+                <div className="bg-card border border-border p-4 sm:p-6 rounded-2xl shadow-sm">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div
+                      className={cn(
+                        'w-12 h-12 rounded-2xl flex items-center justify-center border-2 shrink-0',
+                        statusInfo.color,
+                      )}
+                    >
+                      <StatusIcon
+                        className={cn(
+                          'w-6 h-6',
+                          order.status === 'shipping' && 'animate-spin',
+                        )}
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-lg sm:text-xl font-display font-black text-foreground">
+                        {statusInfo.title}
+                      </h2>
+                      <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                        {statusInfo.description}
+                      </p>
+                      {claude && (
+                        <span className="inline-flex mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border bg-orange-500/10 text-orange-500 border-orange-500/30">
+                          Claude · {claude.plan}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Simple pipeline only — no duplicate legend grid */}
+                  {statusInfo.step > 0 && !statusInfo.isNegative && (
+                    <div className="relative pt-4 mt-2 border-t border-border/60">
+                      <div className="absolute top-[2.15rem] left-[12%] right-[12%] h-1 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-700 ease-out rounded-full"
+                          style={{
+                            width:
+                              order.status === 'on_hold'
+                                ? '25%'
+                                : `${Math.max(0, ((statusInfo.step - 1) / 3) * 100)}%`,
+                          }}
+                        />
                       </div>
+                      <div className="relative flex justify-between">
+                        {TRACK_PIPELINE.map((p) => {
+                          const done = isTrackStepDone(order.status, p.step);
+                          const current = isTrackStepCurrent(order.status, p.step);
+                          const Icon = p.icon;
+                          return (
+                            <div
+                              key={p.id}
+                              className="flex flex-col items-center gap-2 relative z-10 w-[22%]"
+                            >
+                              <div
+                                className={cn(
+                                  'w-9 h-9 rounded-full border-[3px] flex items-center justify-center bg-card',
+                                  current &&
+                                    'border-primary text-primary scale-105 shadow-md shadow-primary/15',
+                                  done && !current && 'border-primary text-primary',
+                                  !done && !current && 'border-border text-muted-foreground',
+                                )}
+                              >
+                                {done && !current ? (
+                                  <Check className="w-4 h-4" />
+                                ) : (
+                                  <Icon className="w-3.5 h-3.5" />
+                                )}
+                              </div>
+                              <p
+                                className={cn(
+                                  'text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-center leading-tight',
+                                  current || done
+                                    ? 'text-foreground'
+                                    : 'text-muted-foreground opacity-60',
+                                )}
+                              >
+                                {p.shortLabel}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
+                        <li>
+                          <strong className="text-foreground">1 Pending</strong> — verifying payment
+                        </li>
+                        <li>
+                          <strong className="text-foreground">2 Confirmed</strong> — payment OK
+                        </li>
+                        <li>
+                          <strong className="text-foreground">3 Processing</strong> — fulfilling
+                        </li>
+                        <li>
+                          <strong className="text-foreground">4 Completed</strong> — done
+                        </li>
+                      </ul>
                     </div>
                   )}
 
-                  {/* Items */}
-                  <div className="bg-card border border-border p-5 md:p-8 rounded-[2rem] shadow-xl">
-                    <div className="flex items-center gap-3 mb-6 pb-5 border-b border-border/50">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <ShieldCheck className="w-5 h-5" />
-                      </div>
-                      <h3 className="text-sm font-black uppercase tracking-widest">Order items</h3>
+                  {order.status === 'on_hold' && (
+                    <div className="mt-4 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-sm text-muted-foreground">
+                      Your order is on hold. Message us with Order ID{' '}
+                      <span className="font-mono font-bold text-foreground">
+                        {order.order_number}
+                      </span>
+                      .
                     </div>
+                  )}
+                </div>
+              </section>
+
+              {/* ── D. Claude extras ── */}
+              {claude && (
+                <section>
+                  <SectionLabel>Claude pre-order</SectionLabel>
+                  <div className="bg-card border border-orange-500/25 p-4 sm:p-5 rounded-2xl space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="p-3 rounded-xl bg-secondary/40 border border-border">
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground">Plan</p>
+                        <p className="text-sm font-bold">{claude.plan}</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-secondary/40 border border-border">
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground">
+                          {claude.isFullPayment ? 'Paid' : 'Deposit'}
+                        </p>
+                        <p className="text-sm font-bold">{formatLkrAdmin(claude.deposit)}</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-secondary/40 border border-border">
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground">
+                          Balance
+                        </p>
+                        <p className="text-sm font-bold">{formatLkrAdmin(claude.remaining)}</p>
+                      </div>
+                    </div>
+                    {claude.claudeEmail && (
+                      <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/15">
+                        <p className="text-[9px] uppercase font-bold text-orange-500 mb-1">
+                          Claude account email
+                        </p>
+                        <p className="font-mono text-sm font-bold break-all">{claude.claudeEmail}</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* ── E. Items + details ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+                <section className="lg:col-span-3">
+                  <SectionLabel>Items</SectionLabel>
+                  <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-sm">
                     <div className="space-y-3">
                       {order.order_items?.map((item: any) => (
                         <div
                           key={item.id}
-                          className="p-4 rounded-2xl bg-secondary/30 border border-border flex items-center justify-between gap-3"
+                          className="p-3 rounded-xl bg-secondary/30 border border-border flex items-center justify-between gap-3"
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-11 h-11 rounded-xl bg-background border border-border flex items-center justify-center text-primary shrink-0">
-                              <Package className="w-5 h-5" />
+                            <div className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-primary shrink-0">
+                              <Package className="w-4 h-4" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold text-foreground text-sm truncate flex items-center gap-1.5 flex-wrap">
+                              <p className="font-bold text-foreground text-sm flex items-center gap-1.5 flex-wrap">
                                 {item.product_name}
                                 {item.products?.reseller_product_id && (
-                                  <span className="inline-flex px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                                  <span className="inline-flex px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-[9px] font-black uppercase">
                                     Auto
                                   </span>
                                 )}
                               </p>
                               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                {item.plan_name || 'Standard'} · Qty x{item.quantity}
+                                {item.plan_name || 'Standard'} · Qty ×{item.quantity}
                               </p>
                             </div>
                           </div>
-                          <p className="text-sm font-black shrink-0">{formatMoney(item.total_price)}</p>
+                          <p className="text-sm font-black shrink-0">
+                            {formatMoney(item.total_price)}
+                          </p>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-6 p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
-                      <span className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest">
-                        Total paid
+                    <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        Total
                       </span>
-                      <span className="text-2xl font-display font-black gradient-text">
+                      <span className="text-xl font-display font-black gradient-text">
                         {formatMoney(order.total_amount)}
                       </span>
                     </div>
                   </div>
-                </div>
+                </section>
 
-                {/* Sidebar */}
-                <div className="space-y-4">
-                  <div className="bg-card border border-border p-5 md:p-6 rounded-[1.5rem] shadow-xl space-y-4">
+                <section className="lg:col-span-2 space-y-3">
+                  <SectionLabel>Details</SectionLabel>
+                  <div className="bg-card border border-border p-4 rounded-2xl shadow-sm space-y-3">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                        Order ID
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-mono font-black break-all">{order.order_number}</p>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 shrink-0"
-                          onClick={() => copyText(order.order_number, 'Order ID')}
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">
                         Customer
                       </p>
                       <p className="text-sm font-bold flex items-center gap-2">
-                        <User className="w-4 h-4 text-primary" />
+                        <User className="w-4 h-4 text-primary shrink-0" />
                         {order.customer_name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                        Payment method
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">
+                        Payment
                       </p>
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border text-[10px] font-black uppercase">
+                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-secondary border border-border text-[10px] font-black uppercase">
                         <CreditCard className="w-3 h-3 text-primary" />
                         {order.payment_method?.replace(/_/g, ' ') || 'Not specified'}
                       </div>
+                      {order.payment_proof_url && (
+                        <p className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold mt-1.5">
+                          <FileText className="w-3.5 h-3.5" />
+                          Receipt on file
+                        </p>
+                      )}
                     </div>
-                    {order.payment_proof_url && (
-                      <div className="flex items-center gap-2 text-xs text-success font-bold">
-                        <FileText className="w-3.5 h-3.5" />
-                        Payment receipt on file
-                      </div>
-                    )}
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">
                         Placed
                       </p>
-                      <p className="text-xs font-medium text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {formatDateTime(order.created_at)}
                       </p>
                     </div>
-                    {order.updated_at && order.updated_at !== order.created_at && (
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                          Last update
-                        </p>
-                        <p className="text-xs font-medium text-muted-foreground">
-                          {formatDateTime(order.updated_at)}
-                        </p>
-                      </div>
-                    )}
-                    <div className="pt-3 border-t border-border">
-                      <Button variant="whatsapp" className="w-full h-12 rounded-xl font-bold" asChild>
+                    <div className="pt-2 border-t border-border">
+                      <Button
+                        variant="whatsapp"
+                        className="w-full h-11 rounded-xl font-bold"
+                        asChild
+                      >
                         <a
                           href={getWhatsAppLink(order.order_number)}
                           target="_blank"
@@ -737,33 +749,9 @@ const TrackOrderPage = () => {
                     </div>
                   </div>
 
-                  {/* Status legend for customers */}
-                  <div className="bg-secondary/30 border border-border p-4 rounded-2xl text-left space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      Status guide
-                    </p>
-                    <ul className="text-[11px] text-muted-foreground space-y-1.5 leading-snug">
-                      <li>
-                        <strong className="text-foreground">Pending payment</strong> — we received
-                        the order, verifying payment
-                      </li>
-                      <li>
-                        <strong className="text-foreground">Payment confirmed</strong> — paid & order
-                        confirmed
-                      </li>
-                      <li>
-                        <strong className="text-foreground">Order processing</strong> — activating /
-                        fulfilling
-                      </li>
-                      <li>
-                        <strong className="text-foreground">Completed</strong> — done / access ready
-                      </li>
-                    </ul>
-                  </div>
-
                   <Button
                     variant="ghost"
-                    className="w-full h-12 rounded-2xl text-muted-foreground"
+                    className="w-full h-11 rounded-xl text-muted-foreground border border-border"
                     asChild
                   >
                     <Link to="/">
@@ -771,7 +759,7 @@ const TrackOrderPage = () => {
                       Back to home
                     </Link>
                   </Button>
-                </div>
+                </section>
               </div>
             </div>
           )}
