@@ -331,7 +331,7 @@ const AffiliatePage = () => {
   const isBlocked = status === 'rejected' || status === 'disabled';
 
   return (
-    <div className="min-h-dvh page-mesh pb-safe pb-16 sm:pb-20">
+    <div className="min-h-dvh page-mesh overflow-x-hidden pb-safe pb-16 sm:pb-20">
       <SEO
         title="Affiliate Program"
         description="Earn ~7% commission promoting Snippy Mart. Share your link, get paid via bank, UPI, or Binance."
@@ -346,9 +346,9 @@ const AffiliatePage = () => {
         description="Share one link. Earn when friends complete an order. No password account — just WhatsApp + your code."
       />
 
-      <section className="container mx-auto px-3 sm:px-4 max-w-4xl space-y-6 sm:space-y-8">
+      <section className="mx-auto w-full max-w-4xl px-3 xs:px-4 sm:px-5 space-y-5 sm:space-y-8">
         {/* Program overview — always visible */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
           {[
             {
               t: '1. Apply',
@@ -363,7 +363,7 @@ const AffiliatePage = () => {
               d: '~7% when their order completes. Short hold, then request payout.',
             },
           ].map((s) => (
-            <div key={s.t} className="surface-card p-4 border border-border">
+            <div key={s.t} className="surface-card p-3.5 sm:p-4 border border-border min-w-0">
               <p className="font-bold text-foreground text-sm">{s.t}</p>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.d}</p>
             </div>
@@ -373,25 +373,27 @@ const AffiliatePage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
             { l: 'Commission', v: '~7%' },
-            { l: 'Min payout', v: 'Rs. 2,000' },
+            { l: 'Min payout', v: 'Rs. 2k' },
             { l: 'Hold', v: '~5 days' },
             { l: 'Self-ref', v: 'Blocked' },
           ].map((f) => (
             <div
               key={f.l}
-              className="rounded-xl border border-border bg-card/80 px-3 py-2.5 text-center"
+              className="rounded-xl border border-border bg-card/80 px-2 xs:px-3 py-2.5 text-center min-w-0"
             >
-              <p className="text-sm font-black text-foreground tabular-nums">{f.v}</p>
-              <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wide">
+              <p className="text-xs xs:text-sm font-black text-foreground tabular-nums leading-tight">
+                {f.v}
+              </p>
+              <p className="text-[9px] xs:text-[10px] font-bold uppercase text-muted-foreground tracking-wide mt-0.5">
                 {f.l}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          <p className="font-bold text-foreground mb-1 flex items-center gap-1.5">
-            <ShieldAlert className="w-4 h-4 text-amber-600" />
+        <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-3.5 sm:p-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+          <p className="font-bold text-foreground mb-1.5 flex items-center gap-1.5">
+            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
             Fair-use rules
           </p>
           <ul className="list-disc pl-4 space-y-1">
@@ -436,8 +438,8 @@ const AffiliatePage = () => {
             </div>
 
             {guestMode === 'apply' ? (
-              <div className="surface-card p-5 sm:p-8 border border-border">
-                <h2 className="text-lg font-display font-bold mb-1">Join as an affiliate</h2>
+              <div className="surface-card p-4 xs:p-5 sm:p-8 border border-border overflow-hidden">
+                <h2 className="text-base xs:text-lg font-display font-bold mb-1">Join as an affiliate</h2>
                 <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
                   No password account. Apply with WhatsApp — after approval, open the dashboard with
                   your <strong className="text-foreground">code + WhatsApp</strong>.
@@ -534,8 +536,8 @@ const AffiliatePage = () => {
                 </form>
               </div>
             ) : (
-              <div className="surface-card p-5 sm:p-8 border border-border">
-                <h2 className="text-lg font-display font-bold mb-1">Open your dashboard</h2>
+              <div className="surface-card p-4 xs:p-5 sm:p-8 border border-border overflow-hidden">
+                <h2 className="text-base xs:text-lg font-display font-bold mb-1">Open your dashboard</h2>
                 <p className="text-xs text-muted-foreground mb-6">
                   Use the same code and WhatsApp you applied with.
                 </p>
@@ -607,13 +609,13 @@ const AffiliatePage = () => {
             {dash.data && !dash.isLoading && (
               <>
                 {/* Header */}
-                <div className="surface-card p-4 sm:p-5 border border-border">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="surface-card p-3.5 sm:p-5 border border-border overflow-hidden">
+                  <div className="flex flex-col xs:flex-row xs:flex-wrap items-stretch xs:items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                         {dash.data.affiliate.name}
                       </p>
-                      <p className="font-mono text-2xl font-black text-foreground break-all">
+                      <p className="font-mono text-xl xs:text-2xl font-black text-foreground break-all leading-tight">
                         {dash.data.affiliate.code}
                       </p>
                       <div className="flex flex-wrap items-center gap-2 mt-1.5">
@@ -638,7 +640,7 @@ const AffiliatePage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-10 font-bold shrink-0 touch-manipulation"
+                      className="h-11 w-full xs:w-auto font-bold shrink-0 touch-manipulation"
                       onClick={switchAccount}
                     >
                       <LogOut className="w-4 h-4 mr-1.5" />
@@ -717,33 +719,41 @@ const AffiliatePage = () => {
                       You’re live. Share this link — when someone buys and the order completes, you
                       earn ~{dash.data.affiliate.commission_percent}%.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Input readOnly value={link} className="font-mono text-xs h-11" />
-                      <Button
-                        className="h-11 shrink-0 font-bold touch-manipulation"
-                        onClick={() => copy(link, 'Affiliate link')}
-                      >
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy link
-                      </Button>
+                    <div className="flex flex-col gap-2 min-w-0">
+                      <Input
+                        readOnly
+                        value={link}
+                        className="font-mono text-[11px] xs:text-xs h-11 min-w-0 w-full"
+                      />
+                      <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
+                        <Button
+                          className="h-11 font-bold touch-manipulation"
+                          onClick={() => copy(link, 'Affiliate link')}
+                        >
+                          <Copy className="w-4 h-4 mr-2 shrink-0" />
+                          Copy link
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-11 font-bold touch-manipulation"
+                          onClick={() =>
+                            copy(
+                              shareMessage(dash.data!.affiliate.code, link),
+                              'WhatsApp pitch',
+                            )
+                          }
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2 shrink-0" />
+                          WA pitch
+                        </Button>
+                      </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      className="w-full h-11 font-bold touch-manipulation"
-                      onClick={() =>
-                        copy(
-                          shareMessage(dash.data!.affiliate.code, link),
-                          'WhatsApp pitch',
-                        )
-                      }
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Copy WhatsApp pitch
-                    </Button>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Tip: product links work too — open any product and add{' '}
-                      <span className="font-mono text-foreground">?ref={dash.data.affiliate.code}</span>{' '}
-                      (or use the home link above).
+                    <p className="text-[11px] text-muted-foreground leading-relaxed break-words">
+                      Tip: product links work too — add{' '}
+                      <span className="font-mono text-foreground">
+                        ?ref={dash.data.affiliate.code}
+                      </span>{' '}
+                      after any product URL.
                     </p>
                   </div>
                 )}
@@ -766,12 +776,12 @@ const AffiliatePage = () => {
                         raw: true,
                       },
                     ].map((s) => (
-                      <div key={s.l} className="surface-card p-3 border border-border">
-                        <s.icon className="w-4 h-4 text-primary mb-2" />
-                        <p className="text-lg font-black tabular-nums">
+                      <div key={s.l} className="surface-card p-2.5 xs:p-3 border border-border min-w-0 overflow-hidden">
+                        <s.icon className="w-4 h-4 text-primary mb-1.5" />
+                        <p className="text-sm xs:text-lg font-black tabular-nums break-all leading-tight">
                           {s.raw ? s.v : `Rs. ${Number(s.v).toLocaleString()}`}
                         </p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                        <p className="text-[9px] xs:text-[10px] font-bold text-muted-foreground uppercase mt-0.5">
                           {s.l}
                         </p>
                       </div>
@@ -781,18 +791,20 @@ const AffiliatePage = () => {
 
                 {/* Payout — active only */}
                 {isActive && (
-                  <div className="surface-card p-4 sm:p-5 border border-border space-y-4">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
+                  <div className="surface-card p-3.5 sm:p-5 border border-border space-y-4 overflow-hidden">
+                    <div className="flex flex-col xs:flex-row xs:flex-wrap items-stretch xs:items-start justify-between gap-2">
+                      <div className="min-w-0">
                         <h3 className="font-bold text-foreground">Request payout</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
                           Available:{' '}
                           <strong className="text-foreground tabular-nums">
                             Rs. {Number(dash.data.totals.available).toLocaleString()}
                           </strong>
-                          {' · '}
-                          Min Rs.{' '}
-                          {(dash.data as any)?.rules?.min_payout?.toLocaleString?.() || '2,000'}
+                          <span className="hidden xs:inline"> · </span>
+                          <span className="block xs:inline mt-0.5 xs:mt-0">
+                            Min Rs.{' '}
+                            {(dash.data as any)?.rules?.min_payout?.toLocaleString?.() || '2,000'}
+                          </span>
                         </p>
                       </div>
                       {Number(dash.data.totals.available) >=
@@ -801,7 +813,7 @@ const AffiliatePage = () => {
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="h-9 text-xs font-bold shrink-0"
+                          className="h-10 w-full xs:w-auto text-xs font-bold shrink-0 touch-manipulation"
                           onClick={() =>
                             setPayoutAmount(
                               String(Math.floor(Number(dash.data!.totals.available))),
