@@ -152,13 +152,23 @@ const AffiliatePage = () => {
           {[
             { t: '1. Apply', d: 'Get a unique code after we approve you' },
             { t: '2. Share', d: 'Send your link — snippymart.com/?ref=YOURCODE' },
-            { t: '3. Earn', d: 'Commission when their order is completed' },
+            { t: '3. Earn', d: 'Commission after order completes (short hold for refunds)' },
           ].map((s) => (
             <div key={s.t} className="surface-card p-4 border border-border">
               <p className="font-bold text-foreground text-sm">{s.t}</p>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.d}</p>
             </div>
           ))}
+        </div>
+
+        <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+          <p className="font-bold text-foreground mb-1">Fair-use rules</p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li>No self-purchases with your own link / same WhatsApp</li>
+            <li>Commission can stay <strong className="text-foreground">on hold ~5 days</strong> after order complete</li>
+            <li>Daily limits apply to stop abuse · first payout is reviewed manually</li>
+            <li>One application per WhatsApp · min payout Rs. 2,000</li>
+          </ul>
         </div>
 
         <Tabs defaultValue={session ? 'dashboard' : 'apply'} className="w-full">
@@ -392,7 +402,11 @@ const AffiliatePage = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                   {[
-                    { l: 'Pending', v: dash.data!.totals.pending, icon: Wallet },
+                    {
+                      l: 'On hold',
+                      v: (dash.data!.totals as any).held ?? dash.data!.totals.pending,
+                      icon: Wallet,
+                    },
                     { l: 'Available', v: dash.data!.totals.available, icon: CheckCircle2 },
                     { l: 'Paid', v: dash.data!.totals.paid, icon: Sparkles },
                     {
@@ -443,7 +457,9 @@ const AffiliatePage = () => {
                       </Button>
                     </form>
                     <p className="text-[11px] text-muted-foreground mt-2">
-                      Only from Available balance. Paid after we process.
+                      Only from <strong>Available</strong> (not On hold). First payout is checked
+                      manually. Min Rs.{' '}
+                      {(dash.data as any)?.rules?.min_payout?.toLocaleString?.() || '2,000'}.
                     </p>
                   </div>
                 )}
@@ -454,7 +470,7 @@ const AffiliatePage = () => {
                     <p className="text-sm text-muted-foreground">No commissions yet. Share your link!</p>
                   ) : (
                     <div className="space-y-2">
-                      {dash.data!.commissions.map((c) => (
+                      {dash.data!.commissions.map((c: any) => (
                         <div
                           key={c.id}
                           className="flex items-center justify-between gap-2 text-sm border-b border-border/50 pb-2"
@@ -462,7 +478,11 @@ const AffiliatePage = () => {
                           <div className="min-w-0">
                             <p className="font-mono font-bold truncate">{c.order_number}</p>
                             <p className="text-[10px] text-muted-foreground uppercase">
-                              {c.status} · {c.commission_percent}%
+                              {c.status}
+                              {c.hold_until && c.status === 'pending'
+                                ? ` · hold until ${new Date(c.hold_until).toLocaleDateString()}`
+                                : ''}{' '}
+                              · {c.commission_percent}%
                             </p>
                           </div>
                           <p className="font-black tabular-nums shrink-0">

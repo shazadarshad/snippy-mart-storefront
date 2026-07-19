@@ -101,7 +101,7 @@ const AdminAffiliates = () => {
             Affiliates
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Approve partners · commissions · payouts
+            Approve carefully · fraud holds · first payouts manual
           </p>
         </div>
         <Button
@@ -258,10 +258,18 @@ const AdminAffiliates = () => {
                       <p className="text-xs text-muted-foreground mt-1">
                         {a.whatsapp}
                         {a.email ? ` · ${a.email}` : ''}
+                        {(a as any).fraud_score > 0
+                          ? ` · ⚠ score ${(a as any).fraud_score}`
+                          : ''}
                       </p>
                       {a.notes && (
                         <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
                           {a.notes}
+                        </p>
+                      )}
+                      {(a as any).fraud_notes && (
+                        <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-1 line-clamp-2 font-medium">
+                          Fraud notes: {(a as any).fraud_notes}
                         </p>
                       )}
                     </div>
@@ -412,6 +420,11 @@ const AdminAffiliates = () => {
                     Rs. {Number(p.amount).toLocaleString()}
                   </p>
                 </div>
+                {p.note && (
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                    {p.note}
+                  </p>
+                )}
                 {p.status === 'requested' && (
                   <Button
                     size="sm"
@@ -430,7 +443,9 @@ const AdminAffiliates = () => {
                       }
                     }}
                   >
-                    Mark paid
+                    {String(p.note || '').includes('FIRST PAYOUT')
+                      ? 'Verify & mark paid'
+                      : 'Mark paid'}
                   </Button>
                 )}
               </div>
