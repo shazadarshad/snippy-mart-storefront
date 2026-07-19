@@ -148,6 +148,7 @@ export const useCreateOrder = () => {
       currency_code?: string;
       currency_symbol?: string;
       currency_rate?: number;
+      affiliate_code?: string | null;
       items: {
         product_id?: string;
         product_name: string;
@@ -177,6 +178,7 @@ export const useCreateOrder = () => {
           currency_code: orderData.currency_code,
           currency_symbol: orderData.currency_symbol,
           currency_rate: orderData.currency_rate,
+          affiliate_code: orderData.affiliate_code || null,
           items: orderData.items,
         },
       });

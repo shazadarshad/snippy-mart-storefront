@@ -21,6 +21,7 @@ type CreateOrderBody = {
   customer_email?: string;
   applied_coupon_id?: string;
   discount_amount?: number;
+  affiliate_code?: string;
   items: Array<{
     product_id?: string;
     product_name: string;
@@ -77,6 +78,30 @@ serve(async (req) => {
 
   console.log(`[create-order] Processing order ${body.order_number} items=${body.items.length}`);
 
+  // Resolve affiliate ref (optional)
+  let affiliateId: string | null = null;
+  let affiliateCode: string | null = null;
+  const rawAff = String(body.affiliate_code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (rawAff.length >= 2) {
+    const { data: aff } = await supabase
+      .from("affiliates")
+      .select("id, code, status, whatsapp")
+      .ilike("code", rawAff)
+      .maybeSingle();
+    if (aff && (aff.status === "active" || aff.status === "pending")) {
+      // Self-referral: same WhatsApp as affiliate → ignore
+      const orderDigits = String(body.customer_whatsapp || "").replace(/\D/g, "").slice(-9);
+      const affDigits = String(aff.whatsapp || "").replace(/\D/g, "").slice(-9);
+      if (!(orderDigits.length >= 9 && orderDigits === affDigits)) {
+        affiliateId = aff.id;
+        affiliateCode = aff.code;
+      }
+    } else if (rawAff) {
+      // Keep code on order even if pending; commission only when active + completed
+      affiliateCode = rawAff;
+    }
+  }
+
   // Create or Update order (Upsert by order_number)
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -99,6 +124,8 @@ serve(async (req) => {
           currency_code: (body as any).currency_code ?? 'LKR',
           currency_symbol: (body as any).currency_symbol ?? 'Rs.',
           currency_rate: (body as any).currency_rate ?? 1,
+          affiliate_id: affiliateId,
+          affiliate_code: affiliateCode,
           updated_at: new Date().toISOString(),
         },
       ],

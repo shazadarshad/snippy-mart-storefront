@@ -18,6 +18,7 @@ import PaymentMethodSelector, {
 import { getCountry, cn } from '@/lib/utils';
 import { CouponInput } from '@/components/checkout/CouponInput';
 import { isResellerApiProduct } from '@/hooks/useResellerApi';
+import { getAffiliateRef } from '@/lib/affiliate';
 
 const CheckoutPage = () => {
   const { formatPrice, currency, currencyInfo } = useCurrency();
@@ -112,6 +113,7 @@ const CheckoutPage = () => {
       currency_code: currency,
       currency_symbol: currencyInfo.symbol,
       currency_rate: currencyInfo.rate,
+      affiliate_code: getAffiliateRef() || undefined,
       items: items.map((item) => ({
         product_id: item.product.id,
         product_name: item.product.name,

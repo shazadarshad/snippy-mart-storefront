@@ -11,6 +11,7 @@ const Footer = () => {
   const shop = [
     { n: 'Products', p: '/products' },
     { n: 'Track order', p: '/track-order' },
+    { n: 'Affiliate', p: '/affiliate' },
     { n: 'About', p: '/about' },
     { n: 'Contact', p: '/contact' },
   ];

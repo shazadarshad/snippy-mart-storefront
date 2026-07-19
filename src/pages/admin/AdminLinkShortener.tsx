@@ -38,7 +38,7 @@ const RESERVED_SLUGS = new Set([
   'admin', 'products', 'product', 'checkout', 'order-success', 'about',
   'contact', 'track-order', 'privacy-policy', 'refund-policy', 'download',
   'claude', 'terms-of-service', 'shared', 'api', 'assets', 'favicon.ico',
-  'robots.txt', 'sitemap.xml', 'manifest.json', 'sw.js',
+  'robots.txt', 'sitemap.xml', 'manifest.json', 'admin-manifest.json', 'sw.js', 'affiliate', 'affiliates',
 ]);
 
 const slugRegex = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/;

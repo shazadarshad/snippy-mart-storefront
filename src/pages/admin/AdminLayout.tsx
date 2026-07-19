@@ -25,6 +25,7 @@ import {
   Wallet,
   MoreHorizontal,
   Store,
+  Handshake,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,7 @@ const menuItems: MenuItem[] = [
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart, group: 'Main' },
   { name: 'Products', path: '/admin/products', icon: Package, group: 'Main' },
   { name: 'Reseller API', path: '/admin/reseller-api', icon: Wallet, badge: 'AUTO', group: 'Main' },
+  { name: 'Affiliates', path: '/admin/affiliates', icon: Handshake, badge: 'NEW', group: 'Main' },
   { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, group: 'Main' },
   { name: 'Fulfillment', path: '/admin/fulfillment', icon: ShieldCheck, group: 'Ops' },
   { name: 'Inventory', path: '/admin/inventory', icon: Package, group: 'Ops' },

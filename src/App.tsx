@@ -14,6 +14,7 @@ import PageTransition from "./components/PageTransition";
 import GlobalLoader from "./components/GlobalLoader";
 import TopProgressBar from "./components/TopProgressBar";
 import SiteVisitorTracker from "./components/SiteVisitorTracker";
+import AffiliateRefCapture from "./components/AffiliateRefCapture";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
 import { CurrencyProvider } from "./hooks/useCurrency";
 
@@ -55,6 +56,8 @@ const AdminAIKnowledge = lazy(() => import("./pages/admin/AdminAIKnowledge"));
 const AdminExtensionUpload = lazy(() => import("./pages/admin/AdminExtensionUpload"));
 const AdminLinkShortener = lazy(() => import("./pages/admin/AdminLinkShortener"));
 const AdminResellerApi = lazy(() => import("./pages/admin/AdminResellerApi"));
+const AdminAffiliates = lazy(() => import("./pages/admin/AdminAffiliates"));
+const AffiliatePage = lazy(() => import("./pages/AffiliatePage"));
 const SharedCursorView = lazy(() => import("./pages/SharedCursorView"));
 const DownloadExtension = lazy(() => import("./pages/DownloadExtension"));
 const ClaudePage = lazy(() => import("./pages/ClaudePage"));
@@ -84,6 +87,7 @@ const AppContent = () => {
       <ScrollToTop />
       <TopProgressBar />
       {!isAdminRoute && <SiteVisitorTracker />}
+      {!isAdminRoute && <AffiliateRefCapture />}
       {!isAdminRoute && <Navbar onCartOpen={() => setCartOpen(true)} />}
       {!isAdminRoute && <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
 
@@ -97,6 +101,8 @@ const AppContent = () => {
             <Route path="/order-success" element={<PageTransition><OrderSuccessPage /></PageTransition>} />
             <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
             <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+            <Route path="/affiliate" element={<PageTransition><AffiliatePage /></PageTransition>} />
+            <Route path="/affiliates" element={<PageTransition><AffiliatePage /></PageTransition>} />
             <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
             <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
             <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
@@ -132,6 +138,7 @@ const AppContent = () => {
               <Route path="extension-upload" element={<AdminExtensionUpload />} />
               <Route path="link-shortener" element={<AdminLinkShortener />} />
               <Route path="reseller-api" element={<AdminResellerApi />} />
+              <Route path="affiliates" element={<AdminAffiliates />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 

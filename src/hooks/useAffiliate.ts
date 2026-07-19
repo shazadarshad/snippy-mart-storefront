@@ -1,0 +1,208 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
+export type AffiliateRow = {
+  id: string;
+  code: string;
+  name: string;
+  whatsapp: string;
+  email: string | null;
+  status: 'pending' | 'active' | 'rejected' | 'disabled';
+  commission_percent: number;
+  notes: string | null;
+  payout_details: string | null;
+  created_at: string;
+  approved_at: string | null;
+};
+
+export type AffiliateCommission = {
+  id: string;
+  affiliate_id: string;
+  order_id: string;
+  order_number: string | null;
+  order_total: number;
+  commission_percent: number;
+  commission_amount: number;
+  status: string;
+  created_at: string;
+};
+
+export type AffiliatePayout = {
+  id: string;
+  affiliate_id: string;
+  amount: number;
+  method: string | null;
+  note: string | null;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+};
+
+export function useApplyAffiliate() {
+  return useMutation({
+    mutationFn: async (payload: {
+      name: string;
+      whatsapp: string;
+      email?: string;
+      notes?: string;
+      code?: string;
+    }) => {
+      const { data, error } = await (supabase as any).rpc('apply_affiliate', {
+        p_name: payload.name,
+        p_whatsapp: payload.whatsapp,
+        p_email: payload.email || null,
+        p_notes: payload.notes || null,
+        p_code: payload.code || null,
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Application failed');
+      return data as { ok: boolean; code: string; status: string; message: string };
+    },
+  });
+}
+
+export function useAffiliateDashboard(code: string, whatsapp: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['affiliate-dashboard', code, whatsapp],
+    enabled: enabled && !!code && !!whatsapp,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc('get_affiliate_dashboard', {
+        p_code: code,
+        p_whatsapp: whatsapp,
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Could not load dashboard');
+      return data as {
+        ok: boolean;
+        affiliate: AffiliateRow;
+        totals: { pending: number; approved: number; paid: number; available: number };
+        commissions: AffiliateCommission[];
+        payouts: AffiliatePayout[];
+        link: string;
+      };
+    },
+  });
+}
+
+export function useRequestAffiliatePayout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      code: string;
+      whatsapp: string;
+      amount: number;
+      method?: string;
+      note?: string;
+    }) => {
+      const { data, error } = await (supabase as any).rpc('request_affiliate_payout', {
+        p_code: payload.code,
+        p_whatsapp: payload.whatsapp,
+        p_amount: payload.amount,
+        p_method: payload.method || null,
+        p_note: payload.note || null,
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Payout request failed');
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['affiliate-dashboard'] });
+    },
+  });
+}
+
+/** Admin list */
+export function useAdminAffiliates() {
+  return useQuery({
+    queryKey: ['admin-affiliates'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('affiliates')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as AffiliateRow[];
+    },
+  });
+}
+
+export function useAdminAffiliateCommissions() {
+  return useQuery({
+    queryKey: ['admin-affiliate-commissions'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('affiliate_commissions')
+        .select('*, affiliates(code, name)')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+}
+
+export function useAdminAffiliatePayouts() {
+  return useQuery({
+    queryKey: ['admin-affiliate-payouts'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('affiliate_payouts')
+        .select('*, affiliates(code, name, whatsapp)')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+}
+
+export function useUpdateAffiliate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      id: string;
+      status?: string;
+      commission_percent?: number;
+      notes?: string;
+      payout_details?: string;
+    }) => {
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (payload.status != null) {
+        updates.status = payload.status;
+        if (payload.status === 'active') updates.approved_at = new Date().toISOString();
+      }
+      if (payload.commission_percent != null) updates.commission_percent = payload.commission_percent;
+      if (payload.notes != null) updates.notes = payload.notes;
+      if (payload.payout_details != null) updates.payout_details = payload.payout_details;
+
+      const { error } = await (supabase as any)
+        .from('affiliates')
+        .update(updates)
+        .eq('id', payload.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-affiliates'] });
+    },
+  });
+}
+
+export function useMarkPayoutPaid() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payoutId: string) => {
+      const { data, error } = await (supabase as any).rpc('admin_mark_affiliate_payout_paid', {
+        p_payout_id: payoutId,
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Failed');
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-affiliate-payouts'] });
+      qc.invalidateQueries({ queryKey: ['admin-affiliate-commissions'] });
+    },
+  });
+}
