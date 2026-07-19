@@ -28,7 +28,7 @@ export interface Order {
   discount_amount?: number;
   status: OrderStatus;
   notes: string | null;
-  payment_method: 'bank_transfer' | 'binance_usdt' | 'crypto_onchain' | 'card' | null;
+  payment_method: 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card' | null;
   payment_proof_url: string | null;
   binance_id: string | null;
   customer_country: string | null;
@@ -138,7 +138,7 @@ export const useCreateOrder = () => {
       total_amount: number;
       status?: OrderStatus;
       notes?: string;
-      payment_method?: 'bank_transfer' | 'binance_usdt' | 'card';
+      payment_method?: 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card';
       payment_proof_url?: string;
       binance_id?: string;
       customer_country?: string;

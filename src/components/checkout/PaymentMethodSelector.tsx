@@ -14,6 +14,7 @@ import {
   Wallet,
   ExternalLink,
   Loader2,
+  Smartphone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,10 @@ import {
 } from '@/lib/cryptoPayments';
 import { quoteCrypto, quoteUsdt, useCryptoRates } from '@/hooks/useCryptoRates';
 
-export type PaymentMethod = 'bank_transfer' | 'binance_usdt' | 'crypto_onchain' | 'card';
+export type PaymentMethod = 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card';
+
+/** Default UPI VPA (overridable via site_settings.upi_id) */
+export const DEFAULT_UPI_ID = '7411760671-3@ybl';
 
 export type CryptoSelection =
   | { kind: 'binance' }
@@ -147,11 +151,16 @@ const PaymentMethodSelector = ({
   const bankBranch = settings?.bank_branch || 'Horana';
   const bankAccountName = settings?.bank_account_name || 'M A MUSAMMIL';
   const bankAccountNumber = settings?.bank_account_number || '105752093919';
+  const upiId =
+    (settings as any)?.upi_id?.trim() ||
+    (settings as any)?.upi_vpa?.trim() ||
+    DEFAULT_UPI_ID;
   const storeBinanceId = settings?.binance_id || '1190172947';
   const storeBinanceName = settings?.binance_name || 'Snippy Mart';
   const storeBinanceCoin = settings?.binance_coin || 'USDT';
 
   const isBank = selectedMethod === 'bank_transfer';
+  const isUpi = selectedMethod === 'upi';
   const isCrypto =
     selectedMethod === 'binance_usdt' || selectedMethod === 'crypto_onchain';
 
@@ -236,7 +245,7 @@ const PaymentMethodSelector = ({
         Payment Method <span className="text-destructive">*</span>
       </Label>
       <p className="text-xs text-muted-foreground -mt-2">
-        Bank transfer or crypto (Binance Pay / on-chain wallets). Card is temporarily disabled.
+        Bank (LK), UPI (India), or crypto. Upload payment proof for bank / UPI / crypto.
       </p>
 
       {/* Bank Transfer */}
@@ -360,6 +369,116 @@ const PaymentMethodSelector = ({
             </div>
 
             <ProofUpload />
+          </div>
+        </div>
+      </div>
+
+      {/* UPI (India) */}
+      <div
+        className={cn(
+          'border rounded-xl overflow-hidden transition-all duration-300 ease-out',
+          isUpi
+            ? 'border-orange-500 bg-orange-500/5 shadow-md shadow-orange-500/10'
+            : 'border-border hover:border-orange-500/50',
+        )}
+      >
+        <button
+          type="button"
+          className="w-full min-h-[4.25rem] p-3.5 sm:p-4 flex items-center justify-between gap-2 text-left touch-manipulation"
+          onClick={() => {
+            onMethodChange('upi');
+            onCryptoSelectionChange(null);
+          }}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className={cn(
+                'w-11 h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors',
+                isUpi ? 'bg-orange-500 text-white' : 'bg-secondary text-muted-foreground',
+              )}
+            >
+              <Smartphone className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <p className="font-semibold text-foreground text-sm sm:text-base">UPI (India)</p>
+                <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                  Available
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-foreground/70 mt-0.5">
+                Pay via GPay / PhonePe / any UPI + screenshot
+              </p>
+            </div>
+          </div>
+          {isUpi && (
+            <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
+              <Check className="w-3 h-3 text-white" />
+            </div>
+          )}
+        </button>
+
+        <div
+          className={cn(
+            'overflow-hidden transition-all duration-300',
+            isUpi ? 'max-h-[900px] opacity-100' : 'max-h-0 opacity-0',
+          )}
+        >
+          <div className="p-4 pt-0 space-y-4">
+            <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside bg-secondary/40 rounded-lg p-3 border border-border/60">
+              <li>Open any UPI app (GPay, PhonePe, Paytm, etc.)</li>
+              <li>
+                Pay the order total to the UPI ID below
+              </li>
+              <li>
+                Put your <strong className="text-foreground">Order ID</strong> in the note / remarks
+              </li>
+              <li>Upload the payment success screenshot</li>
+              <li>Place order — we verify and deliver</li>
+            </ol>
+
+            <div className="p-4 rounded-lg bg-secondary/50 border border-border space-y-3">
+              <p className="text-sm font-medium text-foreground">UPI details</p>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-xs text-muted-foreground block">UPI ID (VPA)</span>
+                  <span className="font-mono font-bold text-foreground text-sm sm:text-base break-all">
+                    {upiId}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 h-10 font-bold touch-manipulation"
+                  onClick={() => copyToClipboard(upiId, 'UPI ID')}
+                >
+                  <Copy className="w-3.5 h-3.5 mr-1.5" />
+                  Copy
+                </Button>
+              </div>
+              <div className="pt-2 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Order ID (payment note)</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => copyToClipboard(orderId, 'Order ID')}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+                <p className="text-sm font-mono font-bold text-primary break-all">{orderId}</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Amount shown on your cart is in your selected currency (LKR / USD / INR). Pay the
+                equivalent total via UPI.
+              </p>
+            </div>
+
+            <ProofUpload accent="primary" />
           </div>
         </div>
       </div>

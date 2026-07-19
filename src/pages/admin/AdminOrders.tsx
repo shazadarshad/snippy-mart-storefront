@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy, Zap, Mail, Wallet, BadgeCheck, XCircle, AlertTriangle } from 'lucide-react';
+import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy, Zap, Mail, Wallet, BadgeCheck, XCircle, AlertTriangle, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -735,6 +735,7 @@ const AdminOrders = () => {
                       ) : (
                         <div className="flex items-center gap-1 mt-1">
                           {order.payment_method === 'bank_transfer' && <Building2 className="w-3 h-3 text-primary" />}
+                          {order.payment_method === 'upi' && <Smartphone className="w-3 h-3 text-orange-500" />}
                           {order.payment_method === 'binance_usdt' && <Bitcoin className="w-3 h-3 text-[#F0B90B]" />}
                           {order.payment_method === 'crypto_onchain' && <Wallet className="w-3 h-3 text-violet-500" />}
                           {order.payment_method === 'card' && <CreditCard className="w-3 h-3 text-purple-500" />}
@@ -747,7 +748,9 @@ const AdminOrders = () => {
                                   ? 'CRYPTO'
                                   : order.payment_method === 'bank_transfer'
                                     ? 'BANK'
-                                    : order.payment_method?.replace(/_/g, ' ') || 'UNPAID'}
+                                    : order.payment_method === 'upi'
+                                      ? 'UPI'
+                                      : order.payment_method?.replace(/_/g, ' ') || 'UNPAID'}
                           </span>
                         </div>
                       )}
@@ -1213,6 +1216,10 @@ const AdminOrders = () => {
                             ) : selectedOrder.payment_method === 'card' ? (
                               <div className="flex items-center gap-2 text-sm font-bold text-purple-500">
                                 <CreditCard className="w-4 h-4" /> Card Payment
+                              </div>
+                            ) : selectedOrder.payment_method === 'upi' ? (
+                              <div className="flex items-center gap-2 text-sm font-bold text-orange-500">
+                                <Smartphone className="w-4 h-4" /> UPI
                               </div>
                             ) : (
                               <div className="flex items-center gap-2 text-sm font-bold text-primary">

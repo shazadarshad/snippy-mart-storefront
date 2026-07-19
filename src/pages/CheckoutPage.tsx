@@ -211,13 +211,14 @@ const CheckoutPage = () => {
 
     if (
       paymentMethod !== 'bank_transfer' &&
+      paymentMethod !== 'upi' &&
       paymentMethod !== 'binance_usdt' &&
       paymentMethod !== 'crypto_onchain'
     ) {
       setPaymentMethod('bank_transfer');
       toast({
         title: 'Payment method unavailable',
-        description: 'Please use bank transfer or crypto payment.',
+        description: 'Please use bank transfer, UPI, or crypto.',
         variant: 'destructive',
       });
       return;
@@ -241,7 +242,9 @@ const CheckoutPage = () => {
         description:
           paymentMethod === 'bank_transfer'
             ? 'Please upload your bank transfer receipt screenshot.'
-            : 'Please upload your crypto payment screenshot / TX confirmation.',
+            : paymentMethod === 'upi'
+              ? 'Please upload your UPI payment success screenshot.'
+              : 'Please upload your crypto payment screenshot / TX confirmation.',
         variant: 'destructive',
       });
       return;
@@ -605,8 +608,16 @@ const CheckoutPage = () => {
                 <PaymentMethodSelector
                   selectedMethod={paymentMethod}
                   onMethodChange={(m) => {
-                    if (m === 'bank_transfer' || m === 'binance_usdt' || m === 'crypto_onchain') {
+                    if (
+                      m === 'bank_transfer' ||
+                      m === 'upi' ||
+                      m === 'binance_usdt' ||
+                      m === 'crypto_onchain'
+                    ) {
                       setPaymentMethod(m);
+                      if (m === 'bank_transfer' || m === 'upi') {
+                        setCryptoSelection(null);
+                      }
                     } else if (m === null) {
                       setPaymentMethod('bank_transfer');
                       setCryptoSelection(null);

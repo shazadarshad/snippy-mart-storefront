@@ -6,7 +6,7 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type PaymentMethod = "bank_transfer" | "binance_usdt" | "crypto_onchain" | "card";
+type PaymentMethod = "bank_transfer" | "upi" | "binance_usdt" | "crypto_onchain" | "card";
 
 type CreateOrderBody = {
   order_number: string;

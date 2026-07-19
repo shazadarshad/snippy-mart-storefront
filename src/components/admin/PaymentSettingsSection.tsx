@@ -40,6 +40,8 @@ const PaymentSettingsSection = () => {
     binance_coin: 'USDT',
   });
 
+  const [upiId, setUpiId] = useState('7411760671-3@ybl');
+
   const [markupPercent, setMarkupPercent] = useState(String(DEFAULT_CRYPTO_MARKUP_PERCENT));
   const [lkrPerUsd, setLkrPerUsd] = useState(String(DEFAULT_CRYPTO_LKR_PER_USD));
   const [wallets, setWallets] = useState<CryptoWallet[]>(
@@ -59,6 +61,11 @@ const PaymentSettingsSection = () => {
       binance_name: siteSettings.binance_name || 'Snippy Mart',
       binance_coin: siteSettings.binance_coin || 'USDT',
     });
+    setUpiId(
+      (siteSettings as any).upi_id ||
+        (siteSettings as any).upi_vpa ||
+        '7411760671-3@ybl',
+    );
     const crypto = parseCryptoSettings(
       siteSettings.crypto_wallets,
       siteSettings.crypto_markup_percent,
@@ -93,6 +100,15 @@ const PaymentSettingsSection = () => {
       toast({ title: 'Binance settings saved', description: 'Binance Pay details updated.' });
     } catch {
       toast({ title: 'Error', description: 'Failed to save Binance settings.', variant: 'destructive' });
+    }
+  };
+
+  const handleSaveUpi = async () => {
+    try {
+      await updateSetting.mutateAsync({ key: 'upi_id', value: upiId.trim() });
+      toast({ title: 'UPI saved', description: 'Checkout UPI ID updated.' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to save UPI ID.', variant: 'destructive' });
     }
   };
 
@@ -225,6 +241,45 @@ const PaymentSettingsSection = () => {
           <Button onClick={handleSaveBankSettings} disabled={updateSetting.isPending}>
             <Save className="w-4 h-4 mr-2" />
             Save Bank Settings
+          </Button>
+        </div>
+      </div>
+
+      {/* UPI India */}
+      <div className="p-6 rounded-2xl bg-card border border-border">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+            <span className="text-lg font-black text-orange-500">₹</span>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">UPI (India)</h2>
+            <p className="text-sm text-muted-foreground">
+              VPA shown on checkout for GPay / PhonePe / UPI apps
+            </p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="upi_id">UPI ID (VPA)</Label>
+            <Input
+              id="upi_id"
+              value={upiId}
+              onChange={(e) => setUpiId(e.target.value)}
+              placeholder="name@ybl"
+              className="mt-1.5 bg-secondary/50 border-border font-mono"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Default: 7411760671-3@ybl — customers pay this and upload a screenshot.
+            </p>
+          </div>
+          <Button
+            onClick={handleSaveUpi}
+            disabled={updateSetting.isPending}
+            variant="outline"
+            className="border-orange-500/30 text-orange-600 hover:bg-orange-500/10"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Save UPI ID
           </Button>
         </div>
       </div>
