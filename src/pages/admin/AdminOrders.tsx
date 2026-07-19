@@ -32,6 +32,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrders, useUpdateOrderStatus, useDeleteOrder, useDeleteOrderProof, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { cn, formatDateTime } from '@/lib/utils';
 import { useInventoryAccounts, useManualAssignOrder } from '@/hooks/useInventory';
 import {
@@ -39,6 +40,11 @@ import {
   useOrderResellerDeliveryLog,
   summarizeDeliverResult,
 } from '@/hooks/useResellerApi';
+import {
+  AdminWhatsAppActions,
+  openOrderWhatsApp,
+} from '@/components/admin/AdminWhatsAppActions';
+import { formatWhatsAppDisplay } from '@/lib/phoneWhatsApp';
 import {
   applyClaudeWorkflowToNotes,
   claudeStageLabel,
@@ -343,9 +349,27 @@ const AdminOrders = () => {
             variant: 'destructive',
           });
         } else if ((delivery.delivered ?? 0) > 0) {
+          const waOrder = statusUpdate.order;
           toast({
             title: 'Status updated — Auto delivery OK',
             description: `Delivered: ${okLines.join(', ') || delivery.delivered}. → ${adminStatusLabel(finalStatus)}.${counts}${emailNote}`,
+            action: (
+              <ToastAction
+                altText="Message customer on WhatsApp"
+                onClick={() => {
+                  const ok = openOrderWhatsApp(waOrder, [], 'auto_ready');
+                  if (!ok) {
+                    toast({
+                      title: 'Invalid WhatsApp number',
+                      description: 'Open the order and check the phone number.',
+                      variant: 'destructive',
+                    });
+                  }
+                }}
+              >
+                Message customer
+              </ToastAction>
+            ),
           });
         } else {
           toast({
@@ -733,11 +757,7 @@ const AdminOrders = () => {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedOrder(order)}>
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:text-success" asChild>
-                          <a href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                            <MessageCircle className="w-4 h-4" />
-                          </a>
-                        </Button>
+                        <AdminWhatsAppActions order={order} compact />
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setOrderToDelete(order)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -835,20 +855,9 @@ const AdminOrders = () => {
                         <Eye className="w-4 h-4 mr-1.5" />
                         Open
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-11 w-11 p-0 text-success border-success/25 bg-success/5 touch-manipulation"
-                        asChild
-                      >
-                        <a
-                          href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                        </a>
-                      </Button>
+                      <div className="h-11 w-11 flex items-center justify-center rounded-md border border-success/25 bg-success/5">
+                        <AdminWhatsAppActions order={order} compact />
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
@@ -1090,10 +1099,17 @@ const AdminOrders = () => {
                         </div>
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-bold">Contact Channel</p>
-                          <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                            {selectedOrder.customer_whatsapp}
-                            <MessageCircle className="w-3.5 h-3.5 text-success" />
+                          <p className="text-sm font-bold text-foreground flex items-center gap-2 break-all">
+                            {formatWhatsAppDisplay(selectedOrder.customer_whatsapp)}
+                            <MessageCircle className="w-3.5 h-3.5 text-success shrink-0" />
                           </p>
+                          {selectedOrder.customer_whatsapp &&
+                            formatWhatsAppDisplay(selectedOrder.customer_whatsapp) !==
+                              selectedOrder.customer_whatsapp && (
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                Entered: {selectedOrder.customer_whatsapp}
+                              </p>
+                            )}
                         </div>
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-bold">Origin Country</p>
@@ -1458,6 +1474,21 @@ const AdminOrders = () => {
                                       : 'No items delivered',
                               description: `${summary} (${delivered} ok / ${failed} fail / ${skipped} skip)`,
                               variant: failed > 0 ? 'destructive' : 'default',
+                              action:
+                                delivered > 0 ? (
+                                  <ToastAction
+                                    altText="Message customer on WhatsApp"
+                                    onClick={() => {
+                                      openOrderWhatsApp(
+                                        selectedOrder,
+                                        orderDeliveryLog as any,
+                                        'auto_ready',
+                                      );
+                                    }}
+                                  >
+                                    Message customer
+                                  </ToastAction>
+                                ) : undefined,
                             });
                             refetch();
                             refetchDeliveryLog();
@@ -1670,16 +1701,20 @@ const AdminOrders = () => {
                   </div>
                 </div>
 
-                {/* Full Width Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
-                  <Button variant="whatsapp" size="xl" className="flex-1 font-black uppercase text-xs tracking-widest h-14" asChild>
-                    <a href={`https://wa.me/${selectedOrder.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="w-5 h-5 mr-3" />
-                      Dispatch Response
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="xl" className="sm:w-14 h-14 flex items-center justify-center p-0 border-2" onClick={() => setSelectedOrder(null)}>
-                    <X className="w-6 h-6" />
+                {/* WhatsApp + close */}
+                <div className="space-y-3 pt-4 border-t border-border">
+                  <AdminWhatsAppActions
+                    order={selectedOrder}
+                    deliveries={orderDeliveryLog as any}
+                  />
+                  <Button
+                    variant="outline"
+                    size="xl"
+                    className="w-full min-h-12 h-12 flex items-center justify-center border-2 touch-manipulation"
+                    onClick={() => setSelectedOrder(null)}
+                  >
+                    <X className="w-5 h-5 mr-2" />
+                    Close
                   </Button>
                 </div>
               </div>

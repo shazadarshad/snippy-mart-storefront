@@ -19,6 +19,7 @@ import { getCountry, cn } from '@/lib/utils';
 import { CouponInput } from '@/components/checkout/CouponInput';
 import { isResellerApiProduct } from '@/hooks/useResellerApi';
 import { getAffiliateRef } from '@/lib/affiliate';
+import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
 
 const CheckoutPage = () => {
   const { formatPrice, currency, currencyInfo } = useCurrency();
@@ -96,11 +97,14 @@ const CheckoutPage = () => {
     // Detect country
     const customerCountry = await getCountry();
     const securityMetadata = getSecurityMetadata();
+    // Store WhatsApp-ready digits (e.g. 0776512486 → 94776512486)
+    const wa = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
+    const customerWhatsapp = wa.ok ? wa.digits : formData.whatsapp.trim();
 
     return {
       order_number: orderId,
       customer_name: formData.name || 'Customer',
-      customer_whatsapp: formData.whatsapp,
+      customer_whatsapp: customerWhatsapp,
       total_amount: getFinalTotal(),
       discount_amount: getDiscountAmount(),
       applied_coupon_id: appliedCoupon?.id || undefined,
@@ -338,10 +342,11 @@ const CheckoutPage = () => {
       // because it handles upserting by order_number and bypassing guest RLS limitations.
       await createOrder.mutateAsync(payload);
 
-      // Store order data for success page
+      // Store order data for success page (normalized WhatsApp for consistency)
+      const waStored = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
       const orderData = {
         orderId,
-        whatsapp: formData.whatsapp,
+        whatsapp: waStored.ok ? waStored.digits : formData.whatsapp,
         name: formData.name,
         notes: formData.notes,
         currency: currency,
@@ -438,7 +443,7 @@ const CheckoutPage = () => {
                         id="whatsapp"
                         name="whatsapp"
                         type="tel"
-                        placeholder="+94 77 123 4567"
+                        placeholder="077 123 4567 or +94 77 123 4567"
                         value={formData.whatsapp}
                         onChange={handleInputChange}
                         className="pl-10 h-12 bg-background border-border text-foreground text-base"
@@ -447,9 +452,29 @@ const CheckoutPage = () => {
                         inputMode="tel"
                       />
                     </div>
-                    <p className="text-xs text-foreground/70 mt-1">
-                      We'll send your order confirmation to this number
-                    </p>
+                    {(() => {
+                      const wa = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
+                      if (!formData.whatsapp.trim()) {
+                        return (
+                          <p className="text-xs text-muted-foreground mt-1.5 leading-snug">
+                            Sri Lanka: local 07… becomes +94… for WhatsApp. Outside LK, include country code (e.g. +1…).
+                          </p>
+                        );
+                      }
+                      if (wa.ok) {
+                        return (
+                          <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1.5 font-medium">
+                            WhatsApp: {wa.e164Display}
+                            {wa.fixed ? ' (auto-added country code)' : ''}
+                          </p>
+                        );
+                      }
+                      return (
+                        <p className="text-xs text-amber-700 dark:text-amber-400 mt-1.5">
+                          Check number — add country code if needed (LK example: 0776512486 → +94776512486)
+                        </p>
+                      );
+                    })()}
                   </div>
 
                   <div>
