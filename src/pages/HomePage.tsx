@@ -5,7 +5,7 @@ import {
   Zap,
   Shield,
   MessageCircle,
-  Search,
+  Users,
   BadgeCheck,
   Sparkles,
   ChevronRight,
@@ -79,10 +79,14 @@ const HomePage = () => {
                 className="h-14 rounded-2xl px-8 text-base border-border/70 bg-card/80 hover:bg-card"
                 asChild
               >
-                <Link to="/track-order">
-                  <Search className="w-5 h-5 mr-2" />
-                  Track order
-                </Link>
+                <a
+                  href="https://chat.whatsapp.com/EB9hDAkQBmcHEjlTMLYXBh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Users className="w-5 h-5 mr-2" />
+                  Join community
+                </a>
               </Button>
             </div>
 
