@@ -15,6 +15,9 @@ import {
   Zap,
   Bookmark,
   RefreshCw,
+  Users,
+  Star,
+  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,9 +39,12 @@ import {
 } from '@/lib/orderStatus';
 import { isClaudePreOrder, parseClaudePreOrder, formatLkrAdmin } from '@/lib/claudePreorder';
 
+const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/EB9hDAkQBmcHEjlTMLYXBh';
+const TRUSTPILOT_URL = 'https://www.trustpilot.com/review/snippymart.com';
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground mb-2 px-0.5">
+    <p className="text-[10px] xs:text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 sm:mb-2 px-0.5">
       {children}
     </p>
   );
@@ -147,47 +153,50 @@ const TrackOrderPage = () => {
   };
 
   return (
-    <div className="min-h-dvh page-mesh pt-20 sm:pt-24 pb-safe pb-16 sm:pb-20">
+    <div className="min-h-dvh page-mesh overflow-x-hidden pt-[max(4.5rem,env(safe-area-inset-top,0px)+3.5rem)] sm:pt-24 pb-[max(4rem,env(safe-area-inset-bottom,0px)+2.5rem)] sm:pb-20">
       <SEO
         title="Track Order"
         description="Track your Snippy Mart order and collect Auto product codes, links, or logins."
       />
-      <div className="container mx-auto px-3 sm:px-4">
-        <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
+      <div className="mx-auto w-full max-w-3xl px-3 xs:px-4 sm:px-5">
+        <div className="space-y-4 sm:space-y-6">
           {/* ── Header ── */}
-          <header className="text-center">
-            <h1 className="text-2xl sm:text-4xl font-display font-black text-foreground mb-2">
+          <header className="text-center px-0.5">
+            <h1 className="text-[1.4rem] leading-tight xs:text-2xl sm:text-4xl font-display font-black text-foreground mb-1.5 sm:mb-2">
               Track your <span className="gradient-text">order</span>
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+            <p className="text-[13px] xs:text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
               Enter the Order ID from your success page to see status and collect your product.
             </p>
           </header>
 
           {/* ── Search (always first) ── */}
-          <section>
+          <section className="min-w-0">
             <SectionLabel>Enter Order ID</SectionLabel>
             <form
               onSubmit={handleSearch}
               className="flex flex-col sm:flex-row gap-2 sm:group"
             >
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3.5 xs:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
                 <Input
                   type="text"
+                  inputMode="text"
+                  enterKeyHint="search"
                   placeholder="e.g. SNIP-2026-829680"
                   value={orderId}
                   onChange={(e) => setOrderId(e.target.value)}
-                  className="pl-11 h-14 text-base bg-card border-border rounded-2xl shadow-md focus:ring-primary/20 font-mono w-full"
+                  className="pl-11 h-12 xs:h-14 text-base bg-card border-border rounded-2xl shadow-md focus:ring-primary/20 font-mono w-full"
                   autoCapitalize="characters"
                   autoCorrect="off"
                   spellCheck={false}
+                  autoComplete="off"
                 />
               </div>
               <Button
                 type="submit"
                 variant="hero"
-                className="h-14 px-8 rounded-2xl text-sm shrink-0 w-full sm:w-auto font-bold"
+                className="min-h-12 h-12 xs:min-h-14 xs:h-14 px-6 xs:px-8 rounded-2xl text-sm shrink-0 w-full sm:w-auto font-bold touch-manipulation active:scale-[0.99]"
                 disabled={isLoading}
               >
                 {isLoading ? 'Looking…' : 'Track'}
@@ -262,36 +271,37 @@ const TrackOrderPage = () => {
           {order && statusInfo && (
             <div className="space-y-5 sm:space-y-6 animate-fade-in">
               {/* ── A. Order ID reminder ── */}
-              <section>
+              <section className="min-w-0">
                 <SectionLabel>Your Order ID</SectionLabel>
-                <div className="bg-card border-2 border-primary/25 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-mono text-lg sm:text-xl font-black text-foreground break-all">
+                <div className="bg-card border-2 border-primary/25 p-3.5 xs:p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 overflow-hidden">
+                  <div className="min-w-0 overflow-hidden">
+                    <p className="font-mono text-base xs:text-lg sm:text-xl font-black text-foreground break-all leading-snug">
                       {order.order_number}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-[11px] xs:text-xs text-muted-foreground mt-1 leading-snug">
                       Save this to open Track Order again later.
                     </p>
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="grid grid-cols-[1fr_auto] sm:flex gap-2 shrink-0 w-full sm:w-auto">
                     <Button
                       type="button"
                       variant="default"
-                      className="rounded-xl h-11 font-bold flex-1 sm:flex-none"
+                      className="rounded-xl min-h-11 h-11 font-bold touch-manipulation"
                       onClick={() => copyText(order.order_number, 'Order ID')}
                     >
-                      <Copy className="w-4 h-4 mr-2" />
+                      <Copy className="w-4 h-4 mr-2 shrink-0" />
                       Copy
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-xl h-11 font-semibold"
+                      className="rounded-xl min-h-11 h-11 font-semibold px-3 touch-manipulation"
                       onClick={refreshAll}
                       disabled={isFetching}
+                      aria-label="Refresh order"
                     >
                       <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
-                      <span className="sr-only sm:not-sr-only sm:ml-2">
+                      <span className="ml-2 sm:inline">
                         {isFetching ? '…' : 'Refresh'}
                       </span>
                     </Button>
@@ -533,10 +543,10 @@ const TrackOrderPage = () => {
                     </div>
                   </div>
 
-                  {/* Simple pipeline only — no duplicate legend grid */}
+                  {/* Simple pipeline */}
                   {statusInfo.step > 0 && !statusInfo.isNegative && (
                     <div className="relative pt-4 mt-2 border-t border-border/60">
-                      <div className="absolute top-[2.15rem] left-[12%] right-[12%] h-1 bg-secondary rounded-full overflow-hidden">
+                      <div className="absolute top-[1.95rem] xs:top-[2.15rem] left-[10%] right-[10%] h-1 bg-secondary rounded-full overflow-hidden">
                         <div
                           className="h-full bg-primary transition-all duration-700 ease-out rounded-full"
                           style={{
@@ -547,7 +557,7 @@ const TrackOrderPage = () => {
                           }}
                         />
                       </div>
-                      <div className="relative flex justify-between">
+                      <div className="relative flex justify-between gap-0.5">
                         {TRACK_PIPELINE.map((p) => {
                           const done = isTrackStepDone(order.status, p.step);
                           const current = isTrackStepCurrent(order.status, p.step);
@@ -555,11 +565,11 @@ const TrackOrderPage = () => {
                           return (
                             <div
                               key={p.id}
-                              className="flex flex-col items-center gap-2 relative z-10 w-[22%]"
+                              className="flex flex-col items-center gap-1.5 xs:gap-2 relative z-10 flex-1 min-w-0 px-0.5"
                             >
                               <div
                                 className={cn(
-                                  'w-9 h-9 rounded-full border-[3px] flex items-center justify-center bg-card',
+                                  'w-8 h-8 xs:w-9 xs:h-9 rounded-full border-[3px] flex items-center justify-center bg-card',
                                   current &&
                                     'border-primary text-primary scale-105 shadow-md shadow-primary/15',
                                   done && !current && 'border-primary text-primary',
@@ -567,14 +577,14 @@ const TrackOrderPage = () => {
                                 )}
                               >
                                 {done && !current ? (
-                                  <Check className="w-4 h-4" />
+                                  <Check className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                                 ) : (
-                                  <Icon className="w-3.5 h-3.5" />
+                                  <Icon className="w-3 h-3 xs:w-3.5 xs:h-3.5" />
                                 )}
                               </div>
                               <p
                                 className={cn(
-                                  'text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-center leading-tight',
+                                  'text-[8px] xs:text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-center leading-tight max-w-full',
                                   current || done
                                     ? 'text-foreground'
                                     : 'text-muted-foreground opacity-60',
@@ -586,17 +596,17 @@ const TrackOrderPage = () => {
                           );
                         })}
                       </div>
-                      <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
-                        <li>
+                      <ul className="mt-3.5 xs:mt-4 grid grid-cols-1 xs:grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
+                        <li className="leading-snug">
                           <strong className="text-foreground">1 Pending</strong> — verifying payment
                         </li>
-                        <li>
+                        <li className="leading-snug">
                           <strong className="text-foreground">2 Confirmed</strong> — payment OK
                         </li>
-                        <li>
+                        <li className="leading-snug">
                           <strong className="text-foreground">3 Processing</strong> — fulfilling
                         </li>
-                        <li>
+                        <li className="leading-snug">
                           <strong className="text-foreground">4 Completed</strong> — done
                         </li>
                       </ul>
@@ -651,59 +661,59 @@ const TrackOrderPage = () => {
               )}
 
               {/* ── E. Items + details ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-                <section className="lg:col-span-3">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-5">
+                <section className="lg:col-span-3 min-w-0">
                   <SectionLabel>Items</SectionLabel>
-                  <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-sm">
-                    <div className="space-y-3">
+                  <div className="bg-card border border-border p-3.5 xs:p-4 sm:p-5 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="space-y-2.5 xs:space-y-3">
                       {order.order_items?.map((item: any) => (
                         <div
                           key={item.id}
-                          className="p-3 rounded-xl bg-secondary/30 border border-border flex items-center justify-between gap-3"
+                          className="p-2.5 xs:p-3 rounded-xl bg-secondary/30 border border-border flex items-start xs:items-center justify-between gap-2 xs:gap-3"
                         >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-primary shrink-0">
+                          <div className="flex items-start xs:items-center gap-2.5 xs:gap-3 min-w-0">
+                            <div className="w-9 h-9 xs:w-10 xs:h-10 rounded-xl bg-background border border-border flex items-center justify-center text-primary shrink-0">
                               <Package className="w-4 h-4" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold text-foreground text-sm flex items-center gap-1.5 flex-wrap">
-                                {item.product_name}
+                              <p className="font-bold text-foreground text-[13px] xs:text-sm leading-snug break-words">
+                                {item.product_name}{' '}
                                 {item.products?.reseller_product_id && (
-                                  <span className="inline-flex px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-[9px] font-black uppercase">
+                                  <span className="inline-flex align-middle px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-[9px] font-black uppercase">
                                     Auto
                                   </span>
                                 )}
                               </p>
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
                                 {item.plan_name || 'Standard'} · Qty ×{item.quantity}
                               </p>
                             </div>
                           </div>
-                          <p className="text-sm font-black shrink-0">
+                          <p className="text-[13px] xs:text-sm font-black shrink-0 tabular-nums pt-0.5">
                             {formatMoney(item.total_price)}
                           </p>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between">
+                    <div className="mt-3.5 xs:mt-4 p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between gap-2">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                         Total
                       </span>
-                      <span className="text-xl font-display font-black gradient-text">
+                      <span className="text-lg xs:text-xl font-display font-black gradient-text tabular-nums break-all text-right">
                         {formatMoney(order.total_amount)}
                       </span>
                     </div>
                   </div>
                 </section>
 
-                <section className="lg:col-span-2 space-y-3">
+                <section className="lg:col-span-2 space-y-3 min-w-0">
                   <SectionLabel>Details</SectionLabel>
-                  <div className="bg-card border border-border p-4 rounded-2xl shadow-sm space-y-3">
+                  <div className="bg-card border border-border p-3.5 xs:p-4 rounded-2xl shadow-sm space-y-3">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">
                         Customer
                       </p>
-                      <p className="text-sm font-bold flex items-center gap-2">
+                      <p className="text-sm font-bold flex items-center gap-2 break-words">
                         <User className="w-4 h-4 text-primary shrink-0" />
                         {order.customer_name}
                       </p>
@@ -712,13 +722,15 @@ const TrackOrderPage = () => {
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">
                         Payment
                       </p>
-                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-secondary border border-border text-[10px] font-black uppercase">
-                        <CreditCard className="w-3 h-3 text-primary" />
-                        {order.payment_method?.replace(/_/g, ' ') || 'Not specified'}
+                      <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-secondary border border-border text-[10px] font-black uppercase max-w-full">
+                        <CreditCard className="w-3 h-3 text-primary shrink-0" />
+                        <span className="truncate">
+                          {order.payment_method?.replace(/_/g, ' ') || 'Not specified'}
+                        </span>
                       </div>
                       {order.payment_proof_url && (
                         <p className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold mt-1.5">
-                          <FileText className="w-3.5 h-3.5" />
+                          <FileText className="w-3.5 h-3.5 shrink-0" />
                           Receipt on file
                         </p>
                       )}
@@ -727,14 +739,14 @@ const TrackOrderPage = () => {
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">
                         Placed
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground break-words">
                         {formatDateTime(order.created_at)}
                       </p>
                     </div>
                     <div className="pt-2 border-t border-border">
                       <Button
                         variant="whatsapp"
-                        className="w-full h-11 rounded-xl font-bold"
+                        className="w-full min-h-11 h-11 rounded-xl font-bold touch-manipulation"
                         asChild
                       >
                         <a
@@ -742,7 +754,7 @@ const TrackOrderPage = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <MessageCircle className="w-4 h-4 mr-2" />
+                          <MessageCircle className="w-4 h-4 mr-2 shrink-0" />
                           WhatsApp support
                         </a>
                       </Button>
@@ -751,11 +763,11 @@ const TrackOrderPage = () => {
 
                   <Button
                     variant="ghost"
-                    className="w-full h-11 rounded-xl text-muted-foreground border border-border"
+                    className="w-full min-h-11 h-11 rounded-xl text-muted-foreground border border-border touch-manipulation"
                     asChild
                   >
                     <Link to="/">
-                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      <ArrowLeft className="w-4 h-4 mr-2 shrink-0" />
                       Back to home
                     </Link>
                   </Button>
@@ -763,6 +775,63 @@ const TrackOrderPage = () => {
               </div>
             </div>
           )}
+
+          {/* Community + Trustpilot — always at bottom */}
+          <section className="space-y-2.5 xs:space-y-3 pt-1 sm:pt-2">
+            <div className="relative overflow-hidden rounded-2xl border border-[#25D366]/25 bg-gradient-to-br from-[#25D366]/10 via-card to-card p-3.5 xs:p-4 sm:p-5">
+              <div className="flex items-start gap-2.5 xs:gap-3 mb-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-md shadow-[#25D366]/30 shrink-0">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-foreground text-[13px] xs:text-sm leading-snug">
+                    Want more deals?
+                  </h3>
+                  <p className="text-[11px] xs:text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Join our WhatsApp group for flash sales, new drops, and exclusive offers.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="whatsapp"
+                size="lg"
+                className="w-full rounded-2xl font-bold min-h-11 h-11 touch-manipulation"
+                asChild
+              >
+                <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
+                  Join for more deals
+                  <ExternalLink className="w-4 h-4 ml-2 shrink-0" />
+                </a>
+              </Button>
+            </div>
+
+            <div className="rounded-2xl border border-[#00B67A]/30 bg-gradient-to-br from-[#00B67A]/10 via-card to-card p-3.5 xs:p-4 sm:p-5">
+              <div className="flex items-start gap-2.5 xs:gap-3 mb-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#00B67A] flex items-center justify-center shadow-md shadow-[#00B67A]/25 shrink-0">
+                  <Star className="w-5 h-5 text-white fill-white" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-foreground text-[13px] xs:text-sm leading-snug">
+                    Happy with Snippy Mart?
+                  </h3>
+                  <p className="text-[11px] xs:text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Leave a Trustpilot review — it takes a minute and helps a lot.
+                  </p>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                className="w-full rounded-2xl font-bold min-h-11 h-11 touch-manipulation bg-[#00B67A] hover:bg-[#00a06c] text-white text-[13px] xs:text-sm"
+                asChild
+              >
+                <a href={TRUSTPILOT_URL} target="_blank" rel="noopener noreferrer">
+                  <Star className="w-4 h-4 mr-2 fill-white shrink-0" />
+                  <span className="truncate">Leave a review on Trustpilot</span>
+                  <ExternalLink className="w-4 h-4 ml-2 opacity-90 shrink-0" />
+                </a>
+              </Button>
+            </div>
+          </section>
         </div>
       </div>
     </div>

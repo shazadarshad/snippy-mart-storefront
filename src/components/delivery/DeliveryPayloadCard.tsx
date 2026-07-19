@@ -70,9 +70,11 @@ export function DeliveryPayloadCard({
         className,
       )}
     >
-      <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between gap-2 flex-wrap">
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-foreground truncate">{parsed.title}</p>
+      <div className="px-3 xs:px-4 py-3 border-b border-border/60 flex items-start justify-between gap-2 flex-wrap">
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] xs:text-sm font-bold text-foreground break-words leading-snug">
+            {parsed.title}
+          </p>
           <p
             className={cn(
               'text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 mt-0.5',
@@ -81,12 +83,12 @@ export function DeliveryPayloadCard({
           >
             {incomplete ? (
               <>
-                <AlertTriangle className="w-3.5 h-3.5" />
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                 Incomplete — contact support
               </>
             ) : (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                 Ready to use
               </>
             )}
@@ -103,7 +105,7 @@ export function DeliveryPayloadCard({
         </span>
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="p-3 xs:p-4 space-y-2.5 xs:space-y-3">
         {parsed.fields.map((f, i) => {
           const showSecret = !!revealed[i];
           const display =
@@ -112,7 +114,7 @@ export function DeliveryPayloadCard({
           return (
             <div
               key={`${f.label}-${i}`}
-              className="rounded-xl bg-background/80 border border-border p-3"
+              className="rounded-xl bg-background/80 border border-border p-2.5 xs:p-3 min-w-0 overflow-hidden"
             >
               <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1.5">
                 {f.label}
@@ -123,21 +125,21 @@ export function DeliveryPayloadCard({
                     href={f.value}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono text-sm font-bold text-primary break-all underline-offset-2 hover:underline min-w-0"
+                    className="font-mono text-[13px] xs:text-sm font-bold text-primary break-all underline-offset-2 hover:underline min-w-0"
                   >
                     {f.value}
                   </a>
                 ) : (
-                  <p className="font-mono text-sm font-bold text-foreground break-all whitespace-pre-wrap min-w-0">
+                  <p className="font-mono text-[13px] xs:text-sm font-bold text-foreground break-all whitespace-pre-wrap min-w-0">
                     {display}
                   </p>
                 )}
-                <div className="flex flex-wrap gap-1.5 shrink-0 sm:justify-end">
+                <div className="flex flex-wrap gap-1.5 shrink-0 w-full sm:w-auto sm:justify-end">
                   {f.isSecret && (
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-9 px-3 touch-manipulation"
+                      className="min-h-10 h-10 px-3 flex-1 sm:flex-none touch-manipulation"
                       type="button"
                       onClick={() =>
                         setRevealed((prev) => ({ ...prev, [i]: !prev[i] }))
@@ -152,7 +154,12 @@ export function DeliveryPayloadCard({
                     </Button>
                   )}
                   {f.isUrl && (
-                    <Button size="sm" variant="outline" className="h-9 px-3 touch-manipulation" asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="min-h-10 h-10 px-3 flex-1 sm:flex-none touch-manipulation"
+                      asChild
+                    >
                       <a href={f.value} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="w-3.5 h-3.5 mr-1" />
                         Open
@@ -163,7 +170,7 @@ export function DeliveryPayloadCard({
                     <Button
                       size="sm"
                       variant="secondary"
-                      className="h-9 px-3 touch-manipulation"
+                      className="min-h-10 h-10 px-3 flex-1 sm:flex-none touch-manipulation"
                       type="button"
                       onClick={() => copy(f.value, f.label)}
                     >

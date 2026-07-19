@@ -14,6 +14,7 @@ import {
   Sparkles,
   Zap,
   ArrowRight,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -30,6 +31,7 @@ import { cn } from '@/lib/utils';
 import SEO from '@/components/seo/SEO';
 
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/EB9hDAkQBmcHEjlTMLYXBh';
+const TRUSTPILOT_URL = 'https://www.trustpilot.com/review/snippymart.com';
 
 interface OrderData {
   orderId: string;
@@ -122,7 +124,7 @@ function resolveWhatsAppConfirmUrl(
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground mb-2 px-0.5">
+    <p className="text-[10px] xs:text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 sm:mb-2 px-0.5">
       {children}
     </p>
   );
@@ -201,7 +203,6 @@ const OrderSuccessPage = () => {
   const items = sessionOrder?.items || [];
   const isCompleted = liveOrder?.status === 'completed';
   const isPending = !liveOrder?.status || liveOrder?.status === 'pending';
-  const isProcessing = liveOrder?.status === 'processing' || liveOrder?.status === 'shipping';
   const showAutomation = assignment && (isCompleted || liveOrder?.status === 'processing');
   const hasAutoItems =
     !!sessionOrder?.hasAutoItems ||
@@ -269,38 +270,40 @@ const OrderSuccessPage = () => {
   return (
     <div
       className={cn(
-        'min-h-dvh page-mesh pt-20 sm:pt-28 pb-safe',
-        waitingForAuto ? 'pb-28 sm:pb-20' : 'pb-16 sm:pb-20',
+        'min-h-dvh page-mesh overflow-x-hidden pt-[max(4.5rem,env(safe-area-inset-top,0px)+3.5rem)] sm:pt-28',
+        waitingForAuto
+          ? 'pb-[max(7.5rem,env(safe-area-inset-bottom,0px)+6.5rem)] sm:pb-20'
+          : 'pb-[max(4rem,env(safe-area-inset-bottom,0px)+2.5rem)] sm:pb-20',
       )}
     >
       <SEO title="Order confirmed" description="Your Snippy Mart order was placed successfully." />
-      <div className="container mx-auto px-3 sm:px-4 max-w-2xl space-y-5 sm:space-y-6">
+      <div className="mx-auto w-full max-w-2xl px-3 xs:px-4 sm:px-5 space-y-4 sm:space-y-6">
         {/* ── 1. Header ── */}
-        <header className="text-center">
-          <div className="relative inline-flex mb-3 sm:mb-4">
+        <header className="text-center px-0.5">
+          <div className="relative inline-flex mb-2.5 sm:mb-4">
             <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl scale-150" />
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/15">
-              <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-white" strokeWidth={2.5} />
+            <div className="relative w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/15">
+              <CheckCircle2 className="w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 text-white" strokeWidth={2.5} />
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-foreground mb-1.5">
+          <h1 className="text-[1.35rem] leading-tight xs:text-2xl sm:text-3xl font-display font-bold tracking-tight text-foreground mb-1.5">
             {headerTitle}
           </h1>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed px-1">
+          <p className="text-[13px] xs:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
             {headerSub}
           </p>
         </header>
 
         {/* ── 2. Order ID (always first action) ── */}
-        <section>
+        <section className="min-w-0">
           <SectionLabel>Your Order ID</SectionLabel>
-          <div className="surface-card p-4 sm:p-5 border-2 border-primary/25 shadow-md">
+          <div className="surface-card p-3.5 xs:p-4 sm:p-5 border-2 border-primary/25 shadow-md overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-xl sm:text-2xl font-black text-foreground break-all leading-tight">
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <p className="font-mono text-base xs:text-lg sm:text-2xl font-black text-foreground break-all leading-snug">
                   {orderId}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1.5 leading-snug">
+                <p className="text-[11px] xs:text-xs text-muted-foreground mt-1.5 leading-snug">
                   {waitingForAuto
                     ? 'Copy or screenshot this. You need it to collect your product on Track Order.'
                     : 'Keep this ID to track your order anytime.'}
@@ -309,10 +312,10 @@ const OrderSuccessPage = () => {
               <Button
                 type="button"
                 variant="default"
-                className="rounded-xl shrink-0 h-12 px-5 font-bold w-full sm:w-auto touch-manipulation"
+                className="rounded-xl shrink-0 min-h-12 h-12 px-5 font-bold w-full sm:w-auto touch-manipulation active:scale-[0.98]"
                 onClick={() => copyToClipboard(orderId, 'Order ID')}
               >
-                <Copy className="w-4 h-4 mr-2" />
+                <Copy className="w-4 h-4 mr-2 shrink-0" />
                 Copy Order ID
               </Button>
             </div>
@@ -322,15 +325,15 @@ const OrderSuccessPage = () => {
         {/* ── 3. Status + total (compact facts) ── */}
         <section>
           <SectionLabel>Order snapshot</SectionLabel>
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-            <div className="surface-card p-3.5 sm:p-4 min-w-0">
+          <div className="grid grid-cols-2 gap-2 xs:gap-2.5 sm:gap-3">
+            <div className="surface-card p-3 xs:p-3.5 sm:p-4 min-w-0 overflow-hidden">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
                 Status
               </p>
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-start gap-1.5 xs:gap-2 min-w-0">
                 <StatusIcon
                   className={cn(
-                    'w-4 h-4 shrink-0',
+                    'w-4 h-4 shrink-0 mt-0.5',
                     isCompleted && 'text-emerald-600',
                     isPending && 'text-amber-600',
                     !isCompleted && !isPending && 'text-primary',
@@ -338,7 +341,7 @@ const OrderSuccessPage = () => {
                 />
                 <p
                   className={cn(
-                    'text-xs sm:text-sm font-bold truncate',
+                    'text-[11px] xs:text-xs sm:text-sm font-bold leading-snug break-words',
                     isCompleted && 'text-emerald-600',
                     isPending && 'text-amber-600',
                     !isCompleted && !isPending && 'text-primary',
@@ -349,11 +352,11 @@ const OrderSuccessPage = () => {
                 </p>
               </div>
             </div>
-            <div className="surface-card p-3.5 sm:p-4 min-w-0">
+            <div className="surface-card p-3 xs:p-3.5 sm:p-4 min-w-0 overflow-hidden">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
                 Total
               </p>
-              <p className="text-sm sm:text-lg font-black text-foreground tabular-nums truncate">
+              <p className="text-sm xs:text-base sm:text-lg font-black text-foreground tabular-nums break-all leading-snug">
                 {formatPrice(total)}
               </p>
               {(liveOrder?.discount_amount > 0 || (sessionOrder?.discount || 0) > 0) && (
@@ -371,21 +374,23 @@ const OrderSuccessPage = () => {
 
           {/* Auto waiting — 3 steps */}
           {waitingForAuto && (
-            <div className="rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-b from-emerald-500/[0.09] to-card p-4 sm:p-5 shadow-sm">
-              <div className="flex items-center gap-2.5 mb-1">
+            <div className="rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-b from-emerald-500/[0.09] to-card p-3.5 xs:p-4 sm:p-5 shadow-sm overflow-hidden">
+              <div className="flex items-start gap-2.5 mb-1">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
                   <Zap className="w-5 h-5 text-emerald-600" />
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-foreground">Get your Auto product</h2>
-                  <p className="text-xs text-muted-foreground">
+                <div className="min-w-0">
+                  <h2 className="text-[15px] xs:text-base font-bold text-foreground leading-snug">
+                    Get your Auto product
+                  </h2>
+                  <p className="text-[11px] xs:text-xs text-muted-foreground leading-relaxed mt-0.5">
                     Delivered on <strong className="text-foreground">Track Order</strong> only — not
                     WhatsApp
                   </p>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-0">
+              <div className="mt-3.5 sm:mt-4 space-y-0">
                 {[
                   {
                     n: 1,
@@ -403,7 +408,7 @@ const OrderSuccessPage = () => {
                     body: 'Paste the Order ID, tap Track, and your code / link / login will show there.',
                   },
                 ].map((step, idx) => (
-                  <div key={step.n} className="flex gap-3">
+                  <div key={step.n} className="flex gap-2.5 xs:gap-3">
                     <div className="flex flex-col items-center">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-sm font-black">
                         {step.n}
@@ -412,13 +417,15 @@ const OrderSuccessPage = () => {
                         <span className="w-0.5 flex-1 min-h-[12px] bg-emerald-500/30 my-1" />
                       )}
                     </div>
-                    <div className={cn('pb-4 min-w-0', idx === 2 && 'pb-1')}>
-                      <p className="text-sm font-bold text-foreground pt-1">{step.title}</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                    <div className={cn('pb-3.5 xs:pb-4 min-w-0', idx === 2 && 'pb-1')}>
+                      <p className="text-[13px] xs:text-sm font-bold text-foreground pt-1 leading-snug">
+                        {step.title}
+                      </p>
+                      <p className="text-[11px] xs:text-xs text-muted-foreground leading-relaxed mt-0.5">
                         {step.body}
                       </p>
                       {step.n === 3 && (
-                        <p className="mt-2 font-mono text-xs font-bold text-foreground bg-background/90 border border-border rounded-lg px-2.5 py-1.5 break-all">
+                        <p className="mt-2 font-mono text-[11px] xs:text-xs font-bold text-foreground bg-background/90 border border-border rounded-lg px-2.5 py-2 break-all">
                           {orderId}
                         </p>
                       )}
@@ -428,7 +435,7 @@ const OrderSuccessPage = () => {
               </div>
 
               {isMixedCart && (
-                <div className="mt-2 mb-4 rounded-xl bg-background/80 border border-border p-3">
+                <div className="mt-2 mb-3.5 rounded-xl bg-background/80 border border-border p-3">
                   <p className="text-xs font-bold text-foreground mb-1">You also bought non-Auto items</p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Auto items use Track Order (steps above). Other items may take 1–24 hours and may
@@ -441,28 +448,28 @@ const OrderSuccessPage = () => {
                 <Button
                   variant="default"
                   size="xl"
-                  className="w-full min-h-[3.25rem] h-auto py-3.5 rounded-2xl text-[15px] font-bold shadow-lg shadow-primary/20 touch-manipulation"
+                  className="w-full min-h-12 h-auto py-3.5 rounded-2xl text-sm xs:text-[15px] font-bold shadow-lg shadow-primary/20 touch-manipulation active:scale-[0.99]"
                   asChild
                 >
                   <Link to={`/track-order?orderId=${encodeURIComponent(orderId)}`}>
                     <Search className="w-5 h-5 mr-2 shrink-0" />
-                    Open Track Order
+                    <span className="text-left leading-snug">Open Track Order</span>
                     <ArrowRight className="w-4 h-4 ml-2 shrink-0 opacity-80" />
                   </Link>
                 </Button>
-                <p className="text-center text-[11px] text-muted-foreground leading-relaxed">
+                <p className="text-center text-[11px] text-muted-foreground leading-relaxed px-1">
                   If the product is not ready yet, come back in about 30 minutes with the same Order
                   ID.
                 </p>
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full h-11 rounded-2xl font-semibold touch-manipulation"
+                  className="w-full min-h-11 h-11 rounded-2xl font-semibold touch-manipulation"
                   asChild
                   disabled={isSettingsLoading}
                 >
                   <a href={whatsAppHref} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="w-4 h-4 mr-2" />
+                    <MessageCircle className="w-4 h-4 mr-2 shrink-0" />
                     Need help? WhatsApp us
                   </a>
                 </Button>
@@ -667,22 +674,22 @@ const OrderSuccessPage = () => {
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="rounded-xl bg-secondary/70 p-2.5 text-center">
-                  <p className="text-[10px] uppercase font-semibold text-muted-foreground">Full</p>
-                  <p className="text-xs sm:text-sm font-bold tabular-nums">
+              <div className="grid grid-cols-3 gap-1.5 xs:gap-2 mb-3">
+                <div className="rounded-xl bg-secondary/70 p-2 xs:p-2.5 text-center min-w-0">
+                  <p className="text-[9px] xs:text-[10px] uppercase font-semibold text-muted-foreground">Full</p>
+                  <p className="text-[11px] xs:text-xs sm:text-sm font-bold tabular-nums break-all leading-snug">
                     {sessionOrder.preOrder.fullPrice.toLocaleString()}
                   </p>
                 </div>
-                <div className="rounded-xl bg-orange-500/10 p-2.5 text-center border border-orange-500/20">
-                  <p className="text-[10px] uppercase font-semibold text-orange-600">Paid</p>
-                  <p className="text-xs sm:text-sm font-bold tabular-nums">
+                <div className="rounded-xl bg-orange-500/10 p-2 xs:p-2.5 text-center border border-orange-500/20 min-w-0">
+                  <p className="text-[9px] xs:text-[10px] uppercase font-semibold text-orange-600">Paid</p>
+                  <p className="text-[11px] xs:text-xs sm:text-sm font-bold tabular-nums break-all leading-snug">
                     {sessionOrder.preOrder.deposit.toLocaleString()}
                   </p>
                 </div>
-                <div className="rounded-xl bg-secondary/70 p-2.5 text-center">
-                  <p className="text-[10px] uppercase font-semibold text-muted-foreground">Due</p>
-                  <p className="text-xs sm:text-sm font-bold tabular-nums">
+                <div className="rounded-xl bg-secondary/70 p-2 xs:p-2.5 text-center min-w-0">
+                  <p className="text-[9px] xs:text-[10px] uppercase font-semibold text-muted-foreground">Due</p>
+                  <p className="text-[11px] xs:text-xs sm:text-sm font-bold tabular-nums break-all leading-snug">
                     {(sessionOrder.preOrder.remaining ?? 0).toLocaleString()}
                   </p>
                 </div>
@@ -746,67 +753,96 @@ const OrderSuccessPage = () => {
         {/* ── 8. More actions ── */}
         <section>
           <SectionLabel>More</SectionLabel>
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2 xs:gap-2.5">
             <Button
               variant="outline"
               size="lg"
-              className="h-12 rounded-2xl font-semibold touch-manipulation"
+              className="min-h-12 h-12 rounded-2xl font-semibold touch-manipulation text-sm"
               asChild
             >
               <Link to="/products">
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Sparkles className="w-4 h-4 mr-1.5 xs:mr-2 shrink-0" />
                 Shop more
               </Link>
             </Button>
             <Button
               variant="ghost"
               size="lg"
-              className="h-12 rounded-2xl font-semibold text-foreground/80 touch-manipulation border border-border"
+              className="min-h-12 h-12 rounded-2xl font-semibold text-foreground/80 touch-manipulation border border-border text-sm"
               asChild
             >
               <Link to="/">
-                <Home className="w-4 h-4 mr-2" />
+                <Home className="w-4 h-4 mr-1.5 xs:mr-2 shrink-0" />
                 Home
               </Link>
             </Button>
           </div>
         </section>
 
-        {/* ── 9. Community (lowest priority) ── */}
-        <section className="relative overflow-hidden rounded-2xl border border-[#25D366]/25 bg-gradient-to-br from-[#25D366]/10 via-card to-card p-4 sm:p-5">
-          <div className="flex items-start gap-3 mb-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-md shadow-[#25D366]/30 shrink-0">
-              <Users className="w-5 h-5 text-white" />
+        {/* ── 9. Community + review ── */}
+        <section className="space-y-2.5 xs:space-y-3">
+          <div className="relative overflow-hidden rounded-2xl border border-[#25D366]/25 bg-gradient-to-br from-[#25D366]/10 via-card to-card p-3.5 xs:p-4 sm:p-5">
+            <div className="flex items-start gap-2.5 xs:gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-md shadow-[#25D366]/30 shrink-0">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-foreground text-[13px] xs:text-sm leading-snug">
+                  Want more deals?
+                </h3>
+                <p className="text-[11px] xs:text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  Join our WhatsApp group for flash sales, new drops, and exclusive offers.
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-foreground text-sm leading-tight">
-                Optional: join our WhatsApp group
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Deals, drops, and community help — not required for delivery.
-              </p>
-            </div>
+            <Button
+              variant="whatsapp"
+              size="lg"
+              className="w-full rounded-2xl font-bold min-h-11 h-11 touch-manipulation"
+              asChild
+            >
+              <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
+                Join for more deals
+                <ExternalLink className="w-4 h-4 ml-2 shrink-0" />
+              </a>
+            </Button>
           </div>
-          <Button
-            variant="whatsapp"
-            size="lg"
-            className="w-full rounded-2xl font-bold h-11 touch-manipulation"
-            asChild
-          >
-            <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
-              Join group
-              <ExternalLink className="w-4 h-4 ml-2" />
-            </a>
-          </Button>
+
+          <div className="rounded-2xl border border-[#00B67A]/30 bg-gradient-to-br from-[#00B67A]/10 via-card to-card p-3.5 xs:p-4 sm:p-5">
+            <div className="flex items-start gap-2.5 xs:gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#00B67A] flex items-center justify-center shadow-md shadow-[#00B67A]/25 shrink-0">
+                <Star className="w-5 h-5 text-white fill-white" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-foreground text-[13px] xs:text-sm leading-snug">
+                  Happy with your order?
+                </h3>
+                <p className="text-[11px] xs:text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  Leave a short Trustpilot review — it helps other customers a lot.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="lg"
+              className="w-full rounded-2xl font-bold min-h-11 h-11 touch-manipulation bg-[#00B67A] hover:bg-[#00a06c] text-white text-[13px] xs:text-sm"
+              asChild
+            >
+              <a href={TRUSTPILOT_URL} target="_blank" rel="noopener noreferrer">
+                <Star className="w-4 h-4 mr-2 fill-white shrink-0" />
+                <span className="truncate">Leave a review on Trustpilot</span>
+                <ExternalLink className="w-4 h-4 ml-2 opacity-90 shrink-0" />
+              </a>
+            </Button>
+          </div>
         </section>
 
-        <p className="text-center text-xs text-muted-foreground pb-2">
+        <p className="text-center text-xs text-muted-foreground pb-1 px-2">
           Need help?{' '}
           <a
             href={`https://wa.me/${(settings?.whatsapp_number || '94787767869').replace(/\D/g, '')}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary font-semibold hover:underline"
+            className="text-primary font-semibold hover:underline inline-block py-1"
           >
             Message support
           </a>
@@ -815,23 +851,27 @@ const OrderSuccessPage = () => {
 
       {/* Mobile sticky for waiting Auto */}
       {waitingForAuto && (
-        <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden pb-safe border-t border-border/80 bg-background/95 backdrop-blur-md px-3 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
-          <p className="text-[10px] text-center text-muted-foreground mb-1.5 font-medium">
+        <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden border-t border-border/80 bg-background/95 backdrop-blur-md px-3 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
+          <p className="text-[10px] text-center text-muted-foreground mb-1.5 font-medium leading-snug">
             1. Copy ID · 2. Wait ~30 min · 3. Track Order
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 max-w-lg mx-auto">
             <Button
               variant="outline"
-              className="h-11 rounded-xl font-bold touch-manipulation"
+              className="min-h-12 h-12 rounded-xl font-bold touch-manipulation active:scale-[0.98]"
               type="button"
               onClick={() => copyToClipboard(orderId, 'Order ID')}
             >
-              <Copy className="w-4 h-4 mr-1.5" />
+              <Copy className="w-4 h-4 mr-1.5 shrink-0" />
               Copy ID
             </Button>
-            <Button variant="default" className="h-11 rounded-xl font-bold touch-manipulation" asChild>
+            <Button
+              variant="default"
+              className="min-h-12 h-12 rounded-xl font-bold touch-manipulation active:scale-[0.98]"
+              asChild
+            >
               <Link to={`/track-order?orderId=${encodeURIComponent(orderId)}`}>
-                <Search className="w-4 h-4 mr-1.5" />
+                <Search className="w-4 h-4 mr-1.5 shrink-0" />
                 Track
               </Link>
             </Button>
