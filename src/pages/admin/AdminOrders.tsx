@@ -466,9 +466,9 @@ const AdminOrders = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Orders</h1>
+      <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground">Orders</h1>
           <p className="text-muted-foreground">Manage and track customer orders</p>
         </div>
         <Button variant="outline" size="icon" onClick={() => refetch()}>
@@ -477,7 +477,7 @@ const AdminOrders = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div className="p-4 rounded-xl bg-warning/10 border border-warning/20">
           <p className="text-2xl font-bold text-warning">{pendingCount}</p>
           <p className="text-sm text-muted-foreground">Pending</p>
@@ -552,31 +552,34 @@ const AdminOrders = () => {
       </div>
 
       {/* Admin Quick Detail Checker */}
-      <div className="mb-8 p-4 md:p-6 rounded-2xl bg-primary/5 border border-primary/10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <ShieldCheck className="w-6 h-6" />
+      <div className="mb-4 sm:mb-6 p-3 sm:p-5 rounded-2xl bg-primary/5 border border-primary/10">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <ShieldCheck className="w-5 h-5" />
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-foreground">Super Detailed Checker</h2>
-            <p className="text-xs text-muted-foreground">Search by full Order ID for maximum details</p>
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base font-bold text-foreground">Find order</h2>
+            <p className="text-[11px] text-muted-foreground">Paste full Order ID</p>
           </div>
         </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             const q = (e.currentTarget.elements.namedItem('detailedSearch') as HTMLInputElement).value;
-            const order = orders.find(o => o.order_number === q);
+            const order = orders.find(o => o.order_number === q || o.order_number === q.trim());
             if (order) setSelectedOrder(order);
           }}
-          className="flex gap-2"
+          className="flex flex-col sm:flex-row gap-2"
         >
           <Input
             name="detailedSearch"
-            placeholder="Enter full Order ID (e.g., SNIP-2026-000001)"
-            className="bg-card border-border h-12"
+            placeholder="SNIP-2026-…"
+            className="bg-card border-border h-12 text-base font-mono"
+            autoComplete="off"
           />
-          <Button type="submit" variant="hero" size="lg">Inspect</Button>
+          <Button type="submit" variant="hero" className="h-12 shrink-0 font-bold touch-manipulation">
+            Open
+          </Button>
         </form>
       </div>
 
@@ -747,92 +750,111 @@ const AdminOrders = () => {
             </table>
           </div>
 
-          {/* Mobile View (Enhanced Card List) */}
-          <div className="md:hidden space-y-4 p-4">
+          {/* Mobile View — PWA-friendly cards */}
+          <div className="md:hidden space-y-3 px-1 sm:px-0">
             {filteredOrders.map((order) => {
               const claude = parseClaudePreOrder(order);
               return (
               <div key={order.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-                <div className="p-4 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-mono text-sm font-black text-foreground">{order.order_number}</span>
-                        <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(order.status)}`}>
-                          {adminStatusLabel(order.status)}
-                        </div>
-                        {claude && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-orange-500/15 text-orange-400 border border-orange-500/30">
-                            <Zap className="w-3 h-3" /> Claude
+                <div className="p-3.5 space-y-3">
+                  <button
+                    type="button"
+                    className="w-full text-left touch-manipulation active:opacity-90"
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <span className="font-mono text-sm font-black text-foreground">
+                            {order.order_number}
                           </span>
-                        )}
-                      </div>
-                      <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <span className="text-sm">{getCountryFlag(order.customer_country)}</span>
-                        {order.customer_name}
-                      </p>
-                      {claude?.claudeEmail && (
-                        <p className="text-[10px] font-mono text-orange-400 mt-1 truncate">{claude.claudeEmail}</p>
-                      )}
-                      <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-muted-foreground uppercase opacity-60">
-                        <Clock className="w-3 h-3" />
-                        {formatDateTime(order.created_at)}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-black text-primary text-sm">
-                        {order.currency_code && order.currency_rate
-                          ? new Intl.NumberFormat(undefined, {
-                            style: 'currency',
-                            currency: order.currency_code,
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0
-                          }).format(order.total_amount * order.currency_rate)
-                          : formatPrice(order.total_amount)
-                        }
-                      </p>
-                      {claude ? (
-                        <p className="text-[9px] font-black uppercase text-orange-400 mt-1">
-                          {claude.isFullPayment ? 'Full pay' : '50% reserve'}
-                        </p>
-                      ) : (
-                        <div className="flex items-center justify-end gap-1 mt-1 opacity-60">
-                          {order.payment_method === 'card' ? <CreditCard className="w-3 h-3 text-purple-500" /> : <Building2 className="w-3 h-3 text-primary" />}
-                          <span className="text-[9px] font-black uppercase">{order.payment_method?.replace('_', ' ') || 'UNPAID'}</span>
+                          <div
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(order.status)}`}
+                          >
+                            {adminStatusLabel(order.status)}
+                          </div>
+                          {claude && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                              <Zap className="w-3 h-3" /> Claude
+                            </span>
+                          )}
                         </div>
-                      )}
+                        <p className="text-sm font-bold text-foreground flex items-center gap-1.5 truncate">
+                          <span>{getCountryFlag(order.customer_country)}</span>
+                          {order.customer_name}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold text-muted-foreground uppercase opacity-70">
+                          <Clock className="w-3 h-3" />
+                          {formatDateTime(order.created_at)}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-black text-primary text-base tabular-nums">
+                          {order.currency_code && order.currency_rate
+                            ? new Intl.NumberFormat(undefined, {
+                                style: 'currency',
+                                currency: order.currency_code,
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              }).format(order.total_amount * order.currency_rate)
+                            : formatPrice(order.total_amount)}
+                        </p>
+                        <p className="text-[9px] font-black uppercase text-muted-foreground mt-0.5">
+                          {order.payment_method?.replace(/_/g, ' ') || 'unpaid'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </button>
 
-                  {/* Mobile Quick Status & Actions */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
+                  <div className="space-y-2 pt-2 border-t border-border/50">
                     <Select
                       value={order.status}
                       onValueChange={(value) => handleStatusChange(order.id, value as OrderStatus)}
                     >
-                      <SelectTrigger className={`h-9 text-[10px] font-black uppercase tracking-wider ${getStatusColor(order.status)} bg-opacity-10`}>
+                      <SelectTrigger
+                        className={`h-11 text-xs font-bold ${getStatusColor(order.status)} bg-opacity-10 touch-manipulation`}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {ORDER_STATUS_ADMIN_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
+                          <SelectItem key={opt.value} value={opt.value} className="text-sm py-3">
                             {opt.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
 
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 h-9 text-[10px] font-bold" onClick={() => setSelectedOrder(order)}>
-                        <Eye className="w-3.5 h-3.5 mr-1" />
-                        INSPECT
+                    <div className="grid grid-cols-[1fr_auto_auto] gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="h-11 text-xs font-bold touch-manipulation"
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <Eye className="w-4 h-4 mr-1.5" />
+                        Open
                       </Button>
-                      <Button variant="outline" size="sm" className="w-9 h-9 p-0 text-success border-success/20 bg-success/5" asChild>
-                        <a href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                          <MessageCircle className="w-4 h-4" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-11 w-11 p-0 text-success border-success/25 bg-success/5 touch-manipulation"
+                        asChild
+                      >
+                        <a
+                          href={`https://wa.me/${order.customer_whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <MessageCircle className="w-5 h-5" />
                         </a>
                       </Button>
-                      <Button variant="ghost" size="sm" className="w-9 h-9 p-0 text-destructive" onClick={() => setOrderToDelete(order)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-11 w-11 p-0 text-destructive border-destructive/20 touch-manipulation"
+                        onClick={() => setOrderToDelete(order)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -851,9 +873,9 @@ const AdminOrders = () => {
 
       {/* Super Detailed Order Inspector */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-none sm:rounded-3xl shadow-2xl w-[95vw] sm:w-full">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-border sm:border-none rounded-2xl sm:rounded-3xl shadow-2xl w-[min(100vw-1rem,42rem)] sm:w-full max-h-[min(92dvh,900px)]">
           {selectedOrder && (
-            <div className="flex flex-col max-h-[90vh]">
+            <div className="flex flex-col max-h-[min(92dvh,900px)]">
               {/* Modal Header */}
               <div className={cn(
                 'p-5 md:p-8 text-primary-foreground relative',

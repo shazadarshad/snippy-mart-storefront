@@ -26,8 +26,9 @@ export function AdminPwaBanner() {
     }
   });
 
-  const hideBanner = dismissed && !canInstall && notifyEnabled;
-  if (hideBanner) return null;
+  // Fully settled: installed + alerts on + dismissed → hide
+  if (dismissed && installed && notifyEnabled) return null;
+  if (dismissed && !canInstall && notifyEnabled) return null;
 
   const onInstall = async () => {
     const res = await promptInstall();
@@ -39,9 +40,8 @@ export function AdminPwaBanner() {
       toast({
         title: 'Install from browser menu',
         description:
-          'Android Chrome: menu (⋮) → Install app / Add to Home screen. iPhone Safari: Share → Add to Home Screen. Open this page as https://snippymart.com/admin/orders first.',
+          'Android: ⋮ → Install app / Add to Home screen. iPhone Safari: Share → Add to Home Screen. Use https://snippymart.com/admin/orders',
       });
-      return;
     }
   };
 
@@ -55,14 +55,14 @@ export function AdminPwaBanner() {
     if (res.ok) {
       toast({
         title: 'Order alerts on',
-        description: 'You’ll get a notification when a new order arrives (while logged in as admin).',
+        description: 'You’ll get a notification when a new order arrives (while logged in).',
       });
       return;
     }
     if (res.reason === 'denied') {
       toast({
         title: 'Notifications blocked',
-        description: 'Enable notifications for snippymart.com in phone Settings → Apps / Site settings.',
+        description: 'Allow notifications for snippymart.com in phone Settings.',
         variant: 'destructive',
       });
       return;
@@ -83,74 +83,64 @@ export function AdminPwaBanner() {
     setDismissed(true);
   };
 
-  if (dismissed && !canInstall) {
-    // Compact controls still available via small bar? show minimal strip if notify off
-    if (notifyEnabled) return null;
-  }
+  if (dismissed && !canInstall) return null;
 
   return (
     <div
       className={cn(
-        'border-b border-border bg-gradient-to-r from-teal-500/10 via-background to-primary/10',
-        'px-3 py-2.5 sm:px-4',
+        'border-b border-border/80 bg-gradient-to-r from-teal-500/10 via-background to-primary/5',
+        'px-3 py-2 sm:px-4',
       )}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 max-w-6xl mx-auto">
-        <div className="flex items-start gap-2 min-w-0 flex-1">
-          <Smartphone className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-bold text-foreground leading-snug">
-              {installed ? 'Admin app on home screen' : 'Install Admin as an app'}
-            </p>
-            <p className="text-[11px] text-muted-foreground leading-snug">
-              {installed
-                ? 'Enable order alerts so you get notified when customers place orders.'
-                : 'Add to Home Screen → open like a normal app. Then turn on order notifications.'}
-            </p>
-          </div>
+      <div className="flex items-center gap-2 max-w-7xl mx-auto">
+        <Smartphone className="w-4 h-4 text-teal-600 shrink-0 hidden xs:block sm:block" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] sm:text-xs font-bold text-foreground leading-tight truncate">
+            {installed ? 'App ready · turn on order alerts' : 'Install Admin app · order alerts'}
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           {!installed && (
             <Button
               size="sm"
-              className="h-9 font-bold touch-manipulation"
+              className="h-8 px-2.5 text-[11px] font-bold touch-manipulation"
               onClick={onInstall}
             >
-              <Download className="w-4 h-4 mr-1.5" />
-              {canInstall ? 'Install app' : 'How to install'}
+              <Download className="w-3.5 h-3.5 sm:mr-1" />
+              <span className="hidden sm:inline">{canInstall ? 'Install' : 'How'}</span>
             </Button>
           )}
           {installed && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 px-2">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Installed
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 px-1">
+              <CheckCircle2 className="w-3 h-3" /> App
             </span>
           )}
           <Button
             size="sm"
             variant={notifyEnabled ? 'secondary' : 'outline'}
-            className="h-9 font-bold touch-manipulation"
+            className="h-8 px-2.5 text-[11px] font-bold touch-manipulation"
             onClick={onNotify}
           >
             {notifyEnabled ? (
               <>
-                <Bell className="w-4 h-4 mr-1.5" />
-                Alerts on
+                <Bell className="w-3.5 h-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">On</span>
               </>
             ) : (
               <>
-                <BellOff className="w-4 h-4 mr-1.5" />
-                Enable alerts
+                <BellOff className="w-3.5 h-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">Alerts</span>
               </>
             )}
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            className="h-9 w-9 shrink-0"
+            className="h-8 w-8 shrink-0 touch-manipulation"
             onClick={onDismiss}
             aria-label="Dismiss"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
