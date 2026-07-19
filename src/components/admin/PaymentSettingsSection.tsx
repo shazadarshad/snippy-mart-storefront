@@ -393,7 +393,7 @@ const PaymentSettingsSection = () => {
               className="mt-1.5 bg-secondary/50 border-border"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              Match market ≈340. System also applies a tiny extra safety factor automatically.
+              Default 360 LKR per USD. System also applies a tiny extra safety factor automatically.
             </p>
           </div>
         </div>

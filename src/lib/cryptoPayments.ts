@@ -28,7 +28,7 @@ export type CryptoPaymentSettings = {
 };
 
 /** Matches storefront display rate; crypto path nudges safer on top. */
-export const DEFAULT_CRYPTO_LKR_PER_USD = 340;
+export const DEFAULT_CRYPTO_LKR_PER_USD = 360;
 
 /** Extra % on top of converted amount so FX moves don't leave you short. */
 export const DEFAULT_CRYPTO_MARKUP_PERCENT = 2;

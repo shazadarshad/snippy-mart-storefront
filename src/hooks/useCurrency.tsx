@@ -12,15 +12,14 @@ export interface CurrencyItem {
 /**
  * Catalog prices are stored in LKR.
  *
- * Anchor rates (display / convert):
+ * Fixed display rates:
+ *   1 USD = 360 LKR (always)
  *   1 LKR = 0.35 INR
- *   1 USD = 103 INR
- *   ⇒ 1 USD = 103 / 0.35 ≈ 294.2857 LKR
  */
+export const LKR_PER_USD = 360;
 export const INR_PER_LKR = 0.35;
-export const INR_PER_USD = 103;
-/** LKR per 1 USD — kept consistent with INR anchors */
-export const LKR_PER_USD = INR_PER_USD / INR_PER_LKR;
+/** Implied: 1 USD ≈ 360 × 0.35 = 126 INR (via LKR path) */
+export const INR_PER_USD = LKR_PER_USD * INR_PER_LKR;
 
 export const CURRENCIES: Record<CurrencyCode, CurrencyItem> = {
   LKR: { code: 'LKR', symbol: 'Rs.', name: 'Sri Lankan Rupee', flag: '🇱🇰' },
