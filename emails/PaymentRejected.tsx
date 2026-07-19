@@ -1,6 +1,6 @@
 import { Section, Text, Link, Hr } from '@react-email/components';
 import * as React from 'react';
-import { EmailLayout, apple } from './components/EmailLayout';
+import { EmailLayout, apple, emailPad, emailType } from './components/EmailLayout';
 
 interface PaymentRejectedEmailProps {
   customerName?: string;
@@ -19,31 +19,47 @@ export const PaymentRejected = ({
 }: PaymentRejectedEmailProps) => {
   return (
     <EmailLayout theme="red" previewText={`Payment issue for order ${orderId}`}>
-      <Section style={padTop}>
-        <Text style={eyebrow}>Action needed</Text>
-        <Text style={title}>Payment couldn’t be verified</Text>
-        <Text style={body}>
+      <Section style={emailPad.top} className="sm-pad-top">
+        <Text style={{ ...emailType.eyebrow, color: apple.red }} className="sm-eyebrow">
+          Action needed
+        </Text>
+        <Text style={emailType.title} className="sm-title">
+          Payment couldn’t be verified
+        </Text>
+        <Text style={emailType.body} className="sm-body">
           Hi {customerName}, we couldn’t confirm payment for order{' '}
           <strong style={{ color: apple.text }}>{orderId}</strong>. Your order is held for a short
           time so you can try again.
         </Text>
       </Section>
 
-      <Section style={padX}>
-        <Section style={infoCard}>
-          <Text style={rowLabel}>Order ID</Text>
-          <Text style={rowValueMono}>{orderId}</Text>
-          <Hr style={divider} />
-          <Text style={rowLabel}>Amount</Text>
-          <Text style={rowValue}>{orderTotal}</Text>
-          <Hr style={divider} />
-          <Text style={rowLabel}>Reason</Text>
-          <Text style={rowValue}>{rejectionReason}</Text>
+      <Section style={emailPad.x} className="sm-pad-x">
+        <Section style={emailType.infoCard} className="sm-card">
+          <Text style={emailType.rowLabel} className="sm-label">
+            Order ID
+          </Text>
+          <Text style={emailType.rowValueMono} className="sm-mono">
+            {orderId}
+          </Text>
+          <Hr style={emailType.divider} />
+          <Text style={emailType.rowLabel} className="sm-label">
+            Amount
+          </Text>
+          <Text style={emailType.rowValue} className="sm-value">
+            {orderTotal}
+          </Text>
+          <Hr style={emailType.divider} />
+          <Text style={emailType.rowLabel} className="sm-label">
+            Reason
+          </Text>
+          <Text style={emailType.rowValue} className="sm-value">
+            {rejectionReason}
+          </Text>
         </Section>
       </Section>
 
-      <Section style={padX}>
-        <Section style={tipsCard}>
+      <Section style={emailPad.x} className="sm-pad-x">
+        <Section style={tipsCard} className="sm-card">
           <Text style={tipsTitle}>What you can do</Text>
           <Text style={tipLine}>· Double-check the transfer amount and Order ID note</Text>
           <Text style={tipLine}>· Upload a clear payment screenshot</Text>
@@ -52,14 +68,14 @@ export const PaymentRejected = ({
         </Section>
       </Section>
 
-      <Section style={padBtn}>
-        <Link href={retryUrl} style={primaryBtn}>
+      <Section style={emailPad.btn} className="sm-pad-btn">
+        <Link href={retryUrl} style={emailType.primaryBtn} className="sm-btn">
           Retry payment
         </Link>
       </Section>
 
-      <Section style={padBottom}>
-        <Text style={fine}>
+      <Section style={emailPad.bottom} className="sm-pad-bottom">
+        <Text style={emailType.fine} className="sm-fine">
           WhatsApp:{' '}
           <Link href="https://wa.me/94787767869" style={link}>
             +94 78 776 7869
@@ -72,110 +88,25 @@ export const PaymentRejected = ({
 
 export default PaymentRejected;
 
-const padTop = { padding: '32px 28px 8px' };
-const padX = { padding: '8px 20px' };
-const padBtn = { padding: '16px 28px 8px', textAlign: 'center' as const };
-const padBottom = { padding: '8px 28px 32px' };
-
-const eyebrow = {
-  margin: '0 0 8px',
-  fontSize: '13px',
-  fontWeight: '600' as const,
-  color: apple.red,
-  letterSpacing: '0.02em',
-  textTransform: 'uppercase' as const,
-};
-
-const title = {
-  margin: '0 0 12px',
-  fontSize: '26px',
-  fontWeight: '700' as const,
-  color: apple.text,
-  letterSpacing: '-0.5px',
-  lineHeight: '1.2',
-};
-
-const body = {
-  margin: '0',
-  fontSize: '16px',
-  lineHeight: '24px',
-  color: apple.secondary,
-};
-
-const infoCard = {
-  backgroundColor: apple.surface,
-  borderRadius: '14px',
-  padding: '20px 18px',
-  border: `1px solid ${apple.border}`,
-};
-
 const tipsCard = {
   backgroundColor: 'rgba(255, 59, 48, 0.06)',
-  borderRadius: '14px',
-  padding: '18px',
+  borderRadius: '12px',
+  padding: '14px',
   border: '1px solid rgba(255, 59, 48, 0.15)',
 };
 
 const tipsTitle = {
-  margin: '0 0 10px',
-  fontSize: '14px',
+  margin: '0 0 8px',
+  fontSize: '13px',
   fontWeight: '700' as const,
   color: apple.text,
 };
 
 const tipLine = {
-  margin: '0 0 6px',
-  fontSize: '14px',
-  lineHeight: '20px',
-  color: apple.secondary,
-};
-
-const rowLabel = {
-  margin: '0 0 4px',
-  fontSize: '12px',
-  fontWeight: '600' as const,
-  color: apple.tertiary,
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.02em',
-};
-
-const rowValue = {
-  margin: '0',
-  fontSize: '16px',
-  fontWeight: '500' as const,
-  color: apple.text,
-};
-
-const rowValueMono = {
-  ...rowValue,
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-  fontWeight: '600' as const,
-  fontSize: '15px',
-};
-
-const divider = {
-  borderColor: apple.border,
-  borderTop: `1px solid ${apple.border}`,
-  margin: '14px 0',
-};
-
-const primaryBtn = {
-  display: 'inline-block',
-  backgroundColor: apple.blue,
-  color: '#ffffff',
-  fontSize: '16px',
-  fontWeight: '600' as const,
-  textDecoration: 'none',
-  padding: '14px 28px',
-  borderRadius: '980px',
-};
-
-const fine = {
-  margin: '0',
+  margin: '0 0 5px',
   fontSize: '13px',
-  lineHeight: '20px',
-  color: apple.tertiary,
-  textAlign: 'center' as const,
+  lineHeight: '18px',
+  color: apple.secondary,
 };
 
 const link = {

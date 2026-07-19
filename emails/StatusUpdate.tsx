@@ -1,6 +1,6 @@
 import { Section, Text, Link, Hr } from '@react-email/components';
 import * as React from 'react';
-import { EmailLayout, apple } from './components/EmailLayout';
+import { EmailLayout, apple, emailPad, emailType } from './components/EmailLayout';
 
 interface StatusUpdateEmailProps {
   customerName?: string;
@@ -21,40 +21,61 @@ export const StatusUpdate = ({
 }: StatusUpdateEmailProps) => {
   return (
     <EmailLayout theme="purple" previewText={`Order update: ${orderId} is ${currentStatus}`}>
-      <Section style={padTop}>
-        <Text style={eyebrow}>Order update</Text>
-        <Text style={title}>Hi {customerName},</Text>
-        <Text style={body}>
-          There’s a new status on your order <strong style={{ color: apple.text }}>{orderId}</strong>.
+      <Section style={emailPad.top} className="sm-pad-top">
+        <Text style={{ ...emailType.eyebrow, color: apple.purple }} className="sm-eyebrow">
+          Order update
+        </Text>
+        <Text style={emailType.title} className="sm-title">
+          Hi {customerName},
+        </Text>
+        <Text style={emailType.body} className="sm-body">
+          There’s a new status on your order{' '}
+          <strong style={{ color: apple.text }}>{orderId}</strong>.
         </Text>
       </Section>
 
-      <Section style={padX}>
-        <Section style={statusCard}>
-          <Text style={statusLabel}>Current status</Text>
-          <Text style={statusValue}>{currentStatus}</Text>
-          <Text style={statusMsg}>{statusMessage}</Text>
+      <Section style={emailPad.x} className="sm-pad-x">
+        <Section style={statusCard} className="sm-card">
+          <Text style={statusLabel} className="sm-label">
+            Current status
+          </Text>
+          <Text style={statusValue} className="sm-status-lg">
+            {currentStatus}
+          </Text>
+          <Text style={statusMsg} className="sm-body">
+            {statusMessage}
+          </Text>
         </Section>
       </Section>
 
-      <Section style={padX}>
-        <Section style={infoCard}>
-          <Text style={rowLabel}>Estimated delivery</Text>
-          <Text style={rowValue}>{estimatedDelivery}</Text>
-          <Hr style={divider} />
-          <Text style={rowLabel}>Order ID</Text>
-          <Text style={rowValueMono}>{orderId}</Text>
+      <Section style={emailPad.x} className="sm-pad-x">
+        <Section style={emailType.infoCard} className="sm-card">
+          <Text style={emailType.rowLabel} className="sm-label">
+            Estimated delivery
+          </Text>
+          <Text style={emailType.rowValue} className="sm-value">
+            {estimatedDelivery}
+          </Text>
+          <Hr style={emailType.divider} />
+          <Text style={emailType.rowLabel} className="sm-label">
+            Order ID
+          </Text>
+          <Text style={emailType.rowValueMono} className="sm-mono">
+            {orderId}
+          </Text>
         </Section>
       </Section>
 
-      <Section style={padBtn}>
-        <Link href={trackingUrl} style={primaryBtn}>
+      <Section style={emailPad.btn} className="sm-pad-btn">
+        <Link href={trackingUrl} style={emailType.primaryBtn} className="sm-btn">
           Track your order
         </Link>
       </Section>
 
-      <Section style={padBottom}>
-        <Text style={fine}>We’ll message you again when something changes.</Text>
+      <Section style={emailPad.bottom} className="sm-pad-bottom">
+        <Text style={emailType.fine} className="sm-fine">
+          We’ll message you again when something changes.
+        </Text>
       </Section>
     </EmailLayout>
   );
@@ -62,47 +83,17 @@ export const StatusUpdate = ({
 
 export default StatusUpdate;
 
-const padTop = { padding: '32px 28px 8px' };
-const padX = { padding: '8px 20px' };
-const padBtn = { padding: '16px 28px 8px', textAlign: 'center' as const };
-const padBottom = { padding: '8px 28px 32px' };
-
-const eyebrow = {
-  margin: '0 0 8px',
-  fontSize: '13px',
-  fontWeight: '600' as const,
-  color: apple.purple,
-  letterSpacing: '0.02em',
-  textTransform: 'uppercase' as const,
-};
-
-const title = {
-  margin: '0 0 12px',
-  fontSize: '28px',
-  fontWeight: '700' as const,
-  color: apple.text,
-  letterSpacing: '-0.6px',
-  lineHeight: '1.15',
-};
-
-const body = {
-  margin: '0',
-  fontSize: '16px',
-  lineHeight: '24px',
-  color: apple.secondary,
-};
-
 const statusCard = {
   backgroundColor: 'rgba(175, 82, 222, 0.08)',
-  borderRadius: '14px',
-  padding: '22px 18px',
+  borderRadius: '12px',
+  padding: '16px 14px',
   border: '1px solid rgba(175, 82, 222, 0.2)',
   textAlign: 'center' as const,
 };
 
 const statusLabel = {
-  margin: '0 0 6px',
-  fontSize: '12px',
+  margin: '0 0 4px',
+  fontSize: '11px',
   fontWeight: '600' as const,
   color: apple.tertiary,
   textTransform: 'uppercase' as const,
@@ -110,70 +101,16 @@ const statusLabel = {
 };
 
 const statusValue = {
-  margin: '0 0 8px',
-  fontSize: '22px',
+  margin: '0 0 6px',
+  fontSize: '18px',
   fontWeight: '700' as const,
   color: apple.text,
-  letterSpacing: '-0.3px',
+  letterSpacing: '-0.2px',
 };
 
 const statusMsg = {
   margin: '0',
-  fontSize: '15px',
-  lineHeight: '22px',
-  color: apple.secondary,
-};
-
-const infoCard = {
-  backgroundColor: apple.surface,
-  borderRadius: '14px',
-  padding: '18px',
-  border: `1px solid ${apple.border}`,
-};
-
-const rowLabel = {
-  margin: '0 0 4px',
-  fontSize: '12px',
-  fontWeight: '600' as const,
-  color: apple.tertiary,
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.02em',
-};
-
-const rowValue = {
-  margin: '0',
-  fontSize: '16px',
-  fontWeight: '600' as const,
-  color: apple.text,
-};
-
-const rowValueMono = {
-  ...rowValue,
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-  fontSize: '15px',
-};
-
-const divider = {
-  borderColor: apple.border,
-  borderTop: `1px solid ${apple.border}`,
-  margin: '14px 0',
-};
-
-const primaryBtn = {
-  display: 'inline-block',
-  backgroundColor: apple.blue,
-  color: '#ffffff',
-  fontSize: '16px',
-  fontWeight: '600' as const,
-  textDecoration: 'none',
-  padding: '14px 28px',
-  borderRadius: '980px',
-};
-
-const fine = {
-  margin: '0',
-  fontSize: '13px',
+  fontSize: '14px',
   lineHeight: '20px',
-  color: apple.tertiary,
-  textAlign: 'center' as const,
+  color: apple.secondary,
 };
