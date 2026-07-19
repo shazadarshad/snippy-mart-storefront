@@ -27,9 +27,11 @@ import {
   useAdminAffiliatePayouts,
   useUpdateAffiliate,
   useMarkPayoutPaid,
+  useAdminCreateAffiliate,
 } from '@/hooks/useAffiliate';
 import { buildAffiliateLink } from '@/lib/affiliate';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 const statusColor = (s: string) => {
   switch (s) {
@@ -57,7 +59,15 @@ const AdminAffiliates = () => {
   const { data: payouts = [], refetch: refetchP } = useAdminAffiliatePayouts();
   const updateAff = useUpdateAffiliate();
   const markPaid = useMarkPayoutPaid();
+  const createAff = useAdminCreateAffiliate();
   const [rateDraft, setRateDraft] = useState<Record<string, string>>({});
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    whatsapp: '',
+    email: '',
+    code: '',
+    rate: '7',
+  });
 
   const refreshAll = () => {
     void refetch();
@@ -149,6 +159,85 @@ const AdminAffiliates = () => {
         </TabsList>
 
         <TabsContent value="partners" className="space-y-3 mt-0">
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 sm:p-4 space-y-3">
+            <div>
+              <p className="text-sm font-bold text-foreground">Add partner (no signup)</p>
+              <p className="text-[11px] text-muted-foreground">
+                Creates an active affiliate. They use code + WhatsApp on /affiliate — no account.
+              </p>
+            </div>
+            <form
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  const res = await createAff.mutateAsync({
+                    name: createForm.name,
+                    whatsapp: createForm.whatsapp,
+                    email: createForm.email || undefined,
+                    code: createForm.code || undefined,
+                    commission_percent: Number(createForm.rate) || 7,
+                    activate: true,
+                  });
+                  toast({
+                    title: 'Affiliate active',
+                    description: `Code ${res.code} — link: snippymart.com/?ref=${res.code}`,
+                  });
+                  setCreateForm({ name: '', whatsapp: '', email: '', code: '', rate: '7' });
+                } catch (err: any) {
+                  toast({
+                    title: 'Create failed',
+                    description: err.message,
+                    variant: 'destructive',
+                  });
+                }
+              }}
+            >
+              <Input
+                required
+                placeholder="Name"
+                className="h-10"
+                value={createForm.name}
+                onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
+              />
+              <Input
+                required
+                placeholder="WhatsApp"
+                className="h-10"
+                value={createForm.whatsapp}
+                onChange={(e) => setCreateForm((f) => ({ ...f, whatsapp: e.target.value }))}
+              />
+              <Input
+                placeholder="Code (opt)"
+                className="h-10 font-mono"
+                value={createForm.code}
+                onChange={(e) =>
+                  setCreateForm((f) => ({
+                    ...f,
+                    code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''),
+                  }))
+                }
+              />
+              <Input
+                type="number"
+                min={0}
+                max={50}
+                step={0.5}
+                className="h-10"
+                value={createForm.rate}
+                onChange={(e) => setCreateForm((f) => ({ ...f, rate: e.target.value }))}
+                placeholder="%"
+              />
+              <Button type="submit" className="h-10 font-bold" disabled={createAff.isPending}>
+                {createAff.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Create + activate'
+                )}
+              </Button>
+            </form>
+          </div>
+
           {isLoading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />

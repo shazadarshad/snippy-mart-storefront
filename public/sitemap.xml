@@ -52,6 +52,14 @@
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
   </url>
+
+  <!-- Affiliate program -->
+  <url>
+    <loc>https://snippymart.com/affiliate</loc>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
   
   <!-- Legal Pages -->
   <url>

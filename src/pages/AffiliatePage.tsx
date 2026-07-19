@@ -177,9 +177,10 @@ const AffiliatePage = () => {
             <div className="surface-card p-5 sm:p-8 border border-border">
               <h2 className="text-lg font-display font-bold mb-1">Join as an affiliate</h2>
               <p className="text-xs text-muted-foreground mb-6">
+                <strong className="text-foreground">No account signup</strong> — just apply. We
+                approve you, then you open the Dashboard with your <strong>code + WhatsApp</strong>.
                 Default commission <strong className="text-foreground">7%</strong>. Min payout{' '}
-                <strong className="text-foreground">Rs. 2,000</strong>. We review applications
-                before activation.
+                <strong className="text-foreground">Rs. 2,000</strong>.
               </p>
               {appliedCode ? (
                 <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-3">

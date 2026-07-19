@@ -189,6 +189,53 @@ export function useUpdateAffiliate() {
   });
 }
 
+/** Admin creates partner directly (no public apply / no user signup) */
+export function useAdminCreateAffiliate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      name: string;
+      whatsapp: string;
+      email?: string;
+      code?: string;
+      commission_percent?: number;
+      activate?: boolean;
+    }) => {
+      // Reuse public apply for unique code generation
+      const { data, error } = await (supabase as any).rpc('apply_affiliate', {
+        p_name: payload.name,
+        p_whatsapp: payload.whatsapp,
+        p_email: payload.email || null,
+        p_notes: 'Created by admin',
+        p_code: payload.code || null,
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Create failed');
+
+      const id = data.id as string;
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (payload.activate !== false) {
+        updates.status = 'active';
+        updates.approved_at = new Date().toISOString();
+      }
+      if (payload.commission_percent != null) {
+        updates.commission_percent = payload.commission_percent;
+      }
+      const { error: uErr } = await (supabase as any)
+        .from('affiliates')
+        .update(updates)
+        .eq('id', id);
+      if (uErr) throw uErr;
+      return { ...data, status: payload.activate === false ? 'pending' : 'active' };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-affiliates'] });
+    },
+  });
+}
+
 export function useMarkPayoutPaid() {
   const qc = useQueryClient();
   return useMutation({

@@ -1106,6 +1106,22 @@ const AdminOrders = () => {
                     </div>
 
                     {/* Customer Notes Section - Secure Display */}
+                    {(selectedOrder as any).affiliate_code && (
+                      <div className="rounded-xl bg-violet-500/10 border border-violet-500/25 p-3 flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-violet-600">
+                            Affiliate
+                          </p>
+                          <p className="font-mono font-bold text-foreground">
+                            {(selectedOrder as any).affiliate_code}
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">
+                          Commission on complete
+                        </span>
+                      </div>
+                    )}
+
                     {selectedOrder.notes && (
                       <div>
                         <div className="flex items-center gap-2 mb-3 text-warning">
