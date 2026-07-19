@@ -9,6 +9,9 @@ import {
   Link2,
   LayoutDashboard,
   Sparkles,
+  Building2,
+  Smartphone,
+  Bitcoin,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +28,73 @@ import {
 } from '@/hooks/useAffiliate';
 import { buildAffiliateLink } from '@/lib/affiliate';
 import { cn } from '@/lib/utils';
+
+type PayoutMethodKey = 'bank' | 'upi' | 'binance' | 'other';
+
+const PAYOUT_METHODS: {
+  key: PayoutMethodKey;
+  label: string;
+  hint: string;
+  icon: typeof Building2;
+}[] = [
+  {
+    key: 'bank',
+    label: 'Bank transfer (LK)',
+    hint: 'Sri Lankan bank account',
+    icon: Building2,
+  },
+  {
+    key: 'upi',
+    label: 'UPI (India)',
+    hint: 'GPay / PhonePe / UPI ID',
+    icon: Smartphone,
+  },
+  {
+    key: 'binance',
+    label: 'Binance / USDT',
+    hint: 'Binance ID or wallet',
+    icon: Bitcoin,
+  },
+  {
+    key: 'other',
+    label: 'Other',
+    hint: 'Describe how we pay you',
+    icon: Wallet,
+  },
+];
+
+function methodLabel(key: PayoutMethodKey): string {
+  return PAYOUT_METHODS.find((m) => m.key === key)?.label || key;
+}
+
+function buildPayoutNote(
+  key: PayoutMethodKey,
+  d: {
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    upiId: string;
+    binanceId: string;
+    other: string;
+  },
+): string {
+  switch (key) {
+    case 'bank':
+      return [
+        `Bank: ${d.bankName.trim()}`,
+        `Account name: ${d.accountName.trim()}`,
+        `Account number: ${d.accountNumber.trim()}`,
+      ].join('\n');
+    case 'upi':
+      return `UPI ID: ${d.upiId.trim()}`;
+    case 'binance':
+      return `Binance / USDT: ${d.binanceId.trim()}`;
+    case 'other':
+      return d.other.trim();
+    default:
+      return '';
+  }
+}
 
 const AffiliatePage = () => {
   const { toast } = useToast();
@@ -57,7 +127,15 @@ const AffiliatePage = () => {
   );
 
   const [payoutAmount, setPayoutAmount] = useState('');
-  const [payoutMethod, setPayoutMethod] = useState('');
+  const [payoutMethodKey, setPayoutMethodKey] = useState<PayoutMethodKey>('bank');
+  const [payoutDetails, setPayoutDetails] = useState({
+    bankName: '',
+    accountName: '',
+    accountNumber: '',
+    upiId: '',
+    binanceId: '',
+    other: '',
+  });
 
   const link = useMemo(() => {
     if (dash.data?.link) return dash.data.link;
@@ -111,14 +189,78 @@ const AffiliatePage = () => {
   const onPayout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session) return;
+
+    const amount = Number(payoutAmount);
+    const minPayout = Number((dash.data as any)?.rules?.min_payout) || 2000;
+    const available = Number(dash.data?.totals?.available) || 0;
+
+    if (!Number.isFinite(amount) || amount < minPayout) {
+      toast({
+        title: 'Invalid amount',
+        description: `Minimum payout is Rs. ${minPayout.toLocaleString()}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (amount > available) {
+      toast({
+        title: 'Too much',
+        description: `Available balance is Rs. ${available.toLocaleString()}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const note = buildPayoutNote(payoutMethodKey, payoutDetails);
+    if (!note || note.length < 4) {
+      toast({
+        title: 'Payout details required',
+        description: 'Fill in where we should send your money.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Method-specific validation
+    if (payoutMethodKey === 'bank') {
+      if (!payoutDetails.bankName.trim() || !payoutDetails.accountName.trim() || !payoutDetails.accountNumber.trim()) {
+        toast({
+          title: 'Bank details incomplete',
+          description: 'Bank name, account name, and account number are required.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+    if (payoutMethodKey === 'upi' && !payoutDetails.upiId.includes('@')) {
+      toast({
+        title: 'Invalid UPI ID',
+        description: 'Enter a full UPI ID like name@ybl or number@oksbi',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (payoutMethodKey === 'binance' && payoutDetails.binanceId.trim().length < 3) {
+      toast({
+        title: 'Binance details required',
+        description: 'Enter your Binance ID or USDT receive details.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
-      await requestPayout.mutateAsync({
+      const res = await requestPayout.mutateAsync({
         code: session.code,
         whatsapp: session.whatsapp,
-        amount: Number(payoutAmount),
-        method: payoutMethod || undefined,
+        amount,
+        method: methodLabel(payoutMethodKey),
+        note,
       });
-      toast({ title: 'Payout requested', description: 'We will process soon.' });
+      toast({
+        title: 'Payout requested',
+        description: (res as any)?.message || 'We will process soon.',
+      });
       setPayoutAmount('');
       dash.refetch();
     } catch (err: any) {
@@ -429,38 +571,273 @@ const AffiliatePage = () => {
                 </div>
 
                 {dash.data!.affiliate.status === 'active' && (
-                  <div className="surface-card p-4 sm:p-5 border border-border">
-                    <h3 className="font-bold mb-3">Request payout</h3>
-                    <form onSubmit={onPayout} className="flex flex-col sm:flex-row gap-2">
-                      <Input
-                        type="number"
-                        min={2000}
-                        step={100}
-                        required
-                        placeholder="Amount (min 2000)"
-                        value={payoutAmount}
-                        onChange={(e) => setPayoutAmount(e.target.value)}
-                        className="h-11"
-                      />
-                      <Input
-                        placeholder="Bank / Binance note"
-                        value={payoutMethod}
-                        onChange={(e) => setPayoutMethod(e.target.value)}
-                        className="h-11"
-                      />
+                  <div className="surface-card p-4 sm:p-5 border border-border space-y-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <h3 className="font-bold text-foreground">Request payout</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Available:{' '}
+                          <strong className="text-foreground tabular-nums">
+                            Rs. {Number(dash.data!.totals.available).toLocaleString()}
+                          </strong>
+                          {' · '}
+                          Min Rs.{' '}
+                          {(dash.data as any)?.rules?.min_payout?.toLocaleString?.() || '2,000'}
+                        </p>
+                      </div>
+                      {Number(dash.data!.totals.available) >=
+                        (Number((dash.data as any)?.rules?.min_payout) || 2000) && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 text-xs font-bold shrink-0"
+                          onClick={() =>
+                            setPayoutAmount(String(Math.floor(Number(dash.data!.totals.available))))
+                          }
+                        >
+                          Use full balance
+                        </Button>
+                      )}
+                    </div>
+
+                    <form onSubmit={onPayout} className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="payout-amount">
+                          Amount (LKR) <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="payout-amount"
+                          type="number"
+                          min={(dash.data as any)?.rules?.min_payout || 2000}
+                          step={100}
+                          required
+                          placeholder="e.g. 2000"
+                          value={payoutAmount}
+                          onChange={(e) => setPayoutAmount(e.target.value)}
+                          className="h-12 text-base"
+                          inputMode="numeric"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>
+                          How should we pay you? <span className="text-destructive">*</span>
+                        </Label>
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
+                          {PAYOUT_METHODS.map((m) => {
+                            const Icon = m.icon;
+                            const active = payoutMethodKey === m.key;
+                            return (
+                              <button
+                                key={m.key}
+                                type="button"
+                                onClick={() => setPayoutMethodKey(m.key)}
+                                className={cn(
+                                  'flex items-start gap-2.5 p-3 rounded-xl border text-left transition-all touch-manipulation min-h-[3.25rem]',
+                                  active
+                                    ? 'border-primary bg-primary/5 shadow-sm'
+                                    : 'border-border hover:border-primary/40 bg-card',
+                                )}
+                              >
+                                <div
+                                  className={cn(
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    active
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-secondary text-muted-foreground',
+                                  )}
+                                >
+                                  <Icon className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0 pt-0.5">
+                                  <p className="text-sm font-bold text-foreground leading-tight">
+                                    {m.label}
+                                  </p>
+                                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                                    {m.hint}
+                                  </p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Method-specific fields */}
+                      <div className="rounded-xl border border-border bg-secondary/30 p-3.5 sm:p-4 space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          Payout details
+                        </p>
+
+                        {payoutMethodKey === 'bank' && (
+                          <div className="space-y-3">
+                            <div className="space-y-1.5">
+                              <Label>Bank name *</Label>
+                              <Input
+                                required
+                                value={payoutDetails.bankName}
+                                onChange={(e) =>
+                                  setPayoutDetails((d) => ({ ...d, bankName: e.target.value }))
+                                }
+                                placeholder="e.g. Sampath Bank"
+                                className="h-11"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label>Account name *</Label>
+                              <Input
+                                required
+                                value={payoutDetails.accountName}
+                                onChange={(e) =>
+                                  setPayoutDetails((d) => ({ ...d, accountName: e.target.value }))
+                                }
+                                placeholder="Name on bank account"
+                                className="h-11"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label>Account number *</Label>
+                              <Input
+                                required
+                                value={payoutDetails.accountNumber}
+                                onChange={(e) =>
+                                  setPayoutDetails((d) => ({
+                                    ...d,
+                                    accountNumber: e.target.value.replace(/[^\d]/g, ''),
+                                  }))
+                                }
+                                placeholder="Account number"
+                                className="h-11 font-mono"
+                                inputMode="numeric"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {payoutMethodKey === 'upi' && (
+                          <div className="space-y-1.5">
+                            <Label>UPI ID (VPA) *</Label>
+                            <Input
+                              required
+                              value={payoutDetails.upiId}
+                              onChange={(e) =>
+                                setPayoutDetails((d) => ({ ...d, upiId: e.target.value.trim() }))
+                              }
+                              placeholder="name@ybl or number@oksbi"
+                              className="h-11 font-mono"
+                              autoCapitalize="off"
+                              autoCorrect="off"
+                            />
+                            <p className="text-[11px] text-muted-foreground">
+                              We will send INR equivalent via UPI to this ID.
+                            </p>
+                          </div>
+                        )}
+
+                        {payoutMethodKey === 'binance' && (
+                          <div className="space-y-1.5">
+                            <Label>Binance ID or USDT details *</Label>
+                            <Input
+                              required
+                              value={payoutDetails.binanceId}
+                              onChange={(e) =>
+                                setPayoutDetails((d) => ({ ...d, binanceId: e.target.value }))
+                              }
+                              placeholder="Binance ID / email / network + address"
+                              className="h-11 font-mono"
+                            />
+                            <p className="text-[11px] text-muted-foreground">
+                              For on-chain USDT, include network (e.g. TRC20) and full address.
+                            </p>
+                          </div>
+                        )}
+
+                        {payoutMethodKey === 'other' && (
+                          <div className="space-y-1.5">
+                            <Label>How to pay you *</Label>
+                            <Textarea
+                              required
+                              value={payoutDetails.other}
+                              onChange={(e) =>
+                                setPayoutDetails((d) => ({ ...d, other: e.target.value }))
+                              }
+                              placeholder="Describe method + account details clearly…"
+                              className="min-h-[88px] text-sm"
+                            />
+                          </div>
+                        )}
+                      </div>
+
                       <Button
                         type="submit"
-                        className="h-11 font-bold shrink-0"
-                        disabled={requestPayout.isPending}
+                        variant="hero"
+                        className="w-full min-h-12 h-12 font-bold touch-manipulation"
+                        disabled={
+                          requestPayout.isPending ||
+                          Number(dash.data!.totals.available) <
+                            (Number((dash.data as any)?.rules?.min_payout) || 2000)
+                        }
                       >
-                        Request
+                        {requestPayout.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <Wallet className="w-4 h-4 mr-2" />
+                        )}
+                        Request payout
                       </Button>
                     </form>
-                    <p className="text-[11px] text-muted-foreground mt-2">
-                      Only from <strong>Available</strong> (not On hold). First payout is checked
-                      manually. Min Rs.{' '}
-                      {(dash.data as any)?.rules?.min_payout?.toLocaleString?.() || '2,000'}.
+
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Only from <strong className="text-foreground">Available</strong> (not On hold).
+                      First payout is checked manually. Double-check details — wrong numbers delay
+                      payment.
                     </p>
+                  </div>
+                )}
+
+                {/* Past payout requests */}
+                {session && dash.data && (dash.data.payouts || []).length > 0 && (
+                  <div className="surface-card p-4 sm:p-5 border border-border">
+                    <h3 className="font-bold mb-3">Payout history</h3>
+                    <div className="space-y-2">
+                      {(dash.data.payouts as any[]).map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex items-start justify-between gap-2 text-sm border-b border-border/50 pb-2.5 last:border-0"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-bold text-foreground">
+                              Rs. {Number(p.amount).toLocaleString()}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {p.method || '—'}
+                              {p.note ? ` · ${String(p.note).slice(0, 80)}${String(p.note).length > 80 ? '…' : ''}` : ''}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground uppercase mt-0.5">
+                              {p.status}
+                              {p.paid_at
+                                ? ` · paid ${new Date(p.paid_at).toLocaleDateString()}`
+                                : p.created_at
+                                  ? ` · ${new Date(p.created_at).toLocaleDateString()}`
+                                  : ''}
+                            </p>
+                          </div>
+                          <span
+                            className={cn(
+                              'text-[10px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 border',
+                              p.status === 'paid'
+                                ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/25'
+                                : p.status === 'requested'
+                                  ? 'bg-amber-500/15 text-amber-700 border-amber-500/25'
+                                  : 'bg-muted text-muted-foreground border-border',
+                            )}
+                          >
+                            {p.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
