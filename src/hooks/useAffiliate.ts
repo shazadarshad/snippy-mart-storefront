@@ -156,6 +156,93 @@ export function useAdminAffiliatePayouts() {
   });
 }
 
+/** Full admin detail for one affiliate: orders + items + commissions + payouts */
+export function useAdminAffiliateDetail(
+  affiliate: { id: string; code: string } | null,
+) {
+  return useQuery({
+    queryKey: ['admin-affiliate-detail', affiliate?.id],
+    enabled: !!affiliate?.id,
+    queryFn: async () => {
+      if (!affiliate) return null;
+      const id = affiliate.id;
+      const code = affiliate.code;
+
+      const [commsRes, payoutsRes, ordersRes] = await Promise.all([
+        (supabase as any)
+          .from('affiliate_commissions')
+          .select('*')
+          .eq('affiliate_id', id)
+          .order('created_at', { ascending: false })
+          .limit(100),
+        (supabase as any)
+          .from('affiliate_payouts')
+          .select('*')
+          .eq('affiliate_id', id)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        (supabase as any)
+          .from('orders')
+          .select(
+            'id, order_number, customer_name, customer_whatsapp, customer_email, total_amount, discount_amount, status, payment_method, affiliate_code, affiliate_id, created_at, updated_at, order_items(id, product_name, plan_name, quantity, unit_price, total_price)',
+          )
+          .or(`affiliate_id.eq.${id},affiliate_code.ilike.${code}`)
+          .order('created_at', { ascending: false })
+          .limit(100),
+      ]);
+
+      if (commsRes.error) throw commsRes.error;
+      if (payoutsRes.error) throw payoutsRes.error;
+      // Orders query may fail if affiliate columns missing on old DB — soft-fail
+      const orders = ordersRes.error ? [] : ordersRes.data || [];
+      const commissions = (commsRes.data || []) as AffiliateCommission[];
+      const payouts = (payoutsRes.data || []) as AffiliatePayout[];
+
+      const sumBy = (status: string) =>
+        commissions
+          .filter((c) => c.status === status)
+          .reduce((s, c) => s + Number(c.commission_amount || 0), 0);
+
+      const held = commissions
+        .filter(
+          (c) =>
+            c.status === 'pending' &&
+            (c as any).hold_until &&
+            new Date((c as any).hold_until) > new Date(),
+        )
+        .reduce((s, c) => s + Number(c.commission_amount || 0), 0);
+
+      const completedOrders = orders.filter(
+        (o: any) => o.status === 'completed' || o.status === 'delivered',
+      );
+
+      return {
+        commissions,
+        payouts,
+        orders: orders as any[],
+        stats: {
+          ordersTotal: orders.length,
+          ordersCompleted: completedOrders.length,
+          salesVolume: completedOrders.reduce(
+            (s: number, o: any) => s + Number(o.total_amount || 0),
+            0,
+          ),
+          commissionPending: sumBy('pending'),
+          commissionHeld: held,
+          commissionApproved: sumBy('approved'),
+          commissionPaid: sumBy('paid'),
+          payoutsRequested: payouts
+            .filter((p) => p.status === 'requested')
+            .reduce((s, p) => s + Number(p.amount || 0), 0),
+          payoutsPaid: payouts
+            .filter((p) => p.status === 'paid')
+            .reduce((s, p) => s + Number(p.amount || 0), 0),
+        },
+      };
+    },
+  });
+}
+
 export function useUpdateAffiliate() {
   const qc = useQueryClient();
   return useMutation({
