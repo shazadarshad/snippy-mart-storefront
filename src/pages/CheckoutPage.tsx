@@ -630,11 +630,20 @@ const CheckoutPage = () => {
               {/* Policy acceptance — required before submit */}
               <div
                 id="policy-accept"
+                role="button"
+                tabIndex={0}
+                onClick={() => setAcceptedPolicies((v) => !v)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setAcceptedPolicies((v) => !v);
+                  }
+                }}
                 className={cn(
-                  'p-3.5 sm:p-4 rounded-2xl border transition-colors',
+                  'p-3.5 sm:p-4 rounded-2xl border-2 transition-colors cursor-pointer select-none touch-manipulation',
                   acceptedPolicies
-                    ? 'bg-emerald-500/5 border-emerald-500/25'
-                    : 'bg-card border-border shadow-sm',
+                    ? 'bg-emerald-500/5 border-emerald-500/35'
+                    : 'bg-amber-500/5 border-amber-500/40 shadow-sm',
                 )}
               >
                 <div className="flex items-start gap-3">
@@ -642,19 +651,17 @@ const CheckoutPage = () => {
                     id="accept-policies"
                     checked={acceptedPolicies}
                     onCheckedChange={(v) => setAcceptedPolicies(v === true)}
+                    onClick={(e) => e.stopPropagation()}
                     className="mt-0.5 h-5 w-5 shrink-0 touch-manipulation"
                   />
                   <div className="min-w-0 flex-1">
-                    <Label
-                      htmlFor="accept-policies"
-                      className="text-sm font-medium text-foreground leading-snug cursor-pointer"
-                    >
+                    <p className="text-sm font-semibold text-foreground leading-snug">
                       I have read and agree to the{' '}
                       <Link
                         to="/privacy-policy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary font-semibold underline underline-offset-2 hover:opacity-90"
+                        className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Privacy Policy
@@ -664,13 +671,18 @@ const CheckoutPage = () => {
                         to="/refund-policy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary font-semibold underline underline-offset-2 hover:opacity-90"
+                        className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Refund Policy
                       </Link>
                       <span className="text-destructive"> *</span>
-                    </Label>
+                    </p>
+                    {!acceptedPolicies && (
+                      <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium mt-1.5">
+                        Tap here to accept, then Place Order
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -680,7 +692,7 @@ const CheckoutPage = () => {
                 variant="hero"
                 size="xl"
                 className="w-full min-h-14 h-14 text-base font-bold text-primary-foreground touch-manipulation sticky bottom-2 sm:static z-10 shadow-lg shadow-primary/25"
-                disabled={isSubmitting || !acceptedPolicies}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
@@ -700,11 +712,6 @@ const CheckoutPage = () => {
                   </>
                 )}
               </Button>
-              {!acceptedPolicies && (
-                <p className="text-center text-[11px] text-muted-foreground -mt-2">
-                  Tick the box above to enable Place Order
-                </p>
-              )}
             </form>
           </div>
 
