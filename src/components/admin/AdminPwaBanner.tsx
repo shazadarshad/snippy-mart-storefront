@@ -26,9 +26,10 @@ export function AdminPwaBanner() {
     }
   });
 
-  // Fully settled: installed + alerts on + dismissed → hide
-  if (dismissed && installed && notifyEnabled) return null;
-  if (dismissed && !canInstall && notifyEnabled) return null;
+  // Already on home screen as PWA — no top banner (keeps admin clean)
+  if (installed) return null;
+  if (dismissed && !canInstall) return null;
+  if (dismissed && notifyEnabled) return null;
 
   const onInstall = async () => {
     const res = await promptInstall();
