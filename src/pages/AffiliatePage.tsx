@@ -7,17 +7,20 @@ import {
   Users,
   Wallet,
   Link2,
-  LayoutDashboard,
   Sparkles,
   Building2,
   Smartphone,
   Bitcoin,
+  MessageCircle,
+  Clock,
+  ShieldAlert,
+  LogOut,
+  Share2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SEO from '@/components/seo/SEO';
 import PageHero from '@/components/layout/PageHero';
 import { useToast } from '@/hooks/use-toast';
@@ -27,9 +30,14 @@ import {
   useRequestAffiliatePayout,
 } from '@/hooks/useAffiliate';
 import { buildAffiliateLink } from '@/lib/affiliate';
+import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
 import { cn } from '@/lib/utils';
 
+const SESSION_KEY = 'snippy_aff_session';
+const SUPPORT_WA = '94787767869';
+
 type PayoutMethodKey = 'bank' | 'upi' | 'binance' | 'other';
+type AffSession = { code: string; whatsapp: string };
 
 const PAYOUT_METHODS: {
   key: PayoutMethodKey;
@@ -37,30 +45,10 @@ const PAYOUT_METHODS: {
   hint: string;
   icon: typeof Building2;
 }[] = [
-  {
-    key: 'bank',
-    label: 'Bank transfer (LK)',
-    hint: 'Sri Lankan bank account',
-    icon: Building2,
-  },
-  {
-    key: 'upi',
-    label: 'UPI (India)',
-    hint: 'GPay / PhonePe / UPI ID',
-    icon: Smartphone,
-  },
-  {
-    key: 'binance',
-    label: 'Binance / USDT',
-    hint: 'Binance ID or wallet',
-    icon: Bitcoin,
-  },
-  {
-    key: 'other',
-    label: 'Other',
-    hint: 'Describe how we pay you',
-    icon: Wallet,
-  },
+  { key: 'bank', label: 'Bank transfer (LK)', hint: 'Sri Lankan bank account', icon: Building2 },
+  { key: 'upi', label: 'UPI (India)', hint: 'GPay / PhonePe / UPI ID', icon: Smartphone },
+  { key: 'binance', label: 'Binance / USDT', hint: 'Binance ID or wallet', icon: Bitcoin },
+  { key: 'other', label: 'Other', hint: 'Describe how we pay you', icon: Wallet },
 ];
 
 function methodLabel(key: PayoutMethodKey): string {
@@ -96,11 +84,53 @@ function buildPayoutNote(
   }
 }
 
+function normalizeSessionWhatsApp(raw: string): string {
+  const wa = toWhatsAppDigits(raw, { defaultCountry: 'LK' });
+  return wa.ok ? wa.digits : raw.trim();
+}
+
+function loadSession(): AffSession | null {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as AffSession;
+    if (p?.code && p?.whatsapp) {
+      return { code: String(p.code).toUpperCase(), whatsapp: String(p.whatsapp) };
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function saveSession(s: AffSession) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function shareMessage(code: string, link: string) {
+  return [
+    'Hey! 👋',
+    '',
+    'I use Snippy Mart for digital tools & subscriptions — fair prices, fast delivery.',
+    '',
+    `Shop with my link (saves you hassle):`,
+    link,
+    '',
+    'Or open snippymart.com and use my ref if asked.',
+    `Code: ${code}`,
+  ].join('\n');
+}
+
 const AffiliatePage = () => {
   const { toast } = useToast();
   const apply = useApplyAffiliate();
   const requestPayout = useRequestAffiliatePayout();
 
+  const [guestMode, setGuestMode] = useState<'apply' | 'login'>('apply');
   const [form, setForm] = useState({
     name: '',
     whatsapp: '',
@@ -108,17 +138,8 @@ const AffiliatePage = () => {
     notes: '',
     code: '',
   });
-  const [appliedCode, setAppliedCode] = useState<string | null>(null);
-
   const [login, setLogin] = useState({ code: '', whatsapp: '' });
-  const [session, setSession] = useState<{ code: string; whatsapp: string } | null>(() => {
-    try {
-      const raw = localStorage.getItem('snippy_aff_session');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [session, setSession] = useState<AffSession | null>(() => loadSession());
 
   const dash = useAffiliateDashboard(
     session?.code || '',
@@ -140,35 +161,52 @@ const AffiliatePage = () => {
   const link = useMemo(() => {
     if (dash.data?.link) return dash.data.link;
     if (session?.code) return buildAffiliateLink(session.code);
-    if (appliedCode) return buildAffiliateLink(appliedCode);
     return '';
-  }, [dash.data?.link, session?.code, appliedCode]);
+  }, [dash.data?.link, session?.code]);
+
+  const waPreview = toWhatsAppDigits(
+    session ? session.whatsapp : guestMode === 'apply' ? form.whatsapp : login.whatsapp,
+    { defaultCountry: 'LK' },
+  );
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: 'Copied', description: `${label} copied` });
   };
 
+  const switchAccount = () => {
+    clearSession();
+    setSession(null);
+    setGuestMode('login');
+    setLogin({ code: '', whatsapp: '' });
+  };
+
   const onApply = async (e: React.FormEvent) => {
     e.preventDefault();
+    const wa = normalizeSessionWhatsApp(form.whatsapp);
+    if (!toWhatsAppDigits(form.whatsapp, { defaultCountry: 'LK' }).ok) {
+      toast({
+        title: 'Check WhatsApp number',
+        description: 'Use a valid number (e.g. 07… becomes +94…).',
+        variant: 'destructive',
+      });
+      return;
+    }
     try {
       const res = await apply.mutateAsync({
-        name: form.name,
-        whatsapp: form.whatsapp,
+        name: form.name.trim(),
+        whatsapp: wa,
         email: form.email || undefined,
         notes: form.notes || undefined,
         code: form.code || undefined,
       });
-      setAppliedCode(res.code);
+      const next: AffSession = { code: res.code, whatsapp: wa };
+      setSession(next);
+      saveSession(next);
       toast({
         title: 'Application sent',
-        description: res.message || `Your code: ${res.code}. We will activate after review.`,
+        description: res.message || `Code ${res.code} — pending approval.`,
       });
-      setSession({ code: res.code, whatsapp: form.whatsapp });
-      localStorage.setItem(
-        'snippy_aff_session',
-        JSON.stringify({ code: res.code, whatsapp: form.whatsapp }),
-      );
     } catch (err: any) {
       toast({
         title: 'Could not apply',
@@ -178,21 +216,34 @@ const AffiliatePage = () => {
     }
   };
 
-  const onLogin = async (e: React.FormEvent) => {
+  const onLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const next = { code: login.code.trim().toUpperCase(), whatsapp: login.whatsapp.trim() };
+    const code = login.code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const wa = normalizeSessionWhatsApp(login.whatsapp);
+    if (code.length < 2) {
+      toast({ title: 'Enter your code', variant: 'destructive' });
+      return;
+    }
+    if (!toWhatsAppDigits(login.whatsapp, { defaultCountry: 'LK' }).ok) {
+      toast({
+        title: 'Check WhatsApp number',
+        description: 'Must match the number you applied with.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const next = { code, whatsapp: wa };
     setSession(next);
-    localStorage.setItem('snippy_aff_session', JSON.stringify(next));
-    toast({ title: 'Loading dashboard…' });
+    saveSession(next);
   };
 
   const onPayout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session) return;
+    if (!session || !dash.data) return;
 
     const amount = Number(payoutAmount);
     const minPayout = Number((dash.data as any)?.rules?.min_payout) || 2000;
-    const available = Number(dash.data?.totals?.available) || 0;
+    const available = Number(dash.data.totals?.available) || 0;
 
     if (!Number.isFinite(amount) || amount < minPayout) {
       toast({
@@ -220,10 +271,12 @@ const AffiliatePage = () => {
       });
       return;
     }
-
-    // Method-specific validation
     if (payoutMethodKey === 'bank') {
-      if (!payoutDetails.bankName.trim() || !payoutDetails.accountName.trim() || !payoutDetails.accountNumber.trim()) {
+      if (
+        !payoutDetails.bankName.trim() ||
+        !payoutDetails.accountName.trim() ||
+        !payoutDetails.accountNumber.trim()
+      ) {
         toast({
           title: 'Bank details incomplete',
           description: 'Bank name, account name, and account number are required.',
@@ -235,7 +288,7 @@ const AffiliatePage = () => {
     if (payoutMethodKey === 'upi' && !payoutDetails.upiId.includes('@')) {
       toast({
         title: 'Invalid UPI ID',
-        description: 'Enter a full UPI ID like name@ybl or number@oksbi',
+        description: 'Enter a full UPI ID like name@ybl',
         variant: 'destructive',
       });
       return;
@@ -272,11 +325,16 @@ const AffiliatePage = () => {
     }
   };
 
+  const status = dash.data?.affiliate?.status;
+  const isActive = status === 'active';
+  const isPending = status === 'pending';
+  const isBlocked = status === 'rejected' || status === 'disabled';
+
   return (
     <div className="min-h-dvh page-mesh pb-safe pb-16 sm:pb-20">
       <SEO
         title="Affiliate Program"
-        description="Earn commission promoting Snippy Mart digital subscriptions. Get your link, share, and get paid."
+        description="Earn ~7% commission promoting Snippy Mart. Share your link, get paid via bank, UPI, or Binance."
       />
       <PageHero
         eyebrow="Partners"
@@ -285,16 +343,25 @@ const AffiliatePage = () => {
             Affiliate <span className="gradient-text">program</span>
           </>
         }
-        description="Share Snippy Mart. Earn ~7% when referred customers complete an order. Simple links. Fair payouts."
+        description="Share one link. Earn when friends complete an order. No password account — just WhatsApp + your code."
       />
 
-      <section className="container mx-auto px-3 sm:px-4 max-w-4xl space-y-8">
-        {/* How it works */}
+      <section className="container mx-auto px-3 sm:px-4 max-w-4xl space-y-6 sm:space-y-8">
+        {/* Program overview — always visible */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { t: '1. Apply', d: 'Get a unique code after we approve you' },
-            { t: '2. Share', d: 'Send your link — snippymart.com/?ref=YOURCODE' },
-            { t: '3. Earn', d: 'Commission after order completes (short hold for refunds)' },
+            {
+              t: '1. Apply',
+              d: 'WhatsApp + name. We review and activate (no signup password).',
+            },
+            {
+              t: '2. Share',
+              d: 'Your link: snippymart.com/?ref=CODE — works on product pages too.',
+            },
+            {
+              t: '3. Earn',
+              d: '~7% when their order completes. Short hold, then request payout.',
+            },
           ].map((s) => (
             <div key={s.t} className="surface-card p-4 border border-border">
               <p className="font-bold text-foreground text-sm">{s.t}</p>
@@ -303,62 +370,78 @@ const AffiliatePage = () => {
           ))}
         </div>
 
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { l: 'Commission', v: '~7%' },
+            { l: 'Min payout', v: 'Rs. 2,000' },
+            { l: 'Hold', v: '~5 days' },
+            { l: 'Self-ref', v: 'Blocked' },
+          ].map((f) => (
+            <div
+              key={f.l}
+              className="rounded-xl border border-border bg-card/80 px-3 py-2.5 text-center"
+            >
+              <p className="text-sm font-black text-foreground tabular-nums">{f.v}</p>
+              <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wide">
+                {f.l}
+              </p>
+            </div>
+          ))}
+        </div>
+
         <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          <p className="font-bold text-foreground mb-1">Fair-use rules</p>
+          <p className="font-bold text-foreground mb-1 flex items-center gap-1.5">
+            <ShieldAlert className="w-4 h-4 text-amber-600" />
+            Fair-use rules
+          </p>
           <ul className="list-disc pl-4 space-y-1">
-            <li>No self-purchases with your own link / same WhatsApp</li>
-            <li>Commission can stay <strong className="text-foreground">on hold ~5 days</strong> after order complete</li>
-            <li>Daily limits apply to stop abuse · first payout is reviewed manually</li>
-            <li>One application per WhatsApp · min payout Rs. 2,000</li>
+            <li>No self-purchases with your link or the same WhatsApp</li>
+            <li>
+              Commission may stay <strong className="text-foreground">on hold ~5 days</strong> after
+              order complete
+            </li>
+            <li>One application per WhatsApp · first payout is reviewed manually</li>
+            <li>Min payout <strong className="text-foreground">Rs. 2,000</strong> from Available balance</li>
           </ul>
         </div>
 
-        <Tabs defaultValue={session ? 'dashboard' : 'apply'} className="w-full">
-          <TabsList className="w-full grid grid-cols-2 h-auto p-1 mb-6">
-            <TabsTrigger value="apply" className="py-2.5 gap-1.5 text-xs sm:text-sm">
-              <Users className="w-4 h-4" />
-              Apply
-            </TabsTrigger>
-            <TabsTrigger value="dashboard" className="py-2.5 gap-1.5 text-xs sm:text-sm">
-              <LayoutDashboard className="w-4 h-4" />
-              Dashboard
-            </TabsTrigger>
-          </TabsList>
+        {/* ─── GUEST: apply or login ─── */}
+        {!session && (
+          <div className="space-y-4">
+            <div className="flex rounded-xl border border-border p-1 bg-secondary/40 gap-1">
+              <button
+                type="button"
+                onClick={() => setGuestMode('apply')}
+                className={cn(
+                  'flex-1 py-2.5 rounded-lg text-sm font-bold touch-manipulation transition-colors',
+                  guestMode === 'apply'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground',
+                )}
+              >
+                Apply
+              </button>
+              <button
+                type="button"
+                onClick={() => setGuestMode('login')}
+                className={cn(
+                  'flex-1 py-2.5 rounded-lg text-sm font-bold touch-manipulation transition-colors',
+                  guestMode === 'login'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground',
+                )}
+              >
+                Open dashboard
+              </button>
+            </div>
 
-          <TabsContent value="apply" className="mt-0">
-            <div className="surface-card p-5 sm:p-8 border border-border">
-              <h2 className="text-lg font-display font-bold mb-1">Join as an affiliate</h2>
-              <p className="text-xs text-muted-foreground mb-6">
-                <strong className="text-foreground">No account signup</strong> — just apply. We
-                approve you, then you open the Dashboard with your <strong>code + WhatsApp</strong>.
-                Default commission <strong className="text-foreground">7%</strong>. Min payout{' '}
-                <strong className="text-foreground">Rs. 2,000</strong>.
-              </p>
-              {appliedCode ? (
-                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-3">
-                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold">
-                    <CheckCircle2 className="w-5 h-5" />
-                    Application received
-                  </div>
-                  <p className="text-sm">
-                    Your code: <span className="font-mono font-black text-lg">{appliedCode}</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Status: pending approval. Open the Dashboard tab anytime with this code + your
-                    WhatsApp.
-                  </p>
-                  {link && (
-                    <Button
-                      variant="outline"
-                      className="w-full h-11 font-bold"
-                      onClick={() => copy(link, 'Affiliate link')}
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy link
-                    </Button>
-                  )}
-                </div>
-              ) : (
+            {guestMode === 'apply' ? (
+              <div className="surface-card p-5 sm:p-8 border border-border">
+                <h2 className="text-lg font-display font-bold mb-1">Join as an affiliate</h2>
+                <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
+                  No password account. Apply with WhatsApp — after approval, open the dashboard with
+                  your <strong className="text-foreground">code + WhatsApp</strong>.
+                </p>
                 <form onSubmit={onApply} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
@@ -369,7 +452,7 @@ const AffiliatePage = () => {
                         required
                         value={form.name}
                         onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                        className="h-11"
+                        className="h-12"
                         placeholder="Your name"
                       />
                     </div>
@@ -381,9 +464,25 @@ const AffiliatePage = () => {
                         required
                         value={form.whatsapp}
                         onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))}
-                        className="h-11"
-                        placeholder="+94 7X XXX XXXX"
+                        className="h-12"
+                        placeholder="077… or +94 7…"
+                        inputMode="tel"
+                        autoComplete="tel"
                       />
+                      {form.whatsapp.trim() && (
+                        <p
+                          className={cn(
+                            'text-[11px] font-medium',
+                            waPreview.ok
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : 'text-amber-700',
+                          )}
+                        >
+                          {waPreview.ok
+                            ? `Saved as ${waPreview.e164Display}${waPreview.fixed ? ' (country code added)' : ''}`
+                            : 'Check number — include country code if outside Sri Lanka'}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -392,7 +491,7 @@ const AffiliatePage = () => {
                       type="email"
                       value={form.email}
                       onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                      className="h-11"
+                      className="h-12"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -405,7 +504,7 @@ const AffiliatePage = () => {
                           code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''),
                         }))
                       }
-                      className="h-11 font-mono"
+                      className="h-12 font-mono"
                       placeholder="e.g. AHMED"
                       maxLength={12}
                     />
@@ -422,7 +521,7 @@ const AffiliatePage = () => {
                   <Button
                     type="submit"
                     variant="hero"
-                    className="w-full h-12 font-bold"
+                    className="w-full min-h-12 h-12 font-bold touch-manipulation"
                     disabled={apply.isPending}
                   >
                     {apply.isPending ? (
@@ -433,16 +532,12 @@ const AffiliatePage = () => {
                     Apply now
                   </Button>
                 </form>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="dashboard" className="mt-0 space-y-4">
-            {!session ? (
+              </div>
+            ) : (
               <div className="surface-card p-5 sm:p-8 border border-border">
                 <h2 className="text-lg font-display font-bold mb-1">Open your dashboard</h2>
                 <p className="text-xs text-muted-foreground mb-6">
-                  Enter the code and WhatsApp you used when applying.
+                  Use the same code and WhatsApp you applied with.
                 </p>
                 <form onSubmit={onLogin} className="space-y-4">
                   <div className="space-y-1.5">
@@ -456,7 +551,7 @@ const AffiliatePage = () => {
                           code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''),
                         }))
                       }
-                      className="h-11 font-mono"
+                      className="h-12 font-mono"
                       placeholder="YOURCODE"
                     />
                   </div>
@@ -466,111 +561,226 @@ const AffiliatePage = () => {
                       required
                       value={login.whatsapp}
                       onChange={(e) => setLogin((l) => ({ ...l, whatsapp: e.target.value }))}
-                      className="h-11"
+                      className="h-12"
+                      placeholder="077… or +94…"
+                      inputMode="tel"
                     />
+                    {login.whatsapp.trim() && waPreview.ok && (
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                        Using {waPreview.e164Display}
+                      </p>
+                    )}
                   </div>
-                  <Button type="submit" className="w-full h-12 font-bold">
+                  <Button type="submit" className="w-full min-h-12 h-12 font-bold touch-manipulation">
                     Open dashboard
                   </Button>
                 </form>
               </div>
-            ) : dash.isLoading ? (
-              <div className="flex justify-center py-16">
+            )}
+          </div>
+        )}
+
+        {/* ─── PARTNER HUB (no apply form) ─── */}
+        {session && (
+          <div className="space-y-4">
+            {dash.isLoading && (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Loading your partner hub…</p>
               </div>
-            ) : dash.isError ? (
+            )}
+
+            {dash.isError && (
               <div className="surface-card p-6 border border-destructive/30 text-center space-y-3">
                 <p className="text-sm text-destructive font-semibold">
-                  {(dash.error as Error)?.message || 'Could not load'}
+                  {(dash.error as Error)?.message || 'Could not load dashboard'}
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSession(null);
-                    localStorage.removeItem('snippy_aff_session');
-                  }}
-                >
-                  Try again
+                <p className="text-xs text-muted-foreground">
+                  Check code + WhatsApp match your application. Local 07… is normalized to +94.
+                </p>
+                <Button variant="outline" className="h-11 font-bold" onClick={switchAccount}>
+                  Try another account
                 </Button>
               </div>
-            ) : (
+            )}
+
+            {dash.data && !dash.isLoading && (
               <>
+                {/* Header */}
                 <div className="surface-card p-4 sm:p-5 border border-border">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        {dash.data!.affiliate.name}
+                        {dash.data.affiliate.name}
                       </p>
-                      <p className="font-mono text-2xl font-black text-foreground">
-                        {dash.data!.affiliate.code}
+                      <p className="font-mono text-2xl font-black text-foreground break-all">
+                        {dash.data.affiliate.code}
                       </p>
-                      <p
-                        className={cn(
-                          'text-xs font-bold mt-1 uppercase',
-                          dash.data!.affiliate.status === 'active'
-                            ? 'text-emerald-600'
-                            : dash.data!.affiliate.status === 'pending'
-                              ? 'text-amber-600'
-                              : 'text-muted-foreground',
-                        )}
-                      >
-                        {dash.data!.affiliate.status} · {dash.data!.affiliate.commission_percent}%
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                        <span
+                          className={cn(
+                            'text-[10px] font-black uppercase px-2 py-0.5 rounded-full border',
+                            isActive &&
+                              'bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-400',
+                            isPending &&
+                              'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400',
+                            isBlocked &&
+                              'bg-destructive/10 text-destructive border-destructive/25',
+                          )}
+                        >
+                          {status}
+                        </span>
+                        <span className="text-xs font-bold text-muted-foreground">
+                          {dash.data.affiliate.commission_percent}% commission
+                        </span>
+                      </div>
                     </div>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setSession(null);
-                        localStorage.removeItem('snippy_aff_session');
-                      }}
+                      className="h-10 font-bold shrink-0 touch-manipulation"
+                      onClick={switchAccount}
                     >
+                      <LogOut className="w-4 h-4 mr-1.5" />
                       Switch account
                     </Button>
                   </div>
-                  {link && (
-                    <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                </div>
+
+                {/* Pending */}
+                {isPending && (
+                  <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+                        <Clock className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-foreground">Application received</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
+                          You’re pending approval. Keep your code safe. We’ll activate you after
+                          review — then you can share your link and earn.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex-1 rounded-xl bg-background/80 border border-border px-3 py-2.5 font-mono font-black text-lg text-center sm:text-left">
+                        {dash.data.affiliate.code}
+                      </div>
+                      <Button
+                        className="h-11 font-bold shrink-0"
+                        variant="outline"
+                        onClick={() => copy(dash.data!.affiliate.code, 'Code')}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy code
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Commission only starts after your status is <strong>active</strong>.
+                    </p>
+                  </div>
+                )}
+
+                {/* Blocked */}
+                {isBlocked && (
+                  <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 sm:p-5 space-y-3">
+                    <p className="font-bold text-foreground">
+                      This partner account is {status}
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      You can’t request payouts or earn new commissions. Message support if you
+                      think this is a mistake.
+                    </p>
+                    <Button variant="whatsapp" className="w-full min-h-11 h-11 font-bold" asChild>
+                      <a
+                        href={`https://wa.me/${SUPPORT_WA}?text=${encodeURIComponent(
+                          `Hi, my affiliate code ${dash.data.affiliate.code} is ${status}. Please help.`,
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Contact support
+                      </a>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Active: share kit */}
+                {isActive && link && (
+                  <div className="surface-card p-4 sm:p-5 border border-border space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Share2 className="w-4 h-4 text-primary" />
+                      <h3 className="font-bold text-foreground">Share & earn</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      You’re live. Share this link — when someone buys and the order completes, you
+                      earn ~{dash.data.affiliate.commission_percent}%.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input readOnly value={link} className="font-mono text-xs h-11" />
                       <Button
-                        className="h-11 shrink-0 font-bold"
-                        onClick={() => copy(link, 'Link')}
+                        className="h-11 shrink-0 font-bold touch-manipulation"
+                        onClick={() => copy(link, 'Affiliate link')}
                       >
                         <Copy className="w-4 h-4 mr-2" />
                         Copy link
                       </Button>
                     </div>
-                  )}
-                </div>
+                    <Button
+                      variant="outline"
+                      className="w-full h-11 font-bold touch-manipulation"
+                      onClick={() =>
+                        copy(
+                          shareMessage(dash.data!.affiliate.code, link),
+                          'WhatsApp pitch',
+                        )
+                      }
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Copy WhatsApp pitch
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Tip: product links work too — open any product and add{' '}
+                      <span className="font-mono text-foreground">?ref={dash.data.affiliate.code}</span>{' '}
+                      (or use the home link above).
+                    </p>
+                  </div>
+                )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                  {[
-                    {
-                      l: 'On hold',
-                      v: (dash.data!.totals as any).held ?? dash.data!.totals.pending,
-                      icon: Wallet,
-                    },
-                    { l: 'Available', v: dash.data!.totals.available, icon: CheckCircle2 },
-                    { l: 'Paid', v: dash.data!.totals.paid, icon: Sparkles },
-                    {
-                      l: 'Rate',
-                      v: `${dash.data!.affiliate.commission_percent}%`,
-                      icon: Link2,
-                      raw: true,
-                    },
-                  ].map((s) => (
-                    <div key={s.l} className="surface-card p-3 border border-border">
-                      <s.icon className="w-4 h-4 text-primary mb-2" />
-                      <p className="text-lg font-black tabular-nums">
-                        {s.raw ? s.v : `Rs. ${Number(s.v).toLocaleString()}`}
-                      </p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase">
-                        {s.l}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                {/* Stats — active or pending with zeros ok */}
+                {(isActive || isPending) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                    {[
+                      {
+                        l: 'On hold',
+                        v: (dash.data.totals as any).held ?? dash.data.totals.pending,
+                        icon: Wallet,
+                      },
+                      { l: 'Available', v: dash.data.totals.available, icon: CheckCircle2 },
+                      { l: 'Paid', v: dash.data.totals.paid, icon: Sparkles },
+                      {
+                        l: 'Rate',
+                        v: `${dash.data.affiliate.commission_percent}%`,
+                        icon: Link2,
+                        raw: true,
+                      },
+                    ].map((s) => (
+                      <div key={s.l} className="surface-card p-3 border border-border">
+                        <s.icon className="w-4 h-4 text-primary mb-2" />
+                        <p className="text-lg font-black tabular-nums">
+                          {s.raw ? s.v : `Rs. ${Number(s.v).toLocaleString()}`}
+                        </p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                          {s.l}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                {dash.data!.affiliate.status === 'active' && (
+                {/* Payout — active only */}
+                {isActive && (
                   <div className="surface-card p-4 sm:p-5 border border-border space-y-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
@@ -578,14 +788,14 @@ const AffiliatePage = () => {
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Available:{' '}
                           <strong className="text-foreground tabular-nums">
-                            Rs. {Number(dash.data!.totals.available).toLocaleString()}
+                            Rs. {Number(dash.data.totals.available).toLocaleString()}
                           </strong>
                           {' · '}
                           Min Rs.{' '}
                           {(dash.data as any)?.rules?.min_payout?.toLocaleString?.() || '2,000'}
                         </p>
                       </div>
-                      {Number(dash.data!.totals.available) >=
+                      {Number(dash.data.totals.available) >=
                         (Number((dash.data as any)?.rules?.min_payout) || 2000) && (
                         <Button
                           type="button"
@@ -593,7 +803,9 @@ const AffiliatePage = () => {
                           size="sm"
                           className="h-9 text-xs font-bold shrink-0"
                           onClick={() =>
-                            setPayoutAmount(String(Math.floor(Number(dash.data!.totals.available))))
+                            setPayoutAmount(
+                              String(Math.floor(Number(dash.data!.totals.available))),
+                            )
                           }
                         >
                           Use full balance
@@ -664,7 +876,6 @@ const AffiliatePage = () => {
                         </div>
                       </div>
 
-                      {/* Method-specific fields */}
                       <div className="rounded-xl border border-border bg-secondary/30 p-3.5 sm:p-4 space-y-3">
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                           Payout details
@@ -729,9 +940,6 @@ const AffiliatePage = () => {
                               autoCapitalize="off"
                               autoCorrect="off"
                             />
-                            <p className="text-[11px] text-muted-foreground">
-                              We will send INR equivalent via UPI to this ID.
-                            </p>
                           </div>
                         )}
 
@@ -744,12 +952,9 @@ const AffiliatePage = () => {
                               onChange={(e) =>
                                 setPayoutDetails((d) => ({ ...d, binanceId: e.target.value }))
                               }
-                              placeholder="Binance ID / email / network + address"
+                              placeholder="Binance ID / network + address"
                               className="h-11 font-mono"
                             />
-                            <p className="text-[11px] text-muted-foreground">
-                              For on-chain USDT, include network (e.g. TRC20) and full address.
-                            </p>
                           </div>
                         )}
 
@@ -775,7 +980,7 @@ const AffiliatePage = () => {
                         className="w-full min-h-12 h-12 font-bold touch-manipulation"
                         disabled={
                           requestPayout.isPending ||
-                          Number(dash.data!.totals.available) <
+                          Number(dash.data.totals.available) <
                             (Number((dash.data as any)?.rules?.min_payout) || 2000)
                         }
                       >
@@ -789,15 +994,14 @@ const AffiliatePage = () => {
                     </form>
 
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Only from <strong className="text-foreground">Available</strong> (not On hold).
-                      First payout is checked manually. Double-check details — wrong numbers delay
-                      payment.
+                      Only from <strong className="text-foreground">Available</strong> (not On
+                      hold). First payout is checked manually.
                     </p>
                   </div>
                 )}
 
-                {/* Past payout requests */}
-                {session && dash.data && (dash.data.payouts || []).length > 0 && (
+                {/* Payout history */}
+                {(dash.data.payouts || []).length > 0 && (
                   <div className="surface-card p-4 sm:p-5 border border-border">
                     <h3 className="font-bold mb-3">Payout history</h3>
                     <div className="space-y-2">
@@ -810,9 +1014,11 @@ const AffiliatePage = () => {
                             <p className="font-bold text-foreground">
                               Rs. {Number(p.amount).toLocaleString()}
                             </p>
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-[11px] text-muted-foreground whitespace-pre-wrap break-words">
                               {p.method || '—'}
-                              {p.note ? ` · ${String(p.note).slice(0, 80)}${String(p.note).length > 80 ? '…' : ''}` : ''}
+                              {p.note
+                                ? `\n${String(p.note).slice(0, 120)}${String(p.note).length > 120 ? '…' : ''}`
+                                : ''}
                             </p>
                             <p className="text-[10px] text-muted-foreground uppercase mt-0.5">
                               {p.status}
@@ -841,44 +1047,60 @@ const AffiliatePage = () => {
                   </div>
                 )}
 
-                <div className="surface-card p-4 sm:p-5 border border-border">
-                  <h3 className="font-bold mb-3">Recent commissions</h3>
-                  {(dash.data!.commissions || []).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No commissions yet. Share your link!</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {dash.data!.commissions.map((c: any) => (
-                        <div
-                          key={c.id}
-                          className="flex items-center justify-between gap-2 text-sm border-b border-border/50 pb-2"
-                        >
-                          <div className="min-w-0">
-                            <p className="font-mono font-bold truncate">{c.order_number}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">
-                              {c.status}
-                              {c.hold_until && c.status === 'pending'
-                                ? ` · hold until ${new Date(c.hold_until).toLocaleDateString()}`
-                                : ''}{' '}
-                              · {c.commission_percent}%
+                {/* Commissions */}
+                {(isActive || isPending) && (
+                  <div className="surface-card p-4 sm:p-5 border border-border">
+                    <h3 className="font-bold mb-3">Recent commissions</h3>
+                    {(dash.data.commissions || []).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        {isPending
+                          ? 'No commissions yet — share after you’re approved.'
+                          : 'No commissions yet. Share your link!'}
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {(dash.data.commissions as any[]).map((c) => (
+                          <div
+                            key={c.id}
+                            className="flex items-center justify-between gap-2 text-sm border-b border-border/50 pb-2 last:border-0"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-mono font-bold truncate">{c.order_number}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">
+                                {c.status}
+                                {c.hold_until && c.status === 'pending'
+                                  ? ` · hold until ${new Date(c.hold_until).toLocaleDateString()}`
+                                  : ''}{' '}
+                                · {c.commission_percent}%
+                              </p>
+                            </div>
+                            <p className="font-black tabular-nums shrink-0">
+                              Rs. {Number(c.commission_amount).toLocaleString()}
                             </p>
                           </div>
-                          <p className="font-black tabular-nums shrink-0">
-                            Rs. {Number(c.commission_amount).toLocaleString()}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
 
         <p className="text-center text-xs text-muted-foreground pb-8">
           Questions?{' '}
+          <a
+            href={`https://wa.me/${SUPPORT_WA}`}
+            className="text-primary font-semibold hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp support
+          </a>
+          {' · '}
           <Link to="/contact" className="text-primary font-semibold hover:underline">
-            Contact us
+            Contact
           </Link>
           {' · '}
           <Link to="/refund-policy" className="text-primary font-semibold hover:underline">

@@ -421,7 +421,7 @@ const AdminAffiliates = () => {
                   </p>
                 </div>
                 {p.note && (
-                  <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium whitespace-pre-wrap break-words rounded-lg bg-amber-500/5 border border-amber-500/15 p-2">
                     {p.note}
                   </p>
                 )}
