@@ -27,12 +27,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { AdminPwaBanner } from '@/components/admin/AdminPwaBanner';
+import { useAdminOrderAlerts } from '@/hooks/useAdminOrderAlerts';
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, isAdmin, loading, signOut } = useAuth();
+
+  // New-order toast + system notifications (when enabled)
+  useAdminOrderAlerts(!!user && !!isAdmin && !loading);
 
   // Redirect to auth page if not logged in or not admin
   useEffect(() => {
@@ -87,23 +92,23 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-safe">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border z-[60] flex items-center justify-between px-4 transition-all duration-300">
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border z-[60] flex items-center justify-between px-4 transition-all duration-300 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
             <Sparkles className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
             <span className="font-display font-black text-foreground text-sm uppercase tracking-wider block leading-none">Snippy Admin</span>
-            <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase opacity-70">Mobile Panel</span>
+            <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase opacity-70">Mobile App</span>
           </div>
         </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="w-10 h-10 rounded-xl hover:bg-secondary"
+          className="w-10 h-10 rounded-xl hover:bg-secondary touch-manipulation"
         >
           {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>
@@ -200,7 +205,8 @@ const AdminLayout = () => {
 
       {/* Main Content */}
       <main className="lg:pl-64 pt-16 lg:pt-0 min-h-screen">
-        <div className="p-6 lg:p-8">
+        <AdminPwaBanner />
+        <div className="p-4 sm:p-6 lg:p-8">
           <Outlet />
         </div>
       </main>

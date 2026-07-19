@@ -61,6 +61,18 @@
     "prefer_related_applications": false,
     "shortcuts": [
         {
+            "name": "Admin orders",
+            "short_name": "Admin",
+            "description": "Open Snippy Admin orders",
+            "url": "/admin/orders",
+            "icons": [
+                {
+                    "src": "/android-chrome-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
             "name": "Browse All Products",
             "short_name": "Products",
             "description": "View all digital subscriptions",
