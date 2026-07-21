@@ -883,44 +883,70 @@ const AdminOrders = () => {
         Showing {filteredOrders.length} of {orders.length} orders
       </p>
 
-      {/* Super Detailed Order Inspector */}
+      {/* Order detail — mobile bottom sheet / desktop modal */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-border sm:border-none rounded-2xl sm:rounded-3xl shadow-2xl w-[min(100vw-1rem,42rem)] sm:w-full max-h-[min(92dvh,900px)]">
+        <DialogContent
+          className={cn(
+            'p-0 gap-0 overflow-hidden bg-card border-border shadow-2xl',
+            // Mobile: bottom sheet, almost full height
+            'w-[calc(100vw-0.5rem)] max-w-none',
+            'max-h-[min(94dvh,calc(100dvh-env(safe-area-inset-top)-0.5rem))]',
+            'rounded-t-2xl rounded-b-none sm:rounded-2xl',
+            'left-1/2 -translate-x-1/2',
+            'top-auto bottom-0 translate-y-0',
+            'sm:top-1/2 sm:bottom-auto sm:-translate-y-1/2',
+            'sm:w-full sm:max-w-2xl',
+            'sm:max-h-[min(90dvh,880px)]',
+            'flex flex-col',
+          )}
+        >
           {selectedOrder && (
-            <div className="flex flex-col max-h-[min(92dvh,900px)]">
-              {/* Modal Header */}
-              <div className={cn(
-                'p-5 md:p-8 text-primary-foreground relative',
-                isClaudePreOrder(selectedOrder)
-                  ? 'bg-gradient-to-br from-orange-600 to-amber-600'
-                  : 'bg-primary'
-              )}>
-                <div className="flex items-center gap-2 mb-2 opacity-80 flex-wrap">
-                  {isClaudePreOrder(selectedOrder) ? (
-                    <>
-                      <Zap className="w-4 h-4 text-primary-foreground shrink-0" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">Claude Pre-Order</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-4 h-4 text-primary-foreground shrink-0" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">Audit Report</span>
-                    </>
-                  )}
-                </div>
-                <h2 className="text-xl md:text-3xl font-display font-black mb-1 truncate pr-20">{selectedOrder.order_number}</h2>
-                <p className="text-primary-foreground/60 text-[10px] md:text-sm font-medium">
-                  {isClaudePreOrder(selectedOrder)
-                    ? `${parseClaudePreOrder(selectedOrder)?.plan || 'Team'} · ${claudeStageLabel(parseClaudePreOrder(selectedOrder)!.stage)}`
-                    : 'Secured Entry • Verified System'}
-                </p>
-                <div className={`absolute top-4 right-4 md:top-6 md:right-6 px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-xs font-black uppercase border-2 ${getStatusColor(selectedOrder.status)} bg-white shadow-xl`}>
-                  {adminStatusLabel(selectedOrder.status)}
+            <div className="flex flex-col min-h-0 flex-1 max-h-[inherit]">
+              {/* Compact sticky header */}
+              <div
+                className={cn(
+                  'shrink-0 px-3.5 pt-3.5 pb-3 sm:px-5 sm:pt-4 sm:pb-3.5 text-primary-foreground relative',
+                  isClaudePreOrder(selectedOrder)
+                    ? 'bg-gradient-to-br from-orange-600 to-amber-600'
+                    : 'bg-primary',
+                )}
+              >
+                {/* drag affordance on mobile */}
+                <div className="sm:hidden w-10 h-1 rounded-full bg-white/30 mx-auto mb-2.5" />
+                <div className="flex items-start justify-between gap-3 pr-10">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 mb-1 opacity-90">
+                      {isClaudePreOrder(selectedOrder) ? (
+                        <Zap className="w-3.5 h-3.5 shrink-0" />
+                      ) : (
+                        <Package className="w-3.5 h-3.5 shrink-0" />
+                      )}
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
+                        {isClaudePreOrder(selectedOrder) ? 'Claude pre-order' : 'Order'}
+                      </span>
+                    </div>
+                    <h2 className="text-base sm:text-xl font-display font-black leading-tight break-all">
+                      {selectedOrder.order_number}
+                    </h2>
+                    <p className="text-primary-foreground/75 text-[11px] sm:text-xs font-medium mt-0.5 line-clamp-2">
+                      {isClaudePreOrder(selectedOrder)
+                        ? `${parseClaudePreOrder(selectedOrder)?.plan || 'Team'} · ${claudeStageLabel(parseClaudePreOrder(selectedOrder)!.stage)}`
+                        : `${selectedOrder.customer_name || 'Customer'} · ${formatWhatsAppDisplay(selectedOrder.customer_whatsapp)}`}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      'shrink-0 mt-0.5 px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase border-2 bg-white shadow-md max-w-[7.5rem] text-center leading-tight',
+                      getStatusColor(selectedOrder.status),
+                    )}
+                  >
+                    {adminStatusLabel(selectedOrder.status)}
+                  </span>
                 </div>
               </div>
 
-              {/* Modal Content */}
-              <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
+              {/* Scroll body */}
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3.5 sm:px-5 sm:py-5 space-y-4 sm:space-y-6 custom-scrollbar pb-safe">
                 {(() => {
                   const claude = parseClaudePreOrder(selectedOrder);
                   if (!claude) return null;
@@ -1087,38 +1113,38 @@ const AdminOrders = () => {
                   );
                 })()}
 
-                {/* Section: Customer Intelligence */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                  <div className="space-y-6">
+                {/* Customer + payment — stack on mobile */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-6">
+                  <div className="space-y-3.5 sm:space-y-6 min-w-0">
                     <div>
-                      <div className="flex items-center gap-2 mb-3 text-primary">
-                        <User className="w-4 h-4" />
-                        <h3 className="text-xs font-black uppercase tracking-wider">Customer Profile</h3>
+                      <div className="flex items-center gap-2 mb-2 sm:mb-3 text-primary">
+                        <User className="w-4 h-4 shrink-0" />
+                        <h3 className="text-[11px] sm:text-xs font-black uppercase tracking-wider">Customer</h3>
                       </div>
-                      <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-3">
+                      <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-secondary/50 border border-border space-y-2.5 sm:space-y-3">
                         <div>
-                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Legal Name</p>
-                          <p className="text-sm font-bold text-foreground">{selectedOrder.customer_name}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Name</p>
+                          <p className="text-sm font-bold text-foreground break-words">{selectedOrder.customer_name}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Contact Channel</p>
-                          <p className="text-sm font-bold text-foreground flex items-center gap-2 break-all">
-                            {formatWhatsAppDisplay(selectedOrder.customer_whatsapp)}
-                            <MessageCircle className="w-3.5 h-3.5 text-success shrink-0" />
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">WhatsApp</p>
+                          <p className="text-sm font-bold text-foreground flex items-start gap-2 break-all">
+                            <span className="min-w-0">{formatWhatsAppDisplay(selectedOrder.customer_whatsapp)}</span>
+                            <MessageCircle className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
                           </p>
                           {selectedOrder.customer_whatsapp &&
                             formatWhatsAppDisplay(selectedOrder.customer_whatsapp) !==
                               selectedOrder.customer_whatsapp && (
-                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                              <p className="text-[10px] text-muted-foreground mt-0.5 break-all">
                                 Entered: {selectedOrder.customer_whatsapp}
                               </p>
                             )}
                         </div>
                         <div>
-                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Origin Country</p>
+                          <p className="text-[10px] text-muted-foreground uppercase font-bold">Country</p>
                           <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                            <span className="text-xl">{getCountryFlag(selectedOrder.customer_country)}</span>
-                            {selectedOrder.customer_country || 'Unknown'}
+                            <span className="text-lg sm:text-xl">{getCountryFlag(selectedOrder.customer_country)}</span>
+                            <span className="min-w-0 break-words">{selectedOrder.customer_country || 'Unknown'}</span>
                           </p>
                         </div>
                       </div>
@@ -1660,70 +1686,73 @@ const AdminOrders = () => {
                     </div>
                   )}
 
-                  {/* Enterprise Security Intelligence */}
-                  <div className="pt-4 border-t border-border/50">
-                    <p className="text-[10px] text-muted-foreground uppercase font-black mb-3 tracking-widest pl-1">Security Intelligence</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <Monitor className="w-3.5 h-3.5 text-primary" />
-                          <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Environment</span>
-                        </div>
-                        <p className="text-[10px] font-bold text-foreground truncate" title={selectedOrder.user_agent || 'Unknown'}>
-                          {selectedOrder.user_agent ? selectedOrder.user_agent.split(')')[0] + ')' : 'Browser Fingerprint'}
+                  {/* Security — collapsed by default (cleaner on mobile) */}
+                  <details className="group rounded-xl border border-border bg-secondary/20">
+                    <summary className="cursor-pointer list-none flex items-center justify-between gap-2 p-3 touch-manipulation [&::-webkit-details-marker]:hidden">
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        <ShieldAlert className="w-4 h-4 shrink-0 text-destructive" />
+                        <span className="text-[11px] font-black uppercase tracking-wider">Security details</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground">
+                        <span className="group-open:hidden">Show</span>
+                        <span className="hidden group-open:inline">Hide</span>
+                      </span>
+                    </summary>
+                    <div className="px-3 pb-3 grid grid-cols-1 xs:grid-cols-2 gap-2">
+                      <div className="p-2.5 rounded-xl bg-secondary/50 border border-border min-w-0">
+                        <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">Browser</p>
+                        <p className="text-[10px] font-bold text-foreground break-all leading-snug">
+                          {selectedOrder.user_agent
+                            ? selectedOrder.user_agent.split(')')[0] + ')'
+                            : 'Unknown'}
                         </p>
                       </div>
-                      <div className="p-3 rounded-xl bg-success/5 border border-success/10">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <Activity className="w-3.5 h-3.5 text-success" />
-                          <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Network Node</span>
-                        </div>
-                        <p className="text-[10px] font-bold text-foreground">
-                          {selectedOrder.client_ip || 'Masked (SECURE)'}
+                      <div className="p-2.5 rounded-xl bg-secondary/50 border border-border min-w-0">
+                        <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">IP</p>
+                        <p className="text-[10px] font-bold text-foreground break-all">
+                          {selectedOrder.client_ip || 'Masked'}
                         </p>
                       </div>
                       {selectedOrder.security_metadata && (
                         <>
-                          <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <Cpu className="w-3.5 h-3.5 text-amber-500" />
-                              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Hardware Pulse</span>
-                            </div>
-                            <p className="text-[10px] font-bold text-foreground">
-                              {selectedOrder.security_metadata.platform} • {selectedOrder.security_metadata.hardware_concurrency} Core
+                          <div className="p-2.5 rounded-xl bg-secondary/50 border border-border min-w-0">
+                            <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">Device</p>
+                            <p className="text-[10px] font-bold text-foreground break-words">
+                              {selectedOrder.security_metadata.platform} ·{' '}
+                              {selectedOrder.security_metadata.hardware_concurrency} cores
                             </p>
                           </div>
-                          <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-purple-500" />
-                              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Geolocation</span>
-                            </div>
-                            <p className="text-[10px] font-bold text-foreground">
-                              {selectedOrder.customer_country || 'Unknown'} ({selectedOrder.security_metadata.timezone})
+                          <div className="p-2.5 rounded-xl bg-secondary/50 border border-border min-w-0">
+                            <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">Timezone</p>
+                            <p className="text-[10px] font-bold text-foreground break-words">
+                              {selectedOrder.customer_country || 'Unknown'} ·{' '}
+                              {selectedOrder.security_metadata.timezone}
                             </p>
                           </div>
                         </>
                       )}
                     </div>
-                  </div>
+                  </details>
                 </div>
 
-                {/* WhatsApp + close */}
-                <div className="space-y-3 pt-4 border-t border-border">
-                  <AdminWhatsAppActions
-                    order={selectedOrder}
-                    deliveries={orderDeliveryLog as any}
-                  />
-                  <Button
-                    variant="outline"
-                    size="xl"
-                    className="w-full min-h-12 h-12 flex items-center justify-center border-2 touch-manipulation"
-                    onClick={() => setSelectedOrder(null)}
-                  >
-                    <X className="w-5 h-5 mr-2" />
-                    Close
-                  </Button>
-                </div>
+                {/* Extra room above sticky footer on mobile */}
+                <div className="h-2 sm:h-0" />
+              </div>
+
+              {/* Sticky footer — always reachable on phone */}
+              <div className="shrink-0 border-t border-border bg-card/95 backdrop-blur-md px-3 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] sm:px-5 sm:pt-3 sm:pb-4 space-y-2">
+                <AdminWhatsAppActions
+                  order={selectedOrder}
+                  deliveries={orderDeliveryLog as any}
+                  footer
+                />
+                <Button
+                  variant="outline"
+                  className="w-full min-h-10 h-10 font-bold touch-manipulation"
+                  onClick={() => setSelectedOrder(null)}
+                >
+                  Close
+                </Button>
               </div>
             </div>
           )}

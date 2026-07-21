@@ -23,8 +23,10 @@ const SECONDARY: WhatsAppScenario[] = [
 type Props = {
   order: OrderForWhatsApp;
   deliveries?: DeliveryRowLite[];
-  /** Compact: primary + copy only (list rows) */
+  /** Icon-only (list rows) */
   compact?: boolean;
+  /** Sticky modal footer: primary + copy, no chip list */
+  footer?: boolean;
   className?: string;
 };
 
@@ -32,6 +34,7 @@ export function AdminWhatsAppActions({
   order,
   deliveries = [],
   compact = false,
+  footer = false,
   className,
 }: Props) {
   const { toast } = useToast();
@@ -78,6 +81,42 @@ export function AdminWhatsAppActions({
       >
         <MessageCircle className="w-4 h-4" />
       </Button>
+    );
+  }
+
+  if (footer) {
+    return (
+      <div className={cn('space-y-2', className)}>
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <p className="text-[11px] font-bold text-muted-foreground truncate">
+            {primary.display || 'No number'}
+            {primary.fixed && primary.ok ? ' · fixed for WA' : ''}
+          </p>
+          {!primary.ok && (
+            <span className="text-[10px] text-destructive font-bold shrink-0">Invalid #</span>
+          )}
+        </div>
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Button
+            variant="whatsapp"
+            className="min-h-11 h-11 rounded-xl font-bold text-xs sm:text-sm touch-manipulation"
+            disabled={!primary.ok}
+            onClick={() => openScenario(primary.scenario)}
+          >
+            <MessageCircle className="w-4 h-4 mr-1.5 shrink-0" />
+            <span className="truncate">WA: {scenarioLabel(primary.scenario)}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11 h-11 w-11 p-0 rounded-xl touch-manipulation shrink-0"
+            onClick={() => copyMessage(primary.scenario)}
+            title="Copy message"
+          >
+            <Copy className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
     );
   }
 
