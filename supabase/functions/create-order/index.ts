@@ -340,5 +340,28 @@ serve(async (req) => {
   }
   // --------------------------
 
+  // --- ADMIN APK PUSH (async — never delay order response) ---
+  try {
+    const pushUrl = `${supabaseUrl}/functions/v1/push-admin-order`;
+    // Fire-and-forget: do not await; checkout returns immediately
+    void fetch(pushUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        order_id: order.id,
+        order_number: body.order_number,
+        customer_name: body.customer_name,
+        total_amount: order.total_amount,
+      }),
+    }).catch((e) => console.error("[create-order] push-admin-order fire-and-forget", e));
+  } catch (e) {
+    console.error("[create-order] push schedule failed", e);
+  }
+  // ----------------------------------------------------------
+
   return json({ order });
 });

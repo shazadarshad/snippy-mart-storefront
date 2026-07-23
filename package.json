@@ -15,7 +15,17 @@
     "test:watch": "vitest",
     "email:dev": "email dev --dir emails --port 3001",
     "email:build": "tsx emails/build.ts",
-    "build:extension": "tsx scripts/build-extension.ts"
+    "build:extension": "tsx scripts/build-extension.ts",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android",
+    "cap:add:android": "npx cap add android"
+  },
+  "optionalDependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/app": "^7.0.2",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/push-notifications": "^7.0.2",
+    "@capacitor/splash-screen": "^7.0.2"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -77,6 +87,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.4.2",
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.0",

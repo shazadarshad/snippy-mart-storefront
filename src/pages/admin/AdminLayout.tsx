@@ -33,6 +33,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AdminPwaBanner } from '@/components/admin/AdminPwaBanner';
 import { useAdminOrderAlerts } from '@/hooks/useAdminOrderAlerts';
 import SEO from '@/components/seo/SEO';
+import { useAdminNativePush } from '@/hooks/useAdminNativePush';
 
 type MenuItem = {
   name: string;
@@ -104,7 +105,11 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, isAdmin, loading, signOut } = useAuth();
 
-  useAdminOrderAlerts(!!user && !!isAdmin && !loading);
+  const adminReady = !!user && !!isAdmin && !loading;
+  // Web: toast + beep + browser notifications (unchanged)
+  useAdminOrderAlerts(adminReady);
+  // Capacitor APK only: FCM token for closed-app pushes (no-op on website)
+  useAdminNativePush(adminReady);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
