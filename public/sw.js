@@ -1,5 +1,5 @@
 /* Snippy Mart service worker — cache + admin order notifications */
-const CACHE_NAME = 'snippy-mart-v9-admin-pwa';
+const CACHE_NAME = 'snippy-mart-v10-admin-pwa';
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/admin-manifest.json'];
 
 self.addEventListener('install', (event) => {
@@ -32,8 +32,10 @@ self.addEventListener('message', (event) => {
       self.registration.showNotification(title || 'Snippy Admin', {
         icon: '/android-chrome-192x192.png',
         badge: '/favicon-32x32.png',
-        vibrate: [120, 60, 120],
+        vibrate: [140, 70, 140, 70, 200],
         ...options,
+        // Always allow OS notification sound (Android shade)
+        silent: false,
       }),
     );
   }

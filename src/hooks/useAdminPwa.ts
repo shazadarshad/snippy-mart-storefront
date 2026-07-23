@@ -144,12 +144,15 @@ export async function showAdminOrderNotification(opts: {
 }) {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   const url = opts.orderId ? `/admin/orders` : '/admin/orders';
-  const payload = {
+  const payload: NotificationOptions & { renotify?: boolean; vibrate?: number[] } = {
     body: opts.body,
     icon: '/android-chrome-192x192.png',
     badge: '/favicon-32x32.png',
     tag: `order-${opts.orderId || Date.now()}`,
     renotify: true,
+    // Let the OS play its notification sound (Android PWA shade)
+    silent: false,
+    vibrate: [140, 70, 140, 70, 200],
     data: { url },
   };
 
