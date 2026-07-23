@@ -12,7 +12,9 @@ export type DeliveryKind =
   | 'multiline'
   | 'code'
   | 'text'
-  | 'empty';
+  | 'empty'
+  /** Coursera Premium Readymade API pack only */
+  | 'coursera_api';
 
 export type ParsedField = {
   label: string;
@@ -20,6 +22,22 @@ export type ParsedField = {
   copyable?: boolean;
   isSecret?: boolean;
   isUrl?: boolean;
+};
+
+/** Structured layout used only by kind === 'coursera_api' */
+export type CourseraApiAccount = {
+  email: string;
+  emailPassword: string;
+  courseraEmail: string;
+  courseraPassword: string;
+};
+
+export type CourseraApiLayout = {
+  accounts: CourseraApiAccount[];
+  orgLinks: string[];
+  deliveredAt?: string | null;
+  /** Post-login safety checklist (this product only) */
+  setupInstructions: string[];
 };
 
 export type ParsedDelivery = {
@@ -34,6 +52,8 @@ export type ParsedDelivery = {
   tip?: string;
   /** No usable payload */
   incomplete?: boolean;
+  /** Present only for Coursera Premium Readymade API deliveries */
+  courseraApi?: CourseraApiLayout;
 };
 
 const URL_RE = /https?:\/\/[^\s<>"']+/i;
@@ -221,137 +241,134 @@ function parseCourseraApiReadymadeDelivery(
   const totalAccountsRaw = normalized.match(/Total accounts:\s*(\d+)/i)?.[1];
   const totalAccounts = totalAccountsRaw ? Number(totalAccountsRaw) : null;
 
-  let headerTitle = productName;
-  if (/coursera|readymade/i.test(productName) === false) {
+  let headerTitle =
+    productName && productName !== 'Your product'
+      ? productName
+      : 'Coursera Premium Readymade';
+  if (!/coursera/i.test(headerTitle)) {
     const titleLine = normalized
       .split('\n')
       .map((l) => l.trim())
       .find((l) => /coursera.*readymade|premium\s+readymade/i.test(l));
     if (titleLine) headerTitle = titleLine.replace(/\s+/g, ' ').trim();
   }
-  if (productName === 'Your product' || !productName) {
-    headerTitle = 'Coursera Premium Readymade';
-  }
 
   const accountParts = normalized.split(/ACCOUNT\s+\d+\s+of\s+\d+/i);
   const accountBodies = accountParts.length > 1 ? accountParts.slice(1) : [normalized];
 
-  const fields: ParsedField[] = [];
+  const accounts: CourseraApiAccount[] = [];
   const allUrls = extractUrls(normalized);
-  // Org / program links only (not mail.tm / coursera.org homepage noise later)
   const orgLinks = allUrls.filter(
     (u) =>
       !/mail\.tm|temp-mail|guerrillamail|10minutemail/i.test(u) &&
       !/^https?:\/\/(www\.)?coursera\.org\/?$/i.test(u),
   );
 
-  // Helper links always first (how-to flow)
-  fields.push({
-    label: '1 · Open temp mail',
-    value: 'https://mail.tm',
-    copyable: true,
-    isUrl: true,
-  });
-  fields.push({
-    label: '2 · Open Coursera',
-    value: 'https://www.coursera.org',
-    copyable: true,
-    isUrl: true,
-  });
-
-  let accountIndex = 0;
   for (const body of accountBodies) {
-    accountIndex += 1;
-    const multi = accountBodies.length > 1 || (totalAccounts != null && totalAccounts > 1);
-    const prefix = multi ? `Account ${accountIndex} · ` : '';
-
     const email = extractCourseraApiEmail(body);
     const emailPass =
       extractTokenAfterLabel(body, 'Email\\s+Password') ||
       extractTokenAfterLabel(body, 'Mail\\s+Password');
-    // Coursera Login often blank → same as email
     let courseraLogin = extractTokenAfterLabel(body, 'Coursera\\s+Login');
-    if (courseraLogin && (/@/.test(courseraLogin) === false || /password/i.test(courseraLogin))) {
-      // token extraction may grab junk; only keep real emails
-      if (!EMAIL_RE.test(courseraLogin) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(courseraLogin)) {
-        courseraLogin = null;
-      }
+    if (
+      courseraLogin &&
+      !EMAIL_RE.test(courseraLogin) &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(courseraLogin)
+    ) {
+      courseraLogin = null;
     }
     const courseraPass = extractTokenAfterLabel(body, 'Coursera\\s+Password');
+    const courseraEmail = courseraLogin || email || '';
+    if (!email && !courseraEmail && !emailPass && !courseraPass) continue;
 
-    if (email) {
-      fields.push({
-        label: `${prefix}Temp-mail email`,
-        value: email,
-        copyable: true,
-      });
-    }
-    if (emailPass) {
-      fields.push({
-        label: `${prefix}Temp-mail password`,
-        value: emailPass,
-        copyable: true,
-        isSecret: true,
-      });
-    }
-    const courseraEmail = courseraLogin || email;
-    if (courseraEmail) {
-      fields.push({
-        label: `${prefix}Coursera email`,
-        value: courseraEmail,
-        copyable: true,
-      });
-    }
-    if (courseraPass) {
-      fields.push({
-        label: `${prefix}Coursera password`,
-        value: courseraPass,
-        copyable: true,
-        isSecret: true,
+    accounts.push({
+      email: email || courseraEmail,
+      emailPassword: emailPass || '',
+      courseraEmail: courseraEmail || email || '',
+      courseraPassword: courseraPass || emailPass || '',
+    });
+  }
+
+  // Fallback: if ACCOUNT split failed but whole blob has email
+  if (accounts.length === 0) {
+    const email = extractCourseraApiEmail(normalized);
+    const emailPass = extractTokenAfterLabel(normalized, 'Email\\s+Password');
+    const courseraPass = extractTokenAfterLabel(normalized, 'Coursera\\s+Password');
+    if (email || emailPass || courseraPass) {
+      accounts.push({
+        email: email || '',
+        emailPassword: emailPass || '',
+        courseraEmail: email || '',
+        courseraPassword: courseraPass || emailPass || '',
       });
     }
   }
 
+  if (accounts.length === 0) return null;
+  if (totalAccounts != null && totalAccounts > 0 && accounts.length === 0) return null;
+
+  const incomplete = accounts.every((a) => !a.email && !a.courseraEmail);
+
+  // Fields kept for copy-all / generic fallbacks (card uses courseraApi layout)
+  const fields: ParsedField[] = [];
+  accounts.forEach((a, i) => {
+    const p = accounts.length > 1 ? `Account ${i + 1} · ` : '';
+    if (a.email) fields.push({ label: `${p}Temp-mail email`, value: a.email, copyable: true });
+    if (a.emailPassword)
+      fields.push({
+        label: `${p}Temp-mail password`,
+        value: a.emailPassword,
+        copyable: true,
+        isSecret: true,
+      });
+    if (a.courseraEmail)
+      fields.push({ label: `${p}Coursera email`, value: a.courseraEmail, copyable: true });
+    if (a.courseraPassword)
+      fields.push({
+        label: `${p}Coursera password`,
+        value: a.courseraPassword,
+        copyable: true,
+        isSecret: true,
+      });
+  });
   orgLinks.forEach((u, i) => {
     fields.push({
-      label:
-        orgLinks.length > 1
-          ? `3 · Org access link ${i + 1}`
-          : '3 · Org access link (if courses missing)',
+      label: orgLinks.length > 1 ? `Org link ${i + 1}` : 'Org access link',
       value: u,
       copyable: true,
       isUrl: true,
     });
   });
 
-  // Keep delivered time only (no seller brand / VEX- dump for customers)
-  if (deliveredAt) {
-    fields.push({ label: 'Delivered (UTC)', value: deliveredAt, copyable: false });
-  }
-
-  const hasCreds = fields.some(
-    (f) =>
-      /temp-mail email|coursera email|password/i.test(f.label) && f.copyable !== false,
-  );
-  if (!hasCreds) return null;
-
-  const incomplete = !fields.some((f) => /temp-mail email|coursera email/i.test(f.label));
+  /** Only shown for this Coursera API product */
+  const setupInstructions = [
+    'Log in to Coursera using the provided login details.',
+    'Change your name and password after your first login.',
+    'Add a recovery email.',
+    'Connect your Google or Facebook account (recommended).',
+  ];
 
   return {
-    kind: 'login',
+    kind: 'coursera_api',
     title: headerTitle || 'Coursera Premium Readymade',
-    primary: fields.find((f) => /temp-mail email/i.test(f.label))?.value,
+    primary: accounts[0]?.email,
     fields,
     incomplete,
+    courseraApi: {
+      accounts,
+      orgLinks,
+      deliveredAt,
+      setupInstructions,
+    },
     steps: [
-      'Open mail.tm → log in with Temp-mail email + Temp-mail password (check inbox if Coursera sends a code).',
-      'Open coursera.org → log in with Coursera email + Coursera password (same email as temp-mail if Coursera login was blank).',
+      'Open mail.tm and log in with the temp-mail email + password.',
+      'Open coursera.org and log in with the Coursera email + password.',
       orgLinks.length > 0
-        ? 'If your organization or courses are not visible, open the Org access link while still logged into Coursera.'
-        : 'If your organization or courses are not visible, use any access link from support while still logged into Coursera.',
-      'Keep your Order ID — you can reopen Track Order anytime to see these details again.',
+        ? 'If your organization or courses are missing, open the org access link while still logged into Coursera.'
+        : 'If your organization or courses are missing, message support with your Order ID.',
+      ...setupInstructions,
     ],
-    tip: 'Do not share these passwords. Use mail.tm only for this delivery email.',
+    tip: 'Do not share these passwords. Check mail.tm if Coursera sends a verification code.',
   };
 }
 
@@ -586,6 +603,8 @@ export function deliveryKindBadge(kind: DeliveryKind): string {
       return 'Coupon code';
     case 'login':
       return 'Login details';
+    case 'coursera_api':
+      return 'Coursera account';
     case 'email_only':
       return 'Account email';
     case 'code':
