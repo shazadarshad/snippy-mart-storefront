@@ -164,18 +164,18 @@ const AdminCoupons = () => {
     );
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-display font-bold text-foreground mb-1">Coupon Manager</h1>
-                    <p className="text-muted-foreground">Create and manage discount codes for your customers.</p>
+        <div className="min-w-0 space-y-4 sm:space-y-6">
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">Coupon Manager</h1>
+                    <p className="admin-page-subtitle">Create and manage discount codes</p>
                 </div>
                 <Dialog open={isDialogOpen} onOpenChange={(open) => {
                     setIsDialogOpen(open);
                     if (!open) resetForm();
                 }}>
                     <DialogTrigger asChild>
-                        <Button className="font-bold">
+                        <Button className="font-bold h-11 rounded-xl touch-manipulation shrink-0">
                             <Plus className="w-4 h-4 mr-2" />
                             Create Coupon
                         </Button>
@@ -314,38 +314,38 @@ const AdminCoupons = () => {
             </div>
 
             {/* Search & Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 sm:gap-4">
                 <div className="md:col-span-2 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                     <Input
-                        placeholder="Search coupons..."
-                        className="pl-9 h-11"
+                        placeholder="Search coupons…"
+                        className="pl-9 h-11 sm:h-12 rounded-xl text-base"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <div className="p-4 rounded-2xl bg-card border border-border flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <div className="admin-stat flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                         <Tag className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                        <p className="text-sm font-bold">{coupons.filter(c => c.is_active).length}</p>
+                    <div className="min-w-0">
+                        <p className="text-base sm:text-lg font-black tabular-nums">{coupons.filter(c => c.is_active).length}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Active Codes</p>
                     </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-card border border-border flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                <div className="admin-stat flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
                         <Users className="w-5 h-5 text-accent" />
                     </div>
-                    <div>
-                        <p className="text-sm font-bold">{coupons.reduce((sum, c) => sum + c.used_count, 0)}</p>
+                    <div className="min-w-0">
+                        <p className="text-base sm:text-lg font-black tabular-nums">{coupons.reduce((sum, c) => sum + c.used_count, 0)}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Total Uses</p>
                     </div>
                 </div>
             </div>
 
             {/* Coupons Table */}
-            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="admin-table-wrap">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/50 hover:bg-muted/50">

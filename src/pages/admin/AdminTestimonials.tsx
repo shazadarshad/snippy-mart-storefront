@@ -112,15 +112,15 @@ const AdminTestimonials = () => {
     };
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Testimonials</h1>
-                    <p className="text-muted-foreground">Manage customer reviews and feedback</p>
+        <div className="min-w-0 space-y-4 sm:space-y-6">
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">Testimonials</h1>
+                    <p className="admin-page-subtitle">Manage customer reviews and feedback</p>
                 </div>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button variant="hero" onClick={() => handleOpenDialog()}>
+                        <Button variant="hero" onClick={() => handleOpenDialog()} className="h-11 rounded-xl touch-manipulation shrink-0">
                             <Plus className="w-4 h-4 mr-2" />
                             Add Testimonial
                         </Button>

@@ -119,15 +119,15 @@ const AdminInventory = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                        <Package className="w-8 h-8 text-primary" />
-                        Subscription Inventory
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title flex items-center gap-2.5">
+                        <Package className="w-7 h-7 sm:w-8 sm:h-8 text-primary shrink-0" />
+                        Inventory
                     </h1>
-                    <p className="text-muted-foreground mt-1">Manage and track your digital account stock</p>
+                    <p className="admin-page-subtitle">Manage and track digital account stock</p>
                 </div>
                 <Button onClick={() => {
                     setEditingAccount(null);
@@ -142,55 +142,55 @@ const AdminInventory = () => {
                         status: 'active'
                     });
                     setIsAddDialogOpen(true);
-                }} className="gap-2">
+                }} className="gap-2 h-11 rounded-xl touch-manipulation shrink-0">
                     <Plus className="w-4 h-4" />
                     Add Account
                 </Button>
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-2xl bg-card border border-border shadow-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground mb-2">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 admin-stagger">
+                <div className="admin-stat">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
                         <ShieldCheck className="w-4 h-4" />
-                        <span className="text-sm font-medium">Total Accounts</span>
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide">Total</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">{accounts?.length || 0}</p>
+                    <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">{accounts?.length || 0}</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-card border border-border shadow-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground mb-2">
+                <div className="admin-stat">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
                         <Users className="w-4 h-4" />
-                        <span className="text-sm font-medium">Active Users</span>
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide">Users</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">
                         {accounts?.reduce((acc, curr) => acc + curr.current_users, 0) || 0}
                     </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-card border border-border shadow-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground mb-2">
+                <div className="admin-stat">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
                         <AlertCircle className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm font-medium">Capacity Used</span>
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide">Capacity</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">
                         {Math.round((accounts?.reduce((acc, curr) => acc + curr.current_users, 0) || 0) /
                             (accounts?.reduce((acc, curr) => acc + curr.max_users, 0) || 1) * 100)}%
                     </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-card border border-border shadow-sm">
-                    <div className="flex items-center gap-3 text-muted-foreground mb-2">
+                <div className="admin-stat">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
                         <Calendar className="w-4 h-4" />
-                        <span className="text-sm font-medium">Expiring Soon</span>
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide">Expiring</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">0</p>
+                    <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">0</p>
                 </div>
             </div>
 
             {/* Search and Filters */}
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                 <Input
-                    placeholder="Search accounts by email or service..."
-                    className="pl-10 h-11 bg-card border-border/50"
+                    placeholder="Search accounts by email or service…"
+                    className="pl-10 h-11 sm:h-12 bg-card border-border rounded-xl text-base"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -198,13 +198,14 @@ const AdminInventory = () => {
 
             {/* Account List */}
             {isLoading ? (
-                <div className="flex justify-center p-12">
+                <div className="flex flex-col items-center justify-center p-12 gap-3">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Loading…</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4 admin-stagger">
                     {filteredAccounts?.map((account) => (
-                        <div key={account.id} className="group relative rounded-2xl bg-card border border-border hover:border-primary/30 transition-all p-5 shadow-sm hover:shadow-md">
+                        <div key={account.id} className="group relative admin-card-interactive p-4 sm:p-5">
                             <div className="flex items-start justify-between gap-4 mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-xl bg-secondary/50 flex items-center justify-center text-2xl">

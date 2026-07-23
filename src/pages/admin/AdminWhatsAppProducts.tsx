@@ -58,29 +58,29 @@ const AdminWhatsAppProducts = () => {
     }
 
     return (
-        <div className="container mx-auto py-8 px-4">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">WhatsApp Products</h1>
-                <p className="text-muted-foreground">
-                    Manage which products are available in WhatsApp bot and configure their flows
-                </p>
-            </div>
-
-            {/* Search Bar */}
-            <div className="mb-6">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                        placeholder="Search products..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                    />
+        <div className="min-w-0 space-y-4 sm:space-y-6">
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">WhatsApp Products</h1>
+                    <p className="admin-page-subtitle">
+                        Products available in the WhatsApp bot and their flows
+                    </p>
                 </div>
             </div>
 
+            {/* Search Bar */}
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
+                <Input
+                    placeholder="Search products…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-11 sm:h-12 rounded-xl text-base"
+                />
+            </div>
+
             {/* Products Table */}
-            <div className="border rounded-lg overflow-hidden">
+            <div className="admin-table-wrap">
                 <Table>
                     <TableHeader>
                         <TableRow>

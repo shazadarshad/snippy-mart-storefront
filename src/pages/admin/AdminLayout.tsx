@@ -53,9 +53,27 @@ const menuItems: MenuItem[] = [
   { name: 'Inventory', path: '/admin/inventory', icon: Package, group: 'Ops' },
   { name: 'Claude', path: '/admin/claude', icon: Zap, badge: 'NEW', group: 'Ops' },
   { name: 'Coupons', path: '/admin/coupons', icon: Tag, group: 'Ops' },
-  { name: 'WhatsApp Bot', path: '/admin/whatsapp/products', icon: MessageSquare, badge: 'NEW', group: 'WhatsApp' },
-  { name: 'WA Settings', path: '/admin/whatsapp/settings', icon: Settings, indent: true, group: 'WhatsApp' },
-  { name: 'WA Analytics', path: '/admin/whatsapp/analytics', icon: BarChart3, indent: true, group: 'WhatsApp' },
+  {
+    name: 'WhatsApp Bot',
+    path: '/admin/whatsapp/products',
+    icon: MessageSquare,
+    badge: 'NEW',
+    group: 'WhatsApp',
+  },
+  {
+    name: 'WA Settings',
+    path: '/admin/whatsapp/settings',
+    icon: Settings,
+    indent: true,
+    group: 'WhatsApp',
+  },
+  {
+    name: 'WA Analytics',
+    path: '/admin/whatsapp/analytics',
+    icon: BarChart3,
+    indent: true,
+    group: 'WhatsApp',
+  },
   { name: 'AI Knowledge', path: '/admin/ai-knowledge', icon: Brain, badge: 'AI', group: 'Tools' },
   { name: 'Cursor System', path: '/admin/cursor-system', icon: Users, group: 'Tools' },
   { name: 'Extension Upload', path: '/admin/extension-upload', icon: Upload, group: 'Tools' },
@@ -67,8 +85,12 @@ const menuItems: MenuItem[] = [
   { name: 'Settings', path: '/admin/settings', icon: Settings, group: 'System' },
 ];
 
-/** Bottom bar — daily ops only */
-const bottomNav: { name: string; path: string; icon: React.ComponentType<{ className?: string }>; match?: string }[] = [
+const bottomNav: {
+  name: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string }>;
+  match?: string;
+}[] = [
   { name: 'Home', path: '/admin/dashboard', icon: LayoutDashboard, match: '/admin/dashboard' },
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart, match: '/admin/orders' },
   { name: 'Products', path: '/admin/products', icon: Package, match: '/admin/products' },
@@ -89,12 +111,10 @@ const AdminLayout = () => {
     }
   }, [user, isAdmin, loading, navigate]);
 
-  // Close drawer on route change
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Lock body scroll when mobile menu open
   useEffect(() => {
     if (sidebarOpen) {
       document.body.style.overflow = 'hidden';
@@ -128,7 +148,8 @@ const AdminLayout = () => {
     return location.pathname.startsWith(m);
   };
 
-  const moreActive = !bottomNav.some((i) => isBottomActive(i)) && location.pathname.startsWith('/admin');
+  const moreActive =
+    !bottomNav.some((i) => isBottomActive(i)) && location.pathname.startsWith('/admin');
 
   const handleLogout = async () => {
     await signOut();
@@ -147,9 +168,11 @@ const AdminLayout = () => {
 
   if (loading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-background">
+      <div className="min-h-dvh flex items-center justify-center bg-background admin-shell">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
             Loading admin…
           </p>
@@ -168,22 +191,19 @@ const AdminLayout = () => {
       to={item.path}
       onClick={() => setSidebarOpen(false)}
       className={cn(
-        'flex items-center gap-3 px-3.5 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 group min-h-[48px] touch-manipulation',
-        item.indent && 'ml-4',
+        'admin-nav-link',
+        item.indent && 'ml-3 pl-3 border-l border-border/80',
         isActive(item.path)
-          ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
-          : 'text-muted-foreground hover:text-foreground hover:bg-secondary active:bg-secondary',
+          ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
+          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80',
       )}
     >
       <item.icon
-        className={cn(
-          'w-5 h-5 shrink-0',
-          isActive(item.path) ? 'opacity-100' : 'opacity-70',
-        )}
+        className={cn('w-5 h-5 shrink-0', isActive(item.path) ? 'opacity-100' : 'opacity-70')}
       />
       <span className="flex-1 truncate">{item.name}</span>
       {item.badge && !isActive(item.path) && (
-        <span className="px-2 py-0.5 text-[9px] font-black bg-emerald-500 text-white rounded-full">
+        <span className="px-1.5 py-0.5 text-[9px] font-black bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 rounded-md border border-emerald-500/20">
           {item.badge}
         </span>
       )}
@@ -192,13 +212,13 @@ const AdminLayout = () => {
   );
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background admin-shell overflow-x-hidden">
       {/* Mobile top bar */}
       <header
         className={cn(
           'lg:hidden fixed top-0 left-0 right-0 z-[60]',
-          'bg-background/95 backdrop-blur-lg border-b border-border',
-          'flex items-center justify-between gap-2 px-3',
+          'bg-background/90 backdrop-blur-xl border-b border-border/80',
+          'flex items-center justify-between gap-2 px-2.5 xs:px-3',
           'h-14 pt-[env(safe-area-inset-top)]',
           'min-h-[calc(3.5rem+env(safe-area-inset-top))]',
         )}
@@ -206,14 +226,14 @@ const AdminLayout = () => {
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
-          className="w-11 h-11 rounded-xl flex items-center justify-center hover:bg-secondary active:scale-95 transition-transform touch-manipulation"
+          className="w-11 h-11 rounded-xl flex items-center justify-center hover:bg-secondary active:scale-95 transition-all duration-150 touch-manipulation"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex-1 min-w-0 text-center">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none">
+        <div className="flex-1 min-w-0 text-center px-1">
+          <p className="text-[9px] xs:text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none">
             Snippy Admin
           </p>
           <p className="text-sm font-bold text-foreground truncate mt-0.5">{pageTitle}</p>
@@ -222,9 +242,9 @@ const AdminLayout = () => {
         <Link
           to="/admin/orders"
           className={cn(
-            'w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation',
+            'w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-150 active:scale-95',
             isActive('/admin/orders')
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
               : 'hover:bg-secondary text-foreground',
           )}
           aria-label="Orders"
@@ -236,24 +256,32 @@ const AdminLayout = () => {
       {/* Drawer backdrop */}
       <div
         className={cn(
-          'lg:hidden fixed inset-0 bg-black/55 backdrop-blur-sm z-[70] transition-opacity duration-300',
+          'lg:hidden fixed inset-0 z-[70] admin-backdrop bg-black/50 backdrop-blur-[2px]',
           sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
         )}
         onClick={() => setSidebarOpen(false)}
+        aria-hidden={!sidebarOpen}
       />
 
-      {/* Side drawer / desktop sidebar */}
+      {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 h-full w-[min(100vw-3rem,20rem)] sm:w-72 bg-card border-r border-border z-[80]',
-          'transition-transform duration-300 ease-out shadow-2xl lg:shadow-none lg:w-64 lg:translate-x-0',
+          'fixed top-0 left-0 h-full z-[80]',
+          'w-[min(100vw-2.5rem,19rem)] sm:w-72 lg:w-64',
+          'bg-card/98 backdrop-blur-xl border-r border-border',
+          'admin-drawer-enter shadow-2xl lg:shadow-none',
+          'lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="flex flex-col h-full pt-[env(safe-area-inset-top)]">
-          <div className="h-14 lg:h-16 flex items-center justify-between px-4 border-b border-border shrink-0">
-            <Link to="/admin/dashboard" className="flex items-center gap-2.5 min-w-0" onClick={() => setSidebarOpen(false)}>
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+          <div className="h-14 lg:h-16 flex items-center justify-between px-3.5 sm:px-4 border-b border-border shrink-0">
+            <Link
+              to="/admin/dashboard"
+              className="flex items-center gap-2.5 min-w-0"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25 shrink-0">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
               <div className="min-w-0">
@@ -267,7 +295,7 @@ const AdminLayout = () => {
             </Link>
             <button
               type="button"
-              className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-secondary touch-manipulation"
+              className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-secondary active:scale-95 transition-all touch-manipulation"
               onClick={() => setSidebarOpen(false)}
               aria-label="Close menu"
             >
@@ -275,7 +303,7 @@ const AdminLayout = () => {
             </button>
           </div>
 
-          <div className="px-4 py-3 border-b border-border/60 bg-secondary/20 shrink-0">
+          <div className="px-3.5 sm:px-4 py-3 border-b border-border/60 bg-secondary/25 shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center text-primary-foreground font-black text-sm ring-2 ring-background shrink-0">
                 {user?.email?.charAt(0).toUpperCase()}
@@ -289,10 +317,10 @@ const AdminLayout = () => {
             </div>
           </div>
 
-          <nav className="flex-1 p-3 space-y-4 overflow-y-auto overscroll-contain pb-6">
+          <nav className="flex-1 p-2.5 sm:p-3 space-y-3.5 overflow-y-auto overscroll-contain custom-scrollbar pb-6">
             {Array.from(grouped.entries()).map(([group, items]) => (
               <div key={group}>
-                <p className="px-3 mb-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
+                <p className="px-3 mb-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/75">
                   {group}
                 </p>
                 <div className="space-y-0.5">{items.map(navLink)}</div>
@@ -300,51 +328,55 @@ const AdminLayout = () => {
             ))}
           </nav>
 
-          <div className="p-3 border-t border-border shrink-0 space-y-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="p-2.5 sm:p-3 border-t border-border shrink-0 space-y-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <Button
               variant="outline"
-              className="w-full justify-start h-12 rounded-xl font-semibold touch-manipulation"
+              className="w-full justify-start h-12 rounded-xl font-semibold touch-manipulation active:scale-[0.99] transition-transform"
               asChild
             >
               <Link to="/" onClick={() => setSidebarOpen(false)}>
-                <Store className="w-4 h-4 mr-3" />
+                <Store className="w-4 h-4 mr-3 shrink-0" />
                 View storefront
               </Link>
             </Button>
             <Button
               variant="outline"
-              className="w-full justify-start h-12 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 font-semibold touch-manipulation"
+              className="w-full justify-start h-12 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 font-semibold touch-manipulation active:scale-[0.99] transition-transform"
               onClick={handleLogout}
             >
-              <LogOut className="w-4 h-4 mr-3" />
+              <LogOut className="w-4 h-4 mr-3 shrink-0" />
               Log out
             </Button>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main content */}
       <main
         className={cn(
           'lg:pl-64 min-h-dvh',
-          // top header + bottom nav on mobile
           'pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-0',
-          'pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-0',
+          'pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0',
         )}
       >
         <AdminPwaBanner />
-        <div className="p-3 sm:p-5 lg:p-8 max-w-7xl mx-auto w-full">{/* content */ <Outlet />}</div>
+        <div className="p-3 xs:p-3.5 sm:p-5 lg:p-8 max-w-7xl mx-auto w-full min-w-0">
+          <div key={location.pathname} className="admin-page min-w-0">
+            <Outlet />
+          </div>
+        </div>
       </main>
 
-      {/* Mobile bottom nav — PWA thumb zone */}
+      {/* Mobile bottom nav */}
       <nav
         className={cn(
           'lg:hidden fixed bottom-0 left-0 right-0 z-[65]',
-          'bg-background/95 backdrop-blur-lg border-t border-border',
+          'bg-background/92 backdrop-blur-xl border-t border-border/80',
           'pb-[env(safe-area-inset-bottom)]',
+          'shadow-[0_-8px_30px_rgba(0,0,0,0.06)]',
         )}
       >
-        <div className="grid grid-cols-5 h-16 max-w-lg mx-auto">
+        <div className="grid grid-cols-5 h-[3.75rem] max-w-lg mx-auto px-0.5">
           {bottomNav.map((item) => {
             const active = isBottomActive(item);
             return (
@@ -352,20 +384,24 @@ const AdminLayout = () => {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 touch-manipulation select-none',
-                  'transition-colors active:scale-95',
+                  'admin-bottom-tab',
                   active ? 'text-primary' : 'text-muted-foreground',
                 )}
               >
                 <div
                   className={cn(
-                    'w-10 h-8 rounded-xl flex items-center justify-center transition-colors',
-                    active && 'bg-primary/12',
+                    'w-11 h-8 rounded-xl flex items-center justify-center transition-all duration-200',
+                    active && 'bg-primary/12 shadow-sm',
                   )}
                 >
                   <item.icon className={cn('w-5 h-5', active && 'stroke-[2.5]')} />
                 </div>
-                <span className={cn('text-[10px] font-bold leading-none', active && 'text-primary')}>
+                <span
+                  className={cn(
+                    'text-[9px] xs:text-[10px] font-bold leading-none',
+                    active && 'text-primary',
+                  )}
+                >
                   {item.name}
                 </span>
               </Link>
@@ -375,20 +411,24 @@ const AdminLayout = () => {
             type="button"
             onClick={() => setSidebarOpen(true)}
             className={cn(
-              'flex flex-col items-center justify-center gap-0.5 touch-manipulation select-none',
-              'transition-colors active:scale-95',
+              'admin-bottom-tab',
               moreActive ? 'text-primary' : 'text-muted-foreground',
             )}
           >
             <div
               className={cn(
-                'w-10 h-8 rounded-xl flex items-center justify-center',
-                moreActive && 'bg-primary/12',
+                'w-11 h-8 rounded-xl flex items-center justify-center transition-all duration-200',
+                moreActive && 'bg-primary/12 shadow-sm',
               )}
             >
               <MoreHorizontal className={cn('w-5 h-5', moreActive && 'stroke-[2.5]')} />
             </div>
-            <span className={cn('text-[10px] font-bold leading-none', moreActive && 'text-primary')}>
+            <span
+              className={cn(
+                'text-[9px] xs:text-[10px] font-bold leading-none',
+                moreActive && 'text-primary',
+              )}
+            >
               More
             </span>
           </button>

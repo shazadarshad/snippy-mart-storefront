@@ -143,20 +143,16 @@ const AdminAffiliates = () => {
   const activeCount = affiliates.filter((a) => a.status === 'active').length;
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground">
-            Affiliates
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Partners · referrals · commissions · payouts
-          </p>
+    <div className="min-w-0 space-y-4 sm:space-y-6">
+      <div className="admin-page-header mb-0">
+        <div className="min-w-0">
+          <h1 className="admin-page-title">Affiliates</h1>
+          <p className="admin-page-subtitle">Partners · referrals · commissions · payouts</p>
         </div>
         <Button
           variant="outline"
           size="sm"
-          className="h-10 font-bold"
+          className="h-11 rounded-xl font-bold touch-manipulation shrink-0"
           onClick={refreshAll}
           disabled={isFetching}
         >
@@ -165,7 +161,7 @@ const AdminAffiliates = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 admin-stagger">
         {[
           { l: 'Pending apps', v: pendingCount },
           { l: 'Active', v: activeCount },
@@ -175,9 +171,9 @@ const AdminAffiliates = () => {
             v: payouts.filter((p: any) => p.status === 'requested').length,
           },
         ].map((s) => (
-          <div key={s.l} className="rounded-2xl border border-border bg-card p-3 sm:p-4">
-            <p className="text-2xl font-black tabular-nums">{s.v}</p>
-            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wide">
+          <div key={s.l} className="admin-stat">
+            <p className="text-xl sm:text-2xl font-black tabular-nums">{s.v}</p>
+            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wide mt-0.5">
               {s.l}
             </p>
           </div>
@@ -185,15 +181,15 @@ const AdminAffiliates = () => {
       </div>
 
       <Tabs defaultValue="partners" className="w-full">
-        <TabsList className="w-full grid grid-cols-3 h-auto p-1 mb-4">
-          <TabsTrigger value="partners" className="py-2 text-xs sm:text-sm gap-1">
+        <TabsList className="w-full grid grid-cols-3 h-auto p-1 mb-4 rounded-xl">
+          <TabsTrigger value="partners" className="py-2.5 text-xs sm:text-sm gap-1 rounded-lg touch-manipulation">
             <Users className="w-3.5 h-3.5" />
             Partners
           </TabsTrigger>
-          <TabsTrigger value="commissions" className="py-2 text-xs sm:text-sm">
+          <TabsTrigger value="commissions" className="py-2.5 text-xs sm:text-sm rounded-lg touch-manipulation">
             Commissions
           </TabsTrigger>
-          <TabsTrigger value="payouts" className="py-2 text-xs sm:text-sm gap-1">
+          <TabsTrigger value="payouts" className="py-2.5 text-xs sm:text-sm gap-1 rounded-lg touch-manipulation">
             <Wallet className="w-3.5 h-3.5" />
             Payouts
           </TabsTrigger>

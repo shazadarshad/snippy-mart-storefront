@@ -12,7 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, Edit, Save, X, Brain, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Edit, Save, X, Brain, Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AIKnowledgeItem {
@@ -174,25 +174,28 @@ export default function AdminAIKnowledge() {
     };
 
     if (isLoading) {
-        return <div className="p-6">Loading...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Loading…</p>
+            </div>
+        );
     }
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="min-w-0 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-2">
-                        <Brain className="w-8 h-8 text-blue-500" />
-                        AI Knowledge Base
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title flex items-center gap-2">
+                        <Brain className="w-7 h-7 sm:w-8 sm:h-8 text-primary shrink-0" />
+                        AI Knowledge
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        Train your AI assistant with custom knowledge
-                    </p>
+                    <p className="admin-page-subtitle">Train your AI assistant with custom knowledge</p>
                 </div>
                 <Button
                     onClick={() => setIsAdding(!isAdding)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 h-11 rounded-xl touch-manipulation shrink-0"
                 >
                     {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {isAdding ? 'Cancel' : 'Add Knowledge'}

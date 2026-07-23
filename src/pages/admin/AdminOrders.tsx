@@ -488,95 +488,146 @@ const AdminOrders = () => {
   }, [selectedOrder]);
 
   return (
-    <div>
+    <div className="min-w-0 space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+      <div className="admin-page-header">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground">Orders</h1>
-          <p className="text-muted-foreground">Manage and track customer orders</p>
+          <h1 className="admin-page-title">Orders</h1>
+          <p className="admin-page-subtitle">Manage, fulfill & track every order</p>
         </div>
-        <Button variant="outline" size="icon" onClick={() => refetch()}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => refetch()}
+          className="admin-icon-btn shrink-0"
+          aria-label="Refresh orders"
+        >
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-6">
-        <div className="p-4 rounded-xl bg-warning/10 border border-warning/20">
-          <p className="text-2xl font-bold text-warning">{pendingCount}</p>
-          <p className="text-sm text-muted-foreground">Pending</p>
-        </div>
-        <div className="p-4 rounded-xl bg-success/10 border border-success/20">
-          <p className="text-2xl font-bold text-success">{completedCount}</p>
-          <p className="text-sm text-muted-foreground">Completed</p>
-        </div>
-        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-          <p className="text-2xl font-bold text-destructive">{cancelledCount}</p>
-          <p className="text-sm text-muted-foreground">Cancelled</p>
-        </div>
-        <div className="p-4 rounded-xl bg-muted border border-border">
-          <p className="text-2xl font-bold text-muted-foreground">{refundedCount}</p>
-          <p className="text-sm text-muted-foreground">Refunded</p>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 admin-stagger">
+        <button
+          type="button"
+          onClick={() => setStatusFilter(statusFilter === 'pending' ? 'all' : 'pending')}
+          className={cn(
+            'admin-stat-tile bg-warning/10 border-warning/20',
+            statusFilter === 'pending' && 'ring-2 ring-warning/40 border-warning/40',
+          )}
+        >
+          <p className="text-xl sm:text-2xl font-black text-warning tabular-nums">{pendingCount}</p>
+          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wide mt-0.5">
+            Pending
+          </p>
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusFilter(statusFilter === 'completed' ? 'all' : 'completed')}
+          className={cn(
+            'admin-stat-tile bg-success/10 border-success/20',
+            statusFilter === 'completed' && 'ring-2 ring-success/40 border-success/40',
+          )}
+        >
+          <p className="text-xl sm:text-2xl font-black text-success tabular-nums">{completedCount}</p>
+          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wide mt-0.5">
+            Completed
+          </p>
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusFilter(statusFilter === 'cancelled' ? 'all' : 'cancelled')}
+          className={cn(
+            'admin-stat-tile bg-destructive/10 border-destructive/20',
+            statusFilter === 'cancelled' && 'ring-2 ring-destructive/40 border-destructive/40',
+          )}
+        >
+          <p className="text-xl sm:text-2xl font-black text-destructive tabular-nums">{cancelledCount}</p>
+          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wide mt-0.5">
+            Cancelled
+          </p>
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusFilter(statusFilter === 'refunded' ? 'all' : 'refunded')}
+          className={cn(
+            'admin-stat-tile bg-muted border-border',
+            statusFilter === 'refunded' && 'ring-2 ring-border border-foreground/20',
+          )}
+        >
+          <p className="text-xl sm:text-2xl font-black text-muted-foreground tabular-nums">{refundedCount}</p>
+          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wide mt-0.5">
+            Refunded
+          </p>
+        </button>
         <button
           type="button"
           onClick={() => setTypeFilter(typeFilter === 'claude' ? 'all' : 'claude')}
           className={cn(
-            'p-4 rounded-xl border text-left transition-all',
+            'admin-stat-tile col-span-2 sm:col-span-1',
             typeFilter === 'claude'
               ? 'bg-orange-500/15 border-orange-500/40 ring-2 ring-orange-500/30'
-              : 'bg-orange-500/10 border-orange-500/20 hover:border-orange-500/40'
+              : 'bg-orange-500/10 border-orange-500/20 hover:border-orange-500/40',
           )}
         >
-          <p className="text-2xl font-bold text-orange-400">{claudeCount}</p>
-          <p className="text-sm text-muted-foreground">
-            Claude pre-orders
+          <p className="text-xl sm:text-2xl font-black text-orange-400 tabular-nums">{claudeCount}</p>
+          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wide mt-0.5">
+            Claude
             {claudeActiveCount > 0 && (
-              <span className="block text-[11px] text-orange-400 font-semibold">{claudeActiveCount} open</span>
+              <span className="block normal-case text-orange-400 font-semibold tracking-normal">
+                {claudeActiveCount} open
+              </span>
             )}
           </p>
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search orders, Claude email, notes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-12 bg-card border-border"
-          />
+      {/* Filters — sticky on mobile */}
+      <div className="admin-sticky-filters">
+        <div className="admin-toolbar mb-0">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground pointer-events-none" />
+            <Input
+              type="text"
+              placeholder="Search orders, Claude email, notes…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11 sm:h-12 bg-card border-border rounded-xl text-base"
+            />
+          </div>
+          <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-3 shrink-0">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-40 h-11 sm:h-12 bg-card border-border rounded-xl">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All status</SelectItem>
+                {ORDER_STATUS_ADMIN_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={typeFilter}
+              onValueChange={(v) => setTypeFilter(v as 'all' | 'claude' | 'standard')}
+            >
+              <SelectTrigger className="w-full sm:w-44 h-11 sm:h-12 bg-card border-border rounded-xl">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="claude">Claude pre-order</SelectItem>
+                <SelectItem value="standard">Standard only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-40 h-12 bg-card border-border">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All status</SelectItem>
-            {ORDER_STATUS_ADMIN_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as 'all' | 'claude' | 'standard')}>
-          <SelectTrigger className="w-full sm:w-44 h-12 bg-card border-border">
-            <SelectValue placeholder="Order type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            <SelectItem value="claude">Claude pre-order</SelectItem>
-            <SelectItem value="standard">Standard only</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Admin Quick Detail Checker */}
-      <div className="mb-4 sm:mb-6 p-3 sm:p-5 rounded-2xl bg-primary/5 border border-primary/10">
+      <div className="admin-card p-3 sm:p-4 bg-primary/5 border-primary/15">
         <div className="flex items-center gap-2.5 mb-3">
           <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <ShieldCheck className="w-5 h-5" />
@@ -589,8 +640,11 @@ const AdminOrders = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const q = (e.currentTarget.elements.namedItem('detailedSearch') as HTMLInputElement).value;
-            const order = orders.find(o => o.order_number === q || o.order_number === q.trim());
+            const q = (e.currentTarget.elements.namedItem('detailedSearch') as HTMLInputElement)
+              .value;
+            const order = orders.find(
+              (o) => o.order_number === q || o.order_number === q.trim(),
+            );
             if (order) setSelectedOrder(order);
           }}
           className="flex flex-col sm:flex-row gap-2"
@@ -598,10 +652,14 @@ const AdminOrders = () => {
           <Input
             name="detailedSearch"
             placeholder="SNIP-2026-…"
-            className="bg-card border-border h-12 text-base font-mono"
+            className="bg-card border-border h-11 sm:h-12 text-base font-mono rounded-xl"
             autoComplete="off"
           />
-          <Button type="submit" variant="hero" className="h-12 shrink-0 font-bold touch-manipulation">
+          <Button
+            type="submit"
+            variant="hero"
+            className="h-11 sm:h-12 shrink-0 font-bold touch-manipulation rounded-xl"
+          >
             Open
           </Button>
         </form>
@@ -609,46 +667,53 @@ const AdminOrders = () => {
 
       {/* Orders Table */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-16 sm:py-20 gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            Loading orders…
+          </p>
         </div>
       ) : error ? (
-        <div className="p-6 rounded-xl bg-destructive/10 border border-destructive/20">
-          <p className="text-sm font-medium text-destructive mb-1">Failed to load orders</p>
+        <div className="p-5 sm:p-6 rounded-2xl bg-destructive/10 border border-destructive/20">
+          <p className="text-sm font-bold text-destructive mb-1">Failed to load orders</p>
           <p className="text-sm text-muted-foreground break-words">
             {(error as Error).message || 'Unknown error'}
           </p>
           <div className="mt-4">
-            <Button variant="outline" onClick={() => refetch()}>
+            <Button variant="outline" onClick={() => refetch()} className="h-11 rounded-xl">
               <RefreshCw className="w-4 h-4 mr-2" />
               Retry
             </Button>
           </div>
         </div>
       ) : orders.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <RefreshCw className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg font-medium">No orders yet</p>
-          <p className="text-sm">Orders will appear here once customers start purchasing.</p>
+        <div className="admin-empty">
+          <RefreshCw className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 opacity-40" />
+          <p className="text-base sm:text-lg font-bold">No orders yet</p>
+          <p className="text-xs sm:text-sm mt-1 max-w-xs mx-auto">
+            Orders will appear here once customers start purchasing.
+          </p>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+        <div className="admin-table-wrap">
           {/* Desktop/Tablet Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full">
+          <div className="hidden md:block overflow-x-auto custom-scrollbar">
+            <table className="w-full min-w-[640px]">
               <thead>
-                <tr className="bg-secondary/50">
-                  <th className="text-left text-sm font-bold text-muted-foreground py-4 px-4">Order Details</th>
-                  <th className="text-left text-sm font-bold text-muted-foreground py-4 px-4">Fulfillment</th>
-                  <th className="text-left text-sm font-bold text-muted-foreground py-4 px-4">Total</th>
-                  <th className="text-right text-sm font-bold text-muted-foreground py-4 px-4">Actions</th>
+                <tr>
+                  <th>Order Details</th>
+                  <th>Fulfillment</th>
+                  <th>Total</th>
+                  <th className="!text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((order) => {
                   const claude = parseClaudePreOrder(order);
                   return (
-                  <tr key={order.id} className="border-t border-border hover:bg-secondary/30 transition-colors">
+                  <tr key={order.id}>
                     <td className="py-4 px-4">
                       <div className="flex items-start gap-4">
                         <div className="mt-1">
@@ -755,13 +820,25 @@ const AdminOrders = () => {
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedOrder(order)}>
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center justify-end gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="admin-icon-btn h-9 w-9"
+                          onClick={() => setSelectedOrder(order)}
+                          aria-label="View order"
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                         <AdminWhatsAppActions order={order} compact />
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setOrderToDelete(order)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="admin-icon-btn h-9 w-9 text-destructive hover:text-destructive"
+                          onClick={() => setOrderToDelete(order)}
+                          aria-label="Delete order"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -774,15 +851,15 @@ const AdminOrders = () => {
           </div>
 
           {/* Mobile View — PWA-friendly cards */}
-          <div className="md:hidden space-y-3 px-1 sm:px-0">
+          <div className="md:hidden space-y-2.5 p-2.5 sm:p-3 admin-stagger bg-secondary/20">
             {filteredOrders.map((order) => {
               const claude = parseClaudePreOrder(order);
               return (
-              <div key={order.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+              <div key={order.id} className="admin-list-card">
                 <div className="p-3.5 space-y-3">
                   <button
                     type="button"
-                    className="w-full text-left touch-manipulation active:opacity-90"
+                    className="w-full text-left touch-manipulation active:scale-[0.99] transition-transform duration-150"
                     onClick={() => setSelectedOrder(order)}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -852,19 +929,19 @@ const AdminOrders = () => {
                       <Button
                         variant="default"
                         size="sm"
-                        className="h-11 text-xs font-bold touch-manipulation"
+                        className="h-11 text-xs font-bold touch-manipulation rounded-xl"
                         onClick={() => setSelectedOrder(order)}
                       >
                         <Eye className="w-4 h-4 mr-1.5" />
                         Open
                       </Button>
-                      <div className="h-11 w-11 flex items-center justify-center rounded-md border border-success/25 bg-success/5">
+                      <div className="h-11 w-11 flex items-center justify-center rounded-xl border border-success/25 bg-success/5">
                         <AdminWhatsAppActions order={order} compact />
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-11 w-11 p-0 text-destructive border-destructive/20 touch-manipulation"
+                        className="h-11 w-11 p-0 text-destructive border-destructive/20 touch-manipulation rounded-xl"
                         onClick={() => setOrderToDelete(order)}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -879,7 +956,7 @@ const AdminOrders = () => {
         </div>
       )}
 
-      <p className="text-sm text-muted-foreground mt-4">
+      <p className="text-xs sm:text-sm text-muted-foreground font-semibold tabular-nums">
         Showing {filteredOrders.length} of {orders.length} orders
       </p>
 

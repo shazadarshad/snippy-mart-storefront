@@ -59,63 +59,65 @@ const AdminWhatsAppAnalytics = () => {
     const totalPages = Math.ceil(total / 20);
 
     return (
-        <div className="container mx-auto py-8 px-4">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">WhatsApp Analytics</h1>
-                <p className="text-muted-foreground">
-                    Track bot interactions, user engagement, and product performance
-                </p>
+        <div className="min-w-0 space-y-4 sm:space-y-6">
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">WhatsApp Analytics</h1>
+                    <p className="admin-page-subtitle">
+                        Bot interactions, engagement, and product performance
+                    </p>
+                </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
-                        <TrendingUp className="w-4 h-4 text-muted-foreground" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 admin-stagger">
+                <Card className="admin-stat border-0 shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4">
+                        <CardTitle className="text-xs sm:text-sm font-medium">Messages</CardTitle>
+                        <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0" />
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats?.totalMessages || 0}</div>
-                        <p className="text-xs text-muted-foreground">All time</p>
+                    <CardContent className="p-3 sm:p-4 pt-0">
+                        <div className="text-xl sm:text-2xl font-black tabular-nums">{stats?.totalMessages || 0}</div>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">All time</p>
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Product Views</CardTitle>
-                        <Eye className="w-4 h-4 text-muted-foreground" />
+                <Card className="admin-stat border-0 shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4">
+                        <CardTitle className="text-xs sm:text-sm font-medium">Views</CardTitle>
+                        <Eye className="w-4 h-4 text-muted-foreground shrink-0" />
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats?.productViews || 0}</div>
-                        <p className="text-xs text-muted-foreground">Users viewed products</p>
+                    <CardContent className="p-3 sm:p-4 pt-0">
+                        <div className="text-xl sm:text-2xl font-black tabular-nums">{stats?.productViews || 0}</div>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Product views</p>
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Order Clicks</CardTitle>
-                        <MousePointer className="w-4 h-4 text-muted-foreground" />
+                <Card className="admin-stat border-0 shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4">
+                        <CardTitle className="text-xs sm:text-sm font-medium">Orders</CardTitle>
+                        <MousePointer className="w-4 h-4 text-muted-foreground shrink-0" />
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats?.orderClicks || 0}</div>
-                        <p className="text-xs text-muted-foreground">Redirected to website</p>
+                    <CardContent className="p-3 sm:p-4 pt-0">
+                        <div className="text-xl sm:text-2xl font-black tabular-nums">{stats?.orderClicks || 0}</div>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Clicks to site</p>
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
-                        <Users className="w-4 h-4 text-muted-foreground" />
+                <Card className="admin-stat border-0 shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4">
+                        <CardTitle className="text-xs sm:text-sm font-medium">Users</CardTitle>
+                        <Users className="w-4 h-4 text-muted-foreground shrink-0" />
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats?.uniqueUsers || 0}</div>
-                        <p className="text-xs text-muted-foreground">Distinct phone numbers</p>
+                    <CardContent className="p-3 sm:p-4 pt-0">
+                        <div className="text-xl sm:text-2xl font-black tabular-nums">{stats?.uniqueUsers || 0}</div>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Unique phones</p>
                     </CardContent>
                 </Card>
             </div>
 
             {/* Top Products */}
-            <Card className="mb-8">
+            <Card className="admin-card">
                 <CardHeader>
                     <CardTitle>Top Products</CardTitle>
                     <CardDescription>Most viewed products via WhatsApp</CardDescription>

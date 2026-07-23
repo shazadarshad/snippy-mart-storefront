@@ -147,6 +147,215 @@ function emptyResult(product: string): ParsedDelivery {
 }
 
 /**
+ * STRICT: only Coursera Premium Readymade API deliveries.
+ * Must look like this product AND its API envelope — never other Coursera
+ * products, other API lines, coupons, links, or inventory assignments.
+ * Seller brand names are never shown to customers.
+ */
+function isCourseraApiReadymadeDelivery(data: string): boolean {
+  // Product identity (any one of these Coursera-readymade markers)
+  const isThisProduct =
+    /Coursera\s+Premium\s+Readymade/i.test(data) ||
+    /Coursera_Delivery_\S+\.txt/i.test(data) ||
+    (/Coursera\s+Delivery/i.test(data) &&
+      /Email\s+Password\s*:/i.test(data) &&
+      /Coursera\s+Password\s*:/i.test(data));
+
+  if (!isThisProduct) return false;
+
+  // API pack envelope (not a hand-typed note)
+  const hasEnvelope =
+    /VEX-[A-Z0-9]+/i.test(data) ||
+    /[╔╚╗╝║]/.test(data) ||
+    /[═━─]{8,}/.test(data) ||
+    /ACCOUNT\s+\d+\s+of\s+\d+/i.test(data) ||
+    /Total accounts:\s*\d+/i.test(data) ||
+    /End of delivery/i.test(data);
+
+  return hasEnvelope;
+}
+
+/** Collapse box-art so credentials can be regex-matched even if newlines were lost. */
+function normalizeCourseraApiText(raw: string): string {
+  return raw
+    .replace(/\r\n/g, '\n')
+    .replace(/[╔╚╗╝]/g, '\n')
+    .replace(/║/g, '\n')
+    .replace(/[═━─]{4,}/g, '\n')
+    .replace(/✅/g, '\n')
+    // Drop API seller brand if it appears in the payload text
+    .replace(/\bVexoran\b/gi, '')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+}
+
+/** Password / token tokens (allow @ inside, stop at next label or URL). */
+function extractTokenAfterLabel(block: string, labelRe: string): string | null {
+  const re = new RegExp(
+    `${labelRe}\\s*:\\s*(\\S+?)(?=\\s+(?:Email|Coursera|If\\b|ACCOUNT|Total|Delivered|VEX-|End\\s+of|https?:\\/\\/)|\\s*$|\\n)`,
+    'i',
+  );
+  const m = block.match(re);
+  if (!m?.[1]) return null;
+  const v = m[1].trim();
+  if (!v || /^(Login|Password)?$/i.test(v)) return null;
+  return v;
+}
+
+function extractCourseraApiEmail(block: string): string | null {
+  // "Email: user@host" — not "Email Password:" (\bEmail\s*: won't match that)
+  const m = block.match(/(?:^|[\s|║])Email\s*:\s*([^\s@]+@[^\s]+)/i);
+  return m?.[1]?.replace(/[),.;]+$/, '').trim() || null;
+}
+
+function parseCourseraApiReadymadeDelivery(
+  data: string,
+  productName: string,
+): ParsedDelivery | null {
+  if (!isCourseraApiReadymadeDelivery(data)) return null;
+
+  const normalized = normalizeCourseraApiText(data);
+  const deliveredAt =
+    normalized.match(/Delivered:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}[^\n]*)/i)?.[1]?.trim() ||
+    null;
+  const totalAccountsRaw = normalized.match(/Total accounts:\s*(\d+)/i)?.[1];
+  const totalAccounts = totalAccountsRaw ? Number(totalAccountsRaw) : null;
+
+  let headerTitle = productName;
+  if (/coursera|readymade/i.test(productName) === false) {
+    const titleLine = normalized
+      .split('\n')
+      .map((l) => l.trim())
+      .find((l) => /coursera.*readymade|premium\s+readymade/i.test(l));
+    if (titleLine) headerTitle = titleLine.replace(/\s+/g, ' ').trim();
+  }
+  if (productName === 'Your product' || !productName) {
+    headerTitle = 'Coursera Premium Readymade';
+  }
+
+  const accountParts = normalized.split(/ACCOUNT\s+\d+\s+of\s+\d+/i);
+  const accountBodies = accountParts.length > 1 ? accountParts.slice(1) : [normalized];
+
+  const fields: ParsedField[] = [];
+  const allUrls = extractUrls(normalized);
+  // Org / program links only (not mail.tm / coursera.org homepage noise later)
+  const orgLinks = allUrls.filter(
+    (u) =>
+      !/mail\.tm|temp-mail|guerrillamail|10minutemail/i.test(u) &&
+      !/^https?:\/\/(www\.)?coursera\.org\/?$/i.test(u),
+  );
+
+  // Helper links always first (how-to flow)
+  fields.push({
+    label: '1 · Open temp mail',
+    value: 'https://mail.tm',
+    copyable: true,
+    isUrl: true,
+  });
+  fields.push({
+    label: '2 · Open Coursera',
+    value: 'https://www.coursera.org',
+    copyable: true,
+    isUrl: true,
+  });
+
+  let accountIndex = 0;
+  for (const body of accountBodies) {
+    accountIndex += 1;
+    const multi = accountBodies.length > 1 || (totalAccounts != null && totalAccounts > 1);
+    const prefix = multi ? `Account ${accountIndex} · ` : '';
+
+    const email = extractCourseraApiEmail(body);
+    const emailPass =
+      extractTokenAfterLabel(body, 'Email\\s+Password') ||
+      extractTokenAfterLabel(body, 'Mail\\s+Password');
+    // Coursera Login often blank → same as email
+    let courseraLogin = extractTokenAfterLabel(body, 'Coursera\\s+Login');
+    if (courseraLogin && (/@/.test(courseraLogin) === false || /password/i.test(courseraLogin))) {
+      // token extraction may grab junk; only keep real emails
+      if (!EMAIL_RE.test(courseraLogin) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(courseraLogin)) {
+        courseraLogin = null;
+      }
+    }
+    const courseraPass = extractTokenAfterLabel(body, 'Coursera\\s+Password');
+
+    if (email) {
+      fields.push({
+        label: `${prefix}Temp-mail email`,
+        value: email,
+        copyable: true,
+      });
+    }
+    if (emailPass) {
+      fields.push({
+        label: `${prefix}Temp-mail password`,
+        value: emailPass,
+        copyable: true,
+        isSecret: true,
+      });
+    }
+    const courseraEmail = courseraLogin || email;
+    if (courseraEmail) {
+      fields.push({
+        label: `${prefix}Coursera email`,
+        value: courseraEmail,
+        copyable: true,
+      });
+    }
+    if (courseraPass) {
+      fields.push({
+        label: `${prefix}Coursera password`,
+        value: courseraPass,
+        copyable: true,
+        isSecret: true,
+      });
+    }
+  }
+
+  orgLinks.forEach((u, i) => {
+    fields.push({
+      label:
+        orgLinks.length > 1
+          ? `3 · Org access link ${i + 1}`
+          : '3 · Org access link (if courses missing)',
+      value: u,
+      copyable: true,
+      isUrl: true,
+    });
+  });
+
+  // Keep delivered time only (no seller brand / VEX- dump for customers)
+  if (deliveredAt) {
+    fields.push({ label: 'Delivered (UTC)', value: deliveredAt, copyable: false });
+  }
+
+  const hasCreds = fields.some(
+    (f) =>
+      /temp-mail email|coursera email|password/i.test(f.label) && f.copyable !== false,
+  );
+  if (!hasCreds) return null;
+
+  const incomplete = !fields.some((f) => /temp-mail email|coursera email/i.test(f.label));
+
+  return {
+    kind: 'login',
+    title: headerTitle || 'Coursera Premium Readymade',
+    primary: fields.find((f) => /temp-mail email/i.test(f.label))?.value,
+    fields,
+    incomplete,
+    steps: [
+      'Open mail.tm → log in with Temp-mail email + Temp-mail password (check inbox if Coursera sends a code).',
+      'Open coursera.org → log in with Coursera email + Coursera password (same email as temp-mail if Coursera login was blank).',
+      orgLinks.length > 0
+        ? 'If your organization or courses are not visible, open the Org access link while still logged into Coursera.'
+        : 'If your organization or courses are not visible, use any access link from support while still logged into Coursera.',
+      'Keep your Order ID — you can reopen Track Order anytime to see these details again.',
+    ],
+    tip: 'Do not share these passwords. Use mail.tm only for this delivery email.',
+  };
+}
+
+/**
  * Turn raw API delivery string into structured UI model.
  */
 export function parseDeliveryPayload(
@@ -157,6 +366,10 @@ export function parseDeliveryPayload(
   const product = productName || 'Your product';
 
   if (!data) return emptyResult(product);
+
+  // Coursera Premium Readymade API envelope only (not other Coursera products)
+  const courseraApi = parseCourseraApiReadymadeDelivery(data, product);
+  if (courseraApi) return courseraApi;
 
   // JSON object from API
   const json = tryParseJson(data);

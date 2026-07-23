@@ -76,16 +76,18 @@ const AdminEmailSettings = () => {
     }
 
     return (
-        <div>
+        <div className="min-w-0 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Email Settings</h1>
-                <p className="text-muted-foreground">Configure SMTP to send automated emails</p>
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">Email Settings</h1>
+                    <p className="admin-page-subtitle">Configure SMTP for automated emails</p>
+                </div>
             </div>
 
-            <div className="grid gap-6 max-w-2xl">
+            <div className="grid gap-4 sm:gap-6 max-w-2xl">
                 {/* Status Card */}
-                <Card className={`border-2 ${settings?.is_configured ? 'border-success/50 bg-success/5' : 'border-warning/50 bg-warning/5'}`}>
+                <Card className={`admin-card border-2 ${settings?.is_configured ? 'border-success/50 bg-success/5' : 'border-warning/50 bg-warning/5'}`}>
                     <CardContent className="p-4 flex items-center gap-4">
                         {settings?.is_configured ? (
                             <>

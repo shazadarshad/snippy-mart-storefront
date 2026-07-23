@@ -115,28 +115,28 @@ const AdminFulfillment = () => {
     const completedOrders = filteredOrders.filter(o => o.status === 'completed' || o.status === 'delivered');
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-display font-bold">Fulfillment Console</h1>
-                    <p className="text-muted-foreground">Securely assign accounts and generate delivery links.</p>
+        <div className="min-w-0 space-y-4 sm:space-y-6">
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">Fulfillment Console</h1>
+                    <p className="admin-page-subtitle">Assign accounts and generate delivery links</p>
                 </div>
-                <div className="w-72">
+                <div className="w-full sm:w-72 shrink-0">
                     <Input
-                        placeholder="Search Orders..."
+                        placeholder="Search orders…"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-card"
+                        className="bg-card h-11 rounded-xl"
                     />
                 </div>
             </div>
 
             {/* Pending Assignments */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div className="admin-card p-4 sm:p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <Package className="w-5 h-5 text-warning" />
-                        <h2 className="text-xl font-bold">Pending Assignment</h2>
+                        <h2 className="text-lg sm:text-xl font-bold">Pending Assignment</h2>
                     </div>
 
                     {isLoading ? (
@@ -176,10 +176,10 @@ const AdminFulfillment = () => {
                 </div>
 
                 {/* Recently Fulfilled / Link Generator */}
-                <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                <div className="admin-card p-4 sm:p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <ShieldCheck className="w-5 h-5 text-success" />
-                        <h2 className="text-xl font-bold">Secure Links (Completed)</h2>
+                        <h2 className="text-lg sm:text-xl font-bold">Secure Links (Completed)</h2>
                     </div>
 
                     <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">

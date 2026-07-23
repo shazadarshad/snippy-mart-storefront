@@ -297,84 +297,82 @@ const AdminClaude = () => {
   const selectedInfo = selected ? parseClaudePreOrder(selected) : null;
 
   return (
-    <div>
+    <div className="min-w-0 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center">
+      <div className="admin-page-header mb-0">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
               <Zap className="w-5 h-5 text-orange-400" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-              Claude Pre-Orders
-            </h1>
+            <h1 className="admin-page-title">Claude Pre-Orders</h1>
           </div>
-          <p className="text-muted-foreground text-sm">
+          <p className="admin-page-subtitle">
             Private workspace invites · Pro / Max seats · deposit workflow
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-10" asChild>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" size="sm" className="h-11 rounded-xl touch-manipulation" asChild>
             <Link to="/claude" target="_blank">
               <ExternalLink className="w-4 h-4 mr-2" />
               Public page
             </Link>
           </Button>
-          <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => refetch()}>
+          <Button variant="outline" size="icon" className="admin-icon-btn" onClick={() => refetch()} aria-label="Refresh">
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 admin-stagger">
+        <div className="admin-stat-tile bg-orange-500/10 border-orange-500/20">
           <div className="flex items-center gap-2 text-orange-400 mb-1">
             <Package className="w-4 h-4" />
             <span className="text-[10px] font-black uppercase tracking-wider">Total</span>
           </div>
-          <p className="text-2xl font-black text-foreground">{stats.total}</p>
+          <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">{stats.total}</p>
           <p className="text-xs text-muted-foreground">{stats.open} open · {stats.byStage.activated} activated</p>
         </div>
-        <div className="p-4 rounded-2xl bg-success/10 border border-success/20">
+        <div className="admin-stat-tile bg-success/10 border-success/20">
           <div className="flex items-center gap-2 text-success mb-1">
             <DollarSign className="w-4 h-4" />
             <span className="text-[10px] font-black uppercase tracking-wider">Deposits in</span>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-foreground">
+          <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">
             {formatLkrAdmin(stats.depositCollected)}
           </p>
-          <p className="text-xs text-muted-foreground">Sum of amounts paid on orders</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Sum of amounts paid</p>
         </div>
-        <div className="p-4 rounded-2xl bg-warning/10 border border-warning/20">
+        <div className="admin-stat-tile bg-warning/10 border-warning/20">
           <div className="flex items-center gap-2 text-warning mb-1">
             <Wallet className="w-4 h-4" />
             <span className="text-[10px] font-black uppercase tracking-wider">Balance due</span>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-foreground">
+          <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">
             {formatLkrAdmin(stats.balanceOutstanding)}
           </p>
-          <p className="text-xs text-muted-foreground">Open pre-orders still owing 70%</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Open pre-orders owing 70%</p>
         </div>
-        <div className="p-4 rounded-2xl bg-secondary/50 border border-border">
+        <div className="admin-stat-tile bg-secondary/50 border-border">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Users className="w-4 h-4" />
             <span className="text-[10px] font-black uppercase tracking-wider">Plans</span>
           </div>
-          <p className="text-2xl font-black text-foreground">
+          <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums">
             {stats.proCount}
             <span className="text-sm font-bold text-muted-foreground mx-1">Pro</span>
             · {stats.maxCount}
             <span className="text-sm font-bold text-muted-foreground ml-1">Max</span>
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
             Pipeline ~ {formatLkrAdmin(stats.fullPipelineValue)}
           </p>
         </div>
       </div>
 
       {/* Stage chips */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2">
         {(
           [
             ['all', 'All', stats.total],
@@ -386,7 +384,7 @@ const AdminClaude = () => {
             type="button"
             onClick={() => setStageFilter(key as StageFilter)}
             className={cn(
-              'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-colors',
+              'admin-filter-chip',
               stageFilter === key
                 ? 'bg-orange-500 text-white border-orange-500'
                 : 'bg-card border-border text-muted-foreground hover:border-orange-500/40'
@@ -398,14 +396,14 @@ const AdminClaude = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <div className="admin-toolbar">
+        <div className="relative flex-1 min-w-0 sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search Order ID, name, WhatsApp, Claude email..."
-            className="pl-10 h-11 bg-card"
+            placeholder="Search Order ID, name, WhatsApp, Claude email…"
+            className="pl-10 h-11 sm:h-12 bg-card rounded-xl text-base"
           />
         </div>
         <Select value={planFilter} onValueChange={(v) => setPlanFilter(v as PlanFilter)}>

@@ -139,17 +139,19 @@ const AdminEmailTemplates = () => {
     }
 
     return (
-        <div>
+        <div className="min-w-0 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Email Templates</h1>
-                <p className="text-muted-foreground">Customize automated email designs</p>
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">Email Templates</h1>
+                    <p className="admin-page-subtitle">Customize automated email designs</p>
+                </div>
             </div>
 
             {/* Templates Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 admin-stagger">
                 {templates.map((template) => (
-                    <Card key={template.id} className="bg-card border-border hover:border-primary/50 transition-colors">
+                    <Card key={template.id} className="admin-card-interactive">
                         <CardHeader className="pb-3">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3">

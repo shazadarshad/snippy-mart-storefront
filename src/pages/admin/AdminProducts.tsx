@@ -737,21 +737,21 @@ const AdminProducts = () => {
   };
 
   return (
-    <div>
+    <div className="min-w-0 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Products</h1>
-          <p className="text-muted-foreground">
-            Manage your catalog · {products.length} products · CSV bulk import for 50+
+      <div className="admin-page-header mb-0">
+        <div className="min-w-0">
+          <h1 className="admin-page-title">Products</h1>
+          <p className="admin-page-subtitle">
+            Catalog · {products.length} products · CSV bulk import for 50+
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <Button variant="outline" onClick={() => setIsImportOpen(true)} className="h-11 rounded-xl touch-manipulation">
             <FileSpreadsheet className="w-4 h-4 mr-2" />
             Import CSV
           </Button>
-          <Button variant="hero" type="button" onClick={() => handleOpenDialog()}>
+          <Button variant="hero" type="button" onClick={() => handleOpenDialog()} className="h-11 rounded-xl touch-manipulation">
             <Plus className="w-4 h-4 mr-2" />
             Add Product
           </Button>

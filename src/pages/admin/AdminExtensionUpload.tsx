@@ -88,18 +88,20 @@ export default function AdminExtensionUpload() {
     };
 
     return (
-        <div className="p-6 space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                    <FileArchive className="w-8 h-8 text-blue-500" />
-                    Extension Deployment
-                </h1>
-                <p className="text-muted-foreground">
-                    Upload the latest compiled Chrome extension ZIP file for users to download.
-                </p>
+        <div className="min-w-0 space-y-4 sm:space-y-6">
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title flex items-center gap-2.5">
+                        <FileArchive className="w-7 h-7 sm:w-8 sm:h-8 text-primary shrink-0" />
+                        Extension Deploy
+                    </h1>
+                    <p className="admin-page-subtitle">
+                        Upload the latest Chrome extension ZIP for users to download
+                    </p>
+                </div>
             </div>
 
-            <Card className="max-w-3xl p-8 border-dashed border-2 bg-secondary/20 hover:bg-secondary/30 transition-colors">
+            <Card className="admin-card max-w-3xl p-6 sm:p-8 border-dashed border-2 bg-secondary/20 hover:bg-secondary/30 transition-colors">
                 <div className="flex flex-col items-center justify-center text-center space-y-6">
                     <input
                         type="file"

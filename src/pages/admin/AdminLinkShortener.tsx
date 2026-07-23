@@ -196,12 +196,12 @@ const AdminLinkShortener = () => {
   const previewSlug = normalizeSlug(formData.slug) || 'your-code';
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground mb-1">Link Shortener</h1>
-          <p className="text-muted-foreground">
-            Create short links like <span className="font-mono text-primary">snippymart.com/deal</span> that redirect anywhere.
+    <div className="min-w-0 space-y-4 sm:space-y-6">
+      <div className="admin-page-header mb-0">
+        <div className="min-w-0">
+          <h1 className="admin-page-title">Link Shortener</h1>
+          <p className="admin-page-subtitle">
+            Short links like <span className="font-mono text-primary">snippymart.com/deal</span>
           </p>
         </div>
         <Dialog
@@ -212,7 +212,7 @@ const AdminLinkShortener = () => {
           }}
         >
           <DialogTrigger asChild>
-            <Button className="font-bold">
+            <Button className="font-bold h-11 rounded-xl touch-manipulation shrink-0">
               <Plus className="w-4 h-4 mr-2" />
               Create Short Link
             </Button>

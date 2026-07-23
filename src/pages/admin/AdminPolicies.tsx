@@ -72,22 +72,20 @@ const AdminPolicies = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
-                        <FileText className="w-7 h-7 text-primary" />
-                        Policy Management
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title flex items-center gap-2.5">
+                        <FileText className="w-7 h-7 text-primary shrink-0" />
+                        Policies
                     </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Edit your website's legal policies
-                    </p>
+                    <p className="admin-page-subtitle">Edit your website&apos;s legal policies</p>
                 </div>
                 <Button
                     onClick={handleSave}
                     disabled={updatePolicy.isPending || !selectedPolicy}
-                    className="gap-2"
+                    className="gap-2 h-11 rounded-xl touch-manipulation shrink-0"
                 >
                     {updatePolicy.isPending ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

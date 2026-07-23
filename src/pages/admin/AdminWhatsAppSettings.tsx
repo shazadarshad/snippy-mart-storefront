@@ -80,15 +80,17 @@ const AdminWhatsAppSettings = () => {
     }
 
     return (
-        <div className="container mx-auto py-8 px-4 max-w-4xl">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">WhatsApp Bot Settings</h1>
-                <p className="text-muted-foreground">
-                    Configure global bot behavior, messages, and availability
-                </p>
+        <div className="min-w-0 max-w-4xl space-y-4 sm:space-y-6">
+            <div className="admin-page-header mb-0">
+                <div className="min-w-0">
+                    <h1 className="admin-page-title">WhatsApp Bot Settings</h1>
+                    <p className="admin-page-subtitle">
+                        Configure global bot behavior, messages, and availability
+                    </p>
+                </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
                 {/* Bot Status */}
                 <Card>
                     <CardHeader>

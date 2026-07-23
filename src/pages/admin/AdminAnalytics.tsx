@@ -547,21 +547,21 @@ const LiveVisitorsTab = () => {
 
 const AdminAnalytics = () => {
   return (
-    <div>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Analytics</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Sales performance and live website visitors
-        </p>
+    <div className="min-w-0 space-y-4 sm:space-y-6">
+      <div className="admin-page-header mb-0">
+        <div className="min-w-0">
+          <h1 className="admin-page-title">Analytics</h1>
+          <p className="admin-page-subtitle">Sales performance and live website visitors</p>
+        </div>
       </div>
 
       <Tabs defaultValue="live" className="w-full">
-        <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex h-auto p-1">
-          <TabsTrigger value="live" className="gap-2 py-2.5">
+        <TabsList className="mb-4 sm:mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex h-auto p-1 rounded-xl">
+          <TabsTrigger value="live" className="gap-2 py-2.5 rounded-lg touch-manipulation">
             <Radio className="w-4 h-4" />
             Live visitors
           </TabsTrigger>
-          <TabsTrigger value="sales" className="gap-2 py-2.5">
+          <TabsTrigger value="sales" className="gap-2 py-2.5 rounded-lg touch-manipulation">
             <TrendingUp className="w-4 h-4" />
             Sales
           </TabsTrigger>

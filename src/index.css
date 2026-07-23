@@ -394,11 +394,314 @@ html {
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 5px;
+    height: 5px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: hsl(var(--primary) / 0.25);
     border-radius: 9999px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* ── Admin panel polish (shell-wide cascade) ── */
+  .admin-shell {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Smooth scroll + overscroll containment for nested panes */
+  .admin-shell,
+  .admin-shell * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary) / 0.28) transparent;
+  }
+
+  .admin-shell button,
+  .admin-shell a,
+  .admin-shell [role='button'],
+  .admin-shell [role='tab'],
+  .admin-shell label {
+    touch-action: manipulation;
+  }
+
+  /* Prefer 44px+ hit targets without blowing up icon rows */
+  .admin-shell button:not([class*='h-']):not([class*='size-']),
+  .admin-shell a[class*='inline-flex'] {
+    min-height: 2.5rem;
+  }
+
+  .admin-page {
+    animation: admin-page-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes admin-page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes admin-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .admin-page-header {
+    @apply flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 min-w-0;
+  }
+
+  .admin-page-title {
+    @apply text-xl sm:text-2xl md:text-3xl font-display font-black text-foreground tracking-tight;
+  }
+
+  .admin-page-subtitle {
+    @apply text-[11px] sm:text-sm text-muted-foreground font-semibold mt-0.5;
+  }
+
+  .admin-card {
+    @apply rounded-2xl border border-border bg-card shadow-sm;
+    transition: border-color 0.2s ease, box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .admin-card-interactive {
+    @apply admin-card;
+  }
+
+  .admin-card-interactive:hover {
+    border-color: hsl(var(--primary) / 0.35);
+    box-shadow: var(--shadow-md);
+  }
+
+  .admin-card-interactive:active {
+    transform: scale(0.995);
+  }
+
+  .admin-stat {
+    @apply rounded-2xl border border-border bg-card p-3 sm:p-4 shadow-sm;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .admin-stat:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .admin-stat-tile {
+    @apply p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all duration-200;
+  }
+
+  .admin-stat-tile:active {
+    transform: scale(0.985);
+  }
+
+  .admin-list-card {
+    @apply rounded-2xl border border-border bg-card shadow-sm overflow-hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+
+  .admin-list-card:active {
+    transform: scale(0.995);
+  }
+
+  .admin-toolbar {
+    @apply flex flex-col sm:flex-row gap-2.5 sm:gap-3 mb-4 sm:mb-5;
+  }
+
+  .admin-table-wrap {
+    @apply bg-card border border-border rounded-2xl overflow-hidden shadow-sm;
+  }
+
+  .admin-table-wrap table {
+    @apply w-full;
+  }
+
+  .admin-table-wrap thead tr {
+    @apply bg-secondary/50;
+  }
+
+  .admin-table-wrap th {
+    @apply text-left text-xs sm:text-sm font-bold text-muted-foreground py-3 sm:py-3.5 px-3 sm:px-4;
+  }
+
+  .admin-table-wrap tbody tr {
+    @apply border-t border-border transition-colors duration-150;
+  }
+
+  .admin-table-wrap tbody tr:hover {
+    @apply bg-secondary/30;
+  }
+
+  .admin-empty {
+    @apply text-center py-14 sm:py-20 text-muted-foreground;
+  }
+
+  .admin-filter-chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all duration-150 touch-manipulation;
+  }
+
+  .admin-filter-chip:active {
+    transform: scale(0.97);
+  }
+
+  /* Inputs / selects feel denser + snappier inside admin */
+  .admin-shell input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  .admin-shell textarea {
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    border-radius: 0.75rem;
+  }
+
+  .admin-shell input:not([type='checkbox']):not([type='radio']):focus-visible,
+  .admin-shell textarea:focus-visible {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+  }
+
+  .admin-shell [role='combobox'],
+  .admin-shell button[role='combobox'] {
+    border-radius: 0.75rem;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+  }
+
+  /* Tabs polish */
+  .admin-shell [role='tablist'] {
+    border-radius: 0.85rem;
+    min-height: 2.75rem;
+  }
+
+  .admin-shell [role='tab'] {
+    border-radius: 0.65rem;
+    min-height: 2.25rem;
+    font-weight: 600;
+    transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease,
+      transform 0.12s ease;
+  }
+
+  .admin-shell [role='tab']:active {
+    transform: scale(0.98);
+  }
+
+  /* Stagger list items slightly for polish */
+  .admin-stagger > * {
+    animation: admin-fade-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .admin-stagger > *:nth-child(1) {
+    animation-delay: 0.02s;
+  }
+  .admin-stagger > *:nth-child(2) {
+    animation-delay: 0.04s;
+  }
+  .admin-stagger > *:nth-child(3) {
+    animation-delay: 0.06s;
+  }
+  .admin-stagger > *:nth-child(4) {
+    animation-delay: 0.08s;
+  }
+  .admin-stagger > *:nth-child(5) {
+    animation-delay: 0.1s;
+  }
+  .admin-stagger > *:nth-child(6) {
+    animation-delay: 0.12s;
+  }
+  .admin-stagger > *:nth-child(7) {
+    animation-delay: 0.14s;
+  }
+  .admin-stagger > *:nth-child(8) {
+    animation-delay: 0.16s;
+  }
+  .admin-stagger > *:nth-child(n + 9) {
+    animation-delay: 0.18s;
+  }
+
+  .admin-nav-link {
+    @apply flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold min-h-[48px] touch-manipulation;
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .admin-nav-link:active {
+    transform: scale(0.98);
+  }
+
+  .admin-bottom-tab {
+    @apply flex flex-col items-center justify-center gap-0.5 touch-manipulation select-none;
+    transition: color 0.18s ease, transform 0.15s ease;
+  }
+
+  .admin-bottom-tab:active {
+    transform: scale(0.94);
+  }
+
+  .admin-drawer-enter {
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .admin-backdrop {
+    transition: opacity 0.28s ease, backdrop-filter 0.28s ease;
+  }
+
+  /* Icon action buttons — consistent press */
+  .admin-icon-btn {
+    @apply h-10 w-10 sm:h-9 sm:w-9 rounded-xl touch-manipulation;
+    transition: transform 0.12s ease, background-color 0.15s ease;
+  }
+
+  .admin-icon-btn:active {
+    transform: scale(0.94);
+  }
+
+  /* Sticky filter bar on mobile */
+  .admin-sticky-filters {
+    @apply sticky z-10 -mx-3 px-3 py-2.5 sm:static sm:mx-0 sm:px-0 sm:py-0;
+    top: calc(3.5rem + env(safe-area-inset-top));
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--background)) 70%,
+      hsl(var(--background) / 0.92) 100%
+    );
+    backdrop-filter: blur(8px);
+  }
+
+  @media (min-width: 1024px) {
+    .admin-sticky-filters {
+      background: transparent;
+      backdrop-filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .admin-page,
+    .admin-nav-link,
+    .admin-bottom-tab,
+    .admin-card,
+    .admin-card-interactive,
+    .admin-stat,
+    .admin-stat-tile,
+    .admin-list-card,
+    .admin-drawer-enter,
+    .admin-backdrop,
+    .admin-stagger > *,
+    .admin-filter-chip,
+    .admin-icon-btn {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 
   .shine-border {

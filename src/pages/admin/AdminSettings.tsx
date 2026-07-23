@@ -7,24 +7,26 @@ import ContactSettingsSection from '@/components/admin/ContactSettingsSection';
 
 const AdminSettings = () => {
   return (
-    <div>
+    <div className="min-w-0 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Configure your store preferences</p>
+      <div className="admin-page-header mb-0">
+        <div className="min-w-0">
+          <h1 className="admin-page-title">Settings</h1>
+          <p className="admin-page-subtitle">Configure your store preferences</p>
+        </div>
       </div>
 
       <Tabs defaultValue="store" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
-          <TabsTrigger value="store" className="flex items-center gap-2">
+        <TabsList className="grid w-full max-w-md grid-cols-3 mb-6 sm:mb-8 h-auto p-1 rounded-xl">
+          <TabsTrigger value="store" className="flex items-center gap-2 py-2.5 rounded-lg touch-manipulation">
             <Store className="w-4 h-4" />
             <span className="hidden sm:inline">Store</span>
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2">
+          <TabsTrigger value="payments" className="flex items-center gap-2 py-2.5 rounded-lg touch-manipulation">
             <CreditCard className="w-4 h-4" />
             <span className="hidden sm:inline">Payments</span>
           </TabsTrigger>
-          <TabsTrigger value="contact" className="flex items-center gap-2">
+          <TabsTrigger value="contact" className="flex items-center gap-2 py-2.5 rounded-lg touch-manipulation">
             <MessageCircle className="w-4 h-4" />
             <span className="hidden sm:inline">Contact</span>
           </TabsTrigger>

@@ -210,18 +210,19 @@ const AdminResellerApi = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-black tracking-tight">Reseller API</h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Top up USDT on the seller panel, import their products as <strong>new</strong> catalog
-            items (never replaces your existing products), and auto-deliver on purchase.
+    <div className="min-w-0 space-y-5 sm:space-y-8">
+      <div className="admin-page-header mb-0 items-start">
+        <div className="min-w-0">
+          <h1 className="admin-page-title">Reseller API</h1>
+          <p className="admin-page-subtitle max-w-xl">
+            Top up USDT on the seller panel, import products as <strong>new</strong> catalog items,
+            and auto-deliver on purchase.
           </p>
         </div>
         <Button
           variant="outline"
           size="sm"
+          className="h-11 rounded-xl touch-manipulation shrink-0"
           onClick={() => {
             refetchSettings();
             refetchBalance();
@@ -234,8 +235,8 @@ const AdminResellerApi = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl border border-border bg-card">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 admin-stagger">
+        <div className="admin-stat p-4 sm:p-5">
           <div className="flex items-center gap-2 text-primary mb-2">
             <Wallet className="w-4 h-4" />
             <p className="text-[10px] font-black uppercase tracking-widest">Panel balance</p>
@@ -253,7 +254,7 @@ const AdminResellerApi = () => {
             Top up on the seller dashboard. Delivery deducts this balance.
           </p>
         </div>
-        <div className="p-5 rounded-2xl border border-border bg-card">
+        <div className="admin-stat p-4 sm:p-5">
           <div className="flex items-center gap-2 text-primary mb-2">
             <KeyRound className="w-4 h-4" />
             <p className="text-[10px] font-black uppercase tracking-widest">API key</p>
@@ -273,22 +274,22 @@ const AdminResellerApi = () => {
             )}
           </p>
         </div>
-        <div className="p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
+        <div className="admin-stat p-4 sm:p-5 border-emerald-500/30 bg-emerald-500/5">
           <div className="flex items-center gap-2 text-emerald-600 mb-2">
             <Package className="w-4 h-4" />
-            <p className="text-[10px] font-black uppercase tracking-widest">API products in store</p>
+            <p className="text-[10px] font-black uppercase tracking-widest">API products</p>
           </div>
-          <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
+          <p className="text-xl sm:text-2xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums">
             {apiLocalProducts.length}
           </p>
           <p className="text-[11px] text-muted-foreground mt-2">
-            Separate from your normal store products · {newRemoteCount} new available to import
+            Separate from normal products · {newRemoteCount} new to import
           </p>
         </div>
       </div>
 
       {/* Settings */}
-      <div className="p-6 rounded-2xl border border-border bg-card space-y-5">
+      <div className="admin-card p-4 sm:p-6 space-y-5">
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-primary" />
           <h2 className="text-sm font-black uppercase tracking-wider">Connection settings</h2>
