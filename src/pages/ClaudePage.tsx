@@ -498,20 +498,25 @@ const ClaudePage = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <SEO
         title="Claude Team Plan – Private Workspace Invite · 1 Month"
-        description="Claude Team Pro or Max 5X — private workspace invite on your own account. Pay in full (recommended) or reserve with 50%. 20 day warranty."
+        description="Claude Team Pro or Max 5X — private workspace invite on your own account. Pay in full (recommended) or reserve with 50%. 20 day warranty. Order on Snippy Mart."
+        path="/claude"
         type="product"
+        keywords="Claude Team, Claude Pro, Claude Max, Anthropic, workspace invite, Snippy Mart"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Product',
           name: 'Claude Team Plan – Private Workspace · 1 Month',
           description:
             'Invite to a private Claude Team workspace with Pro or Max 5X seat on your own account. Full pay or 50% reserve.',
+          brand: { '@type': 'Brand', name: 'Snippy Mart' },
+          url: 'https://snippymart.com/claude',
           offers: PLANS.map((p) => ({
             '@type': 'Offer',
             name: p.name,
             price: p.fullPrice,
             priceCurrency: 'LKR',
             availability: 'https://schema.org/PreOrder',
+            url: 'https://snippymart.com/claude',
           })),
         }}
       />

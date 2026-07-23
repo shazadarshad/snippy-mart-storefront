@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminPwaBanner } from '@/components/admin/AdminPwaBanner';
 import { useAdminOrderAlerts } from '@/hooks/useAdminOrderAlerts';
+import SEO from '@/components/seo/SEO';
 
 type MenuItem = {
   name: string;
@@ -213,6 +214,7 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-dvh bg-background admin-shell overflow-x-hidden">
+      <SEO title="Admin" description="Snippy Mart admin panel" noindex path="/admin" />
       {/* Mobile top bar */}
       <header
         className={cn(

@@ -1,0 +1,24 @@
+# Snippy Mart
+> Premium digital subscriptions marketplace — AI tools, streaming, design software, and more. Secure checkout, live order tracking, WhatsApp support. Based in Sri Lanka, ships digital access worldwide.
+
+Site: https://snippymart.com
+Contact: https://snippymart.com/contact
+Products: https://snippymart.com/products
+Track order: https://snippymart.com/track-order
+Affiliate: https://snippymart.com/affiliate
+Claude pre-orders: https://snippymart.com/claude
+
+## Primary pages
+- [Home](https://snippymart.com/): Store overview and featured products
+- [Products](https://snippymart.com/products): Full catalogue
+- [About](https://snippymart.com/about): Who we are
+- [Contact](https://snippymart.com/contact): Support
+- [Affiliate](https://snippymart.com/affiliate): Partner program
+- [Privacy](https://snippymart.com/privacy-policy)
+- [Terms](https://snippymart.com/terms-of-service)
+- [Refunds](https://snippymart.com/refund-policy)
+
+## Notes for assistants
+- Product URLs follow https://snippymart.com/product/{slug}
+- Prices are primarily in LKR with multi-currency display
+- Do not invent stock or delivery times; direct users to Track Order with their Order ID

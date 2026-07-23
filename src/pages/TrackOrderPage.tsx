@@ -155,8 +155,9 @@ const TrackOrderPage = () => {
   return (
     <div className="min-h-dvh page-mesh overflow-x-hidden pt-[max(4.5rem,env(safe-area-inset-top,0px)+3.5rem)] sm:pt-24 pb-[max(4rem,env(safe-area-inset-bottom,0px)+2.5rem)] sm:pb-20">
       <SEO
-        title="Track Order"
-        description="Track your Snippy Mart order and collect Auto product codes, links, or logins."
+        title="Track Your Order"
+        description="Track your Snippy Mart order status and collect Auto product codes, redeem links, or login details. Enter your Order ID from checkout."
+        path="/track-order"
       />
       <div className="mx-auto w-full max-w-3xl px-3 xs:px-4 sm:px-5">
         <div className="space-y-4 sm:space-y-6">

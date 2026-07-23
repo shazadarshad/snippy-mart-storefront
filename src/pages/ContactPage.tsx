@@ -62,8 +62,10 @@ const ContactPage = () => {
   return (
     <div className="min-h-dvh page-mesh pb-safe pb-16 sm:pb-20">
       <SEO
-        title="Contact Us"
-        description="Contact Snippy Mart on WhatsApp or email hello@snippymart.com. FAQs on delivery, payments, and tracking."
+        title="Contact & Support"
+        description="Contact Snippy Mart on WhatsApp or email. Help with orders, payments, delivery, and tracking. Include your Order ID for faster support."
+        path="/contact"
+        keywords="Snippy Mart support, WhatsApp help, contact digital subscriptions"
       />
 
       <PageHero

@@ -31,7 +31,11 @@ const PolicyLayout = ({
             <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-accent/10 rounded-full blur-[150px] pointer-events-none" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[200px] pointer-events-none" />
 
-            <SEO title={title} description={description} />
+            <SEO
+                title={title}
+                description={description}
+                keywords={`${title}, Snippy Mart policy, legal`}
+            />
 
             <div className="container mx-auto px-4 max-w-4xl relative z-10">
                 {/* Header */}

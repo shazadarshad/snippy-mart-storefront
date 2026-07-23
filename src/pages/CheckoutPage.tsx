@@ -21,6 +21,8 @@ import { isResellerApiProduct } from '@/hooks/useResellerApi';
 import { getAffiliateRef } from '@/lib/affiliate';
 import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
 
+import SEO from '@/components/seo/SEO';
+
 const CheckoutPage = () => {
   const { formatPrice, currency, currencyInfo } = useCurrency();
   const navigate = useNavigate();
@@ -411,6 +413,12 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-dvh page-mesh pt-20 sm:pt-24 pb-safe pb-28 sm:pb-20">
+      <SEO
+        title="Checkout"
+        description="Complete your Snippy Mart order securely."
+        noindex
+        path="/checkout"
+      />
       <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
         {/* Back Button */}
         <Button

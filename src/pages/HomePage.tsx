@@ -17,6 +17,14 @@ import { useProducts, type Product } from '@/hooks/useProducts';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import SEO from '@/components/seo/SEO';
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+  buildStoreJsonLd,
+  buildBreadcrumbJsonLd,
+  buildItemListJsonLd,
+  DEFAULT_DESCRIPTION,
+} from '@/lib/seo';
 
 const HomePage = () => {
   const { data: products = [], isLoading } = useProducts();
@@ -39,8 +47,18 @@ const HomePage = () => {
   return (
     <div className="min-h-screen page-mesh overflow-x-hidden">
       <SEO
-        title="Premium Digital Subscriptions"
-        description="Snippy Mart — premium digital subscriptions. Secure checkout, live tracking, WhatsApp support."
+        title="Premium Digital Subscriptions | AI, Streaming & Software"
+        description={DEFAULT_DESCRIPTION}
+        path="/"
+        jsonLd={[
+          buildOrganizationJsonLd(),
+          buildWebSiteJsonLd(),
+          buildStoreJsonLd(),
+          buildBreadcrumbJsonLd([{ name: 'Home', path: '/' }]),
+          ...(popular.length
+            ? [buildItemListJsonLd(popular, 'Featured digital subscriptions')]
+            : []),
+        ]}
       />
 
       {/* Hero — CSS only, no heavy motion libs on first paint */}

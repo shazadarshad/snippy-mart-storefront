@@ -1,31 +1,38 @@
-# Snippy Mart - robots.txt
-# https://snippymart.com
+# Snippy Mart — https://snippymart.com
+# Keep private / thin URLs out of the index.
 
-# Allow all search engines
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /shared/
+Disallow: /api/
 
 User-agent: Googlebot-Image
 Allow: /
 
 User-agent: Bingbot
 Allow: /
-Crawl-delay: 2
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /shared/
+Disallow: /api/
 
-User-agent: Slurp
+User-agent: *
 Allow: /
-Crawl-delay: 2
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /shared/
+Disallow: /api/
+Disallow: /*.json$
 
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: Baiduspider
-Allow: /
-
-User-agent: YandexBot
-Allow: /
-
+# Social / preview bots — allow OG crawls
 User-agent: Twitterbot
 Allow: /
 
@@ -41,15 +48,5 @@ Allow: /
 User-agent: TelegramBot
 Allow: /
 
-# General rule for all other bots
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /*.json$
-
-# Sitemap location
 Sitemap: https://snippymart.com/sitemap.xml
-
-# Host
 Host: https://snippymart.com

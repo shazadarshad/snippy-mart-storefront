@@ -333,8 +333,10 @@ const AffiliatePage = () => {
   return (
     <div className="min-h-dvh page-mesh overflow-x-hidden pb-safe pb-16 sm:pb-20">
       <SEO
-        title="Affiliate Program"
-        description="Earn ~7% commission promoting Snippy Mart. Share your link, get paid via bank, UPI, or Binance."
+        title="Affiliate Program — Earn Commission"
+        description="Join the Snippy Mart affiliate program. Share your unique link, earn commission on completed orders, and cash out via bank, UPI, or crypto."
+        path="/affiliate"
+        keywords="Snippy Mart affiliate, earn commission, digital product referral program"
       />
       <PageHero
         eyebrow="Partners"

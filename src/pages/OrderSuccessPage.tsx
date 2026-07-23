@@ -276,7 +276,12 @@ const OrderSuccessPage = () => {
           : 'pb-[max(4rem,env(safe-area-inset-bottom,0px)+2.5rem)] sm:pb-20',
       )}
     >
-      <SEO title="Order confirmed" description="Your Snippy Mart order was placed successfully." />
+      <SEO
+        title="Order confirmed"
+        description="Your Snippy Mart order was placed successfully. Save your Order ID and track delivery."
+        noindex
+        path="/order-success"
+      />
       <div className="mx-auto w-full max-w-2xl px-3 xs:px-4 sm:px-5 space-y-4 sm:space-y-6">
         {/* ── 1. Header ── */}
         <header className="text-center px-0.5">

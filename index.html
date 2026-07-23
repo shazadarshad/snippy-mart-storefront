@@ -5,20 +5,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
 
-  <!-- Primary Meta Tags -->
-  <title>Snippy Mart - Premium Digital Subscriptions | Netflix, Spotify, Adobe & More</title>
-  <meta name="title" content="Snippy Mart - Premium Digital Subscriptions | Netflix, Spotify, Adobe & More" />
+  <!-- Primary Meta Tags (SSR-like defaults; client SEO component refines per route) -->
+  <title>Snippy Mart — Premium Digital Subscriptions | AI, Streaming & Software</title>
+  <meta name="title" content="Snippy Mart — Premium Digital Subscriptions | AI, Streaming & Software" />
   <meta name="description"
-    content="Get premium digital subscriptions at unbeatable prices. Netflix, Spotify, Adobe Creative Cloud, ChatGPT Plus, Canva Pro & more. Instant delivery via WhatsApp. 100% genuine accounts." />
+    content="Buy premium digital subscriptions at fair prices — AI tools, streaming, design software & more. Secure checkout, live order tracking, and WhatsApp support. Instant-ready delivery from Snippy Mart (Sri Lanka)." />
   <meta name="keywords"
-    content="digital subscriptions, Netflix, Spotify, Adobe Creative Cloud, ChatGPT Plus, Canva Pro, streaming services, premium accounts, instant delivery, WhatsApp, Sri Lanka, affordable subscriptions" />
+    content="Snippy Mart, digital subscriptions, Netflix, Spotify, Adobe, ChatGPT, Claude, Canva Pro, Coursera, premium accounts, Sri Lanka, WhatsApp support, AI tools" />
   <meta name="author" content="Snippy Mart" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-  <meta name="googlebot" content="index, follow" />
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="bingbot" content="index, follow" />
 
   <!-- Canonical URL -->
   <link rel="canonical" href="https://snippymart.com/" />
+  <link rel="alternate" hreflang="en" href="https://snippymart.com/" />
+  <link rel="alternate" hreflang="x-default" href="https://snippymart.com/" />
 
   <!-- Favicon & App Icons -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -43,43 +45,50 @@
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://snippymart.com/" />
-  <meta property="og:title" content="Snippy Mart - Premium Digital Subscriptions" />
+  <meta property="og:title" content="Snippy Mart — Premium Digital Subscriptions" />
   <meta property="og:description"
-    content="Get premium digital subscriptions at unbeatable prices. Netflix, Spotify, Adobe & more with instant WhatsApp delivery." />
-  <meta property="og:image" content="https://snippymart.com/og-image.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Snippy Mart - Premium Digital Subscriptions" />
+    content="Buy premium digital subscriptions at fair prices. Secure checkout, live tracking, WhatsApp support." />
+  <meta property="og:image" content="https://snippymart.com/android-chrome-512x512.png" />
+  <meta property="og:image:secure_url" content="https://snippymart.com/android-chrome-512x512.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:image:alt" content="Snippy Mart — Premium Digital Subscriptions" />
   <meta property="og:site_name" content="Snippy Mart" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://snippymart.com/" />
-  <meta name="twitter:title" content="Snippy Mart - Premium Digital Subscriptions" />
+  <meta name="twitter:title" content="Snippy Mart — Premium Digital Subscriptions" />
   <meta name="twitter:description"
-    content="Get premium digital subscriptions at unbeatable prices. Netflix, Spotify, Adobe & more with instant WhatsApp delivery." />
-  <meta name="twitter:image" content="https://snippymart.com/og-image.png" />
+    content="Buy premium digital subscriptions at fair prices. Secure checkout, live tracking, WhatsApp support." />
+  <meta name="twitter:image" content="https://snippymart.com/android-chrome-512x512.png" />
+  <meta name="twitter:image:alt" content="Snippy Mart — Premium Digital Subscriptions" />
   <meta name="twitter:site" content="@SnippyMart" />
   <meta name="twitter:creator" content="@SnippyMart" />
 
-  <!-- Schema.org Structured Data -->
+  <!-- Schema.org Structured Data (boot defaults; SPA routes add page-level graphs) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": "https://snippymart.com/#organization",
     "name": "Snippy Mart",
     "url": "https://snippymart.com",
-    "logo": "https://snippymart.com/android-chrome-512x512.png",
-    "description": "Premium digital subscriptions at unbeatable prices with instant WhatsApp delivery.",
-    "sameAs": [
-      "https://wa.me/94787767869"
-    ],
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://snippymart.com/android-chrome-512x512.png",
+      "width": 512,
+      "height": 512
+    },
+    "description": "Premium digital subscriptions at fair prices with secure checkout and WhatsApp support.",
+    "sameAs": ["https://wa.me/94787767869"],
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+94-78-776-7869",
       "contactType": "customer service",
-      "availableLanguage": ["English", "Sinhala"]
+      "availableLanguage": ["English", "Sinhala"],
+      "areaServed": "Worldwide"
     }
   }
   </script>
@@ -88,11 +97,17 @@
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": "https://snippymart.com/#website",
     "name": "Snippy Mart",
     "url": "https://snippymart.com",
+    "publisher": { "@id": "https://snippymart.com/#organization" },
+    "inLanguage": "en",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://snippymart.com/products?search={search_term_string}",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://snippymart.com/products?search={search_term_string}"
+      },
       "query-input": "required name=search_term_string"
     }
   }
@@ -101,12 +116,15 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Store",
+    "@type": "OnlineStore",
+    "@id": "https://snippymart.com/#store",
     "name": "Snippy Mart",
-    "image": "https://snippymart.com/og-image.png",
+    "image": "https://snippymart.com/android-chrome-512x512.png",
     "url": "https://snippymart.com",
     "telephone": "+94-78-776-7869",
-    "priceRange": "$",
+    "priceRange": "$$",
+    "currenciesAccepted": "LKR, USD, INR",
+    "paymentAccepted": "Bank Transfer, Cryptocurrency, UPI",
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "LK"
@@ -116,7 +134,8 @@
       "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       "opens": "00:00",
       "closes": "23:59"
-    }
+    },
+    "parentOrganization": { "@id": "https://snippymart.com/#organization" }
   }
   </script>
 

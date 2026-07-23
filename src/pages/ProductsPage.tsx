@@ -116,9 +116,11 @@ const ProductsPage = () => {
   return (
     <div className="min-h-dvh page-mesh pb-safe pb-20">
       <SEO
-        title="Products"
-        description="Browse premium digital subscriptions — AI tools, streaming, design software. Fair prices, bank checkout, live tracking."
+        title="All Digital Subscriptions & Premium Accounts"
+        description="Browse the full Snippy Mart catalogue — AI tools, streaming, design software, Coursera & more. Fair LKR prices, secure checkout, live order tracking."
+        path="/products"
         type="website"
+        keywords="buy digital subscriptions, premium accounts Sri Lanka, ChatGPT, Claude, Netflix, Adobe, Canva, Snippy Mart products"
       />
 
       <div className="container mx-auto px-3 sm:px-4 pt-28 sm:pt-32">

@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { Download, ShieldCheck, Zap, Terminal, FileDown, Chrome, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import SEO from '@/components/seo/SEO';
 
 const DownloadExtension = () => {
     const [downloadUrl, setDownloadUrl] = useState<string>('');
@@ -16,6 +17,12 @@ const DownloadExtension = () => {
 
     return (
         <div className="min-h-screen bg-black text-white selection:bg-white/20 overflow-hidden font-display relative">
+            <SEO
+                title="Download Elite Auto-Login Extension"
+                description="Download the Snippy Mart Elite receiver Chrome extension for one-click secure auto-login to purchased services."
+                path="/download"
+                keywords="Snippy Mart extension, chrome auto login, elite receiver"
+            />
             {/* Background Gradients */}
             <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-purple-900/20 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-20%] right-[-20%] w-[800px] h-[800px] bg-blue-900/20 rounded-full blur-[120px] pointer-events-none" />

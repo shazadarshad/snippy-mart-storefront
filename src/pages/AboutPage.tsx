@@ -39,8 +39,10 @@ const AboutPage = () => {
   return (
     <div className="min-h-screen page-mesh pb-20">
       <SEO
-        title="About Us"
-        description="Learn about Snippy Mart — affordable premium digital subscriptions with secure checkout and support."
+        title="About Snippy Mart"
+        description="Snippy Mart sells premium digital subscriptions with fair pricing, secure checkout, live tracking, and human WhatsApp support. Based in Sri Lanka, serving customers worldwide."
+        path="/about"
+        keywords="about Snippy Mart, digital subscription store Sri Lanka, trusted premium accounts"
       />
 
       <PageHero
