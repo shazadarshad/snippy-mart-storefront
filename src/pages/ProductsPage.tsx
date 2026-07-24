@@ -24,13 +24,14 @@ import { cn } from '@/lib/utils';
 import { ProductsGridSkeleton } from '@/components/products/ProductSkeleton';
 import SEO from '@/components/seo/SEO';
 
-type SortKey = 'featured' | 'price_asc' | 'price_desc' | 'name' | 'newest';
+type SortKey = 'catalog' | 'featured' | 'price_asc' | 'price_desc' | 'name' | 'newest';
 type StockFilter = 'all' | 'in_stock' | 'limited' | 'out_of_stock';
 
 const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>('featured');
+  // Catalog = admin display_order (what you set in admin reorder)
+  const [sortKey, setSortKey] = useState<SortKey>('catalog');
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,14 +78,25 @@ const ProductsPage = () => {
           return (
             new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
           );
-        case 'featured':
-        default: {
+        case 'featured': {
+          // Featured first, then admin display_order
           const af = a.is_featured ? 0 : 1;
           const bf = b.is_featured ? 0 : 1;
           if (af !== bf) return af - bf;
           const ao = a.display_order ?? 9999;
           const bo = b.display_order ?? 9999;
           if (ao !== bo) return ao - bo;
+          return a.name.localeCompare(b.name);
+        }
+        case 'catalog':
+        default: {
+          // Match admin panel order (display_order)
+          const ao = a.display_order ?? 9999;
+          const bo = b.display_order ?? 9999;
+          if (ao !== bo) return ao - bo;
+          const af = a.is_featured ? 0 : 1;
+          const bf = b.is_featured ? 0 : 1;
+          if (af !== bf) return af - bf;
           return a.name.localeCompare(b.name);
         }
       }
@@ -107,11 +119,11 @@ const ProductsPage = () => {
     setSearchQuery('');
     setSelectedCategory(null);
     setStockFilter('all');
-    setSortKey('featured');
+    setSortKey('catalog');
   };
 
   const hasActiveFilters =
-    !!searchQuery || !!selectedCategory || stockFilter !== 'all' || sortKey !== 'featured';
+    !!searchQuery || !!selectedCategory || stockFilter !== 'all' || sortKey !== 'catalog';
 
   return (
     <div className="min-h-dvh page-mesh pb-safe pb-20">
@@ -219,7 +231,8 @@ const ProductsPage = () => {
                     <SelectValue placeholder="Sort" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="featured">Featured</SelectItem>
+                    <SelectItem value="catalog">Catalog order</SelectItem>
+                    <SelectItem value="featured">Featured first</SelectItem>
                     <SelectItem value="price_asc">Price: low → high</SelectItem>
                     <SelectItem value="price_desc">Price: high → low</SelectItem>
                     <SelectItem value="name">Name A–Z</SelectItem>
@@ -285,7 +298,7 @@ const ProductsPage = () => {
             </p>
             <div className="flex items-center gap-2 text-xs">
               <Star className="w-3.5 h-3.5 text-amber-500" />
-              Featured items rise to the top when sorted by Featured
+              Default sort matches admin catalog order. Choose Featured first to pin featured items.
             </div>
           </div>
         )}
