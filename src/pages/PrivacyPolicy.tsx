@@ -1,6 +1,6 @@
 import { usePolicy } from '@/hooks/usePolicies';
 import PolicyLayout from '@/components/layout/PolicyLayout';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const PrivacyPolicy = () => {
