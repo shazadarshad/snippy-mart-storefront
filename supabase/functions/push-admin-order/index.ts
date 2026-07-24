@@ -138,7 +138,22 @@ serve(async (req) => {
   const authHeader = req.headers.get("Authorization") || "";
   const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
   const apikey = (req.headers.get("apikey") || "").trim();
-  if (bearer !== serviceKey && apikey !== serviceKey) {
+  function jwtRole(tok: string): string | null {
+    try {
+      const payload = tok.split(".")[1];
+      if (!payload) return null;
+      const json = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+      return json.role || null;
+    } catch {
+      return null;
+    }
+  }
+  const ok =
+    bearer === serviceKey ||
+    apikey === serviceKey ||
+    jwtRole(bearer) === "service_role" ||
+    jwtRole(apikey) === "service_role";
+  if (!ok) {
     return json({ error: "Unauthorized" }, 401);
   }
 

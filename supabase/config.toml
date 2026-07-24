@@ -2,3 +2,9 @@ project_id = "vuffzfuklzzcnfnubtzx"
 
 [functions.create-order]
 verify_jwt = false
+
+[functions.push-admin-order]
+verify_jwt = false
+
+[functions.apply-admin-push-migration]
+verify_jwt = false
