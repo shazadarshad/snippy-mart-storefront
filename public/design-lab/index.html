@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Snippy Mart — Design Lab (concepts only)</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --card: #121820;
+      --text: #eef3f8;
+      --muted: #8b9aab;
+      --line: rgba(255,255,255,.08);
+      --accent: #14b8a6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #134e4a55, transparent),
+        radial-gradient(900px 500px at 90% 0%, #4c1d9555, transparent), var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); letter-spacing: -0.03em; margin: 0 0 .5rem; }
+    .lead { color: var(--muted); max-width: 42rem; line-height: 1.55; margin: 0 0 2rem; }
+    .note {
+      display: inline-flex; gap: .5rem; align-items: center;
+      font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--accent); background: rgba(20,184,166,.12); border: 1px solid rgba(20,184,166,.25);
+      padding: .4rem .7rem; border-radius: 999px; margin-bottom: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    @media (min-width: 800px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    a.card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+      box-shadow: 0 10px 40px rgba(0,0,0,.25);
+    }
+    a.card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(20,184,166,.4);
+      box-shadow: 0 16px 50px rgba(0,0,0,.35);
+    }
+    .preview {
+      height: 180px;
+      background: #0a0a0a;
+      position: relative;
+      overflow: hidden;
+    }
+    .preview iframe {
+      width: 1280px;
+      height: 900px;
+      transform: scale(0.28);
+      transform-origin: top left;
+      border: 0;
+      pointer-events: none;
+    }
+    .body { padding: 1.1rem 1.2rem 1.25rem; }
+    .tag {
+      font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: .35rem;
+    }
+    .title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 .4rem; }
+    .desc { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+    .meta {
+      margin-top: 1rem; display: flex; flex-wrap: wrap; gap: .4rem;
+    }
+    .chip {
+      font-size: .7rem; font-weight: 700;
+      padding: .25rem .55rem; border-radius: 999px;
+      background: rgba(255,255,255,.06); color: #cbd5e1; border: 1px solid var(--line);
+    }
+    footer { margin-top: 2.5rem; color: var(--muted); font-size: .8rem; }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="note">Design lab · concepts only · not live site</div>
+    <h1>Snippy Mart landing redesigns</h1>
+    <p class="lead">
+      Four different directions for the homepage. Same business (digital subscriptions, track order, WhatsApp trust) —
+      different personality. Click a card to open a full sample page. Nothing here is connected to production checkout.
+    </p>
+
+    <div class="grid">
+      <a class="card" href="./a-editorial.html">
+        <div class="preview"><iframe src="./a-editorial.html" title="A" loading="lazy"></iframe></div>
+        <div class="body">
+          <div class="tag">Concept A</div>
+          <h2 class="title">Editorial Dark Luxury</h2>
+          <p class="desc">Quiet, premium, almost fashion-site energy. Big type, lots of air, product as art.</p>
+          <div class="meta">
+            <span class="chip">Dark</span>
+            <span class="chip">Serif + sans</span>
+            <span class="chip">High trust</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="./b-neon-market.html">
+        <div class="preview"><iframe src="./b-neon-market.html" title="B" loading="lazy"></iframe></div>
+        <div class="body">
+          <div class="tag">Concept B</div>
+          <h2 class="title">Neon Deal Market</h2>
+          <p class="desc">Loud marketplace vibes — deals first, badges, urgency, FOMO. Great for promo culture.</p>
+          <div class="meta">
+            <span class="chip">High energy</span>
+            <span class="chip">Cards</span>
+            <span class="chip">Conversion</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="./c-soft-saas.html">
+        <div class="preview"><iframe src="./c-soft-saas.html" title="C" loading="lazy"></iframe></div>
+        <div class="body">
+          <div class="tag">Concept C</div>
+          <h2 class="title">Soft Trust SaaS</h2>
+          <p class="desc">Clean light UI like Stripe/Linear. Calm, professional, “this is legit” for new buyers.</p>
+          <div class="meta">
+            <span class="chip">Light</span>
+            <span class="chip">Soft shadows</span>
+            <span class="chip">Support-first</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="./d-bento-os.html">
+        <div class="preview"><iframe src="./d-bento-os.html" title="D" loading="lazy"></iframe></div>
+        <div class="body">
+          <div class="tag">Concept D</div>
+          <h2 class="title">Bento OS / App Home</h2>
+          <p class="desc">Dashboard-style home: track order, deals, categories, community as tiles. Feels like a product OS.</p>
+          <div class="meta">
+            <span class="chip">Bento</span>
+            <span class="chip">Utility</span>
+            <span class="chip">Mobile-first</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <footer>
+      Open locally after deploy or with <code>npm run dev</code> at
+      <a href="/design-lab/">/design-lab/</a>.
+      Pick a favorite (or mix) and we can implement it on the real site.
+    </footer>
+  </div>
+</body>
+</html>

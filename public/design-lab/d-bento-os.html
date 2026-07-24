@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Concept D — Bento OS · Snippy Mart</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #181b22;
+      --fg: #f1f5f9;
+      --muted: #94a3b8;
+      --line: rgba(255,255,255,.08);
+      --teal: #2dd4bf;
+      --violet: #a78bfa;
+      --amber: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "SF Pro Display", Inter, system-ui, sans-serif;
+      min-height: 100dvh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .shell {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 1rem 1rem 3rem;
+    }
+    .top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .logo { font-weight: 800; letter-spacing: -.03em; }
+    .logo span { color: var(--teal); }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--teal), var(--violet));
+    }
+    h1 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      letter-spacing: -.03em; margin: 0 0 .35rem;
+    }
+    .sub { color: var(--muted); margin: 0 0 1.25rem; font-size: .95rem; }
+    .bento {
+      display: grid;
+      gap: .75rem;
+      grid-template-columns: 1fr 1fr;
+      grid-auto-rows: minmax(110px, auto);
+    }
+    @media (min-width: 800px) {
+      .bento {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: 140px 160px 140px;
+      }
+    }
+    .tile {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      padding: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .tile.wide { grid-column: span 2; }
+    .tile.tall { grid-row: span 2; }
+    @media (max-width: 799px) {
+      .tile.wide { grid-column: span 2; }
+      .tile.tall { grid-row: span 1; grid-column: span 2; }
+    }
+    .label {
+      font-size: .68rem; font-weight: 800; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: .5rem;
+    }
+    .tile h2 { margin: 0 0 .35rem; font-size: 1.15rem; letter-spacing: -.02em; }
+    .tile p { margin: 0; color: var(--muted); font-size: .85rem; line-height: 1.4; }
+    .cta {
+      display: inline-flex; margin-top: .85rem;
+      background: var(--teal); color: #042f2e; font-weight: 800;
+      font-size: .8rem; padding: .55rem .9rem; border-radius: .75rem;
+    }
+    .search {
+      display: flex; align-items: center; gap: .5rem;
+      background: #0c0e12; border: 1px solid var(--line);
+      border-radius: .9rem; padding: .7rem .85rem; margin-top: .5rem;
+      color: var(--muted); font-size: .9rem;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+    .chip {
+      font-size: .72rem; font-weight: 700;
+      padding: .35rem .6rem; border-radius: 999px;
+      background: #0c0e12; border: 1px solid var(--line); color: #cbd5e1;
+    }
+    .stat {
+      font-size: 1.75rem; font-weight: 800; letter-spacing: -.03em;
+      background: linear-gradient(90deg, var(--teal), var(--violet));
+      -webkit-background-clip: text; color: transparent;
+    }
+    .glow-teal { background: linear-gradient(160deg, #134e4a55, var(--panel)); }
+    .glow-violet { background: linear-gradient(160deg, #4c1d9555, var(--panel)); }
+    .glow-amber { background: linear-gradient(160deg, #78350f55, var(--panel)); }
+    .list { display: grid; gap: .45rem; margin-top: .5rem; }
+    .row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .82rem; padding: .45rem .55rem; border-radius: .65rem;
+      background: rgba(0,0,0,.25);
+    }
+    .row span { color: var(--muted); }
+    .back {
+      position: fixed; bottom: 1rem; left: 1rem; z-index: 30;
+      background: #22262f; border: 1px solid var(--line);
+      padding: .5rem .8rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="./index.html">← All concepts</a>
+  <div class="shell">
+    <div class="top">
+      <div class="logo">Snippy<span>OS</span></div>
+      <div class="avatar" title="You"></div>
+    </div>
+    <h1>What do you need today?</h1>
+    <p class="sub">Your digital storefront, tracking, and support — one home screen.</p>
+
+    <div class="bento">
+      <div class="tile wide tall glow-teal">
+        <div class="label">Shop</div>
+        <h2>Find a product</h2>
+        <p>AI, design, streaming — ordered the way you set in admin.</p>
+        <div class="search">⌕  Search Warp, Claude, Canva…</div>
+        <div class="chips">
+          <span class="chip">AI</span>
+          <span class="chip">Design</span>
+          <span class="chip">Streaming</span>
+          <span class="chip">Education</span>
+        </div>
+        <a class="cta" href="#">Open catalogue</a>
+      </div>
+
+      <div class="tile glow-violet">
+        <div class="label">Orders</div>
+        <h2>Track</h2>
+        <p>Paste Order ID</p>
+        <a class="cta" href="#" style="background:var(--violet);color:#1e1b4b">Track</a>
+      </div>
+
+      <div class="tile glow-amber">
+        <div class="label">Support</div>
+        <h2>WhatsApp</h2>
+        <p>Human help</p>
+        <a class="cta" href="#" style="background:var(--amber);color:#422006">Chat</a>
+      </div>
+
+      <div class="tile wide">
+        <div class="label">Trending</div>
+        <div class="list">
+          <div class="row"><strong>Warp Build 12mo</strong><span>Rs 3,999</span></div>
+          <div class="row"><strong>Gemini Pro 18mo</strong><span>Hot</span></div>
+          <div class="row"><strong>Canva Pro 1yr</strong><span>Design</span></div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="label">Community</div>
+        <div class="stat">2K+</div>
+        <p>Join deals group</p>
+      </div>
+
+      <div class="tile">
+        <div class="label">Partners</div>
+        <h2 style="font-size:1rem">Affiliate</h2>
+        <p>~7% commission</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

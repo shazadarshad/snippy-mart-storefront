@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Concept A — Editorial Dark Luxury · Snippy Mart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0c0c;
+      --fg: #f4f1ea;
+      --muted: #9a958c;
+      --line: rgba(244,241,234,.12);
+      --gold: #c9a227;
+      --card: #151514;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    .bar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(12,12,12,.85);
+      backdrop-filter: blur(12px);
+    }
+    .logo { font-weight: 700; letter-spacing: -.02em; }
+    .logo span { color: var(--gold); }
+    nav { display: flex; gap: 1.25rem; font-size: .85rem; color: var(--muted); }
+    nav a:hover { color: var(--fg); }
+    .cta {
+      background: var(--fg); color: var(--bg);
+      padding: .55rem 1rem; border-radius: 999px; font-size: .8rem; font-weight: 700;
+    }
+    .hero {
+      min-height: 78dvh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 4rem 1.5rem 3rem;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,162,39,.15), transparent 60%);
+    }
+    .eyebrow {
+      font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--gold); font-weight: 600; margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-weight: 400;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      line-height: .95;
+      letter-spacing: -.03em;
+      max-width: 12ch;
+      margin: 0 auto 1.25rem;
+    }
+    h1 em { font-style: italic; color: var(--gold); }
+    .sub {
+      max-width: 28rem; margin: 0 auto 2rem;
+      color: var(--muted); line-height: 1.6; font-size: 1.05rem;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
+    .btn-primary {
+      background: var(--gold); color: #111; font-weight: 700;
+      padding: .9rem 1.4rem; border-radius: 999px; font-size: .9rem;
+    }
+    .btn-ghost {
+      border: 1px solid var(--line); padding: .9rem 1.4rem; border-radius: 999px;
+      font-size: .9rem; color: var(--muted);
+    }
+    .strip {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    }
+    .strip div {
+      padding: 1.5rem 1rem; text-align: center;
+      border-right: 1px solid var(--line);
+    }
+    .strip div:last-child { border-right: 0; }
+    .strip strong { display: block; font-family: "Instrument Serif", serif; font-size: 1.75rem; font-weight: 400; }
+    .strip span { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    section { padding: 4rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+    .sec-head {
+      display: flex; justify-content: space-between; align-items: end;
+      margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap;
+    }
+    .sec-head h2 {
+      font-family: "Instrument Serif", serif; font-weight: 400;
+      font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0;
+    }
+    .sec-head a { color: var(--gold); font-size: .85rem; font-weight: 600; }
+    .products {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 800px) {
+      nav { display: none; }
+      .strip { grid-template-columns: 1fr; }
+      .strip div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .products { grid-template-columns: 1fr; }
+    }
+    .p {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      min-height: 280px;
+      display: flex; flex-direction: column;
+    }
+    .p.big { min-height: 420px; }
+    .p .img {
+      flex: 1;
+      background:
+        linear-gradient(145deg, #1a1a18, #0e0e0d 50%, #1f1a10);
+      display: grid; place-items: center;
+      font-family: "Instrument Serif", serif;
+      font-size: 2.5rem; color: var(--gold);
+    }
+    .p .meta { padding: 1.1rem 1.2rem 1.3rem; }
+    .p .meta h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .p .meta p { margin: 0; color: var(--muted); font-size: .85rem; }
+    .trust {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;
+    }
+    @media (max-width: 800px) { .trust { grid-template-columns: 1fr; } }
+    .trust article {
+      border-top: 1px solid var(--gold);
+      padding-top: 1.25rem;
+    }
+    .trust h3 { font-size: .95rem; margin: 0 0 .5rem; }
+    .trust p { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+    .back {
+      position: fixed; bottom: 1rem; left: 1rem; z-index: 30;
+      background: #222; border: 1px solid var(--line);
+      padding: .5rem .8rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="./index.html">← All concepts</a>
+  <header class="bar">
+    <div class="logo">Snippy<span>Mart</span></div>
+    <nav>
+      <a href="#">Catalogue</a>
+      <a href="#">Track order</a>
+      <a href="#">Affiliate</a>
+    </nav>
+    <a class="cta" href="#">Shop now</a>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Digital memberships · Sri Lanka & global</div>
+      <h1>Own the tools.<br /><em>Skip the noise.</em></h1>
+      <p class="sub">
+        Premium AI, design, and streaming access — presented with the same calm confidence as a flagship product launch.
+      </p>
+      <div class="actions">
+        <a class="btn-primary" href="#">Browse the collection</a>
+        <a class="btn-ghost" href="#">Track an order</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div><strong>2K+</strong><span>Buyers</span></div>
+    <div><strong>Live</strong><span>Order tracking</span></div>
+    <div><strong>WA</strong><span>Human support</span></div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Selected this week</h2>
+      <a href="#">View all →</a>
+    </div>
+    <div class="products">
+      <article class="p big">
+        <div class="img">Warp</div>
+        <div class="meta">
+          <h3>Warp Build · 12 Months</h3>
+          <p>From Rs. 3,999 · Instant track delivery</p>
+        </div>
+      </article>
+      <article class="p">
+        <div class="img">Claude</div>
+        <div class="meta">
+          <h3>Claude access</h3>
+          <p>Team & tokens</p>
+        </div>
+      </article>
+      <article class="p">
+        <div class="img">Canva</div>
+        <div class="meta">
+          <h3>Canva Pro · 1 Year</h3>
+          <p>Design suite</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>The promise</h2></div>
+    <div class="trust">
+      <article>
+        <h3>Clear checkout</h3>
+        <p>Bank, UPI, crypto — upload proof, get an Order ID, track status live.</p>
+      </article>
+      <article>
+        <h3>Delivery you can open</h3>
+        <p>Codes, links, and logins land on Track Order — not buried in chat spam.</p>
+      </article>
+      <article>
+        <h3>Real humans</h3>
+        <p>WhatsApp support when something needs a person, not a bot loop.</p>
+      </article>
+    </div>
+  </section>
+</body>
+</html>

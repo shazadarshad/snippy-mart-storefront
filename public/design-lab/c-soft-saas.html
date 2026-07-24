@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Concept C — Soft Trust SaaS · Snippy Mart</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --fg: #0f172a;
+      --muted: #64748b;
+      --card: #ffffff;
+      --line: #e2e8f0;
+      --brand: #0d9488;
+      --brand-soft: #ccfbf1;
+      --shadow: 0 1px 2px rgba(15,23,42,.05), 0 12px 40px rgba(15,23,42,.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    .nav {
+      max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem;
+    }
+    .logo { font-weight: 800; letter-spacing: -.03em; }
+    .logo span { color: var(--brand); }
+    .nav-links { display: flex; gap: 1.25rem; font-size: .9rem; color: var(--muted); font-weight: 500; }
+    @media (max-width: 700px) { .nav-links { display: none; } }
+    .nav-cta {
+      background: var(--fg); color: #fff; font-weight: 700; font-size: .85rem;
+      padding: .55rem 1rem; border-radius: .75rem;
+    }
+    .hero {
+      max-width: 1080px; margin: 0 auto;
+      padding: 2.5rem 1.25rem 2rem;
+      display: grid; gap: 2rem;
+    }
+    @media (min-width: 900px) {
+      .hero { grid-template-columns: 1.1fr .9fr; align-items: center; padding-top: 3.5rem; }
+    }
+    .badge {
+      display: inline-flex; gap: .4rem; align-items: center;
+      background: var(--brand-soft); color: #0f766e;
+      font-size: .75rem; font-weight: 700;
+      padding: .35rem .7rem; border-radius: 999px; margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: clamp(2.1rem, 5vw, 3.25rem);
+      letter-spacing: -.04em; line-height: 1.08; margin: 0 0 1rem;
+    }
+    .lead { color: var(--muted); font-size: 1.05rem; line-height: 1.6; margin: 0 0 1.5rem; max-width: 34rem; }
+    .btns { display: flex; flex-wrap: wrap; gap: .65rem; margin-bottom: 1.5rem; }
+    .btn-p {
+      background: var(--brand); color: #fff; font-weight: 700;
+      padding: .85rem 1.2rem; border-radius: .85rem; font-size: .9rem;
+      box-shadow: 0 8px 24px rgba(13,148,136,.28);
+    }
+    .btn-s {
+      background: var(--card); border: 1px solid var(--line);
+      padding: .85rem 1.2rem; border-radius: .85rem; font-weight: 600; font-size: .9rem; color: var(--muted);
+    }
+    .trust-row { display: flex; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: .8rem; font-weight: 600; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+    }
+    .panel h3 { margin: 0 0 1rem; font-size: .95rem; }
+    .step {
+      display: flex; gap: .75rem; padding: .75rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .step:last-child { border-bottom: 0; }
+    .n {
+      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+      background: var(--brand-soft); color: #0f766e;
+      display: grid; place-items: center; font-size: .75rem; font-weight: 800;
+    }
+    .step strong { display: block; font-size: .88rem; margin-bottom: .15rem; }
+    .step span { font-size: .8rem; color: var(--muted); }
+    section { max-width: 1080px; margin: 0 auto; padding: 1rem 1.25rem 3.5rem; }
+    .sec-title { font-size: 1.35rem; letter-spacing: -.02em; margin: 0 0 1rem; }
+    .cards {
+      display: grid; gap: .85rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 700px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+    .card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 1rem; padding: 1.1rem; box-shadow: var(--shadow);
+    }
+    .card .ico {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: #f1f5f9; display: grid; place-items: center;
+      margin-bottom: .75rem; font-size: 1.1rem;
+    }
+    .card h3 { margin: 0 0 .35rem; font-size: .95rem; }
+    .card p { margin: 0; color: var(--muted); font-size: .85rem; line-height: 1.45; }
+    .back {
+      position: fixed; bottom: 1rem; left: 1rem; z-index: 30;
+      background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: .5rem .8rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="./index.html">← All concepts</a>
+  <header class="nav">
+    <div class="logo">Snippy<span>Mart</span></div>
+    <div class="nav-links">
+      <a href="#">Products</a>
+      <a href="#">Track order</a>
+      <a href="#">Support</a>
+    </div>
+    <a class="nav-cta" href="#">Get started</a>
+  </header>
+
+  <div class="hero">
+    <div>
+      <div class="badge">✓ Trusted by 2,000+ buyers</div>
+      <h1>Digital subscriptions with clear delivery.</h1>
+      <p class="lead">
+        Buy AI tools, design software, and more. Pay securely, track your order, collect access on Track Order — with WhatsApp help when you need it.
+      </p>
+      <div class="btns">
+        <a class="btn-p" href="#">Browse products</a>
+        <a class="btn-s" href="#">Track an order</a>
+      </div>
+      <div class="trust-row">
+        <span>🔒 Proof-based checkout</span>
+        <span>📦 Live status</span>
+        <span>💬 Human WhatsApp</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>How it works</h3>
+      <div class="step"><div class="n">1</div><div><strong>Choose a product</strong><span>Warp, Claude, Canva, Coursera…</span></div></div>
+      <div class="step"><div class="n">2</div><div><strong>Pay & upload proof</strong><span>Bank, UPI, or crypto</span></div></div>
+      <div class="step"><div class="n">3</div><div><strong>Track & unlock</strong><span>Order ID → Track Order page</span></div></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="sec-title">Why buyers choose Snippy</h2>
+    <div class="cards">
+      <article class="card"><div class="ico">⚡</div><h3>Fast path to access</h3><p>No mystery delivery. Your Order ID is the source of truth.</p></article>
+      <article class="card"><div class="ico">🛡️</div><h3>Transparent status</h3><p>Pending → processing → completed, visible anytime.</p></article>
+      <article class="card"><div class="ico">🤝</div><h3>Real support</h3><p>WhatsApp when automation needs a human assist.</p></article>
+    </div>
+  </section>
+</body>
+</html>
