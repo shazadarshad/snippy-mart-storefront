@@ -80,15 +80,42 @@ In Android Studio:
 
 ---
 
-## Install on your phone
+## Build APK without Android Studio (recommended)
 
-1. Enable **Install unknown apps** for Files/Chrome if sideloading.
-2. Install the APK.
-3. Open **Snippy Admin** → log in at `/admin`.
-4. Allow **notifications** when asked.
-5. Confirm token row appears in `admin_push_tokens` (Supabase table editor).
+GitHub Actions builds a **debug APK** for you.
 
-Place a test order → you should get a shade notification even if the app is in the background/closed (FCM).
+### One-time: add Firebase JSON as a GitHub secret
+
+1. Open [repo Settings → Secrets and variables → Actions](https://github.com/shazadarshad/snippy-mart-storefront/settings/secrets/actions)
+2. New repository secret:
+   - Name: `GOOGLE_SERVICES_JSON`
+   - Value: **entire contents** of your `google-services.json` (raw JSON)
+
+Or from a PC that has the file:
+
+```bash
+gh secret set GOOGLE_SERVICES_JSON < android/app/google-services.json
+```
+
+### Run the build
+
+1. GitHub → **Actions** → **Build Admin APK** → **Run workflow**
+2. Wait ~5–10 minutes
+3. Open the run → **Artifacts** → download **snippy-admin-apk**
+4. Unzip if needed → install `app-debug.apk` on your phone  
+   (allow Install unknown apps)
+
+### After install
+
+1. Open **Snippy Admin**
+2. Log in at `/admin`
+3. Allow **notifications**
+4. Confirm a row appears in Supabase table `admin_push_tokens`
+5. Place a test order → shade notification (needs FCM secrets on Supabase — below)
+
+### Optional: local Android Studio
+
+Only if you want; not required when using Actions.
 
 ---
 
