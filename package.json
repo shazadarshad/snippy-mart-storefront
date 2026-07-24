@@ -20,14 +20,12 @@
     "cap:android": "npx cap open android",
     "cap:add:android": "npx cap add android"
   },
-  "optionalDependencies": {
+  "dependencies": {
     "@capacitor/android": "^7.4.2",
     "@capacitor/app": "^7.0.2",
     "@capacitor/core": "^7.4.2",
     "@capacitor/push-notifications": "^7.0.2",
-    "@capacitor/splash-screen": "^7.0.2"
-  },
-  "dependencies": {
+    "@capacitor/splash-screen": "^7.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

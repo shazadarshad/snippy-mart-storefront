@@ -14,6 +14,8 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'src/hooks/useAdminNativePush.ts'
+      - 'src/hooks/useAdminPwa.ts'
+      - 'src/components/admin/AdminPwaBanner.tsx'
       - 'src/hooks/useAdminOrderAlerts.ts'
       - 'src/pages/admin/AdminLayout.tsx'
       - '.github/workflows/build-admin-apk.yml'
@@ -69,6 +71,8 @@ jobs:
           set -e
           # Fresh android tree each CI run (android/ is gitignored)
           rm -rf android
+          # Ensure push plugin is installed for native wiring
+          npm ls @capacitor/push-notifications @capacitor/android @capacitor/core
           npx cap add android
           mkdir -p android/app
           printf '%s\n' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
@@ -76,6 +80,18 @@ jobs:
           grep -q 'com.snippymart.admin' android/app/google-services.json \
             || { echo "package_name must be com.snippymart.admin"; exit 1; }
           npx cap sync android
+          # Fail if native push plugin was not linked into Android project
+          if ! grep -q 'push-notifications' android/capacitor.settings.gradle \
+            && ! grep -rq 'pushnotifications\|push-notifications' android/app/capacitor.build.gradle android/capacitor.settings.gradle 2>/dev/null; then
+            echo "::error::@capacitor/push-notifications not linked in Android project"
+            cat android/capacitor.settings.gradle || true
+            cat android/app/capacitor.build.gradle || true
+            exit 1
+          fi
+          echo "--- capacitor.settings.gradle ---"
+          cat android/capacitor.settings.gradle
+          echo "--- app/capacitor.build.gradle ---"
+          cat android/app/capacitor.build.gradle
           chmod +x android/gradlew
 
       - name: Gradle assembleDebug
