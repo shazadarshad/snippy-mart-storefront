@@ -1,20 +1,25 @@
 import { usePolicy } from '@/hooks/usePolicies';
 import PolicyLayout from '@/components/layout/PolicyLayout';
 import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const RefundPolicy = () => {
-    const { data: policy, isLoading, error } = usePolicy('refund_policy');
+    const { data: policy, isLoading, error, isFetching } = usePolicy('refund_policy');
 
-    if (isLoading) {
+    if (isLoading || (isFetching && !policy && !error)) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background px-4">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground font-medium">Loading refund policy…</p>
+                <Link to="/checkout" className="text-sm font-bold text-primary underline">
+                    Back to checkout
+                </Link>
             </div>
         );
     }
 
-    // Fallback to static content if database not available
-    if (error || !policy) {
+    // Fallback to static content if database not available or empty
+    if (error || !policy || !(policy.content || '').trim()) {
         return (
             <PolicyLayout
                 title="Refund"

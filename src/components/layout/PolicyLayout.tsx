@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import SEO from '@/components/seo/SEO';
-import { FileText, Calendar, MessageCircle } from 'lucide-react';
+import { FileText, Calendar, MessageCircle, ArrowLeft } from 'lucide-react';
 
 interface PolicyLayoutProps {
     title: string;
@@ -38,6 +39,15 @@ const PolicyLayout = ({
             />
 
             <div className="container mx-auto px-4 max-w-4xl relative z-10">
+                <div className="mb-6">
+                    <Link
+                        to="/checkout"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline touch-manipulation min-h-11"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to checkout
+                    </Link>
+                </div>
                 {/* Header */}
                 <div className="mb-10 md:mb-14 text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold mb-6">

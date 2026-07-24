@@ -43,12 +43,15 @@ export const usePolicy = (policyKey: string) => {
                 .select('*')
                 .eq('policy_key', policyKey)
                 .eq('is_active', true)
-                .single();
+                .maybeSingle();
 
-            if (error) throw error;
-            return data as Policy;
+            // No row is not a hard failure — pages use static fallback
+            if (error && error.code !== 'PGRST116') throw error;
+            return (data as Policy) || null;
         },
         enabled: !!policyKey,
+        retry: 1,
+        staleTime: 1000 * 60 * 10,
     });
 };
 

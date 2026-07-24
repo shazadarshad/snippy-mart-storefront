@@ -22,6 +22,10 @@ import { getAffiliateRef } from '@/lib/affiliate';
 import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
 
 import SEO from '@/components/seo/SEO';
+import {
+  CheckoutPolicySheet,
+  type CheckoutPolicyKey,
+} from '@/components/checkout/CheckoutPolicySheet';
 
 const CheckoutPage = () => {
   const { formatPrice, currency, currencyInfo } = useCurrency();
@@ -33,6 +37,7 @@ const CheckoutPage = () => {
   const isMixedCart = hasAutoItems && !allAutoItems;
   const { toast } = useToast();
   const createOrder = useCreateOrder();
+  const [policySheet, setPolicySheet] = useState<CheckoutPolicyKey | null>(null);
   const updateOrder = useUpdateExistingOrder();
 
   const [formData, setFormData] = useState({
@@ -703,35 +708,56 @@ const CheckoutPage = () => {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground leading-snug">
                       I have read and agree to the{' '}
-                      <Link
-                        to="/privacy-policy"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
                         className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPolicySheet('terms_of_service');
+                        }}
+                      >
+                        Terms
+                      </button>
+                      {', '}
+                      <button
+                        type="button"
+                        className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPolicySheet('privacy_policy');
+                        }}
                       >
                         Privacy Policy
-                      </Link>{' '}
-                      and{' '}
-                      <Link
-                        to="/refund-policy"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      </button>
+                      {' and '}
+                      <button
+                        type="button"
                         className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPolicySheet('refund_policy');
+                        }}
                       >
                         Refund Policy
-                      </Link>
+                      </button>
                       <span className="text-destructive"> *</span>
                     </p>
                     {!acceptedPolicies && (
                       <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium mt-1.5">
-                        Tap here to accept, then Place Order
+                        Tap the box to accept, or open a policy to read — you stay on checkout
                       </p>
                     )}
                   </div>
                 </div>
               </div>
+
+              <CheckoutPolicySheet
+                policyKey={policySheet}
+                open={!!policySheet}
+                onOpenChange={(open) => {
+                  if (!open) setPolicySheet(null);
+                }}
+              />
 
               <Button
                 type="submit"
