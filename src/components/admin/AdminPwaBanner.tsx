@@ -12,6 +12,7 @@ export function AdminPwaBanner() {
   const {
     canInstall,
     installed,
+    isNativeApp,
     promptInstall,
     notifyEnabled,
     enableNotifications,
@@ -26,10 +27,19 @@ export function AdminPwaBanner() {
     }
   });
 
-  // Already on home screen as PWA — no top banner (keeps admin clean)
-  if (installed) return null;
-  if (dismissed && !canInstall) return null;
-  if (dismissed && notifyEnabled) return null;
+  // On APK: always show a slim alerts bar until enabled (or dismissed after on)
+  // On web: hide when installed as PWA and alerts already on
+  if (!isNativeApp) {
+    if (installed && notifyEnabled) return null;
+    if (installed) {
+      /* show alerts CTA only */
+    } else {
+      if (dismissed && !canInstall) return null;
+      if (dismissed && notifyEnabled) return null;
+    }
+  } else {
+    if (dismissed && notifyEnabled) return null;
+  }
 
   const onInstall = async () => {
     const res = await promptInstall();
@@ -56,21 +66,43 @@ export function AdminPwaBanner() {
     if (res.ok) {
       toast({
         title: 'Order alerts on',
-        description: 'You’ll get a notification when a new order arrives (while logged in).',
+        description: isNativeApp
+          ? 'Device registered. You’ll get a phone notification when a new order arrives (even if the app is closed).'
+          : 'You’ll get a notification when a new order arrives (while logged in).',
+      });
+      return;
+    }
+    if (res.reason === 'not_logged_in') {
+      toast({
+        title: 'Log in first',
+        description: 'Sign in as admin, then tap Alerts again.',
+        variant: 'destructive',
       });
       return;
     }
     if (res.reason === 'denied') {
       toast({
         title: 'Notifications blocked',
-        description: 'Allow notifications for snippymart.com in phone Settings.',
+        description: isNativeApp
+          ? 'Settings → Apps → Snippy Admin → Notifications → Allow, then open the app and tap Alerts again.'
+          : 'Allow notifications for snippymart.com in browser/site settings.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (res.reason === 'native_error') {
+      toast({
+        title: 'Could not enable push',
+        description:
+          ('message' in res && res.message) ||
+          'Try again after logging in. If it keeps failing, reinstall the latest APK.',
         variant: 'destructive',
       });
       return;
     }
     toast({
       title: 'Not supported',
-      description: 'This browser does not support notifications.',
+      description: 'This browser does not support notifications. Use the Snippy Admin APK for closed-app alerts.',
       variant: 'destructive',
     });
   };
@@ -84,7 +116,7 @@ export function AdminPwaBanner() {
     setDismissed(true);
   };
 
-  if (dismissed && !canInstall) return null;
+  if (!isNativeApp && dismissed && !canInstall && !installed) return null;
 
   return (
     <div
@@ -97,11 +129,17 @@ export function AdminPwaBanner() {
         <Smartphone className="w-4 h-4 text-teal-600 shrink-0 hidden xs:block sm:block" />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] sm:text-xs font-bold text-foreground leading-tight truncate">
-            {installed ? 'App ready · turn on order alerts' : 'Install Admin app · order alerts'}
+            {isNativeApp
+              ? notifyEnabled
+                ? 'Admin APK · order push on'
+                : 'Admin APK · tap Alerts for closed-app push'
+              : installed
+                ? 'App ready · turn on order alerts'
+                : 'Install Admin app · order alerts'}
           </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          {!installed && (
+          {!isNativeApp && !installed && (
             <Button
               size="sm"
               className="h-8 px-2.5 text-[11px] font-bold touch-manipulation"
@@ -111,14 +149,14 @@ export function AdminPwaBanner() {
               <span className="hidden sm:inline">{canInstall ? 'Install' : 'How'}</span>
             </Button>
           )}
-          {installed && (
+          {(isNativeApp || installed) && (
             <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 px-1">
-              <CheckCircle2 className="w-3 h-3" /> App
+              <CheckCircle2 className="w-3 h-3" /> {isNativeApp ? 'APK' : 'App'}
             </span>
           )}
           <Button
             size="sm"
-            variant={notifyEnabled ? 'secondary' : 'outline'}
+            variant={notifyEnabled ? 'secondary' : 'default'}
             className="h-8 px-2.5 text-[11px] font-bold touch-manipulation"
             onClick={onNotify}
           >
@@ -130,7 +168,7 @@ export function AdminPwaBanner() {
             ) : (
               <>
                 <BellOff className="w-3.5 h-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Alerts</span>
+                <span className="sm:inline">Alerts</span>
               </>
             )}
           </Button>

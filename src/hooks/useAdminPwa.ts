@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+import {
+  enableNativeAdminPush,
+  isCapacitorNative,
+  isNativePushEnabled,
+} from '@/hooks/useAdminNativePush';
 
 const NOTIFY_KEY = 'snippy_admin_notify_orders';
 
@@ -9,6 +14,8 @@ type BeforeInstallPromptEvent = Event & {
 
 function isStandalone(): boolean {
   if (typeof window === 'undefined') return false;
+  // Capacitor APK is "native" — not a browser PWA install prompt target
+  if (isCapacitorNative()) return true;
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
     // iOS Safari
@@ -21,6 +28,7 @@ export function useAdminPwa() {
   const [installed, setInstalled] = useState(isStandalone);
   const [notifyEnabled, setNotifyEnabled] = useState(() => {
     try {
+      if (isCapacitorNative()) return isNativePushEnabled();
       return localStorage.getItem(NOTIFY_KEY) === '1';
     } catch {
       return false;
@@ -29,6 +37,7 @@ export function useAdminPwa() {
   const [permission, setPermission] = useState<NotificationPermission>(() =>
     typeof Notification !== 'undefined' ? Notification.permission : 'default',
   );
+  const isNativeApp = isCapacitorNative();
 
   useEffect(() => {
     const onBip = (e: Event) => {
@@ -82,6 +91,27 @@ export function useAdminPwa() {
   }, [deferredPrompt]);
 
   const enableNotifications = useCallback(async () => {
+    // APK: native FCM — Web Notification API is often missing in Capacitor WebView
+    if (isCapacitorNative()) {
+      const res = await enableNativeAdminPush();
+      if (res.ok) {
+        setNotifyEnabled(true);
+        setPermission('granted');
+        return { ok: true as const };
+      }
+      if (res.reason === 'denied') {
+        return { ok: false as const, reason: 'denied' as const };
+      }
+      if (res.reason === 'not_logged_in') {
+        return { ok: false as const, reason: 'not_logged_in' as const };
+      }
+      return {
+        ok: false as const,
+        reason: 'native_error' as const,
+        message: 'message' in res ? res.message : undefined,
+      };
+    }
+
     if (typeof Notification === 'undefined') {
       return { ok: false as const, reason: 'unsupported' as const };
     }
@@ -120,6 +150,7 @@ export function useAdminPwa() {
   const disableNotifications = useCallback(() => {
     try {
       localStorage.setItem(NOTIFY_KEY, '0');
+      localStorage.setItem('snippy_admin_native_push', '0');
     } catch {
       /* ignore */
     }
@@ -127,8 +158,9 @@ export function useAdminPwa() {
   }, []);
 
   return {
-    canInstall: !!deferredPrompt && !installed,
+    canInstall: !!deferredPrompt && !installed && !isNativeApp,
     installed,
+    isNativeApp,
     promptInstall,
     notifyEnabled,
     permission,
