@@ -3,9 +3,9 @@ import type { CapacitorConfig } from '@capacitor/cli';
 /**
  * Snippy Admin Android shell (Capacitor).
  *
- * Loads the LIVE website (https://snippymart.com) so:
- * - Storefront & web admin are unchanged
- * - UI deploys via Vercel without rebuilding the APK
+ * Loads the LIVE admin panel (https://snippymart.com/admin) so:
+ * - Storefront is unchanged
+ * - Admin UI deploys via Vercel without rebuilding the APK
  * - Only native push + installable app shell come from Capacitor
  *
  * Build docs: docs/ADMIN_ANDROID_APP.md
@@ -15,8 +15,8 @@ const config: CapacitorConfig = {
   appName: 'Snippy Admin',
   webDir: 'dist',
   server: {
-    // Live site — no dual codebase for UI
-    url: 'https://snippymart.com',
+    // Open admin panel (not storefront homepage)
+    url: 'https://snippymart.com/admin/dashboard',
     cleartext: false,
     allowNavigation: [
       'snippymart.com',
