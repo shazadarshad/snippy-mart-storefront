@@ -91,7 +91,9 @@ export function CheckoutPolicySheet({ policyKey, open, onOpenChange }: Props) {
   const meta = META[key];
 
   const html = (policy?.content || '').trim();
-  const showHtml = !isLoading && !isError && !!html;
+  // Treat tag-only / whitespace HTML as empty so we never show a blank sheet
+  const textOnly = html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
+  const showHtml = !isLoading && !isError && !!html && textOnly.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

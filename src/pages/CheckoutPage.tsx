@@ -1,11 +1,10 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MessageCircle, Info, ShoppingBag, ArrowLeft, ShieldCheck, Plus, Minus, Trash2, Zap, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useCartStore, generateOrderId } from '@/lib/store';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
@@ -34,47 +33,45 @@ function PolicyAcceptBlock({
   checkboxId,
 }: {
   accepted: boolean;
-  onToggle: (v: boolean | ((prev: boolean) => boolean)) => void;
+  onToggle: (next: boolean) => void;
   onOpenPolicy: (key: CheckoutPolicyKey) => void;
   checkboxId: string;
 }) {
+  const openPolicy = (e: MouseEvent, key: CheckoutPolicyKey) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onOpenPolicy(key);
+  };
+
   return (
     <div
       data-policy-accept
-      role="button"
-      tabIndex={0}
-      onClick={() => onToggle((v) => !v)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onToggle((v) => !v);
-        }
-      }}
       className={cn(
-        'p-3 sm:p-4 rounded-2xl border-2 transition-colors cursor-pointer select-none touch-manipulation',
+        'p-3 sm:p-4 rounded-2xl border-2 transition-colors select-none touch-manipulation',
         accepted
           ? 'bg-emerald-500/15 border-emerald-500/50'
           : 'bg-amber-400/25 dark:bg-amber-500/30 border-amber-500 dark:border-amber-400 shadow-sm',
       )}
     >
-      <div className="flex items-start gap-3">
-        <Checkbox
+      <label
+        htmlFor={checkboxId}
+        className="flex items-start gap-3 cursor-pointer"
+      >
+        {/* Native checkbox — never submits a form (unlike button-based widgets) */}
+        <input
           id={checkboxId}
+          type="checkbox"
           checked={accepted}
-          onCheckedChange={(v) => onToggle(v === true)}
-          onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 h-6 w-6 shrink-0 touch-manipulation border-2 border-foreground/50 data-[state=checked]:border-primary"
+          onChange={(e) => onToggle(e.target.checked)}
+          className="mt-0.5 h-6 w-6 shrink-0 rounded border-2 border-foreground/50 accent-primary touch-manipulation"
         />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground leading-snug">
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-foreground leading-snug">
             I agree to the{' '}
             <button
               type="button"
               className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenPolicy('terms_of_service');
-              }}
+              onClick={(e) => openPolicy(e, 'terms_of_service')}
             >
               Terms
             </button>
@@ -82,10 +79,7 @@ function PolicyAcceptBlock({
             <button
               type="button"
               className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenPolicy('privacy_policy');
-              }}
+              onClick={(e) => openPolicy(e, 'privacy_policy')}
             >
               Privacy
             </button>
@@ -93,22 +87,19 @@ function PolicyAcceptBlock({
             <button
               type="button"
               className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenPolicy('refund_policy');
-              }}
+              onClick={(e) => openPolicy(e, 'refund_policy')}
             >
               Refund Policy
             </button>
             <span className="text-destructive"> *</span>
-          </p>
+          </span>
           {!accepted && (
-            <p className="text-[11px] text-amber-900 dark:text-amber-100 font-semibold mt-1 leading-snug">
-              Required — tap this box, then Place Order
-            </p>
+            <span className="block text-[11px] text-amber-900 dark:text-amber-100 font-semibold mt-1 leading-snug">
+              Required — tick the box, then Place Order
+            </span>
           )}
-        </div>
-      </div>
+        </span>
+      </label>
     </div>
   );
 }
@@ -117,22 +108,34 @@ function PlaceOrderButton({
   isSubmitting,
   allAutoItems,
   isMixedCart,
-  formId,
+  formId = 'checkout-form',
 }: {
   isSubmitting: boolean;
   allAutoItems: boolean;
   isMixedCart: boolean;
-  /** When button sits outside the form (mobile fixed bar) */
   formId?: string;
 }) {
+  // type=button + requestSubmit — never a raw native POST that can flash a blank page
+  const submit = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const form = document.getElementById(formId) as HTMLFormElement | null;
+    if (form?.requestSubmit) {
+      form.requestSubmit();
+    } else if (form) {
+      // Fallback: fire React onSubmit path without a full-page native POST
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+  };
+
   return (
     <Button
-      type="submit"
-      form={formId}
+      type="button"
       variant="hero"
       size="xl"
       className="w-full min-h-14 h-14 text-base font-bold text-primary-foreground touch-manipulation shadow-lg shadow-primary/25"
       disabled={isSubmitting}
+      onClick={submit}
     >
       {isSubmitting ? (
         <>
@@ -873,38 +876,7 @@ const CheckoutPage = () => {
 
               {/* Spacer so last fields aren't hidden under the fixed mobile bar */}
               <div className="h-4 sm:hidden" aria-hidden />
-
-              <CheckoutPolicySheet
-                policyKey={policySheet}
-                open={!!policySheet}
-                onOpenChange={(open) => {
-                  if (!open) setPolicySheet(null);
-                }}
-              />
             </form>
-
-            {/* Fixed mobile checkout bar — always on screen */}
-            <div
-              className={cn(
-                'sm:hidden fixed inset-x-0 bottom-0 z-40',
-                'border-t border-border bg-background/98 backdrop-blur-md',
-                'px-3 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]',
-                'shadow-[0_-10px_30px_rgba(0,0,0,0.18)] space-y-2',
-              )}
-            >
-              <PolicyAcceptBlock
-                accepted={acceptedPolicies}
-                onToggle={setAcceptedPolicies}
-                onOpenPolicy={setPolicySheet}
-                checkboxId="accept-policies-mobile"
-              />
-              <PlaceOrderButton
-                isSubmitting={isSubmitting}
-                allAutoItems={allAutoItems}
-                isMixedCart={isMixedCart}
-                formId="checkout-form"
-              />
-            </div>
           </div>
 
           {/* Order Summary */}
@@ -1026,6 +998,38 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Fixed mobile checkout bar — outside form so checkbox never triggers form submit */}
+      <div
+        className={cn(
+          'sm:hidden fixed inset-x-0 bottom-0 z-40',
+          'border-t border-border bg-background/98 backdrop-blur-md',
+          'px-3 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]',
+          'shadow-[0_-10px_30px_rgba(0,0,0,0.18)] space-y-2',
+        )}
+      >
+        <PolicyAcceptBlock
+          accepted={acceptedPolicies}
+          onToggle={setAcceptedPolicies}
+          onOpenPolicy={setPolicySheet}
+          checkboxId="accept-policies-mobile"
+        />
+        <PlaceOrderButton
+          isSubmitting={isSubmitting}
+          allAutoItems={allAutoItems}
+          isMixedCart={isMixedCart}
+          formId="checkout-form"
+        />
+      </div>
+
+      {/* Policy dialog outside form — opens as sheet, never navigates away */}
+      <CheckoutPolicySheet
+        policyKey={policySheet}
+        open={!!policySheet}
+        onOpenChange={(open) => {
+          if (!open) setPolicySheet(null);
+        }}
+      />
     </div>
   );
 };
