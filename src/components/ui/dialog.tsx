@@ -37,10 +37,9 @@ const DialogContent = React.forwardRef<
       ref={ref}
       data-lenis-prevent
       className={cn(
-        // Mobile-first: near full-screen sheet; desktop: centered card
+        // Defaults — callers can override position/size (e.g. checkout policy bottom sheet)
         "fixed z-50 grid w-full gap-4 border bg-background text-foreground shadow-lg duration-200",
         "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-        // Width / height — leave breathing room + safe areas on phones
         "max-w-[calc(100vw-1rem)] sm:max-w-lg",
         "max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.75rem))]",
         "overflow-y-auto overscroll-contain",
