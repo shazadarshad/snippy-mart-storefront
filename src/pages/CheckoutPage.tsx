@@ -27,6 +27,134 @@ import {
   type CheckoutPolicyKey,
 } from '@/components/checkout/CheckoutPolicySheet';
 
+function PolicyAcceptBlock({
+  accepted,
+  onToggle,
+  onOpenPolicy,
+  checkboxId,
+}: {
+  accepted: boolean;
+  onToggle: (v: boolean | ((prev: boolean) => boolean)) => void;
+  onOpenPolicy: (key: CheckoutPolicyKey) => void;
+  checkboxId: string;
+}) {
+  return (
+    <div
+      data-policy-accept
+      role="button"
+      tabIndex={0}
+      onClick={() => onToggle((v) => !v)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggle((v) => !v);
+        }
+      }}
+      className={cn(
+        'p-3 sm:p-4 rounded-2xl border-2 transition-colors cursor-pointer select-none touch-manipulation',
+        accepted
+          ? 'bg-emerald-500/15 border-emerald-500/50'
+          : 'bg-amber-400/25 dark:bg-amber-500/30 border-amber-500 dark:border-amber-400 shadow-sm',
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <Checkbox
+          id={checkboxId}
+          checked={accepted}
+          onCheckedChange={(v) => onToggle(v === true)}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-0.5 h-6 w-6 shrink-0 touch-manipulation border-2 border-foreground/50 data-[state=checked]:border-primary"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground leading-snug">
+            I agree to the{' '}
+            <button
+              type="button"
+              className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenPolicy('terms_of_service');
+              }}
+            >
+              Terms
+            </button>
+            {', '}
+            <button
+              type="button"
+              className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenPolicy('privacy_policy');
+              }}
+            >
+              Privacy
+            </button>
+            {' & '}
+            <button
+              type="button"
+              className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenPolicy('refund_policy');
+              }}
+            >
+              Refund Policy
+            </button>
+            <span className="text-destructive"> *</span>
+          </p>
+          {!accepted && (
+            <p className="text-[11px] text-amber-900 dark:text-amber-100 font-semibold mt-1 leading-snug">
+              Required — tap this box, then Place Order
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlaceOrderButton({
+  isSubmitting,
+  allAutoItems,
+  isMixedCart,
+  formId,
+}: {
+  isSubmitting: boolean;
+  allAutoItems: boolean;
+  isMixedCart: boolean;
+  /** When button sits outside the form (mobile fixed bar) */
+  formId?: string;
+}) {
+  return (
+    <Button
+      type="submit"
+      form={formId}
+      variant="hero"
+      size="xl"
+      className="w-full min-h-14 h-14 text-base font-bold text-primary-foreground touch-manipulation shadow-lg shadow-primary/25"
+      disabled={isSubmitting}
+    >
+      {isSubmitting ? (
+        <>
+          <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
+          Processing...
+        </>
+      ) : (
+        <>
+          Place Order
+          {allAutoItems ? (
+            <Zap className="w-5 h-5 ml-2" />
+          ) : isMixedCart ? (
+            <Package className="w-5 h-5 ml-2" />
+          ) : (
+            <MessageCircle className="w-5 h-5 ml-2" />
+          )}
+        </>
+      )}
+    </Button>
+  );
+}
+
 const CheckoutPage = () => {
   const { formatPrice, currency, currencyInfo } = useCurrency();
   const navigate = useNavigate();
@@ -297,10 +425,18 @@ const CheckoutPage = () => {
     if (!acceptedPolicies) {
       toast({
         title: 'Please accept our policies',
-        description: 'You must agree to the Privacy Policy and Refund Policy before placing your order.',
+        description: 'Tick “I agree” above the Place Order button (Terms, Privacy & Refund).',
         variant: 'destructive',
       });
-      document.getElementById('policy-accept')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Pulse every policy control (mobile fixed bar is already on-screen)
+      document.querySelectorAll('[data-policy-accept]').forEach((el) => {
+        el.classList.add('ring-2', 'ring-destructive', 'animate-pulse');
+      });
+      window.setTimeout(() => {
+        document.querySelectorAll('[data-policy-accept]').forEach((el) => {
+          el.classList.remove('ring-2', 'ring-destructive', 'animate-pulse');
+        });
+      }, 2200);
       return;
     }
 
@@ -455,7 +591,7 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="min-h-dvh page-mesh pt-20 sm:pt-24 pb-safe pb-28 sm:pb-20">
+    <div className="min-h-dvh page-mesh pt-20 sm:pt-24 pb-safe pb-40 sm:pb-20">
       <SEO
         title="Checkout"
         description="Complete your Snippy Mart order securely."
@@ -480,7 +616,7 @@ const CheckoutPage = () => {
               Checkout
             </h1>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form id="checkout-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="p-4 sm:p-6 rounded-2xl bg-card/95 border border-border shadow-sm">
                 <h2 className="text-lg font-semibold text-foreground mb-4">
                   Customer Details
@@ -716,78 +852,27 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Policy acceptance — required before submit */}
-              <div
-                id="policy-accept"
-                role="button"
-                tabIndex={0}
-                onClick={() => setAcceptedPolicies((v) => !v)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setAcceptedPolicies((v) => !v);
-                  }
-                }}
-                className={cn(
-                  'p-3.5 sm:p-4 rounded-2xl border-2 transition-colors cursor-pointer select-none touch-manipulation',
-                  acceptedPolicies
-                    ? 'bg-emerald-500/5 border-emerald-500/35'
-                    : 'bg-amber-500/5 border-amber-500/40 shadow-sm',
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="accept-policies"
-                    checked={acceptedPolicies}
-                    onCheckedChange={(v) => setAcceptedPolicies(v === true)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-0.5 h-5 w-5 shrink-0 touch-manipulation"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground leading-snug">
-                      I have read and agree to the{' '}
-                      <button
-                        type="button"
-                        className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPolicySheet('terms_of_service');
-                        }}
-                      >
-                        Terms
-                      </button>
-                      {', '}
-                      <button
-                        type="button"
-                        className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPolicySheet('privacy_policy');
-                        }}
-                      >
-                        Privacy Policy
-                      </button>
-                      {' and '}
-                      <button
-                        type="button"
-                        className="text-primary font-bold underline underline-offset-2 hover:opacity-90"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPolicySheet('refund_policy');
-                        }}
-                      >
-                        Refund Policy
-                      </button>
-                      <span className="text-destructive"> *</span>
-                    </p>
-                    {!acceptedPolicies && (
-                      <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium mt-1.5">
-                        Tap the box to accept, or open a policy to read — you stay on checkout
-                      </p>
-                    )}
-                  </div>
-                </div>
+              {/*
+                Mobile: fixed bottom bar so policy checkbox is ALWAYS visible next to Place Order.
+                Root cause: sticky Place Order sat on top of the checkbox — customers never saw it
+                and only got the "accept policies" toast. Desktop keeps inline layout.
+              */}
+              <div className="hidden sm:block space-y-3">
+                <PolicyAcceptBlock
+                  accepted={acceptedPolicies}
+                  onToggle={setAcceptedPolicies}
+                  onOpenPolicy={setPolicySheet}
+                  checkboxId="accept-policies-desktop"
+                />
+                <PlaceOrderButton
+                  isSubmitting={isSubmitting}
+                  allAutoItems={allAutoItems}
+                  isMixedCart={isMixedCart}
+                />
               </div>
+
+              {/* Spacer so last fields aren't hidden under the fixed mobile bar */}
+              <div className="h-4 sm:hidden" aria-hidden />
 
               <CheckoutPolicySheet
                 policyKey={policySheet}
@@ -796,33 +881,30 @@ const CheckoutPage = () => {
                   if (!open) setPolicySheet(null);
                 }}
               />
-
-              <Button
-                type="submit"
-                variant="hero"
-                size="xl"
-                className="w-full min-h-14 h-14 text-base font-bold text-primary-foreground touch-manipulation sticky bottom-2 sm:static z-10 shadow-lg shadow-primary/25"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Place Order
-                    {allAutoItems ? (
-                      <Zap className="w-5 h-5 ml-2" />
-                    ) : isMixedCart ? (
-                      <Package className="w-5 h-5 ml-2" />
-                    ) : (
-                      <MessageCircle className="w-5 h-5 ml-2" />
-                    )}
-                  </>
-                )}
-              </Button>
             </form>
+
+            {/* Fixed mobile checkout bar — always on screen */}
+            <div
+              className={cn(
+                'sm:hidden fixed inset-x-0 bottom-0 z-40',
+                'border-t border-border bg-background/98 backdrop-blur-md',
+                'px-3 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]',
+                'shadow-[0_-10px_30px_rgba(0,0,0,0.18)] space-y-2',
+              )}
+            >
+              <PolicyAcceptBlock
+                accepted={acceptedPolicies}
+                onToggle={setAcceptedPolicies}
+                onOpenPolicy={setPolicySheet}
+                checkboxId="accept-policies-mobile"
+              />
+              <PlaceOrderButton
+                isSubmitting={isSubmitting}
+                allAutoItems={allAutoItems}
+                isMixedCart={isMixedCart}
+                formId="checkout-form"
+              />
+            </div>
           </div>
 
           {/* Order Summary */}
