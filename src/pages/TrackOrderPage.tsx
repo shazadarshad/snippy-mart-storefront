@@ -38,6 +38,7 @@ import {
   isTrackStepDone,
 } from '@/lib/orderStatus';
 import { isClaudePreOrder, parseClaudePreOrder, formatLkrAdmin } from '@/lib/claudePreorder';
+import { copyToClipboard } from '@/lib/clipboard';
 
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/EB9hDAkQBmcHEjlTMLYXBh';
 const TRUSTPILOT_URL = 'https://www.trustpilot.com/review/snippymart.com';
@@ -117,9 +118,13 @@ const TrackOrderPage = () => {
     return `https://wa.me/${digits}`;
   };
 
-  const copyText = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied', description: `${label} copied` });
+  const copyText = async (text: string, label: string) => {
+    const ok = await copyToClipboard(text);
+    toast({
+      title: ok ? 'Copied' : 'Copy failed',
+      description: ok ? `${label} copied` : 'Long-press the text and copy manually.',
+      variant: ok ? undefined : 'destructive',
+    });
   };
 
   const statusInfo = order ? getOrderStatusDisplay(order.status) : null;

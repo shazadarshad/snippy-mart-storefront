@@ -35,6 +35,7 @@ import {
   type CryptoWallet,
 } from '@/lib/cryptoPayments';
 import { quoteCrypto, quoteUsdt, useCryptoRates } from '@/hooks/useCryptoRates';
+import { copyToClipboard as safeCopy } from '@/lib/clipboard';
 
 export type PaymentMethod = 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card';
 
@@ -105,19 +106,41 @@ const PaymentMethodSelector = ({
     [totalLkr, cryptoSettings, prices],
   );
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied!', description: `${label} copied to clipboard` });
+  const copyToClipboard = async (text: string, label: string) => {
+    const ok = await safeCopy(text);
+    if (ok) {
+      toast({ title: 'Copied!', description: `${label} copied to clipboard` });
+    } else {
+      toast({
+        title: 'Copy failed',
+        description: 'Long-press the text and copy manually.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-      if (!allowedTypes.includes(file.type)) {
+      // iOS often sends empty MIME for HEIC/screenshots; also accept HEIC/HEIF explicitly
+      const allowedTypes = new Set([
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/heic',
+        'image/heif',
+        'image/heic-sequence',
+        'image/heif-sequence',
+        'application/pdf',
+      ]);
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      const allowedExt = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'pdf']);
+      const typeOk = !file.type || allowedTypes.has(file.type);
+      const extOk = !ext || allowedExt.has(ext);
+      if (!typeOk && !extOk) {
         toast({
           title: 'Invalid file type',
-          description: 'Please upload an image (JPG, PNG, WebP) or PDF file',
+          description: 'Please upload an image (JPG, PNG, WebP, HEIC) or PDF file',
           variant: 'destructive',
         });
         return;
@@ -189,7 +212,7 @@ const PaymentMethodSelector = ({
         Upload payment proof <span className="text-destructive">*</span>
       </Label>
       <p className="text-xs text-foreground/70 mb-2">
-        Screenshot or PDF (JPG, PNG, WebP, PDF · max 10MB)
+        Screenshot or PDF (JPG, PNG, WebP, HEIC, PDF · max 10MB)
       </p>
       {!proofFile ? (
         <button
@@ -236,7 +259,7 @@ const PaymentMethodSelector = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,application/pdf"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif,application/pdf"
         onChange={handleFileChange}
         className="hidden"
       />

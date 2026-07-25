@@ -45,15 +45,16 @@ const ProductCard = memo(function ProductCard({
   return (
     <button
       type="button"
-      disabled={soldOut}
-      onClick={() => !soldOut && onViewDetails(product)}
+      // Sold-out still openable for details; cart add is blocked in modal/checkout
+      onClick={() => onViewDetails(product)}
+      aria-label={soldOut ? `${product.name} (sold out)` : product.name}
       className={cn(
         'group text-left w-full flex flex-col overflow-hidden rounded-3xl content-auto',
         'border border-border/50 bg-card/90',
         'shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] duration-200 ease-out',
         'hover:border-primary/45 hover:shadow-[var(--shadow-md)] hover:shadow-primary/10 hover:-translate-y-1',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-        'disabled:opacity-55 disabled:pointer-events-none disabled:hover:translate-y-0',
+        soldOut && 'opacity-75',
         'will-change-transform',
         className
       )}
@@ -91,11 +92,19 @@ const ProductCard = memo(function ProductCard({
           )}
         </div>
 
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/90 border border-border/80 text-foreground shadow-lg">
-            <ArrowUpRight className="w-4 h-4" />
-          </span>
-        </div>
+        {soldOut ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/55 backdrop-blur-[1px]">
+            <span className="rounded-full bg-destructive px-3 py-1 text-xs font-bold text-destructive-foreground shadow-md">
+              Sold out
+            </span>
+          </div>
+        ) : (
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/90 border border-border/80 text-foreground shadow-lg">
+              <ArrowUpRight className="w-4 h-4" />
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-2.5 p-4 sm:p-5">

@@ -427,8 +427,10 @@ export const useOrderResellerDeliveries = (
     refetchInterval: (q) => {
       if (!opts?.pollWhileWaiting) return false;
       const rows = q.state.data as Array<{ delivered_data?: string | null }> | undefined;
-      const hasPayload = !!rows?.some((r) => r.delivered_data);
-      return hasPayload ? false : 4000;
+      // Multi-item auto carts: keep polling until EVERY line has payload (not just the first)
+      if (!rows || rows.length === 0) return 4000;
+      const allReady = rows.every((r) => !!r.delivered_data && String(r.delivered_data).trim());
+      return allReady ? false : 4000;
     },
     refetchOnWindowFocus: true,
     queryFn: async () => {

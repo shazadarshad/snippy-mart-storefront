@@ -1,5 +1,5 @@
 /* Snippy Mart service worker — cache + admin order notifications */
-const CACHE_NAME = 'snippy-mart-v10-admin-pwa';
+const CACHE_NAME = 'snippy-mart-v11-checkout-fix';
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/admin-manifest.json'];
 
 self.addEventListener('install', (event) => {

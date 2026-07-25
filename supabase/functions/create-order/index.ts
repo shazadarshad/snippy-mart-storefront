@@ -26,12 +26,34 @@ type CreateOrderBody = {
     product_id?: string;
     product_name: string;
     plan_name?: string;
+    variant_id?: string;
+    variant_name?: string;
     quantity: number;
     unit_price: number;
     total_price: number;
     customer_credentials?: any;
   }>;
 };
+
+/** Resolve catalog unit price (LKR) from product → variant → plan */
+function resolveCatalogUnitPrice(
+  product: { price: number | string },
+  item: CreateOrderBody["items"][number],
+  plans: Array<{ id: string; product_id: string; name: string; price: number | string }>,
+  variants: Array<{ id: string; plan_id: string; price: number | string }>,
+): number {
+  if (item.variant_id) {
+    const v = variants.find((x) => x.id === item.variant_id);
+    if (v != null && Number.isFinite(Number(v.price))) return Number(v.price);
+  }
+  if (item.plan_name) {
+    const plan = plans.find(
+      (p) => p.product_id === item.product_id && String(p.name).trim() === String(item.plan_name).trim(),
+    );
+    if (plan != null && Number.isFinite(Number(plan.price))) return Number(plan.price);
+  }
+  return Number(product.price) || 0;
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -78,6 +100,191 @@ serve(async (req) => {
 
   console.log(`[create-order] Processing order ${body.order_number} items=${body.items.length}`);
 
+  // --- Server-side price / stock trust (never trust client totals) ---
+  const productIds = [
+    ...new Set(
+      body.items
+        .map((i) => (i.product_id && String(i.product_id).length === 36 ? i.product_id : null))
+        .filter(Boolean) as string[],
+    ),
+  ];
+
+  if (productIds.length !== body.items.filter((i) => i.product_id).length) {
+    // duplicate product lines OK; missing ids not OK
+  }
+  if (productIds.length === 0) {
+    return json({ error: "Order items are missing product IDs. Clear cart and try again." }, 400);
+  }
+
+  const { data: dbProducts, error: productsErr } = await supabase
+    .from("products")
+    .select("id, name, price, stock_status, is_active, reseller_stock")
+    .in("id", productIds);
+
+  if (productsErr || !dbProducts?.length) {
+    console.error("[create-order] product lookup failed", productsErr);
+    return json({ error: "Could not verify product prices. Please try again." }, 400);
+  }
+
+  const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+
+  const { data: dbPlans } = await supabase
+    .from("product_pricing_plans")
+    .select("id, product_id, name, price")
+    .in("product_id", productIds);
+
+  const plans = dbPlans || [];
+  const planIds = plans.map((p) => p.id);
+
+  let variants: Array<{ id: string; plan_id: string; price: number | string }> = [];
+  const variantIds = [
+    ...new Set(body.items.map((i) => i.variant_id).filter(Boolean) as string[]),
+  ];
+  if (variantIds.length > 0 || planIds.length > 0) {
+    let vq = supabase.from("product_pricing_plan_variants").select("id, plan_id, price");
+    if (variantIds.length > 0) {
+      const { data: byId } = await vq.in("id", variantIds);
+      variants = byId || [];
+    }
+    if (variants.length === 0 && planIds.length > 0) {
+      const { data: byPlan } = await supabase
+        .from("product_pricing_plan_variants")
+        .select("id, plan_id, price")
+        .in("plan_id", planIds);
+      variants = byPlan || [];
+    }
+  }
+
+  type TrustedItem = {
+    product_id: string | null;
+    product_name: string;
+    plan_name: string | null;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+    customer_credentials: unknown;
+  };
+
+  const trustedItems: TrustedItem[] = [];
+  let subtotal = 0;
+
+  for (const item of body.items) {
+    const pid = item.product_id;
+    if (!pid || !productMap.has(pid)) {
+      return json(
+        { error: `Unknown or removed product: ${item.product_name || "item"}. Clear cart and re-add.` },
+        400,
+      );
+    }
+    const product = productMap.get(pid)!;
+    if (product.is_active === false) {
+      return json({ error: `${product.name} is no longer available.` }, 400);
+    }
+    if (product.stock_status === "out_of_stock") {
+      return json({ error: `${product.name} is out of stock.` }, 400);
+    }
+
+    const qty = Math.max(1, Math.floor(Number(item.quantity) || 1));
+    if (product.reseller_stock != null && Number.isFinite(Number(product.reseller_stock))) {
+      const stock = Math.floor(Number(product.reseller_stock));
+      if (stock >= 0 && qty > stock) {
+        return json(
+          { error: `Not enough stock for ${product.name} (max ${stock}).` },
+          400,
+        );
+      }
+    }
+
+    const catalogUnit = resolveCatalogUnitPrice(product, item, plans, variants);
+    if (!Number.isFinite(catalogUnit) || catalogUnit < 0) {
+      return json({ error: `Invalid catalog price for ${product.name}.` }, 400);
+    }
+
+    // Reject underpayment attempts (client unit significantly below catalog)
+    const clientUnit = Number(item.unit_price);
+    if (Number.isFinite(clientUnit) && clientUnit + 1 < catalogUnit) {
+      console.warn("[create-order] price underpay blocked", {
+        product: product.name,
+        clientUnit,
+        catalogUnit,
+      });
+      return json(
+        {
+          error:
+            `Price for ${product.name} has changed. Please refresh the page and try again.`,
+        },
+        400,
+      );
+    }
+
+    const unit = catalogUnit;
+    const lineTotal = Math.round(unit * qty * 100) / 100;
+    subtotal += lineTotal;
+
+    trustedItems.push({
+      product_id: pid,
+      product_name: item.product_name || product.name,
+      plan_name: item.plan_name ?? null,
+      quantity: qty,
+      unit_price: unit,
+      total_price: lineTotal,
+      customer_credentials: item.customer_credentials ?? null,
+    });
+  }
+
+  subtotal = Math.round(subtotal * 100) / 100;
+
+  // Recompute coupon discount server-side
+  let trustedDiscount = 0;
+  let trustedCouponId: string | null = body.applied_coupon_id || null;
+  if (trustedCouponId) {
+    const { data: coupon } = await supabase
+      .from("coupons")
+      .select("id, type, value, min_order_amount, max_discount, is_active, expires_at, usage_limit, used_count")
+      .eq("id", trustedCouponId)
+      .maybeSingle();
+
+    if (
+      !coupon ||
+      !coupon.is_active ||
+      (coupon.expires_at && new Date(coupon.expires_at) < new Date()) ||
+      (coupon.usage_limit != null &&
+        coupon.used_count != null &&
+        Number(coupon.used_count) >= Number(coupon.usage_limit)) ||
+      (coupon.min_order_amount != null && subtotal < Number(coupon.min_order_amount))
+    ) {
+      console.warn("[create-order] coupon rejected or invalid", trustedCouponId);
+      trustedCouponId = null;
+      trustedDiscount = 0;
+    } else if (coupon.type === "fixed") {
+      trustedDiscount = Math.min(Number(coupon.value) || 0, subtotal);
+    } else {
+      let d = subtotal * ((Number(coupon.value) || 0) / 100);
+      if (coupon.max_discount != null) d = Math.min(d, Number(coupon.max_discount));
+      trustedDiscount = d;
+    }
+    trustedDiscount = Math.round(trustedDiscount * 100) / 100;
+  }
+
+  const trustedTotal = Math.max(0, Math.round((subtotal - trustedDiscount) * 100) / 100);
+
+  // Soft check: client total should not be wildly lower than trusted (display currency is still LKR base)
+  const clientTotal = Number(body.total_amount);
+  if (Number.isFinite(clientTotal) && clientTotal + 1 < trustedTotal) {
+    console.warn("[create-order] total underpay blocked", { clientTotal, trustedTotal });
+    return json(
+      {
+        error:
+          "Order total is outdated (cart or coupon changed). Refresh checkout and place the order again.",
+      },
+      400,
+    );
+  }
+
+  console.log(
+    `[create-order] trusted subtotal=${subtotal} discount=${trustedDiscount} total=${trustedTotal}`,
+  );
+
   // Resolve affiliate ref (optional)
   let affiliateId: string | null = null;
   let affiliateCode: string | null = null;
@@ -102,7 +309,7 @@ serve(async (req) => {
     }
   }
 
-  // Create or Update order (Upsert by order_number)
+  // Create or Update order (Upsert by order_number) — server totals only
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .upsert(
@@ -111,7 +318,7 @@ serve(async (req) => {
           order_number: body.order_number,
           customer_name: body.customer_name || "Customer",
           customer_whatsapp: body.customer_whatsapp,
-          total_amount: body.total_amount,
+          total_amount: trustedTotal,
           status: "pending", // Always set back to pending on "submission" or "pre-register"
           notes: body.notes ?? null,
           payment_method: body.payment_method ?? null,
@@ -119,8 +326,8 @@ serve(async (req) => {
           binance_id: body.binance_id ?? null,
           customer_country: body.customer_country ?? 'Unknown',
           customer_email: body.customer_email ?? null,
-          applied_coupon_id: body.applied_coupon_id ?? null,
-          discount_amount: body.discount_amount ?? 0,
+          applied_coupon_id: trustedCouponId,
+          discount_amount: trustedDiscount,
           currency_code: (body as any).currency_code ?? 'LKR',
           currency_symbol: (body as any).currency_symbol ?? 'Rs.',
           currency_rate: (body as any).currency_rate ?? 1,
@@ -150,7 +357,7 @@ serve(async (req) => {
     // Continue anyway, insertion might fail if primary key conflicts but we use auto-id so it's fine
   }
 
-  const itemsPayload = body.items.map((item) => ({
+  const itemsPayload = trustedItems.map((item) => ({
     order_id: order.id,
     product_id: item.product_id ?? null,
     product_name: item.product_name,
@@ -165,18 +372,27 @@ serve(async (req) => {
 
   if (itemsError) {
     console.error("[create-order] Failed to create order items", itemsError);
-    // best-effort rollback to avoid dangling orders
-    await supabase.from("orders").delete().eq("id", order.id);
-    return json({ error: itemsError.message ?? "Failed to create order items" }, 400);
+    // NEVER hard-delete the order shell: payment proof may already be uploaded and the
+    // customer can retry with the same order_number (upsert). Leaving a pending order
+    // without items is recoverable; deleting loses the order_number and admin trail.
+    return json(
+      {
+        error: itemsError.message ?? "Failed to create order items",
+        order_id: order.id,
+        order_number: order.order_number,
+        partial: true,
+      },
+      400,
+    );
   }
 
   console.log(`[create-order] Order created successfully: ${order.id}`);
 
-  // Increment coupon usage if applied
-  if (body.applied_coupon_id) {
-    console.log(`[create-order] Incrementing usage for coupon: ${body.applied_coupon_id}`);
+  // Increment coupon usage if applied (trusted id only)
+  if (trustedCouponId) {
+    console.log(`[create-order] Incrementing usage for coupon: ${trustedCouponId}`);
     const { error: couponError } = await supabase.rpc('increment_coupon_usage', {
-      coupon_id: body.applied_coupon_id
+      coupon_id: trustedCouponId
     });
 
     if (couponError) {

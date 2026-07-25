@@ -59,6 +59,8 @@ const CheckoutPage = () => {
   const [existingOrderId, setExistingOrderId] = useState<string | null>(null);
 
   const orderIdRef = useRef<string>(generateOrderId());
+  /** Prevents double-submit races before React state flushes */
+  const submitLockRef = useRef(false);
   // If we have an existing order ID from pre-registration, use it. Otherwise use the generated one.
   const orderId = existingOrderId || orderIdRef.current;
 
@@ -141,15 +143,14 @@ const CheckoutPage = () => {
   };
 
   const handlePreRegister = async () => {
-    // 1. Validate WhatsApp
-    const whatsappRegex = /^\+?[\d\s-]{10,}$/;
-    if (!formData.whatsapp || !whatsappRegex.test(formData.whatsapp)) {
+    // 1. Validate WhatsApp (normalized digits, not loose regex)
+    const waCheck = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
+    if (!formData.whatsapp.trim() || !waCheck.ok) {
       toast({
         title: "Required",
-        description: "Please enter your WhatsApp number first so we can send the link.",
+        description: waCheck.reason || "Please enter a valid WhatsApp number (e.g. 077 123 4567 or +94…).",
         variant: "destructive",
       });
-      // Scroll to top to see error/input
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -197,21 +198,48 @@ const CheckoutPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const whatsappRegex = /^\+?[\d\s-]{10,}$/;
-    if (!formData.whatsapp || !whatsappRegex.test(formData.whatsapp)) {
+    // Hard lock against double-tap / double-click races (state lags behind events)
+    if (submitLockRef.current || isSubmitting) return;
+
+    const waCheck = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
+    if (!formData.whatsapp.trim() || !waCheck.ok) {
       toast({
         title: "Invalid WhatsApp number",
-        description: "Please enter a valid WhatsApp number (e.g., +94771234567).",
+        description: waCheck.reason || "Please enter a valid WhatsApp number (e.g. 077 123 4567 or +94 77 123 4567).",
         variant: "destructive",
       });
       return;
     }
+    const normalizedWhatsapp = waCheck.digits;
 
     if (items.length === 0) {
       toast({
         title: "Cart is empty",
         description: "Add some products to your cart before checkout.",
         variant: "destructive",
+      });
+      return;
+    }
+
+    // Block OOS / over-stock lines before upload (server rechecks too)
+    const oos = items.find((i) => i.product.stock_status === 'out_of_stock');
+    if (oos) {
+      toast({
+        title: 'Item out of stock',
+        description: `${oos.product.name} is sold out. Remove it from your cart to continue.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    const overStock = items.find((i) => {
+      const max = i.product.reseller_stock;
+      return max != null && Number.isFinite(Number(max)) && i.quantity > Math.floor(Number(max));
+    });
+    if (overStock) {
+      toast({
+        title: 'Not enough stock',
+        description: `Reduce quantity for ${overStock.product.name} (max ${Math.floor(Number(overStock.product.reseller_stock))}).`,
+        variant: 'destructive',
       });
       return;
     }
@@ -284,7 +312,7 @@ const CheckoutPage = () => {
           description: `Please enter the account email for ${item.product.name}`,
           variant: "destructive",
         });
-        window.scrollTo({ top: 400, behavior: 'smooth' }); // Approximate scroll
+        window.scrollTo({ top: 400, behavior: 'smooth' });
         return;
       }
       if (item.product.requirements?.require_password && !customerCredentials[item.product.id]?.password) {
@@ -298,11 +326,13 @@ const CheckoutPage = () => {
       }
     }
 
+    submitLockRef.current = true;
     setIsSubmitting(true);
 
     try {
       // Upload payment proof
-      const fileExt = proofFile.name.split('.').pop();
+      const rawExt = (proofFile.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const fileExt = rawExt || (proofFile.type === 'application/pdf' ? 'pdf' : 'jpg');
       const fileName = `${orderId}-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
@@ -322,7 +352,7 @@ const CheckoutPage = () => {
         throw new Error('Your cart has an invalid item (old cached data). Please clear the cart and add items again.');
       }
 
-      // Create final payload
+      // Create final payload (already has normalized WhatsApp from getOrderPayload)
       const payload = await getOrderPayload();
 
       // Enrich notes with crypto payment details for admin verification
@@ -338,12 +368,13 @@ const CheckoutPage = () => {
           .join('\n');
       }
 
+      // Do NOT overwrite customer_whatsapp with raw form input — keep normalized digits
       Object.assign(payload, {
         payment_proof_url: paymentProofPath,
         binance_id: paymentMethod === 'binance_usdt' ? binanceId.trim() : undefined,
         payment_method: paymentMethod,
         customer_name: formData.name || 'Customer',
-        customer_whatsapp: formData.whatsapp,
+        customer_whatsapp: normalizedWhatsapp,
         customer_email: formData.email || undefined,
         notes: notesExtra || undefined,
       });
@@ -352,11 +383,10 @@ const CheckoutPage = () => {
       // because it handles upserting by order_number and bypassing guest RLS limitations.
       await createOrder.mutateAsync(payload);
 
-      // Store order data for success page (normalized WhatsApp for consistency)
-      const waStored = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
+      // Store order data for success page (normalized WhatsApp + durable recovery)
       const orderData = {
         orderId,
-        whatsapp: waStored.ok ? waStored.digits : formData.whatsapp,
+        whatsapp: normalizedWhatsapp,
         name: formData.name,
         notes: formData.notes,
         currency: currency,
@@ -377,15 +407,22 @@ const CheckoutPage = () => {
         allAutoItems: items.every(
           (item) => item.product.reseller_product_id && String(item.product.reseller_product_id).trim(),
         ),
+        timestamp: new Date().toISOString(),
       };
 
-      sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+      const orderJson = JSON.stringify(orderData);
+      sessionStorage.setItem('lastOrder', orderJson);
+      try {
+        localStorage.setItem('lastOrder', orderJson);
+      } catch {
+        /* private mode / quota */
+      }
 
       // Clear pending order session as it's now completed
       sessionStorage.removeItem('pendingOrder');
 
       clearCart();
-      navigate('/order-success');
+      navigate(`/order-success?orderId=${encodeURIComponent(orderId)}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error('Order creation failed:', error);
@@ -394,6 +431,7 @@ const CheckoutPage = () => {
         description: message,
         variant: "destructive",
       });
+      submitLockRef.current = false;
     } finally {
       setIsSubmitting(false);
     }

@@ -136,6 +136,8 @@ export const useCreateOrder = () => {
       customer_name: string;
       customer_whatsapp: string;
       total_amount: number;
+      discount_amount?: number;
+      applied_coupon_id?: string;
       status?: OrderStatus;
       notes?: string;
       payment_method?: 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card';
@@ -167,6 +169,8 @@ export const useCreateOrder = () => {
           customer_name: orderData.customer_name,
           customer_whatsapp: orderData.customer_whatsapp,
           total_amount: orderData.total_amount,
+          discount_amount: orderData.discount_amount ?? 0,
+          applied_coupon_id: orderData.applied_coupon_id || null,
           notes: orderData.notes,
           payment_method: orderData.payment_method,
           payment_proof_url: orderData.payment_proof_url,

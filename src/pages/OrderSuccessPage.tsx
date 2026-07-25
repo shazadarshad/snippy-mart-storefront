@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { copyToClipboard as safeCopy } from '@/lib/clipboard';
 import {
   MessageCircle,
   CheckCircle2,
@@ -130,43 +131,76 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function readStoredOrder(): OrderData | null {
+  const tryParse = (raw: string | null): OrderData | null => {
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as OrderData;
+      if (parsed?.orderId) return parsed;
+    } catch {
+      /* ignore */
+    }
+    return null;
+  };
+  // Prefer session (same-tab checkout) then localStorage (iOS tab discard / share link recovery)
+  return tryParse(sessionStorage.getItem('lastOrder')) || tryParse(localStorage.getItem('lastOrder'));
+}
+
 const OrderSuccessPage = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const [sessionOrder, setSessionOrder] = useState<OrderData | null>(null);
+  const queryOrderId = (searchParams.get('orderId') || searchParams.get('order') || '').trim();
+  const [sessionOrder, setSessionOrder] = useState<OrderData | null>(() => {
+    const stored = readStoredOrder();
+    if (stored) return stored;
+    if (queryOrderId) {
+      return { orderId: queryOrderId, whatsapp: '', items: [], total: 0 };
+    }
+    return null;
+  });
   const { data: settings, isLoading: isSettingsLoading } = useSiteSettings();
 
   useEffect(() => {
-    const storedOrder = sessionStorage.getItem('lastOrder');
-    if (storedOrder) {
+    const stored = readStoredOrder();
+    if (stored) {
+      setSessionOrder(stored);
+      // Re-hydrate session from localStorage when user re-opens via shared URL
       try {
-        setSessionOrder(JSON.parse(storedOrder));
+        sessionStorage.setItem('lastOrder', JSON.stringify(stored));
       } catch {
         /* ignore */
       }
+    } else if (queryOrderId) {
+      setSessionOrder((prev) => prev?.orderId === queryOrderId ? prev : {
+        orderId: queryOrderId,
+        whatsapp: '',
+        items: [],
+        total: 0,
+      });
     }
     sessionStorage.removeItem('waNeedsRetry');
     sessionStorage.removeItem('autoOpenWhatsApp');
-  }, [navigate]);
+  }, [navigate, queryOrderId]);
 
-  const { data: liveOrder, isLoading: isLiveOrderLoading } = useTrackOrder(
-    sessionOrder?.orderId || ''
-  );
+  const trackId = sessionOrder?.orderId || queryOrderId || '';
+  const { data: liveOrder, isLoading: isLiveOrderLoading } = useTrackOrder(trackId);
   const { assignment, isLoading: isAutomationLoading } = useOrderAutomation(liveOrder?.id);
   const { data: resellerDeliveries = [] } = useOrderResellerDeliveries(liveOrder?.id, {
     pollWhileWaiting: true,
   });
 
-  const copyToClipboard = (text: string, label: string = 'ID') => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string, label: string = 'ID') => {
+    const ok = await safeCopy(text);
     toast({
-      title: `${label} copied`,
-      description: 'Copied to clipboard.',
+      title: ok ? `${label} copied` : 'Copy failed',
+      description: ok ? 'Copied to clipboard.' : 'Long-press the text and copy manually.',
+      variant: ok ? undefined : 'destructive',
     });
   };
 
-  if (sessionOrder?.orderId && isLiveOrderLoading) {
+  if (trackId && isLiveOrderLoading) {
     return (
       <div className="min-h-dvh page-mesh pt-28 pb-20 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -177,7 +211,7 @@ const OrderSuccessPage = () => {
     );
   }
 
-  if (!sessionOrder && !liveOrder) {
+  if (!sessionOrder && !liveOrder && !queryOrderId) {
     return (
       <div className="min-h-dvh page-mesh pt-28 pb-20 flex items-center justify-center px-4">
         <div className="text-center max-w-sm">

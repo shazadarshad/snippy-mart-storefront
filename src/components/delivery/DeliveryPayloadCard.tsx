@@ -26,6 +26,7 @@ import {
   type CourseraApiLayout,
 } from '@/lib/deliveryPayload';
 import { cn } from '@/lib/utils';
+import { copyToClipboard } from '@/lib/clipboard';
 
 function kindIcon(kind: DeliveryKind) {
   switch (kind) {
@@ -585,9 +586,13 @@ export function DeliveryPayloadCard({
   const { toast } = useToast();
   const parsed = parseDeliveryPayload(deliveredData, productName);
 
-  const copy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied', description: `${label} copied to clipboard` });
+  const copy = async (text: string, label: string) => {
+    const ok = await copyToClipboard(text);
+    toast({
+      title: ok ? 'Copied' : 'Copy failed',
+      description: ok ? `${label} copied to clipboard` : 'Long-press the value and copy manually.',
+      variant: ok ? undefined : 'destructive',
+    });
   };
 
   const incomplete = parsed.incomplete || parsed.fields.length === 0;

@@ -31,6 +31,7 @@ import {
 } from '@/hooks/useAffiliate';
 import { buildAffiliateLink } from '@/lib/affiliate';
 import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
+import { copyToClipboard } from '@/lib/clipboard';
 import { cn } from '@/lib/utils';
 
 const SESSION_KEY = 'snippy_aff_session';
@@ -169,9 +170,13 @@ const AffiliatePage = () => {
     { defaultCountry: 'LK' },
   );
 
-  const copy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied', description: `${label} copied` });
+  const copy = async (text: string, label: string) => {
+    const ok = await copyToClipboard(text);
+    toast({
+      title: ok ? 'Copied' : 'Copy failed',
+      description: ok ? `${label} copied` : 'Long-press the text and copy manually.',
+      variant: ok ? undefined : 'destructive',
+    });
   };
 
   const switchAccount = () => {

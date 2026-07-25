@@ -14,8 +14,8 @@ const TermsOfService = () => {
         );
     }
 
-    // Fallback to static content if database not available
-    if (error || !policy) {
+    // Fallback to static content if database not available or content is empty
+    if (error || !policy || !(policy.content || '').trim()) {
         return (
             <PolicyLayout
                 title="Terms of"

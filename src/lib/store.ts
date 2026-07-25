@@ -78,6 +78,15 @@ const getCartItemId = (product: Product) => {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Drop coupon when cart subtotal no longer meets min_order_amount */
+function revalidateCoupon(items: CartItem[], coupon: Coupon | null): Coupon | null {
+  if (!coupon) return null;
+  if (!coupon.min_order_amount) return coupon;
+  const subtotal = items.reduce((t, i) => t + i.product.price * i.quantity, 0);
+  if (subtotal < coupon.min_order_amount) return null;
+  return coupon;
+}
+
 const mergeItemsById = (items: CartItem[]) => {
   const map = new Map<string, CartItem>();
   for (const item of items) {
@@ -132,22 +141,24 @@ export const useCartStore = create<CartStore>()(
         });
       },
       removeItem: (cartItemId) => {
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== cartItemId),
-        }));
+        set((state) => {
+          const items = state.items.filter((item) => item.id !== cartItemId);
+          return { items, appliedCoupon: revalidateCoupon(items, state.appliedCoupon) };
+        });
       },
       updateQuantity: (cartItemId, quantity) => {
-        set((state) => ({
-          items: state.items.map((item) => {
+        set((state) => {
+          const items = state.items.map((item) => {
             if (item.id !== cartItemId) return item;
             const maxQ = maxQtyForProduct(item.product);
             let q = Math.max(1, Math.floor(quantity) || 1);
             if (maxQ != null) q = Math.min(q, maxQ);
             return { ...item, quantity: q };
-          }),
-        }));
+          });
+          return { items, appliedCoupon: revalidateCoupon(items, state.appliedCoupon) };
+        });
       },
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], appliedCoupon: null }),
       getTotal: () => {
         return get().items.reduce((total, item) => total + item.product.price * item.quantity, 0);
       },
@@ -158,9 +169,13 @@ export const useCartStore = create<CartStore>()(
       removeCoupon: () => set({ appliedCoupon: null }),
       getDiscountAmount: () => {
         const { items, appliedCoupon } = get();
+        // Coupon revalidation runs on removeItem/updateQuantity/clearCart (no set() during render)
         if (!appliedCoupon) return 0;
 
         const subtotal = items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+        if (appliedCoupon.min_order_amount && subtotal < appliedCoupon.min_order_amount) {
+          return 0;
+        }
 
         if (appliedCoupon.type === 'fixed') {
           return Math.min(appliedCoupon.value, subtotal);
