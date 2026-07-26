@@ -16,6 +16,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -46,6 +56,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useAllPricingPlans,
   useAddPricingPlan,
+  useUpdatePricingPlan,
   useDeletePricingPlan,
 } from '@/hooks/usePricingPlans';
 import {
@@ -56,6 +67,7 @@ import {
 import {
   usePricingPlanVariants,
   useAddPricingPlanVariant,
+  useUpdatePricingPlanVariant,
   useDeletePricingPlanVariant,
 } from "@/hooks/usePricingPlans";
 import { useCurrency } from '@/hooks/useCurrency';
@@ -212,14 +224,18 @@ const AdminProducts = () => {
   const moveProduct = useMoveProduct();
   const reorderProducts = useReorderProducts();
   const addPricingPlan = useAddPricingPlan();
+  const updatePricingPlan = useUpdatePricingPlan();
   const deletePricingPlan = useDeletePricingPlan();
   const addPricingPlanVariant = useAddPricingPlanVariant();
+  const updatePricingPlanVariant = useUpdatePricingPlanVariant();
   const deletePricingPlanVariant = useDeletePricingPlanVariant();
   const addProductImage = useAddProductImage();
   const deleteProductImage = useDeleteProductImage();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [importPreview, setImportPreview] = useState<ProductFormData[]>([]);
   const [importError, setImportError] = useState<string | null>(null);
@@ -572,6 +588,7 @@ const AdminProducts = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
 
     // Auto-generate slug if not exists
     const productData = {
@@ -579,92 +596,133 @@ const AdminProducts = () => {
       slug: formData.slug || generateSlug(formData.name)
     };
 
-    let productId: string;
+    // Working copies. Rows created during this save get their new id written back
+    // immediately, so retrying after a mid-way failure updates them instead of
+    // inserting duplicates.
+    const plansDraft: PricingPlanInput[] = pricingPlans.map(p => ({
+      ...p,
+      variants: p.variants ? [...p.variants] : [],
+    }));
+    const imagesDraft: GalleryImageInput[] = galleryImages.map(img => ({ ...img }));
+    const commitDrafts = () => {
+      setPricingPlans(plansDraft.map(p => ({ ...p, variants: [...(p.variants || [])] })));
+      setGalleryImages(imagesDraft.map(img => ({ ...img })));
+      setExistingPlanIds(plansDraft.filter(p => p.id).map(p => p.id!));
+      setExistingImageIds(imagesDraft.filter(img => img.id).map(img => img.id!));
+    };
 
-    if (editingProduct) {
-      await updateProduct.mutateAsync({ id: editingProduct.id, ...productData });
-      productId = editingProduct.id;
+    setIsSaving(true);
+    try {
+      let productId: string;
 
-      // Delete removed plans
-      const currentPlanIds = pricingPlans.filter(p => p.id).map(p => p.id!);
-      const plansToDelete = existingPlanIds.filter(id => !currentPlanIds.includes(id));
-      for (const planId of plansToDelete) {
-        await deletePricingPlan.mutateAsync(planId);
+      if (editingProduct) {
+        await updateProduct.mutateAsync({ id: editingProduct.id, ...productData });
+        productId = editingProduct.id;
+
+        // Delete removed plans
+        const currentPlanIds = plansDraft.filter(p => p.id).map(p => p.id!);
+        const plansToDelete = existingPlanIds.filter(id => !currentPlanIds.includes(id));
+        for (const planId of plansToDelete) {
+          await deletePricingPlan.mutateAsync(planId);
+        }
+
+        // Delete removed images
+        const currentImageIds = imagesDraft.filter(img => img.id).map(img => img.id!);
+        const imagesToDelete = existingImageIds.filter(id => !currentImageIds.includes(id));
+        for (const imageId of imagesToDelete) {
+          await deleteProductImage.mutateAsync(imageId);
+        }
+      } else {
+        const newProduct = await addProduct.mutateAsync(productData);
+        productId = newProduct.id;
+        setEditingProduct(newProduct as Product);
       }
 
-      // Delete removed images
-      const currentImageIds = galleryImages.filter(img => img.id).map(img => img.id!);
-      const imagesToDelete = existingImageIds.filter(id => !currentImageIds.includes(id));
-      for (const imageId of imagesToDelete) {
-        await deleteProductImage.mutateAsync(imageId);
-      }
-    } else {
-      const newProduct = await addProduct.mutateAsync(productData);
-      productId = newProduct.id;
-    }
-
-    // Add/Update pricing plans
-    for (const plan of pricingPlans) {
-      let currentPlanId: string;
-      if (!plan.id) {
-        const newPlan = await addPricingPlan.mutateAsync({
-          product_id: productId,
+      // Create or update pricing plans
+      for (const plan of plansDraft) {
+        const planPayload = {
           name: plan.name,
           duration: plan.duration,
           price: plan.price,
           old_price: plan.old_price,
           is_default: plan.is_default,
-        });
-        currentPlanId = newPlan.id;
-      } else {
-        currentPlanId = plan.id!;
-      }
+        };
 
-      // Handle Variants for this plan
-      if (plan.variants) {
-        const originalVariants = getPricingPlanVariants(currentPlanId);
-        const currentVariantIds = plan.variants.filter(v => v.id).map(v => v.id!);
-
-        // Delete removed variants
-        const variantsToDelete = originalVariants.filter(ov => !currentVariantIds.includes(ov.id));
-        for (const v of variantsToDelete) {
-          await deletePricingPlanVariant.mutateAsync(v.id);
+        if (!plan.id) {
+          const newPlan = await addPricingPlan.mutateAsync({ product_id: productId, ...planPayload });
+          plan.id = newPlan.id;
+        } else {
+          await updatePricingPlan.mutateAsync({ id: plan.id, ...planPayload });
         }
+        const currentPlanId = plan.id!;
 
-        // Add new variants
-        for (const variant of plan.variants) {
-          if (!variant.id) {
-            await addPricingPlanVariant.mutateAsync({
-              plan_id: currentPlanId,
+        // Create or update this plan's variants
+        if (plan.variants) {
+          const originalVariants = getPricingPlanVariants(currentPlanId);
+          const currentVariantIds = plan.variants.filter(v => v.id).map(v => v.id!);
+
+          // Delete removed variants
+          const variantsToDelete = originalVariants.filter(ov => !currentVariantIds.includes(ov.id));
+          for (const v of variantsToDelete) {
+            await deletePricingPlanVariant.mutateAsync(v.id);
+          }
+
+          for (const variant of plan.variants) {
+            const variantPayload = {
               name: variant.name,
               price: variant.price,
               old_price: variant.old_price,
               is_active: variant.is_active,
               stock_status: variant.stock_status,
-            });
+            };
+
+            if (!variant.id) {
+              const newVariant = await addPricingPlanVariant.mutateAsync({
+                plan_id: currentPlanId,
+                ...variantPayload,
+              });
+              variant.id = newVariant.id;
+            } else {
+              await updatePricingPlanVariant.mutateAsync({ id: variant.id, ...variantPayload });
+            }
           }
         }
       }
-    }
 
-
-    // Add new gallery images
-    for (let i = 0; i < galleryImages.length; i++) {
-      const img = galleryImages[i];
-      if (!img.id) {
-        await addProductImage.mutateAsync({
-          product_id: productId,
-          image_url: img.image_url,
-          sort_order: i,
-        });
+      // Add new gallery images
+      for (let i = 0; i < imagesDraft.length; i++) {
+        const img = imagesDraft[i];
+        if (!img.id) {
+          const newImage = await addProductImage.mutateAsync({
+            product_id: productId,
+            image_url: img.image_url,
+            sort_order: i,
+          });
+          img.id = newImage?.id;
+        }
       }
-    }
 
-    setIsDialogOpen(false);
+      commitDrafts();
+      handleDialogOpenChange(false);
+    } catch (error) {
+      // Keep the dialog open so nothing typed is lost, but persist whatever was
+      // created so pressing Save again finishes the job instead of duplicating it.
+      commitDrafts();
+      toast({
+        title: 'Product not fully saved',
+        description:
+          (error instanceof Error ? error.message : 'Something went wrong.') +
+          ' Your changes are still here — press Save again to retry.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = async (productId: string) => {
     await deleteProduct.mutateAsync(productId);
+    setDeleteTarget(null);
   };
 
   const handleToggleActive = async (product: Product) => {
@@ -697,7 +755,7 @@ const AdminProducts = () => {
     });
   };
 
-  const isSubmitting = addProduct.isPending || updateProduct.isPending || addPricingPlan.isPending || addProductImage.isPending || addPricingPlanVariant.isPending;
+  const isSubmitting = isSaving || addProduct.isPending || updateProduct.isPending || addPricingPlan.isPending || addProductImage.isPending || addPricingPlanVariant.isPending;
 
   const downloadCsvTemplate = () => {
     const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' });
@@ -756,7 +814,11 @@ const AdminProducts = () => {
             Add Product
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogContent className="max-w-2xl sm:max-w-2xl w-full bg-card text-foreground border-border custom-scrollbar">
+          <DialogContent
+            className="max-w-2xl sm:max-w-2xl w-full bg-card text-foreground border-border custom-scrollbar"
+            onInteractOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+          >
             <DialogHeader>
               <DialogTitle className="text-foreground">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
@@ -1637,7 +1699,7 @@ const AdminProducts = () => {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => handleDelete(product.id)}
+                              onClick={() => setDeleteTarget(product)}
                               disabled={deleteProduct.isPending}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1657,6 +1719,29 @@ const AdminProducts = () => {
           </p>
         </>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{deleteTarget?.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This also removes its pricing plans, sub-plans and gallery images. Past orders that
+              reference this product may be affected. This cannot be undone — deactivate the product
+              instead if you only want to hide it from the store.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep product</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+              disabled={deleteProduct.isPending}
+            >
+              {deleteProduct.isPending ? 'Deleting…' : 'Delete permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

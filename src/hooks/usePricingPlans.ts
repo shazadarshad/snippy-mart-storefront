@@ -77,9 +77,8 @@ export const useAddPricingPlan = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-plans'] });
-      toast({ title: 'Pricing plan added', description: `${data.name} has been added.` });
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -93,7 +92,7 @@ export const useUpdatePricingPlan = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...plan }: PricingPlanFormData & { id: string }) => {
+    mutationFn: async ({ id, ...plan }: Partial<PricingPlanFormData> & { id: string }) => {
       const { data, error } = await supabase
         .from('product_pricing_plans')
         .update(plan)
@@ -104,9 +103,8 @@ export const useUpdatePricingPlan = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-plans'] });
-      toast({ title: 'Pricing plan updated', description: `${data.name} has been updated.` });
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -131,7 +129,6 @@ export const useDeletePricingPlan = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-plans'] });
-      toast({ title: 'Pricing plan deleted', description: 'The pricing plan has been removed.' });
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -192,9 +189,34 @@ export const useAddPricingPlanVariant = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-plan-variants'] });
-      toast({ title: 'Sub-plan added', description: `${data.name} has been added.` });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+};
+
+// Update a variant
+export const useUpdatePricingPlanVariant = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...variant }: Partial<PricingPlanVariantFormData> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('product_pricing_plan_variants')
+        .update(variant)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-plan-variants'] });
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -219,7 +241,6 @@ export const useDeletePricingPlanVariant = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-plan-variants'] });
-      toast({ title: 'Sub-plan deleted', description: 'The sub-plan has been removed.' });
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });

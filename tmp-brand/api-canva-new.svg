@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="bg-canvaf448" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#081818"/>
+      <stop offset="100%" stop-color="#0e2b2d"/>
+    </linearGradient>
+    <radialGradient id="glow-canvaf448" cx="50%" cy="32%" r="50%">
+      <stop offset="0%" stop-color="#00C4CC" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#081818" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg-canvaf448)"/>
+  <rect width="800" height="800" fill="url(#glow-canvaf448)"/>
+  <g transform="translate(400, 300)">
+    <circle r="110" fill="#FFFFFF" fill-opacity="0.08"/>
+    <circle r="96" fill="#FFFFFF" fill-opacity="0.06" stroke="#00C4CC" stroke-opacity="0.45" stroke-width="2"/>
+    <text text-anchor="middle" dominant-baseline="central" fill="#00C4CC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="64" font-weight="800">C</text>
+  </g>
+  <text x="400" y="560" text-anchor="middle" fill="#FFFFFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="700" letter-spacing="-0.4">Canva Pro</text>
+  <text x="400" y="604" text-anchor="middle" fill="#FFFFFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="700" letter-spacing="-0.4">1 Year</text>
+  <text x="400" y="730" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="600" letter-spacing="4">SNIPPY MART</text>
+</svg>

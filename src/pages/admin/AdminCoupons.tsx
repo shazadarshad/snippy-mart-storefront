@@ -125,6 +125,15 @@ const AdminCoupons = () => {
             queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
             toast({ title: "Coupon deleted" });
         },
+        onError: (error: any) => {
+            toast({
+                title: "Could not delete coupon",
+                description: error?.message?.includes('foreign key')
+                    ? "This coupon has been used on an order, so it can't be removed. Deactivate it instead."
+                    : error?.message ?? "Something went wrong.",
+                variant: "destructive"
+            });
+        },
     });
 
     const resetForm = () => {

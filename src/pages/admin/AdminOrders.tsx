@@ -128,6 +128,7 @@ const AdminOrders = () => {
   const [typeFilter, setTypeFilter] = useState<'all' | 'claude' | 'standard'>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isFindingOrder, setIsFindingOrder] = useState(false);
   const [isUpdatingClaudeStage, setIsUpdatingClaudeStage] = useState(false);
 
   const { data: orders = [], isLoading, error, refetch } = useOrders();
@@ -638,14 +639,48 @@ const AdminOrders = () => {
           </div>
         </div>
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            const q = (e.currentTarget.elements.namedItem('detailedSearch') as HTMLInputElement)
-              .value;
-            const order = orders.find(
-              (o) => o.order_number === q || o.order_number === q.trim(),
+            const input = e.currentTarget.elements.namedItem('detailedSearch') as HTMLInputElement;
+            const q = input.value.trim();
+            if (!q) return;
+
+            const match = orders.find(
+              (o) => o.order_number?.toLowerCase() === q.toLowerCase(),
             );
-            if (order) setSelectedOrder(order);
+            if (match) {
+              setSelectedOrder(match);
+              return;
+            }
+
+            // Not in the loaded page — ask the server before giving up.
+            setIsFindingOrder(true);
+            try {
+              const { data, error } = await supabase
+                .from('orders')
+                .select('*, order_items(*, products(manual_fulfillment))')
+                .ilike('order_number', q)
+                .maybeSingle();
+
+              if (error) throw error;
+              if (data) {
+                setSelectedOrder(data as unknown as Order);
+              } else {
+                toast({
+                  title: 'No order found',
+                  description: `Nothing matches “${q}”. Check the ID and try again.`,
+                  variant: 'destructive',
+                });
+              }
+            } catch (err) {
+              toast({
+                title: 'Could not search orders',
+                description: err instanceof Error ? err.message : 'Please try again.',
+                variant: 'destructive',
+              });
+            } finally {
+              setIsFindingOrder(false);
+            }
           }}
           className="flex flex-col sm:flex-row gap-2"
         >
@@ -659,8 +694,9 @@ const AdminOrders = () => {
             type="submit"
             variant="hero"
             className="h-11 sm:h-12 shrink-0 font-bold touch-manipulation rounded-xl"
+            disabled={isFindingOrder}
           >
-            Open
+            {isFindingOrder ? 'Searching…' : 'Open'}
           </Button>
         </form>
       </div>

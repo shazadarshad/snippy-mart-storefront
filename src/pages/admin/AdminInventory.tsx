@@ -38,6 +38,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useInventory, useAddInventoryAccount, useUpdateInventoryAccount, useDeleteInventoryAccount, type InventoryAccount } from '@/hooks/useInventory';
 import { useToast } from '@/hooks/use-toast';
 
@@ -51,6 +61,7 @@ const AdminInventory = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<InventoryAccount | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<InventoryAccount | null>(null);
 
     // Form State
     const [formData, setFormData] = useState<Partial<InventoryAccount>>({
@@ -71,7 +82,20 @@ const AdminInventory = () => {
 
     const handleSave = () => {
         if (editingAccount) {
-            updateAccount.mutate({ id: editingAccount.id, updates: formData }, {
+            // Send only the fields this form owns. Writing the whole row back would
+            // also rewrite current_users, undoing any assignment made while the
+            // dialog was open and silently overselling the account.
+            const updates: Partial<InventoryAccount> = {
+                email: formData.email,
+                password: formData.password,
+                service_type: formData.service_type,
+                region: formData.region,
+                max_users: formData.max_users,
+                duration_months: formData.duration_months,
+                rules_template: formData.rules_template,
+                status: formData.status,
+            };
+            updateAccount.mutate({ id: editingAccount.id, updates }, {
                 onSuccess: () => {
                     setIsAddDialogOpen(false);
                     setEditingAccount(null);
@@ -229,7 +253,7 @@ const AdminInventory = () => {
                                         <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => openEdit(account)}>
                                             <Edit className="w-4 h-4" />
                                         </Button>
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => deleteAccount.mutate(account.id)}>
+                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteTarget(account)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
@@ -391,6 +415,44 @@ const AdminInventory = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete {deleteTarget?.email}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {deleteTarget && deleteTarget.current_users > 0 ? (
+                                <>
+                                    <strong>{deleteTarget.current_users} customer
+                                    {deleteTarget.current_users === 1 ? ' is' : 's are'} currently assigned
+                                    to this account.</strong>{' '}
+                                    Deleting it removes the login details permanently, so you will not be
+                                    able to support them. Set the status to Expired instead if you just
+                                    want to stop new sales.
+                                </>
+                            ) : (
+                                <>
+                                    This permanently removes the account and its login details. Set the
+                                    status to Expired instead if you just want to stop new sales.
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep account</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => {
+                                if (deleteTarget) deleteAccount.mutate(deleteTarget.id);
+                                setDeleteTarget(null);
+                            }}
+                            disabled={deleteAccount.isPending}
+                        >
+                            {deleteAccount.isPending ? 'Deleting…' : 'Delete permanently'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
