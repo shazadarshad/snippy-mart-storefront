@@ -126,7 +126,7 @@ const PaymentSettingsSection = () => {
     if (!Number.isFinite(rate) || rate < 100 || rate > 1000) {
       toast({
         title: 'Invalid LKR rate',
-        description: 'LKR per USD should be a realistic number (e.g. 320–360).',
+        description: 'LKR per USD should be a realistic number (e.g. 320–370).',
         variant: 'destructive',
       });
       return;
@@ -393,7 +393,7 @@ const PaymentSettingsSection = () => {
               className="mt-1.5 bg-secondary/50 border-border"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              Default 360 LKR per USD. System also applies a tiny extra safety factor automatically.
+              Default 320 LKR per USD. System also applies a tiny extra safety factor automatically.
             </p>
           </div>
         </div>

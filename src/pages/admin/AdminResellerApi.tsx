@@ -528,9 +528,16 @@ const AdminResellerApi = () => {
                           <span className="line-clamp-2">{p.name}</span>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                          {p.reseller_cost_usd != null
-                            ? `$${Number(p.reseller_cost_usd).toFixed(2)}`
-                            : '—'}
+                          {p.reseller_cost_usd != null ? (
+                            <div className="space-y-0.5">
+                              <div>${Number(p.reseller_cost_usd).toFixed(2)}</div>
+                              <div className="font-medium text-foreground/80">
+                                Rs. {(Number(p.reseller_cost_usd) * rateNum).toLocaleString()}
+                              </div>
+                            </div>
+                          ) : (
+                            '—'
+                          )}
                         </TableCell>
                         <TableCell>
                           <Input

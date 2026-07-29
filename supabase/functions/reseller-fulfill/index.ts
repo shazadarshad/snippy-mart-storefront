@@ -72,7 +72,7 @@ async function getSettings(supabaseAdmin: ReturnType<typeof createClient>) {
       is_enabled: false,
       auto_deliver_on_processing: true,
       auto_complete_on_success: true,
-      usd_to_lkr: 360,
+      usd_to_lkr: 370,
       markup_percent: 50,
       pricing_mode: "smart",
       min_profit_lkr: 200,
@@ -603,7 +603,7 @@ serve(async (req) => {
         auto_complete_on_success: s.auto_complete_on_success !== false,
         has_api_key: !!s.api_key,
         api_key_preview: maskKey(s.api_key),
-        usd_to_lkr: Number(s.usd_to_lkr) > 0 ? Number(s.usd_to_lkr) : 360,
+        usd_to_lkr: Number(s.usd_to_lkr) > 0 ? Number(s.usd_to_lkr) : 370,
         markup_percent:
           s.markup_percent != null && Number.isFinite(Number(s.markup_percent))
             ? Number(s.markup_percent)
@@ -651,7 +651,7 @@ serve(async (req) => {
           body.auto_complete_on_success != null
             ? !!body.auto_complete_on_success
             : current.auto_complete_on_success !== false,
-        usd_to_lkr: Number.isFinite(usdToLkrRaw) && usdToLkrRaw > 0 ? usdToLkrRaw : 360,
+        usd_to_lkr: Number.isFinite(usdToLkrRaw) && usdToLkrRaw > 0 ? usdToLkrRaw : 370,
         markup_percent: Number.isFinite(markupRaw) && markupRaw >= 0 ? markupRaw : 50,
         pricing_mode: pricingMode,
         min_profit_lkr: Number.isFinite(minProfitRaw) && minProfitRaw >= 0 ? minProfitRaw : 200,

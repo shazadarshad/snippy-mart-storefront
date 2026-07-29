@@ -13,12 +13,12 @@ export interface CurrencyItem {
  * Catalog prices are stored in LKR.
  *
  * Fixed display rates:
- *   1 USD = 360 LKR (always)
+ *   1 USD = 370 LKR (always)
  *   1 LKR = 0.35 INR
  */
-export const LKR_PER_USD = 360;
+export const LKR_PER_USD = 370;
 export const INR_PER_LKR = 0.35;
-/** Implied: 1 USD ≈ 360 × 0.35 = 126 INR (via LKR path) */
+/** Implied: 1 USD ≈ 370 × 0.35 = 129.5 INR (via LKR path) */
 export const INR_PER_USD = LKR_PER_USD * INR_PER_LKR;
 
 export const CURRENCIES: Record<CurrencyCode, CurrencyItem> = {

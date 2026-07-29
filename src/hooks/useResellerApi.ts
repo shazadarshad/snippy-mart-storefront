@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildCustomerFacingProduct } from '@/lib/resellerProductCopy';
 
 /** Default API $ → cost LKR (panel still deducts USD) */
-export const RESELLER_USD_TO_LKR = 360;
+export const RESELLER_USD_TO_LKR = 370;
 
 /** Only used when pricing_mode = fixed */
 export const RESELLER_DEFAULT_MARKUP_PERCENT = 50;
