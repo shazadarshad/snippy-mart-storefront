@@ -649,7 +649,8 @@ const AdminResellerApi = () => {
               Adds seller catalog items as <strong>new</strong> products (never replaces yours).
               Titles, descriptions, and images are rewritten for customers (proper grammar + store
               layout). Images are branded cards with an <strong>Auto Product</strong> subtitle.
-              Use <strong>Refresh titles and images</strong> to upgrade products already imported.
+              Use <strong>Refresh catalog details</strong> to update products already imported, including
+              their supplier panel cost. Your custom customer prices stay unchanged.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -666,7 +667,7 @@ const AdminResellerApi = () => {
                       : ' Titles already clean or re-applied.';
                   toast({
                     title: `Refreshed ${res.updated} product(s)`,
-                    description: `Titles, stock, and images updated. Descriptions rewritten per product from API (${res.descUpdated ?? 0} with API text). Prices unchanged.${sample}${
+                    description: `Titles, stock, images, and ${res.costUpdated ?? 0} panel cost(s) updated. Descriptions rewritten per product from API (${res.descUpdated ?? 0} with API text). Custom customer prices unchanged.${sample}${
                       res.failed ? ` (${res.failed} failed)` : ''
                     }${res.errors?.length ? ` ${res.errors[0]}` : ''}`,
                   });
@@ -684,7 +685,7 @@ const AdminResellerApi = () => {
               ) : (
                 <RefreshCw className="w-4 h-4 mr-2" />
               )}
-              Refresh titles and images
+              Refresh catalog details
             </Button>
             <Button
               variant="outline"

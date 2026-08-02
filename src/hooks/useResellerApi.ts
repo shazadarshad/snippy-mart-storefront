@@ -674,8 +674,9 @@ export const useSetApiProductPrice = () => {
 };
 
 /**
- * Re-generate polished titles, descriptions, and Auto Product images
- * for already-imported API products (does not change prices).
+ * Re-generate polished titles, descriptions, and Auto Product images for
+ * already-imported API products. Syncs the supplier panel cost, but never
+ * overwrites the customer-facing price set by the admin.
  */
 export const useRefreshResellerPresentation = () => {
   const qc = useQueryClient();
@@ -701,7 +702,7 @@ export const useRefreshResellerPresentation = () => {
 
       const { data: localRows, error } = await (supabase as any)
         .from('products')
-        .select('id, reseller_product_id, name, description')
+        .select('id, reseller_product_id, name, description, reseller_cost_usd')
         .not('reseller_product_id', 'is', null);
 
       if (error) throw error;
@@ -712,6 +713,7 @@ export const useRefreshResellerPresentation = () => {
       let updated = 0;
       let failed = 0;
       let descUpdated = 0;
+      let costUpdated = 0;
       const samples: string[] = [];
       const errors: string[] = [];
 
@@ -749,6 +751,19 @@ export const useRefreshResellerPresentation = () => {
           coreUpdate.reseller_stock = null;
         }
 
+        // The supplier price is stored separately from `products.price`, which
+        // is the custom customer price. Updating this field keeps the Panel cost
+        // column current without changing what customers pay.
+        const remoteCostUsd = Number(rp.price);
+        const currentCostUsd = Number(row.reseller_cost_usd);
+        const hasCostChange =
+          Number.isFinite(remoteCostUsd) &&
+          remoteCostUsd >= 0 &&
+          (!Number.isFinite(currentCostUsd) || currentCostUsd !== remoteCostUsd);
+        if (hasCostChange) {
+          coreUpdate.reseller_cost_usd = remoteCostUsd;
+        }
+
         const { error: coreErr } = await (supabase as any)
           .from('products')
           .update(coreUpdate)
@@ -759,6 +774,7 @@ export const useRefreshResellerPresentation = () => {
           if (errors.length < 3) errors.push(`${row.name}: ${coreErr.message}`);
           continue;
         }
+        if (hasCostChange) costUpdated++;
 
         // 2) Image separately (can be large data-URI) — don't block title update
         if (face.image_url) {
@@ -784,7 +800,7 @@ export const useRefreshResellerPresentation = () => {
         );
       }
 
-      return { updated, failed, descUpdated, samples, errors };
+      return { updated, failed, descUpdated, costUpdated, samples, errors };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['products'] });
