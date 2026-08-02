@@ -338,6 +338,51 @@ export const useReorderProducts = () => {
   });
 };
 
+/**
+ * Pin an ordered set of products above the current catalog without reindexing
+ * or otherwise modifying every other product.
+ */
+export const usePinProductsToTop = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      const uniqueIds = [...new Set(orderedIds.filter(Boolean))];
+      if (!uniqueIds.length) throw new Error('No products selected');
+
+      const { data: rows, error: fetchError } = await supabase
+        .from('products')
+        .select('id, display_order')
+        .order('display_order', { ascending: true, nullsFirst: false });
+      if (fetchError) throw fetchError;
+
+      const existing = new Set((rows || []).map((row) => row.id));
+      const missing = uniqueIds.filter((id) => !existing.has(id));
+      if (missing.length) {
+        throw new Error(`${missing.length} selected product(s) could not be found`);
+      }
+
+      const currentMin = Math.min(0, ...(rows || []).map((row) => Number(row.display_order) || 0));
+      const startOrder = currentMin - uniqueIds.length;
+      const results = await Promise.all(
+        uniqueIds.map((id, index) =>
+          supabase
+            .from('products')
+            .update({ display_order: startOrder + index })
+            .eq('id', id),
+        ),
+      );
+      const firstError = results.find((result) => result.error)?.error;
+      if (firstError) throw firstError;
+
+      return { moved: uniqueIds.length };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+};
+
 export type MoveProductDirection = 'up' | 'down' | 'top' | 'bottom';
 
 /** Move one product relative to the full list, then reindex display_order. */
