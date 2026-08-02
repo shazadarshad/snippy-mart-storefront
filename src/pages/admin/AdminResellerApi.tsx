@@ -131,6 +131,17 @@ const AdminResellerApi = () => {
     [localProducts],
   );
 
+  // The custom-price table must show the current supplier charge, not a stale
+  // import-time snapshot. Stored cost remains a fallback while the API loads.
+  const livePanelCosts = useMemo(() => {
+    const costs = new Map<string, number>();
+    for (const product of remoteProducts) {
+      const cost = Number(product.price);
+      if (Number.isFinite(cost) && cost >= 0) costs.set(String(product.id), cost);
+    }
+    return costs;
+  }, [remoteProducts]);
+
   const newRemoteCount = remoteProducts.filter((rp) => !existingResellerIds.has(String(rp.id))).length;
 
   const handleSave = async () => {
@@ -474,7 +485,7 @@ const AdminResellerApi = () => {
               <div>
                 <p className="text-xs font-black uppercase tracking-wider">Custom customer prices</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Set what users pay (LKR). Panel still charges API $ only. Saves as xx99.
+                  Set what users pay (LKR). Panel cost is live from the reseller API. Saves as xx99.
                 </p>
               </div>
               <Button
@@ -522,17 +533,19 @@ const AdminResellerApi = () => {
                     const draft =
                       priceDrafts[p.id] ??
                       String(Math.round(Number(p.price) || 0));
+                    const liveCost = livePanelCosts.get(String(p.reseller_product_id));
+                    const panelCost = liveCost ?? p.reseller_cost_usd;
                     return (
                       <TableRow key={p.id}>
                         <TableCell className="text-sm font-medium max-w-[200px]">
                           <span className="line-clamp-2">{p.name}</span>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                          {p.reseller_cost_usd != null ? (
+                          {panelCost != null ? (
                             <div className="space-y-0.5">
-                              <div>${Number(p.reseller_cost_usd).toFixed(2)}</div>
+                              <div>${Number(panelCost).toFixed(2)}</div>
                               <div className="font-medium text-foreground/80">
-                                Rs. {(Number(p.reseller_cost_usd) * rateNum).toLocaleString()}
+                                Rs. {(Number(panelCost) * rateNum).toLocaleString()}
                               </div>
                             </div>
                           ) : (
