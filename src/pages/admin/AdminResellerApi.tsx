@@ -56,26 +56,26 @@ import {
 } from '@/components/ui/select';
 
 const OFFER_PRODUCT_ORDER = [
-  '2e2abf9c-f38e-4190-a68a-88e1c6ae4d75', // Linkedin Career 2 Months
-  '8f60bd36-6d15-4ac2-bb94-02ba67a7efa7', // Cursor Pro 12 Months
-  '7383de18-2d7e-49da-942a-807842294cea', // Canva Business 12 Months
-  '71550e06-dc7e-4d87-ae90-484b838dd8e3', // Gamma Pro 12 Months
-  '3d49e622-3908-4b5e-9caf-681c09004544', // Higgsfield Pro 12 Months
-  '247b32b8-ac94-438f-9c54-ed7764d2b8d6', // Lovablee Pro 12 Months
-  'dec7d059-86c4-41a8-918c-82f2cfe7b216', // N8N Starter 12 Months
-  '0ba14559-d0da-4f99-8977-ef27f270d911', // Replit Core 12 Months
-  '9533ac49-a065-4e1b-bd35-57e00f6367ed', // Supabase Pro
-  '9159477c-ee6b-4e69-8dfd-c43d10058d06', // Framer Pro 12 Months
-  'f5bdddb0-22fc-472f-a73e-e589f9c33d2f', // Granola Business 10 Seats 12 Months
-  'cd309458-8ab5-48d3-85c3-64ae7e1495cb', // Gumloop Pro 12 Months
-  '28c6d051-e114-4c67-a71a-3d7f9cb72b9a', // Manus Pro 12 Months
-  '7bc6b849-e104-448d-a113-2e6b705f0a9c', // Magic Patterns Starter 12 Months
-  'af636a12-996f-4186-bd11-7e738691514f', // Mobbin 10x Seat 12 Months
-  '5f34107f-94e3-4f59-aca0-f11b9f11bb86', // Notion Business 12 Months
-  '7cddc05a-2793-47fe-b9fd-e53d29657aa4', // Railway Hobby 12 Months
-  '6df0a082-abc2-46f9-8777-bc3c134a2ee4', // Warp Build 12 Months
-  '7b70fa29-b40b-4eb6-81c0-31f56e0ec95c', // Wispr Flow Pro 12 Months
-  'a16b3eb3-762f-4ce6-b031-6c2f046a2034', // Gemini AI Pro 18 Months
+  'a16b3eb3-762f-4ce6-b031-6c2f046a2034', // Gemini AI Pro 18 Months — Rs. 499
+  '2e2abf9c-f38e-4190-a68a-88e1c6ae4d75', // Linkedin Career 2 Months — Rs. 1,399
+  '9159477c-ee6b-4e69-8dfd-c43d10058d06', // Framer Pro 12 Months — Rs. 2,999
+  'f5bdddb0-22fc-472f-a73e-e589f9c33d2f', // Granola Business 10 Seats 12 Months — Rs. 2,999
+  '7bc6b849-e104-448d-a113-2e6b705f0a9c', // Magic Patterns Starter 12 Months — Rs. 2,999
+  '6df0a082-abc2-46f9-8777-bc3c134a2ee4', // Warp Build 12 Months — Rs. 2,999
+  'cd309458-8ab5-48d3-85c3-64ae7e1495cb', // Gumloop Pro 12 Months — Rs. 3,999
+  'af636a12-996f-4186-bd11-7e738691514f', // Mobbin 10x Seat 12 Months — Rs. 3,999
+  '7cddc05a-2793-47fe-b9fd-e53d29657aa4', // Railway Hobby 12 Months — Rs. 3,999
+  'dec7d059-86c4-41a8-918c-82f2cfe7b216', // N8N Starter 12 Months — Rs. 5,599
+  '5f34107f-94e3-4f59-aca0-f11b9f11bb86', // Notion Business 12 Months — Rs. 5,599
+  '0ba14559-d0da-4f99-8977-ef27f270d911', // Replit Core 12 Months — Rs. 6,999
+  '7b70fa29-b40b-4eb6-81c0-31f56e0ec95c', // Wispr Flow Pro 12 Months — Rs. 6,999
+  '7383de18-2d7e-49da-942a-807842294cea', // Canva Business 12 Months — Rs. 8,999
+  '9533ac49-a065-4e1b-bd35-57e00f6367ed', // Supabase Pro — Rs. 9,599
+  '71550e06-dc7e-4d87-ae90-484b838dd8e3', // Gamma Pro 12 Months — Rs. 11,999
+  '247b32b8-ac94-438f-9c54-ed7764d2b8d6', // Lovablee Pro 12 Months — Rs. 12,999
+  '28c6d051-e114-4c67-a71a-3d7f9cb72b9a', // Manus Pro 12 Months — Rs. 13,999
+  '8f60bd36-6d15-4ac2-bb94-02ba67a7efa7', // Cursor Pro 12 Months — Rs. 18,999
+  '3d49e622-3908-4b5e-9caf-681c09004544', // Higgsfield Pro 12 Months — Rs. 42,999
 ];
 
 const AdminResellerApi = () => {
@@ -551,7 +551,7 @@ const AdminResellerApi = () => {
                     const result = await pinProductsToTop.mutateAsync(OFFER_PRODUCT_ORDER);
                     toast({
                       title: 'Offer products moved to the top',
-                      description: `${result.moved} selected products are now at the top in the offer order.`,
+                      description: `${result.moved} selected products are now at the top from lowest to highest price.`,
                     });
                   } catch (e: any) {
                     toast({
@@ -563,7 +563,33 @@ const AdminResellerApi = () => {
                 }}
               >
                 {pinProductsToTop.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Move 20 offer products to top
+                Move 20 offers to top · lowest price first
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={refreshPresentation.isPending}
+                onClick={async () => {
+                  try {
+                    const result = await refreshPresentation.mutateAsync({
+                      productIds: OFFER_PRODUCT_ORDER,
+                    });
+                    toast({
+                      title: 'Offer product details refreshed',
+                      description: `${result.updated} selected products refreshed from the reseller API; ${result.descUpdated ?? 0} API descriptions applied.`,
+                    });
+                  } catch (e: any) {
+                    toast({
+                      title: 'Could not refresh offer details',
+                      description: e.message,
+                      variant: 'destructive',
+                    });
+                  }
+                }}
+              >
+                {refreshPresentation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Refresh 20 offer products from API
               </Button>
             </div>
             <div className="overflow-x-auto rounded-lg border border-border">

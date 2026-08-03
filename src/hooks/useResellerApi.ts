@@ -682,7 +682,7 @@ export const useRefreshResellerPresentation = () => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts?: { productIds?: string[] }) => {
       const res = await invokeReseller<{ ok: boolean; data: any }>({ action: 'products' });
       if (!res.ok) {
         throw new Error(res.data?.error || res.data?.message || 'Failed to load reseller products');
@@ -706,7 +706,12 @@ export const useRefreshResellerPresentation = () => {
         .not('reseller_product_id', 'is', null);
 
       if (error) throw error;
-      if (!localRows?.length) {
+      let rowsToRefresh = localRows || [];
+      if (opts?.productIds?.length) {
+        const selectedIds = new Set(opts.productIds.map(String));
+        rowsToRefresh = rowsToRefresh.filter((row: any) => selectedIds.has(String(row.id)));
+      }
+      if (!rowsToRefresh.length) {
         throw new Error('No API products found in your catalog to refresh.');
       }
 
@@ -717,7 +722,7 @@ export const useRefreshResellerPresentation = () => {
       const samples: string[] = [];
       const errors: string[] = [];
 
-      for (const row of localRows) {
+      for (const row of rowsToRefresh) {
         const rid = String(row.reseller_product_id);
         const rp =
           remoteById.get(rid) ||
