@@ -115,7 +115,7 @@ public class AdminSmsReceiver extends BroadcastReceiver {
                     }
 
                     // Call Supabase API to match pending order and update status to processing
-                    boolean updated = autoApproveOrderOnSupabase(amount);
+                    boolean updated = autoApproveOrderOnSupabase(amount, body, sender);
                     if (updated) {
                         showNotification(context, "⚡ Order Payment Confirmed!", "Auto-Approved LKR " + amount + " via DF-Alert SMS");
                     }
@@ -127,60 +127,29 @@ public class AdminSmsReceiver extends BroadcastReceiver {
         }).start();
     }
 
-    private boolean autoApproveOrderOnSupabase(double amount) {
+    private boolean autoApproveOrderOnSupabase(double amount, String body, String sender) {
         try {
-            // 1. Fetch pending orders around this price
-            String endpoint = SUPABASE_URL + "/rest/v1/orders?status=eq.pending&select=id,order_number,total_amount,notes";
+            // Call smart-sms-matcher edge function for AI bi-directional matching
+            String endpoint = SUPABASE_URL + "/functions/v1/smart-sms-matcher";
             URL url = new URL(endpoint);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+            conn.setRequestMethod("POST");
             conn.setRequestProperty("apikey", SUPABASE_ANON_KEY);
             conn.setRequestProperty("Authorization", "Bearer " + SUPABASE_ANON_KEY);
-            conn.setConnectTimeout(8000);
-            conn.setReadTimeout(8000);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            String jsonPayload = "{\"sender\":\"" + (sender != null ? sender.replace("\"", "") : "DF-Alert") + "\",\"sms_body\":\"" + (body != null ? body.replace("\"", "'").replace("\n", " ") : "") + "\",\"max_threshold\":700}";
+
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonPayload.getBytes("UTF-8"));
+            os.close();
 
             int code = conn.getResponseCode();
-            if (code == 200) {
-                java.io.InputStream is = conn.getInputStream();
-                java.util.Scanner scanner = new java.util.Scanner(is).useDelimiter("\\A");
-                String responseText = scanner.hasNext() ? scanner.next() : "";
-                scanner.close();
-
-                // Simple JSON match for order id and total_amount matching amount
-                if (responseText.contains("\"id\":")) {
-                    // Match order where total_amount is equal
-                    Pattern orderPattern = Pattern.compile("\"id\":\"([^\"]+)\"[^}]*\"total_amount\":([0-9.]+)");
-                    Matcher m = orderPattern.matcher(responseText);
-                    while (m.find()) {
-                        String orderId = m.group(1);
-                        double orderTotal = Double.parseDouble(m.group(2));
-
-                        if (Math.abs(orderTotal - amount) < 1.0) {
-                            // UPDATE ORDER to status = 'processing'
-                            String updateEndpoint = SUPABASE_URL + "/rest/v1/orders?id=eq." + orderId;
-                            URL updateUrl = new URL(updateEndpoint);
-                            HttpURLConnection updateConn = (HttpURLConnection) updateUrl.openConnection();
-                            updateConn.setRequestMethod("PATCH");
-                            updateConn.setRequestProperty("apikey", SUPABASE_ANON_KEY);
-                            updateConn.setRequestProperty("Authorization", "Bearer " + SUPABASE_ANON_KEY);
-                            updateConn.setRequestProperty("Content-Type", "application/json");
-                            updateConn.setRequestProperty("Prefer", "return=minimal");
-                            updateConn.setDoOutput(true);
-
-                            String jsonBody = "{\"status\":\"processing\",\"notes\":\"⚡ Auto-Approved via Background DF-Alert SMS (LKR " + amount + ")\"}";
-                            OutputStream os = updateConn.getOutputStream();
-                            os.write(jsonBody.getBytes("UTF-8"));
-                            os.close();
-
-                            int patchCode = updateConn.getResponseCode();
-                            Log.d(TAG, "PATCH status response: " + patchCode);
-                            return patchCode >= 200 && patchCode < 300;
-                        }
-                    }
-                }
-            }
+            Log.d(TAG, "smart-sms-matcher response code: " + code);
+            return code == 200;
         } catch (Exception e) {
-            Log.e(TAG, "Error matching order on Supabase", e);
+            Log.e(TAG, "Error triggering smart-sms-matcher", e);
         }
         return false;
     }

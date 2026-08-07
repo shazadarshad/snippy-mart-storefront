@@ -1,12 +1,5 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import postgres from "https://deno.land/x/postgresjs@v3.4.4/mod.js";
+-- Smart AI SMS Matching System Schema & Functions
 
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-const SQL = `
 CREATE TABLE IF NOT EXISTS public.bank_sms_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   sender text NOT NULL,
@@ -38,6 +31,7 @@ CREATE POLICY "Service role manage bank sms"
   USING (true)
   WITH CHECK (true);
 
+-- RPC Function: Smart Match Pending Orders with Unclaimed Bank SMS
 CREATE OR REPLACE FUNCTION public.match_and_auto_approve_orders(p_max_threshold numeric DEFAULT 700.00)
 RETURNS TABLE (
   approved_order_id uuid,
@@ -58,6 +52,7 @@ BEGIN
       AND o.created_at >= (now() - interval '45 minutes')
     ORDER BY o.created_at ASC
   LOOP
+    -- Find unclaimed bank SMS matching exact amount within 30 minutes before or after order placement
     SELECT count(*) INTO match_count
     FROM public.bank_sms_logs s
     WHERE s.claimed_order_id IS NULL
@@ -65,6 +60,7 @@ BEGIN
       AND s.received_at >= (rec.created_at - interval '30 minutes')
       AND s.received_at <= (rec.created_at + interval '30 minutes');
 
+    -- If matches exist, pick candidate with smallest time difference
     IF match_count > 0 THEN
       SELECT s.id, s.amount, s.received_at, s.reference_number,
              EXTRACT(EPOCH FROM abs(s.received_at - rec.created_at))::integer AS delta
@@ -78,11 +74,13 @@ BEGIN
       LIMIT 1;
 
       IF best_sms.id IS NOT NULL THEN
+        -- Claim SMS
         UPDATE public.bank_sms_logs
         SET claimed_order_id = rec.id,
             claimed_at = now()
         WHERE id = best_sms.id;
 
+        -- Shift Order Status to Payment Confirmed ('processing')
         UPDATE public.orders
         SET status = 'processing',
             notes = coalesce(rec.notes || ' | ', '') || '⚡ Smart AI Auto-Approved via DF-Alert SMS (LKR ' || best_sms.amount || ')',
@@ -99,28 +97,3 @@ BEGIN
   END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-`;
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-
-  const databaseUrl = Deno.env.get("SUPABASE_DB_URL") || Deno.env.get("DB_URL");
-  if (!databaseUrl) {
-    return new Response(JSON.stringify({ error: "No SUPABASE_DB_URL" }), { status: 500, headers: corsHeaders });
-  }
-
-  const sql = postgres(databaseUrl, { prepare: false, max: 1 });
-  try {
-    await sql.unsafe(SQL);
-    const rows = await sql`
-      SELECT id, name, slug, price, old_price, image_url, category FROM public.products WHERE slug = 'railway-hobby-framer-pro-12-months-combo'
-    `;
-    return new Response(JSON.stringify({ ok: true, product: rows[0] }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: corsHeaders });
-  } finally {
-    await sql.end({ timeout: 5 });
-  }
-});

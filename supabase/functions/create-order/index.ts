@@ -346,6 +346,20 @@ serve(async (req) => {
     return json({ error: orderError?.message ?? "Failed to save order" }, 400);
   }
 
+  // Fire-and-forget Smart AI SMS Matcher (< 700 LKR)
+  if (Number(order.total_amount) < 700) {
+    const matcherUrl = `${supabaseUrl}/functions/v1/smart-sms-matcher`;
+    fetch(matcherUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${serviceKey}`,
+        apikey: serviceKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ max_threshold: 700 }),
+    }).catch((e) => console.warn("[create-order] smart-sms-matcher async invoke err", e));
+  }
+
   // Delete existing items to avoid duplicates on update
   const { error: deleteError } = await supabase
     .from("order_items")
