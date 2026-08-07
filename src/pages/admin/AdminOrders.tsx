@@ -914,6 +914,11 @@ const AdminOrders = () => {
                               <Zap className="w-3 h-3" /> Claude
                             </span>
                           )}
+                          {((order as any).security_metadata?.auto_approved || order.notes?.includes('Auto-Approved')) && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 shadow-sm shadow-emerald-500/20">
+                              <Zap className="w-3 h-3 fill-current" /> Auto-Approved
+                            </span>
+                          )}
                         </div>
                         <p className="text-sm font-bold text-foreground flex items-center gap-1.5 truncate">
                           <span>{getCountryFlag(order.customer_country)}</span>
