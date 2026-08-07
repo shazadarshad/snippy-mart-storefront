@@ -32,8 +32,12 @@ export function parseDfAlertSms(sender: string = '', body: string = ''): ParsedB
     return { isDfAlert, amount: null, rawText: body, sender, timestamp: new Date() };
   }
 
-  // Regex patterns to capture amounts (e.g. LKR 499.00, Rs. 499, credited 499.50)
+  // 1. Strip out Account Balance trailing text to prevent matching balance instead of transfer amount
+  const bodyWithoutBalance = cleanBody.split(/account\s+balance|balance\s*[:-]/i)[0];
+
+  // Regex patterns tailored for DF-Alert (e.g. "Inward CEFTS of LKR 499.00 was performed...")
   const patterns = [
+    /Inward\s+(?:CEFTS|transfer|remittance|deposit)?\s+(?:of\s+)?(?:LKR|Rs\.?|SLR)\s*([0-9,]+(?:\.[0-9]{1,2})?)/i,
     /(?:LKR|Rs\.?|SLR)\s*([0-9,]+(?:\.[0-9]{1,2})?)/i,
     /(?:credited|received|deposited)\s+(?:with\s+)?(?:LKR|Rs\.?|SLR)?\s*([0-9,]+(?:\.[0-9]{1,2})?)/i,
     /([0-9,]+(?:\.[0-9]{1,2})?)\s*(?:LKR|Rs\.?|SLR)/i,
@@ -42,7 +46,7 @@ export function parseDfAlertSms(sender: string = '', body: string = ''): ParsedB
   let extractedAmount: number | null = null;
 
   for (const pattern of patterns) {
-    const match = cleanBody.match(pattern);
+    const match = bodyWithoutBalance.match(pattern) || cleanBody.match(pattern);
     if (match && match[1]) {
       const num = parseFloat(match[1].replace(/,/g, ''));
       if (!isNaN(num) && num > 0) {

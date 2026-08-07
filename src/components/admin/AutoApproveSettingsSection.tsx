@@ -12,7 +12,7 @@ const AutoApproveSettingsSection = () => {
     useAdminSmsAutoApprove();
 
   const [testSender, setTestSender] = useState('DF-Alert');
-  const [testBody, setTestBody] = useState('Received LKR 499.00 on 07/08 at 14:55 to Acct ending 1234');
+  const [testBody, setTestBody] = useState('Inward CEFTS of LKR 499.00 was performed on your account no 001XXXXXX987. Account Balance - Rs. 34,874.36');
   const [simulating, setSimulating] = useState(false);
 
   const handleSimulateSms = async () => {
