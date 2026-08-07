@@ -108,8 +108,17 @@ export async function enableNativeAdminPush(): Promise<
       }, 15000);
     });
 
-    // Register notification action buttons for notification shade tray
+    // Register notification channel & action buttons for notification shade tray
     try {
+      await PushNotifications.createChannel({
+        id: 'admin_orders',
+        name: 'Admin Order Alerts',
+        description: 'Notifications for new customer orders',
+        importance: 5,
+        visibility: 1,
+        sound: 'default',
+        vibration: true,
+      });
       await PushNotifications.registerActionTypes({
         types: [
           {
@@ -130,7 +139,7 @@ export async function enableNativeAdminPush(): Promise<
         ],
       });
     } catch (actErr) {
-      console.warn('[admin-push] Action types registration warning:', actErr);
+      console.warn('[admin-push] Channel / Action types registration warning:', actErr);
     }
 
     await PushNotifications.register();
@@ -202,8 +211,17 @@ export function useAdminNativePush(enabled: boolean) {
         const perm = await PushNotifications.checkPermissions();
         if (perm.receive !== 'granted') return;
 
-        // Register action buttons
+        // Register channel & action buttons
         try {
+          await PushNotifications.createChannel({
+            id: 'admin_orders',
+            name: 'Admin Order Alerts',
+            description: 'Notifications for new customer orders',
+            importance: 5,
+            visibility: 1,
+            sound: 'default',
+            vibration: true,
+          });
           await PushNotifications.registerActionTypes({
             types: [
               {

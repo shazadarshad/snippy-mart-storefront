@@ -105,6 +105,7 @@ async function sendFcm(
         data: {
           ...data,
           click_action: "NEW_ORDER_ACTIONS",
+          category: "NEW_ORDER_ACTIONS",
         },
         android: {
           priority: "HIGH",
