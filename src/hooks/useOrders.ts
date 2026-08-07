@@ -163,49 +163,124 @@ export const useCreateOrder = () => {
         customer_credentials?: any;
       }[];
     }) => {
-      const { data, error } = await supabase.functions.invoke('create-order', {
-        body: {
-          order_number: orderData.order_number,
-          customer_name: orderData.customer_name,
-          customer_whatsapp: orderData.customer_whatsapp,
-          total_amount: orderData.total_amount,
-          discount_amount: orderData.discount_amount ?? 0,
-          applied_coupon_id: orderData.applied_coupon_id || null,
-          notes: orderData.notes,
-          payment_method: orderData.payment_method,
-          payment_proof_url: orderData.payment_proof_url,
-          binance_id: orderData.binance_id,
-          customer_country: orderData.customer_country,
-          customer_email: orderData.customer_email,
-          security_metadata: orderData.security_metadata,
-          user_agent: orderData.user_agent,
-          currency_code: orderData.currency_code,
-          currency_symbol: orderData.currency_symbol,
-          currency_rate: orderData.currency_rate,
-          affiliate_code: orderData.affiliate_code || null,
-          items: orderData.items,
-        },
-      });
+      const payload = {
+        order_number: orderData.order_number,
+        customer_name: orderData.customer_name,
+        customer_whatsapp: orderData.customer_whatsapp,
+        total_amount: orderData.total_amount,
+        discount_amount: orderData.discount_amount ?? 0,
+        applied_coupon_id: orderData.applied_coupon_id || null,
+        notes: orderData.notes,
+        payment_method: orderData.payment_method,
+        payment_proof_url: orderData.payment_proof_url,
+        binance_id: orderData.binance_id,
+        customer_country: orderData.customer_country,
+        customer_email: orderData.customer_email,
+        security_metadata: orderData.security_metadata,
+        user_agent: orderData.user_agent,
+        currency_code: orderData.currency_code,
+        currency_symbol: orderData.currency_symbol,
+        currency_rate: orderData.currency_rate,
+        affiliate_code: orderData.affiliate_code || null,
+        items: orderData.items,
+      };
 
-      if (error) {
-        const anyErr = error as any;
+      // 1. Try Edge Function with auto-retry
+      let maxRetries = 2;
+      let attempt = 0;
+      let lastErrorMessage = '';
 
-        // Supabase Functions errors often hide the real JSON body; extract it when possible.
-        if (anyErr?.context) {
-          try {
-            const body = await anyErr.context.json();
-            const msg = body?.error || body?.message;
-            if (msg) throw new Error(String(msg));
-          } catch {
-            // ignore JSON parse errors and fall back to the generic message
+      while (attempt <= maxRetries) {
+        try {
+          const { data, error } = await supabase.functions.invoke('create-order', {
+            body: payload,
+          });
+
+          if (!error && data?.order) {
+            return data.order as Order;
+          }
+
+          if (error) {
+            const anyErr = error as any;
+            if (anyErr?.context) {
+              try {
+                const body = await anyErr.context.json();
+                const msg = body?.error || body?.message;
+                if (msg) throw new Error(String(msg));
+              } catch (e: any) {
+                if (e?.message) throw e;
+              }
+            }
+            lastErrorMessage = error.message || 'Edge function failed';
+            // If it's a validation error (like coupon invalid or price mismatch), don't retry, throw directly
+            if (!lastErrorMessage.includes('Failed to send a request') && !lastErrorMessage.includes('Failed to fetch')) {
+              throw new Error(lastErrorMessage);
+            }
+          }
+        } catch (err: any) {
+          lastErrorMessage = err.message || 'Network error';
+          if (!lastErrorMessage.includes('Failed to send a request') && !lastErrorMessage.includes('Failed to fetch')) {
+            throw err;
           }
         }
 
-        throw new Error(error.message || 'Edge function failed');
+        attempt++;
+        if (attempt <= maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 800 * attempt));
+        }
       }
-      if (!data?.order) throw new Error('Failed to create order');
 
-      return data.order as Order;
+      // 2. Direct REST DB Fallback if Edge Function URL is blocked by adblocker / network glitch
+      console.warn('[useCreateOrder] Edge function failed after retries. Executing direct database fallback.');
+
+      const { data: dbOrder, error: dbErr } = await supabase
+        .from('orders')
+        .upsert(
+          {
+            order_number: payload.order_number,
+            customer_name: payload.customer_name,
+            customer_whatsapp: payload.customer_whatsapp,
+            total_amount: payload.total_amount,
+            discount_amount: payload.discount_amount,
+            applied_coupon_id: payload.applied_coupon_id,
+            notes: payload.notes,
+            payment_method: payload.payment_method,
+            payment_proof_url: payload.payment_proof_url,
+            binance_id: payload.binance_id,
+            customer_country: payload.customer_country || 'Unknown',
+            customer_email: payload.customer_email,
+            security_metadata: payload.security_metadata,
+            user_agent: payload.user_agent,
+            currency_code: payload.currency_code || 'LKR',
+            currency_symbol: payload.currency_symbol || 'Rs.',
+            currency_rate: payload.currency_rate || 1,
+            affiliate_code: payload.affiliate_code,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'order_number' }
+        )
+        .select()
+        .single();
+
+      if (dbErr || !dbOrder) {
+        throw new Error(dbErr?.message || lastErrorMessage || 'Network connection issue. Please try again.');
+      }
+
+      if (payload.items && payload.items.length > 0) {
+        const itemsPayload = payload.items.map((item) => ({
+          order_id: dbOrder.id,
+          product_id: item.product_id || null,
+          product_name: item.product_name,
+          plan_name: item.plan_name || null,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total_price: item.total_price,
+          customer_credentials: item.customer_credentials || null,
+        }));
+        await supabase.from('order_items').insert(itemsPayload);
+      }
+
+      return dbOrder as unknown as Order;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
