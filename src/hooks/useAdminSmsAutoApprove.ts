@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { parseDfAlertSms, ParsedBankSms } from '@/utils/parseDfAlertSms';
 import { toast } from 'sonner';
@@ -15,7 +15,7 @@ export interface AutoApproveLog {
   timestamp: string;
 }
 
-export function useAdminSmsAutoApprove() {
+export function useAdminSmsAutoApprove(active: boolean = true) {
   const [enabled, setEnabled] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(AUTO_APPROVE_KEY);
@@ -35,6 +35,7 @@ export function useAdminSmsAutoApprove() {
   });
 
   const [logs, setLogs] = useState<AutoApproveLog[]>([]);
+  const lastProcessedText = useRef<string>('');
 
   useEffect(() => {
     try {
@@ -57,56 +58,48 @@ export function useAdminSmsAutoApprove() {
   }, []);
 
   /**
-   * Process an incoming SMS message.
-   * If sender is DF-Alert, amount < maxLimit (700 LKR), and matching pending order exists:
-   * Shifts order status to 'processing' (Payment Confirmed).
+   * Process an incoming SMS message or copied bank text.
    */
   const processIncomingSms = useCallback(
     async (sender: string, body: string): Promise<{ matched: boolean; orderNumber?: string; amount?: number }> => {
-      if (!enabled) {
-        console.log('[SMS-AutoApprove] Disabled in settings — skipping SMS check.');
+      if (!enabled || !active) {
         return { matched: false };
+      }
+
+      const cleanText = `${sender}:${body}`.trim();
+      if (lastProcessedText.current === cleanText) {
+        return { matched: false }; // Prevent duplicate processing of same text
       }
 
       const parsed: ParsedBankSms = parseDfAlertSms(sender, body);
 
       if (!parsed.isDfAlert) {
-        console.log('[SMS-AutoApprove] SMS is not from DF-Alert — skipping.');
         return { matched: false };
       }
 
       if (!parsed.amount || parsed.amount <= 0) {
-        console.warn('[SMS-AutoApprove] DF-Alert SMS received but could not parse numerical amount:', body);
         return { matched: false };
       }
 
       // Hard Limit Threshold Guard (< 700 LKR)
       if (parsed.amount >= maxLimit) {
-        console.log(
-          `[SMS-AutoApprove] Payment LKR ${parsed.amount} is >= limit (LKR ${maxLimit}). Requires manual admin review.`
-        );
         toast.info(
           `DF-Alert Payment received (LKR ${parsed.amount}), but requires manual review (Threshold: LKR ${maxLimit}).`
         );
         return { matched: false };
       }
 
-      // Look for pending orders placed in the last 20 minutes
-      const twentyMinsAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+      // Look for pending orders placed in the last 30 minutes
+      const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
       const { data: pendingOrders, error } = await supabase
         .from('orders')
         .select('id, order_number, total_amount, customer_name, security_metadata, notes')
         .eq('status', 'pending')
-        .gte('created_at', twentyMinsAgo)
+        .gte('created_at', thirtyMinsAgo)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('[SMS-AutoApprove] Error fetching pending orders:', error.message);
-        return { matched: false };
-      }
-
-      if (!pendingOrders || pendingOrders.length === 0) {
+      if (error || !pendingOrders || pendingOrders.length === 0) {
         console.log(`[SMS-AutoApprove] DF-Alert SMS received (LKR ${parsed.amount}), but no pending orders found.`);
         return { matched: false };
       }
@@ -123,7 +116,9 @@ export function useAdminSmsAutoApprove() {
         return { matched: false };
       }
 
-      // Found match! Shift to Payment Confirmed (status = 'processing')
+      lastProcessedText.current = cleanText;
+
+      // Shift to Payment Confirmed (status = 'processing')
       const updatedMetadata = {
         ...(typeof matchingOrder.security_metadata === 'object' ? matchingOrder.security_metadata : {}),
         auto_approved: true,
@@ -173,7 +168,7 @@ export function useAdminSmsAutoApprove() {
         console.warn('[SMS-AutoApprove] Edge notification function call warning:', e);
       }
 
-      // Success notification
+      // Success notification & log
       const logEntry: AutoApproveLog = {
         id: matchingOrder.id,
         orderNumber: matchingOrder.order_number,
@@ -186,7 +181,7 @@ export function useAdminSmsAutoApprove() {
 
       toast.success(
         `⚡ Auto-Approved Order #${matchingOrder.order_number} (${matchingOrder.customer_name}) — LKR ${parsed.amount} Payment Confirmed!`,
-        { duration: 7000 }
+        { duration: 8000 }
       );
 
       return {
@@ -195,8 +190,48 @@ export function useAdminSmsAutoApprove() {
         amount: parsed.amount,
       };
     },
-    [enabled, maxLimit]
+    [enabled, active, maxLimit]
   );
+
+  // Auto-scan Clipboard on App Focus for copied bank SMS
+  useEffect(() => {
+    if (!enabled || !active) return;
+
+    const checkClipboardForSms = async () => {
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text && (text.includes('DF-Alert') || text.includes('Inward CEFTS') || text.includes('CEFTS of LKR'))) {
+            await processIncomingSms('DF-Alert', text);
+          }
+        }
+      } catch {
+        /* Clipboard permission or browser restriction — ignore */
+      }
+    };
+
+    window.addEventListener('focus', checkClipboardForSms);
+    return () => {
+      window.removeEventListener('focus', checkClipboardForSms);
+    };
+  }, [enabled, active, processIncomingSms]);
+
+  // Global listener for custom window SMS events (e.g. from Android SMS Receiver bridge)
+  useEffect(() => {
+    if (!enabled || !active) return;
+
+    const handleSmsEvent = (evt: Event) => {
+      const customEvt = evt as CustomEvent<{ sender?: string; body?: string }>;
+      if (customEvt.detail?.body) {
+        void processIncomingSms(customEvt.detail.sender || 'DF-Alert', customEvt.detail.body);
+      }
+    };
+
+    window.addEventListener('snippy_sms_received', handleSmsEvent);
+    return () => {
+      window.removeEventListener('snippy_sms_received', handleSmsEvent);
+    };
+  }, [enabled, active, processIncomingSms]);
 
   return {
     enabled,

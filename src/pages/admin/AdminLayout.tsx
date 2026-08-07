@@ -34,6 +34,7 @@ import { AdminPwaBanner } from '@/components/admin/AdminPwaBanner';
 import { useAdminOrderAlerts } from '@/hooks/useAdminOrderAlerts';
 import SEO from '@/components/seo/SEO';
 import { useAdminNativePush } from '@/hooks/useAdminNativePush';
+import { useAdminSmsAutoApprove } from '@/hooks/useAdminSmsAutoApprove';
 
 type MenuItem = {
   name: string;
@@ -110,6 +111,8 @@ const AdminLayout = () => {
   useAdminOrderAlerts(adminReady);
   // Capacitor APK only: FCM token for closed-app pushes (no-op on website)
   useAdminNativePush(adminReady);
+  // DF-Alert SMS Auto-Approval Engine (< 700 LKR) mounted globally
+  useAdminSmsAutoApprove(adminReady);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
