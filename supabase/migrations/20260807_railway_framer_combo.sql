@@ -19,7 +19,7 @@ INSERT INTO public.products (
 SELECT
   '🔥 Railway Hobby + Framer Pro Combo (12 Months)',
   'railway-hobby-framer-pro-12-months-combo',
-  E'🔥 **COMBO OFFER – LIMITED TIME!** 🔥\n\nGet 12 months access to both **Railway Hobby** and **Framer Pro** at an exclusive discounted price!\n\n---\n\n### 📦 What\'s Included:\n* 🚂 **Railway Hobby (12 Months)** — Deploy & host your web apps, microservices, databases & APIs effortlessly.\n* 🎨 **Framer Pro (12 Months)** — Build, design & publish high-performance interactive websites with custom domain support.\n\n---\n\n### ✨ Key Highlights & Features:\n* ✅ **Full 12 Months Access** for both premium plans.\n* ✅ **Activated on Your New Accounts** (Fresh & Private credentials).\n* ✅ **Perfect for Developers, Designers & Freelancers**.\n* ⚡ **Limited Stock** — Grab this combo before it\'s gone!\n\n---\n\n> ℹ️ *Note: Special promo bundle offer. No warranty.*',
+  '🔥 COMBO OFFER – LIMITED TIME! 🔥\n\n🚂 Railway Hobby – 12 Months\n🎨 Framer Pro – 12 Months\n\n💰 Combo Price: Only LKR 3,999 (Previously LKR 5,399)\n\n✨ Perfect for Developers & Designers\n✅ 12 Months Access for Both Plans\n✅ Activated on Your New Accounts\n✅ Railway Hobby – Deploy & Host Apps\n✅ Framer Pro – Build & Publish Professional Websites\n\nℹ️ Special promo bundle offer. No warranty.\n⚡ Limited Stock – Grab the Combo Before It\'s Gone!',
   3999,
   5399,
   'Combos',
