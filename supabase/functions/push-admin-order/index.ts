@@ -102,7 +102,10 @@ async function sendFcm(
       message: {
         token: deviceToken,
         notification: { title, body },
-        data,
+        data: {
+          ...data,
+          click_action: "NEW_ORDER_ACTIONS",
+        },
         android: {
           priority: "HIGH",
           notification: {
@@ -110,6 +113,7 @@ async function sendFcm(
             sound: "default",
             default_vibrate_timings: true,
             notification_priority: "PRIORITY_MAX",
+            click_action: "NEW_ORDER_ACTIONS",
           },
         },
       },

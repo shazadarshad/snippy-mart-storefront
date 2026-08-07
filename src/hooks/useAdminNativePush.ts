@@ -108,6 +108,31 @@ export async function enableNativeAdminPush(): Promise<
       }, 15000);
     });
 
+    // Register notification action buttons for notification shade tray
+    try {
+      await PushNotifications.registerActionTypes({
+        types: [
+          {
+            id: 'NEW_ORDER_ACTIONS',
+            actions: [
+              {
+                id: 'APPROVE_ORDER',
+                title: '✅ Approve',
+                foreground: false,
+              },
+              {
+                id: 'VIEW_ORDER',
+                title: '👁️ View Order',
+                foreground: true,
+              },
+            ],
+          },
+        ],
+      });
+    } catch (actErr) {
+      console.warn('[admin-push] Action types registration warning:', actErr);
+    }
+
     await PushNotifications.register();
     const token = await tokenPromise;
     const saved = await saveAdminPushToken(token);
@@ -115,11 +140,31 @@ export async function enableNativeAdminPush(): Promise<
       return { ok: false, reason: 'register_failed', message: 'Could not save device token' };
     }
 
-    // Tap notification → open orders
-    await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      const data = action.notification.data as { url?: string } | undefined;
-      const url = data?.url || '/admin/orders';
-      if (url.startsWith('/')) window.location.assign(url);
+    // Tap notification action or body
+    await PushNotifications.addListener('pushNotificationActionPerformed', async (action) => {
+      const data = action.notification.data as { order_id?: string; order_number?: string; url?: string } | undefined;
+      const actionId = action.actionId;
+
+      if (actionId === 'APPROVE_ORDER' && data?.order_id) {
+        console.log('[admin-push] Approving order directly from notification tray:', data.order_id);
+        const { error } = await supabase
+          .from('orders')
+          .update({
+            status: 'processing', // Payment Confirmed
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', data.order_id);
+
+        if (!error) {
+          alert(`✅ Payment Confirmed for Order ${data.order_number || ''}!`);
+        } else {
+          console.error('[admin-push] Failed to approve order:', error.message);
+          alert(`❌ Failed to approve order ${data.order_number || ''}: ${error.message}`);
+        }
+      } else {
+        const url = data?.url || '/admin/orders';
+        if (url.startsWith('/')) window.location.assign(url);
+      }
     });
 
     return { ok: true };
@@ -156,6 +201,49 @@ export function useAdminNativePush(enabled: boolean) {
         const { PushNotifications } = await import('@capacitor/push-notifications');
         const perm = await PushNotifications.checkPermissions();
         if (perm.receive !== 'granted') return;
+
+        // Register action buttons
+        try {
+          await PushNotifications.registerActionTypes({
+            types: [
+              {
+                id: 'NEW_ORDER_ACTIONS',
+                actions: [
+                  { id: 'APPROVE_ORDER', title: '✅ Approve', foreground: false },
+                  { id: 'VIEW_ORDER', title: '👁️ View Order', foreground: true },
+                ],
+              },
+            ],
+          });
+        } catch {
+          /* ignore */
+        }
+
+        // Tap notification listener
+        await PushNotifications.addListener('pushNotificationActionPerformed', async (action) => {
+          const data = action.notification.data as { order_id?: string; order_number?: string; url?: string } | undefined;
+          const actionId = action.actionId;
+
+          if (actionId === 'APPROVE_ORDER' && data?.order_id) {
+            console.log('[admin-push] Auto-hook approving order:', data.order_id);
+            const { error } = await supabase
+              .from('orders')
+              .update({
+                status: 'processing',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', data.order_id);
+
+            if (!error) {
+              alert(`✅ Payment Confirmed for Order ${data.order_number || ''}!`);
+            } else {
+              alert(`❌ Failed to approve order: ${error.message}`);
+            }
+          } else {
+            const url = data?.url || '/admin/orders';
+            if (url.startsWith('/')) window.location.assign(url);
+          }
+        });
 
         // Already allowed — re-register token quietly
         const reg = await new Promise<string | null>((resolve) => {
