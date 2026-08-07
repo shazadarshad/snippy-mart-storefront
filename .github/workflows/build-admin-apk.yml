@@ -13,11 +13,7 @@ on:
       - 'capacitor.config.ts'
       - 'package.json'
       - 'package-lock.json'
-      - 'src/hooks/useAdminNativePush.ts'
-      - 'src/hooks/useAdminPwa.ts'
-      - 'src/components/admin/AdminPwaBanner.tsx'
-      - 'src/hooks/useAdminOrderAlerts.ts'
-      - 'src/pages/admin/AdminLayout.tsx'
+      - 'src/**'
       - '.github/workflows/build-admin-apk.yml'
 
 concurrency:
