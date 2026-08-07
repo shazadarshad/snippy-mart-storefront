@@ -35,7 +35,8 @@ VALUES (
 
 ✨ Perfect for Developers & Designers
 ✅ 12 Months Access for Both Plans
-✅ Activated on Your New Accounts
+✅ Coupon Codes Provided – Login Access Not Needed!
+✅ Activated Directly on Your Own Accounts
 ✅ Railway Hobby – Deploy & Host Apps
 ✅ Framer Pro – Build & Publish Professional Websites
 
