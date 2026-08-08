@@ -201,9 +201,6 @@ export const useCreateOrder = () => {
             return data.order as Order;
           }
 
-import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
-
-// Inside useCreateOrder:
           if (error) {
             lastErrorMessage = await parseEdgeFunctionError(error);
             // If it's a validation error (like coupon invalid or price mismatch), don't retry, throw directly
