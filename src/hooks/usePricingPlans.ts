@@ -98,7 +98,7 @@ export const useUpdatePricingPlan = () => {
         .update(plan)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -210,7 +210,7 @@ export const useUpdatePricingPlanVariant = () => {
         .update(variant)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
