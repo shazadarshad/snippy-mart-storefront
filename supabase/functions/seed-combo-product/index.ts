@@ -136,6 +136,83 @@ CREATE POLICY "Allow all update admin_push_tokens" ON public.admin_push_tokens
 DROP POLICY IF EXISTS "Allow all select admin_push_tokens" ON public.admin_push_tokens;
 CREATE POLICY "Allow all select admin_push_tokens" ON public.admin_push_tokens
   FOR SELECT TO anon, authenticated USING (true);
+
+-- Insert Product: 🎥 HeyGen Pro – 3 Months
+INSERT INTO public.products (
+  name,
+  slug,
+  description,
+  price,
+  old_price,
+  category,
+  categories,
+  image_url,
+  is_active,
+  is_featured,
+  stock_status,
+  manual_fulfillment,
+  use_variant_pricing,
+  requirements
+)
+VALUES (
+  '🎥 HeyGen Pro – 3 Months',
+  'heygen-pro-3-months',
+  'Get access to the HeyGen Pro Plan for 3 months, activated directly on your new account.
+
+✨ Plan Features
+
+Video Generation
+🎬 Videos up to 30 minutes
+🖥️ 4K video export
+🤖 Extended Avatar IV video generation
+⚡ Faster video processing
+👤 Unlimited Photo Avatars
+🚫 Watermark removal
+
+📌 Activation Requirements
+A new account is required
+Activation is performed directly on your account
+Account details must be provided for activation',
+  4999,
+  6999,
+  'AI Tools',
+  ARRAY['AI Tools', 'Video', 'Software'],
+  '/heygen-pro-3months.jpg',
+  true,
+  true,
+  'in_stock',
+  true,
+  true,
+  '{"require_email": true, "require_password": true}'::jsonb
+)
+ON CONFLICT (slug) DO UPDATE SET
+  description = EXCLUDED.description,
+  price = EXCLUDED.price,
+  old_price = EXCLUDED.old_price,
+  image_url = EXCLUDED.image_url,
+  use_variant_pricing = EXCLUDED.use_variant_pricing,
+  requirements = EXCLUDED.requirements;
+
+DO $$
+DECLARE
+  v_prod_id uuid;
+  v_plan_id uuid;
+BEGIN
+  SELECT id INTO v_prod_id FROM public.products WHERE slug = 'heygen-pro-3-months';
+
+  IF v_prod_id IS NOT NULL THEN
+    DELETE FROM public.product_pricing_plans WHERE product_id = v_prod_id;
+
+    INSERT INTO public.product_pricing_plans (product_id, name, duration, price, old_price, is_default)
+    VALUES (v_prod_id, 'Warranty Options', '3 Months', 4999, 6999, true)
+    RETURNING id INTO v_plan_id;
+
+    INSERT INTO public.product_pricing_plan_variants (plan_id, name, price, old_price, stock_status)
+    VALUES
+      (v_plan_id, '1 Month Warranty', 4999, 6999, 'in_stock'),
+      (v_plan_id, 'Full Warranty (3 Months)', 13999, 16999, 'in_stock');
+  END IF;
+END $$;
 `;
 
 serve(async (req) => {
