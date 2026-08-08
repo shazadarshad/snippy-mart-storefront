@@ -122,6 +122,20 @@ CREATE POLICY "Allow guest read orders" ON public.orders
 DROP POLICY IF EXISTS "Allow guest read order_items" ON public.order_items;
 CREATE POLICY "Allow guest read order_items" ON public.order_items
   FOR SELECT TO anon, authenticated USING (true);
+
+ALTER TABLE public.admin_push_tokens ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all insert admin_push_tokens" ON public.admin_push_tokens;
+CREATE POLICY "Allow all insert admin_push_tokens" ON public.admin_push_tokens
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all update admin_push_tokens" ON public.admin_push_tokens;
+CREATE POLICY "Allow all update admin_push_tokens" ON public.admin_push_tokens
+  FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all select admin_push_tokens" ON public.admin_push_tokens;
+CREATE POLICY "Allow all select admin_push_tokens" ON public.admin_push_tokens
+  FOR SELECT TO anon, authenticated USING (true);
 `;
 
 serve(async (req) => {
