@@ -208,7 +208,10 @@ export function useAdminNativePush(enabled: boolean) {
     (async () => {
       try {
         const { PushNotifications } = await import('@capacitor/push-notifications');
-        const perm = await PushNotifications.checkPermissions();
+        let perm = await PushNotifications.checkPermissions();
+        if (perm.receive !== 'granted') {
+          perm = await PushNotifications.requestPermissions();
+        }
         if (perm.receive !== 'granted') return;
 
         // Register channel & action buttons

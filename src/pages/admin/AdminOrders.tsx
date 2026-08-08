@@ -43,7 +43,9 @@ import {
 import {
   AdminWhatsAppActions,
   openOrderWhatsApp,
+  useOrderWhatsAppHistory,
 } from '@/components/admin/AdminWhatsAppActions';
+import { enableNativeAdminPush, isCapacitorNative } from '@/hooks/useAdminNativePush';
 import { formatWhatsAppDisplay } from '@/lib/phoneWhatsApp';
 import {
   applyClaudeWorkflowToNotes,
@@ -496,15 +498,37 @@ const AdminOrders = () => {
           <h1 className="admin-page-title">Orders</h1>
           <p className="admin-page-subtitle">Manage, fulfill & track every order</p>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => refetch()}
-          className="admin-icon-btn shrink-0"
-          aria-label="Refresh orders"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {isCapacitorNative() && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const res = await enableNativeAdminPush();
+                if (res.ok) {
+                  toast({ title: '🔔 Push Notifications Enabled!', description: 'Your device is registered for order alerts.' });
+                } else if (res.reason === 'denied') {
+                  toast({ title: 'Permission Denied', description: 'Please allow notification permissions in your phone settings.', variant: 'destructive' });
+                } else {
+                  toast({ title: 'Push Registration', description: res.message || 'Please log in to register push alerts.', variant: 'destructive' });
+                }
+              }}
+              className="h-9 px-3 text-xs font-bold gap-1.5 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              Enable Push
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            className="admin-icon-btn shrink-0"
+            aria-label="Refresh orders"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
