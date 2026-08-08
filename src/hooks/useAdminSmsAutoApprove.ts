@@ -19,9 +19,9 @@ export function useAdminSmsAutoApprove(active: boolean = true) {
   const [enabled, setEnabled] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(AUTO_APPROVE_KEY);
-      return stored === null ? true : stored === 'true';
+      return stored === 'true'; // Disabled by default unless explicitly toggled ON
     } catch {
-      return true;
+      return false;
     }
   });
 

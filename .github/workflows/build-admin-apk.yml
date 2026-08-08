@@ -77,14 +77,6 @@ jobs:
             || { echo "package_name must be com.snippymart.admin"; exit 1; }
           npx cap sync android
 
-          # Inject background native SMS receiver into Android APK
-          mkdir -p android/app/src/main/java/com/snippymart/admin
-          cp scripts/native-android/AdminSmsReceiver.java android/app/src/main/java/com/snippymart/admin/AdminSmsReceiver.java
-
-          # Inject SMS Receiver & permissions into AndroidManifest.xml
-          sed -i 's|</application>|    <receiver android:name=".AdminSmsReceiver" android:enabled="true" android:exported="true"><intent-filter android:priority="999"><action android:name="android.provider.Telephony.SMS_RECEIVED"/></intent-filter></receiver>\n    </application>|' android/app/src/main/AndroidManifest.xml
-          sed -i 's|</manifest>|    <uses-permission android:name="android.permission.RECEIVE_SMS" />\n    <uses-permission android:name="android.permission.READ_SMS" />\n</manifest>|' android/app/src/main/AndroidManifest.xml
-
           # Fail if native push plugin was not linked into Android project
           if ! grep -q 'push-notifications' android/capacitor.settings.gradle \
             && ! grep -rq 'pushnotifications\|push-notifications' android/app/capacitor.build.gradle android/capacitor.settings.gradle 2>/dev/null; then
