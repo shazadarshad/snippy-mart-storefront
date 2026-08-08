@@ -193,6 +193,8 @@ ON CONFLICT (slug) DO UPDATE SET
   use_variant_pricing = EXCLUDED.use_variant_pricing,
   requirements = EXCLUDED.requirements;
 
+UPDATE public.products SET image_url = '/heygen-pro-3months.svg' WHERE slug = 'heygen-pro-3-months';
+
 DO $$
 DECLARE
   v_prod_id uuid;
