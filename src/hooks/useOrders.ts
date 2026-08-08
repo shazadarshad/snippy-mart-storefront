@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
 
 export type OrderStatus = 'pending' | 'processing' | 'shipping' | 'completed' | 'on_hold' | 'cancelled' | 'refunded';
 
@@ -200,26 +201,19 @@ export const useCreateOrder = () => {
             return data.order as Order;
           }
 
+import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
+
+// Inside useCreateOrder:
           if (error) {
-            const anyErr = error as any;
-            if (anyErr?.context) {
-              try {
-                const body = await anyErr.context.json();
-                const msg = body?.error || body?.message;
-                if (msg) throw new Error(String(msg));
-              } catch (e: any) {
-                if (e?.message) throw e;
-              }
-            }
-            lastErrorMessage = error.message || 'Edge function failed';
+            lastErrorMessage = await parseEdgeFunctionError(error);
             // If it's a validation error (like coupon invalid or price mismatch), don't retry, throw directly
-            if (!lastErrorMessage.includes('Failed to send a request') && !lastErrorMessage.includes('Failed to fetch')) {
+            if (!lastErrorMessage.includes('Network request failed') && !lastErrorMessage.includes('Failed to send a request') && !lastErrorMessage.includes('Failed to fetch')) {
               throw new Error(lastErrorMessage);
             }
           }
         } catch (err: any) {
           lastErrorMessage = err.message || 'Network error';
-          if (!lastErrorMessage.includes('Failed to send a request') && !lastErrorMessage.includes('Failed to fetch')) {
+          if (!lastErrorMessage.includes('Network request failed') && !lastErrorMessage.includes('Failed to send a request') && !lastErrorMessage.includes('Failed to fetch')) {
             throw err;
           }
         }
@@ -391,29 +385,14 @@ export const useUpdateOrderStatus = () => {
             );
 
             if (deliverError) {
-              let msg = deliverError.message || 'Auto-delivery request failed';
-              const anyErr = deliverError as any;
-              if (anyErr?.context) {
-                try {
-                  const body = await anyErr.context.json();
-                  msg =
-                    body?.error ||
-                    body?.results?.find((r: any) => r.status === 'failed')?.error ||
-                    msg;
-                  delivery = {
-                    success: false,
-                    error: msg,
-                    failed: body?.failed ?? 1,
-                    delivered: body?.delivered ?? 0,
-                    skipped: body?.skipped ?? 0,
-                    results: body?.results,
-                  };
-                } catch {
-                  delivery = { success: false, error: msg, failed: 1, delivered: 0 };
-                }
-              } else {
-                delivery = { success: false, error: msg, failed: 1, delivered: 0 };
-              }
+              const msg = await parseEdgeFunctionError(deliverError);
+              delivery = {
+                success: false,
+                error: msg,
+                failed: 1,
+                delivered: 0,
+                skipped: 0,
+              };
             } else if (deliverResult) {
               delivery = {
                 success: !!deliverResult.success || (deliverResult.delivered ?? 0) > 0,

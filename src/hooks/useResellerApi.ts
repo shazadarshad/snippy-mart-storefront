@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { buildCustomerFacingProduct } from '@/lib/resellerProductCopy';
+import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
 
 /** Default API $ → cost LKR (panel still deducts USD) */
 export const RESELLER_USD_TO_LKR = 370;
@@ -190,17 +191,8 @@ async function invokeReseller<T = any>(body: Record<string, unknown>): Promise<T
   const { data, error } = await supabase.functions.invoke('reseller-fulfill', { body });
 
   if (error) {
-    const anyErr = error as any;
-    if (anyErr?.context) {
-      try {
-        const errBody = await anyErr.context.json();
-        const msg = errBody?.error || errBody?.message;
-        if (msg) throw new Error(String(msg));
-      } catch (e) {
-        if (e instanceof Error && e.message !== error.message) throw e;
-      }
-    }
-    throw new Error(error.message || 'Reseller API request failed');
+    const msg = await parseEdgeFunctionError(error);
+    throw new Error(msg);
   }
 
   if (data?.error && !data?.success && data?.delivered == null) {

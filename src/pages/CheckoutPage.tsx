@@ -18,6 +18,7 @@ import { getCountry, cn } from '@/lib/utils';
 import { CouponInput } from '@/components/checkout/CouponInput';
 import { isResellerApiProduct } from '@/hooks/useResellerApi';
 import { getAffiliateRef } from '@/lib/affiliate';
+import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
 import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
 
 import SEO from '@/components/seo/SEO';
@@ -563,7 +564,7 @@ const CheckoutPage = () => {
       clearCart();
       navigate(`/order-success?orderId=${encodeURIComponent(orderId)}`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = await parseEdgeFunctionError(error);
       console.error('Order creation failed:', error);
       toast({
         title: "Order failed",
