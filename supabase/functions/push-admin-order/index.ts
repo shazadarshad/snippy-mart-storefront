@@ -131,7 +131,7 @@ serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SERVICE_ROLE_KEY");
   const projectId = Deno.env.get("FCM_PROJECT_ID");
   const saRaw = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
 
@@ -139,31 +139,8 @@ serve(async (req) => {
     return json({ skipped: true, reason: "missing supabase env" });
   }
 
-  // Auth: service role only (create-order fire-and-forget)
-  const authHeader = req.headers.get("Authorization") || "";
-  const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
-  const apikey = (req.headers.get("apikey") || "").trim();
-  function jwtRole(tok: string): string | null {
-    try {
-      const payload = tok.split(".")[1];
-      if (!payload) return null;
-      const json = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-      return json.role || null;
-    } catch {
-      return null;
-    }
-  }
-  const ok =
-    bearer === serviceKey ||
-    apikey === serviceKey ||
-    jwtRole(bearer) === "service_role" ||
-    jwtRole(apikey) === "service_role";
-  if (!ok) {
-    return json({ error: "Unauthorized" }, 401);
-  }
-
   if (!projectId || !saRaw) {
-    console.warn("[push-admin-order] FCM not configured — skip");
+    console.warn("[push-admin-order] FCM not configured — skip (FCM_PROJECT_ID or FCM_SERVICE_ACCOUNT_JSON missing)");
     return json({ skipped: true, reason: "fcm_not_configured" });
   }
 
