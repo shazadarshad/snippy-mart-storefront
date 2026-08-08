@@ -487,9 +487,9 @@ const CheckoutPage = () => {
       const paymentProofPath = fileName;
 
       // Create or Update order
-      const invalid = items.find((i) => i.product.id.length !== 36);
+      const invalid = items.find((i) => !i.product?.id || typeof i.product.id !== 'string');
       if (invalid) {
-        throw new Error('Your cart has an invalid item (old cached data). Please clear the cart and add items again.');
+        throw new Error('Your cart has an invalid item. Please clear your cart and re-add the item.');
       }
 
       // Create final payload (already has normalized WhatsApp from getOrderPayload)
@@ -508,16 +508,13 @@ const CheckoutPage = () => {
           .join('\n');
       }
 
-      // Do NOT overwrite customer_whatsapp with raw form input — keep normalized digits
-      Object.assign(payload, {
-        payment_proof_url: paymentProofPath,
-        binance_id: paymentMethod === 'binance_usdt' ? binanceId.trim() : undefined,
-        payment_method: paymentMethod,
-        customer_name: formData.name || 'Customer',
-        customer_whatsapp: normalizedWhatsapp,
-        customer_email: formData.email || undefined,
-        notes: notesExtra || undefined,
-      });
+      payload.notes = notesExtra || undefined;
+      payload.payment_method = paymentMethod;
+      payload.customer_name = formData.name || 'Customer';
+      payload.customer_whatsapp = normalizedWhatsapp;
+      payload.customer_email = formData.email || undefined;
+      payload.payment_proof_url = paymentProofPath;
+      payload.binance_id = paymentMethod === 'binance_usdt' ? binanceId.trim() : undefined;
 
       // We always use createOrder (which is our create-order Edge Function)
       // because it handles upserting by order_number and bypassing guest RLS limitations.
@@ -550,16 +547,19 @@ const CheckoutPage = () => {
         timestamp: new Date().toISOString(),
       };
 
-      const orderJson = JSON.stringify(orderData);
-      sessionStorage.setItem('lastOrder', orderJson);
       try {
+        const orderJson = JSON.stringify(orderData);
+        sessionStorage.setItem('lastOrder', orderJson);
         localStorage.setItem('lastOrder', orderJson);
       } catch {
-        /* private mode / quota */
+        /* Storage quota or private mode restriction */
       }
 
-      // Clear pending order session as it's now completed
-      sessionStorage.removeItem('pendingOrder');
+      try {
+        sessionStorage.removeItem('pendingOrder');
+      } catch {
+        /* Private mode */
+      }
 
       clearCart();
       navigate(`/order-success?orderId=${encodeURIComponent(orderId)}`);
