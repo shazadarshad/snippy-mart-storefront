@@ -99,6 +99,29 @@ BEGIN
   END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow guest insert orders" ON public.orders;
+CREATE POLICY "Allow guest insert orders" ON public.orders
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow guest update orders" ON public.orders;
+CREATE POLICY "Allow guest update orders" ON public.orders
+  FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow guest insert order_items" ON public.order_items;
+CREATE POLICY "Allow guest insert order_items" ON public.order_items
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow guest read orders" ON public.orders;
+CREATE POLICY "Allow guest read orders" ON public.orders
+  FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow guest read order_items" ON public.order_items;
+CREATE POLICY "Allow guest read order_items" ON public.order_items
+  FOR SELECT TO anon, authenticated USING (true);
 `;
 
 serve(async (req) => {
