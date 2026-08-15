@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="fp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06101C"/>
+      <stop offset="55%" stop-color="#0A1628"/>
+      <stop offset="100%" stop-color="#07101A"/>
+    </linearGradient>
+    <radialGradient id="fp-glow" cx="50%" cy="32%" r="52%">
+      <stop offset="0%" stop-color="#336AEA" stop-opacity="0.28"/>
+      <stop offset="55%" stop-color="#1273EB" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#06101C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fp-mark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5B8CFF"/>
+      <stop offset="100%" stop-color="#336AEA"/>
+    </linearGradient>
+    <filter id="fp-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#336AEA" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="800" fill="url(#fp-bg)"/>
+  <rect width="800" height="800" fill="url(#fp-glow)"/>
+  <circle cx="120" cy="140" r="120" fill="#336AEA" fill-opacity="0.05"/>
+  <circle cx="700" cy="680" r="150" fill="#1273EB" fill-opacity="0.07"/>
+
+  <g transform="translate(400, 286)" filter="url(#fp-soft)">
+    <circle r="126" fill="#FFFFFF" fill-opacity="0.04"/>
+    <circle r="112" fill="none" stroke="#5B8CFF" stroke-opacity="0.35" stroke-width="1.6"/>
+    <circle r="100" fill="url(#fp-mark)"/>
+    <text x="0" y="38" text-anchor="middle" fill="#FFFFFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="118" font-weight="800" letter-spacing="-4">F</text>
+  </g>
+
+  <text x="400" y="470" text-anchor="middle" fill="#FFFFFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="52" font-weight="750" letter-spacing="-1.2">Freepik</text>
+  <text x="400" y="522" text-anchor="middle" fill="#8FB0FF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="700">Credits</text>
+  <text x="400" y="568" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.62" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" font-weight="600">50K · 100K · 200K · 600K · 1M · 2M · 4M</text>
+  <text x="400" y="730" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.32" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="600" letter-spacing="4">SNIPPY MART</text>
+</svg>

@@ -34,6 +34,19 @@ const RATES: Record<CurrencyCode, number> = {
   INR: INR_PER_LKR,
 };
 
+/**
+ * Convert LKR catalog → display currency, always rounding UP.
+ * Never floor / banker's-round a customer-facing amount or FX can
+ * leave the store short (e.g. 1199 LKR → $3.24 would be 1198.80 LKR).
+ */
+export function convertLkrToDisplay(amountLkr: number, currency: CurrencyCode): number {
+  if (!Number.isFinite(amountLkr) || amountLkr <= 0) return 0;
+  if (currency === 'LKR') return Math.ceil(amountLkr - 1e-10);
+  if (currency === 'INR') return Math.ceil(amountLkr * INR_PER_LKR - 1e-10);
+  const usd = amountLkr / LKR_PER_USD;
+  return Math.ceil(usd * 100 - 1e-10) / 100;
+}
+
 interface CurrencyInfo {
   code: CurrencyCode;
   symbol: string;
@@ -81,21 +94,21 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const convertPrice = (priceInLKR: number): number => {
-    return priceInLKR * RATES[currency];
+    return convertLkrToDisplay(priceInLKR, currency);
   };
 
   const formatPrice = (priceInLKR: number): string => {
     const converted = convertPrice(priceInLKR);
 
     if (currency === 'LKR') {
-      return `Rs. ${Math.round(converted).toLocaleString('en-LK')}`;
+      return `Rs. ${converted.toLocaleString('en-LK')}`;
     }
 
     if (currency === 'INR') {
-      return `₹${Math.round(converted).toLocaleString('en-IN')}`;
+      return `₹${converted.toLocaleString('en-IN')}`;
     }
 
-    // USD — 2 decimals
+    // USD — 2 decimals, already ceiled
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
