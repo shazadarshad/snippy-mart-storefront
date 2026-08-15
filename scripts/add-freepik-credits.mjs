@@ -1,9 +1,9 @@
 /**
  * Add / update Magnific (Freepik) Credits product:
- *   Plans    = warranty duration 2 / 7 / 15 / 30 days  (Select Duration)
- *   Variants = credit packs                            (Select Package)
+ *   Plans    = credit packs                            (Select credits)
+ *   Variants = warranty duration 2 / 7 / 15 / 30 days  (Select warranty)
  *
- * Catalog is LKR. 1 USD = 370 LKR so USD display stays exact.
+ * Catalog is LKR. Charm USD list UP to xx99 so we never sell under the floor.
  */
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -22,9 +22,9 @@ const headers = {
   Prefer: 'return=representation',
 };
 
-/** Exact USD list → LKR, then charm UP to xx99 so we never sell under the USD floor. */
-function charmLkr(usd) {
-  const n = Math.ceil(Number(usd) * 370);
+/** Charm an LKR amount UP to xx99. */
+function charmAmount(amount) {
+  const n = Math.ceil(Number(amount));
   if (n <= 99) return 99;
   if (n % 100 === 99) return n;
   const bucket = Math.floor(n / 100);
@@ -32,7 +32,15 @@ function charmLkr(usd) {
   return candidate >= n ? candidate : (bucket + 1) * 100 + 99;
 }
 
-const LKR = (usd) => charmLkr(usd);
+/**
+ * Supplier USD list is the cost floor.
+ * Add a small margin (~4% or +100 LKR, whichever is larger), then charm to xx99.
+ */
+function LKR(usd) {
+  const cost = Number(usd) * 370;
+  const marked = cost + Math.max(100, cost * 0.04);
+  return charmAmount(marked);
+}
 const SLUG = 'freepik-credits';
 
 const CREDIT_PACKS = [
@@ -59,9 +67,8 @@ Original **Magnific (Freepik)** credits for AI image generation, video generatio
 **This is NOT a downloader, original Freepik credits provided through custom extension.**
 
 How it works:
-• Choose your credit pack and warranty
+• Choose your credit pack, then warranty
 • Credits are provided via our custom extension
-• Use them on your Magnific (Freepik) account
 
 What you can do with Magnific (Freepik):
 • Generate AI videos from text or images
@@ -89,9 +96,7 @@ Warranty:
 What's included:
 • Original Magnific (Freepik) credits — not a downloader
 • Delivered through our custom extension
-• Support during your selected warranty window
-
-Enter your Magnific (Freepik) account email at checkout so we can deliver.`;
+• Support during your selected warranty window`;
 
 if (process.argv.includes('--reseed-prices')) {
   const existing = await rest(`/rest/v1/products?slug=eq.${SLUG}&select=id`);
@@ -100,17 +105,22 @@ if (process.argv.includes('--reseed-prices')) {
 
   await rest(`/rest/v1/products?id=eq.${productId}`, {
     method: 'PATCH',
-    body: { price: LKR(3), updated_at: new Date().toISOString() },
+    body: {
+      description,
+      price: LKR(3),
+      requirements: { require_email: false, require_password: false, require_username: false },
+      updated_at: new Date().toISOString(),
+    },
   });
   await rest(`/rest/v1/product_pricing_plans?product_id=eq.${productId}`, {
     method: 'DELETE',
     extraHeaders: { Prefer: 'return=minimal' },
   });
-  const plansPayload = WARRANTIES.map((w, i) => ({
+  const plansPayload = CREDIT_PACKS.map((pack, i) => ({
     product_id: productId,
-    name: w.name,
-    duration: w.duration,
-    price: LKR(CREDIT_PACKS[0].usd[w.days]),
+    name: pack.name,
+    duration: '',
+    price: LKR(pack.usd[2]),
     old_price: null,
     is_default: i === 0,
   }));
@@ -120,11 +130,11 @@ if (process.argv.includes('--reseed-prices')) {
   });
   const variantsPayload = [];
   for (const plan of createdPlans) {
-    const warranty = WARRANTIES.find((w) => w.name === plan.name);
-    for (const pack of CREDIT_PACKS) {
+    const pack = CREDIT_PACKS.find((p) => p.name === plan.name);
+    for (const warranty of WARRANTIES) {
       variantsPayload.push({
         plan_id: plan.id,
-        name: pack.name,
+        name: warranty.name,
         price: LKR(pack.usd[warranty.days]),
         old_price: null,
         is_active: true,
@@ -211,7 +221,7 @@ const product = {
   use_variant_pricing: true,
   manual_fulfillment: true,
   requirements: {
-    require_email: true,
+    require_email: false,
     require_password: false,
     require_username: false,
   },
@@ -233,11 +243,11 @@ await rest(`/rest/v1/product_pricing_plans?product_id=eq.${productId}`, {
 });
 console.log('Old plans cleared');
 
-const plansPayload = WARRANTIES.map((w, i) => ({
+const plansPayload = CREDIT_PACKS.map((pack, i) => ({
   product_id: productId,
-  name: w.name,
-  duration: w.duration,
-  price: LKR(CREDIT_PACKS[0].usd[w.days]),
+  name: pack.name,
+  duration: 'Magnific credits',
+  price: LKR(pack.usd[2]),
   old_price: null,
   is_default: i === 0,
 }));
@@ -249,11 +259,11 @@ const createdPlans = await rest('/rest/v1/product_pricing_plans', {
 
 const variantsPayload = [];
 for (const plan of createdPlans) {
-  const warranty = WARRANTIES.find((w) => w.name === plan.name);
-  for (const pack of CREDIT_PACKS) {
+  const pack = CREDIT_PACKS.find((p) => p.name === plan.name);
+  for (const warranty of WARRANTIES) {
     variantsPayload.push({
       plan_id: plan.id,
-      name: pack.name,
+      name: warranty.name,
       price: LKR(pack.usd[warranty.days]),
       old_price: null,
       is_active: true,

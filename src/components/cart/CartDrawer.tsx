@@ -97,8 +97,12 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-foreground truncate">{item.product.name}</h4>
-                    {item.product.plan_name && (
-                      <p className="text-xs text-muted-foreground truncate">Plan: {item.product.plan_name}</p>
+                    {(item.product.plan_name || item.product.variant_name) && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {[item.product.plan_name, item.product.variant_name]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
                     )}
                     <p className="text-sm text-muted-foreground">
                       {formatPrice(item.product.price)}

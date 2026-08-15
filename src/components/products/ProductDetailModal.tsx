@@ -149,6 +149,27 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
   const currentPrice = productPriceInLkr(priceSource, 'price');
   const currentOldPrice = rawOldPrice != null ? productPriceInLkr(priceSource, 'old_price') : null;
   const hasPlans = pricingPlans.length > 0;
+  const needsBothPicks = !!product.use_variant_pricing;
+  const selectionComplete = !needsBothPicks || (!!selectedPlan && !!selectedVariant);
+  const needsSelection = needsBothPicks && !selectionComplete;
+
+  const planIds = new Set(pricingPlans.map((p) => p.id));
+  const scopedVariants = selectedPlan
+    ? activeVariants
+    : allVariants.filter((v) => planIds.has(v.plan_id) && v.is_active);
+  const fromRaw = (() => {
+    const prices = scopedVariants
+      .map((v) => Number(v.price))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    if (prices.length) return Math.min(...prices);
+    return Number(selectedPlan?.price ?? product.price) || 0;
+  })();
+  const fromPriceLkr = productPriceInLkr({
+    price: fromRaw,
+    reseller_product_id: product.reseller_product_id,
+    reseller_cost_usd: product.reseller_cost_usd,
+  });
+  const displayPriceLkr = selectionComplete ? currentPrice : fromPriceLkr;
 
   // Stock Status Logic
   // If variant selected, use its stock. Else use product stock.
@@ -179,13 +200,19 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     manual_fulfillment: product.manual_fulfillment ?? null,
   };
 
+  const plansAreCreditPacks = pricingPlans.some((p) => /credit/i.test(p.name));
+  const variantsAreWarranty = activeVariants.some((v) => /warranty|\bday\b/i.test(v.name));
+  const selectionHint = plansAreCreditPacks
+    ? 'Please select credits and warranty.'
+    : 'Please select both duration and package option.';
+
   const handleAddToCart = () => {
     if (isOutOfStock) return;
     // If variant pricing is enabled, require both plan and variant selection
     if (product.use_variant_pricing && (!selectedPlan || !selectedVariant)) {
       toast({
         title: "Selection required",
-        description: "Please select both duration and package option.",
+        description: selectionHint,
         variant: "destructive"
       });
       return;
@@ -204,7 +231,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     if (product.use_variant_pricing && (!selectedPlan || !selectedVariant)) {
       toast({
         title: "Selection required",
-        description: "Please select both duration and package option.",
+        description: selectionHint,
         variant: "destructive"
       });
       return;
@@ -297,7 +324,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               </>
             )}
 
-            {discount > 0 && (
+            {selectionComplete && discount > 0 && (
               <div className="absolute top-6 left-6 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-bold z-10">
                 -{discount}% OFF
               </div>
@@ -354,7 +381,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                   </>
                 )}
 
-                {discount > 0 && (
+                {selectionComplete && discount > 0 && (
                   <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold z-10">
                     -{discount}% OFF
                   </div>
@@ -384,27 +411,148 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               <h2 className="text-lg sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-2 leading-snug pr-1">
                 {product.name}
               </h2>
-              <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
-                <span className="text-2xl sm:text-3xl font-display font-black text-foreground tabular-nums">
-                  {currentPrice > 0 ? formatPrice(currentPrice) : '—'}
-                </span>
-                {currentOldPrice != null && currentOldPrice > currentPrice && (
-                  <span className="text-sm text-muted-foreground line-through tabular-nums">
-                    {formatPrice(currentOldPrice)}
+              <div className="mb-4 sm:mb-5">
+                {needsSelection && (
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
+                    Starting from
+                  </p>
+                )}
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-2xl sm:text-3xl font-display font-black text-foreground tabular-nums">
+                    {displayPriceLkr > 0 ? formatPrice(displayPriceLkr) : '—'}
                   </span>
-                )}
-                {discount > 0 && (
-                  <span className="text-xs font-bold text-primary">−{discount}%</span>
-                )}
+                  {selectionComplete && currentOldPrice != null && currentOldPrice > currentPrice && (
+                    <span className="text-sm text-muted-foreground line-through tabular-nums">
+                      {formatPrice(currentOldPrice)}
+                    </span>
+                  )}
+                  {selectionComplete && discount > 0 && (
+                    <span className="text-xs font-bold text-primary">−{discount}%</span>
+                  )}
+                </div>
               </div>
 
-              {/* Share Buttons */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-sm text-foreground/70">Share:</span>
+              {/* 1) Credits / plan  2) Warranty / package — before the long description */}
+              {pricingPlans.length > 0 && (
+                <div className="mb-5 space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                        1
+                      </span>
+                      <p className="text-sm font-semibold text-foreground">
+                        {plansAreCreditPacks
+                          ? 'Select credits'
+                          : product.use_variant_pricing
+                            ? 'Select option'
+                            : 'Select plan'}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {pricingPlans.map((plan) => (
+                        <button
+                          key={plan.id}
+                          type="button"
+                          onClick={() => setSelectedPlan(plan)}
+                          className={cn(
+                            "relative px-3 py-2.5 rounded-xl border transition-all duration-200 text-left touch-manipulation",
+                            selectedPlan?.id === plan.id
+                              ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary))]"
+                              : "border-border bg-secondary/30 hover:border-primary/40 hover:bg-secondary/50"
+                          )}
+                        >
+                          <div className="text-sm font-semibold text-foreground leading-tight">
+                            {plan.name.replace(/\s*Credits$/i, '')}
+                          </div>
+                          {plan.duration?.trim() ? (
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              {plan.duration}
+                            </div>
+                          ) : plansAreCreditPacks ? (
+                            <div className="text-[11px] text-muted-foreground mt-0.5">credits</div>
+                          ) : null}
+                          {!product.use_variant_pricing && (
+                            <div className="mt-1 text-sm font-bold text-foreground tabular-nums">
+                              {formatPrice(productPriceInLkr({ price: plan.price, reseller_product_id: product.reseller_product_id }))}
+                            </div>
+                          )}
+                          {selectedPlan?.id === plan.id && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                              <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {product.use_variant_pricing && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2.5">
+                        <span className={cn(
+                          "flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold",
+                          selectedPlan
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        )}>
+                          2
+                        </span>
+                        <p className={cn(
+                          "text-sm font-semibold",
+                          selectedPlan ? "text-foreground" : "text-muted-foreground"
+                        )}>
+                          {variantsAreWarranty || plansAreCreditPacks
+                            ? 'Select warranty'
+                            : 'Select package'}
+                        </p>
+                      </div>
+                      {!selectedPlan ? (
+                        <p className="text-xs text-muted-foreground rounded-xl border border-dashed border-border px-3 py-3">
+                          {plansAreCreditPacks ? 'Pick a credit pack first.' : 'Pick an option first.'}
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                          {activeVariants.map((variant) => (
+                            <button
+                              key={variant.id}
+                              type="button"
+                              onClick={() => setSelectedVariant(variant)}
+                              disabled={variant.stock_status === 'out_of_stock'}
+                              className={cn(
+                                "relative flex flex-col justify-center px-3 py-2.5 rounded-xl border text-left touch-manipulation transition-all",
+                                selectedVariant?.id === variant.id
+                                  ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary))]"
+                                  : "border-border bg-secondary/30 hover:border-primary/40 hover:bg-secondary/50",
+                                variant.stock_status === 'out_of_stock' && "opacity-50 pointer-events-none"
+                              )}
+                            >
+                              <span className="text-sm font-semibold text-foreground leading-tight">
+                                {variant.name.replace(/\s*Warranty$/i, '')}
+                              </span>
+                              <span className="text-sm font-bold text-foreground tabular-nums mt-0.5">
+                                {formatPrice(productPriceInLkr({ price: variant.price, reseller_product_id: product.reseller_product_id }))}
+                              </span>
+                              {selectedVariant?.id === variant.id && (
+                                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                                  <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Share */}
+              <div className="flex items-center gap-2 mb-5">
+                <span className="text-xs text-muted-foreground">Share</span>
                 <button
                   type="button"
                   onClick={handleShareWhatsApp}
-                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#25D366]/10 active:bg-[#25D366]/20 text-[#25D366] transition-colors touch-manipulation"
+                  className="h-9 w-9 flex items-center justify-center rounded-xl bg-[#25D366]/10 active:bg-[#25D366]/20 text-[#25D366] transition-colors touch-manipulation"
                   title="Share on WhatsApp"
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -412,128 +560,16 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-secondary active:bg-secondary/80 text-foreground transition-colors touch-manipulation"
+                  className="h-9 w-9 flex items-center justify-center rounded-xl bg-secondary active:bg-secondary/80 text-foreground transition-colors touch-manipulation"
                   title="Copy link"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Description */}
-              <div className="mb-6">
+              <div className="mb-2">
                 <FormattedDescription description={product.description} />
               </div>
-
-              {/* Pricing Plans */}
-              {pricingPlans.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-sm font-medium text-foreground mb-3">
-                    {product.use_variant_pricing ? 'Select Duration:' : 'Select Plan:'}
-                  </p>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-                    {pricingPlans.map((plan) => (
-                      <button
-                        key={plan.id}
-                        onClick={() => setSelectedPlan(plan)}
-                        className={cn(
-                          "relative px-3 py-3 sm:px-4 rounded-xl border transition-all duration-200 text-left group min-h-[80px] flex flex-col justify-center",
-                          selectedPlan?.id === plan.id
-                            ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)] scale-[1.02]"
-                            : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50"
-                        )}
-                      >
-                        <div className="text-sm sm:text-base font-semibold text-foreground">
-                          {plan.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          {plan.duration}
-                        </div>
-                        {!product.use_variant_pricing && (
-                          <div className="mt-1.5 flex items-center gap-2">
-                            <span className="text-base sm:text-lg font-bold text-foreground">
-                              {formatPrice(productPriceInLkr({ price: plan.price, reseller_product_id: product.reseller_product_id }))}
-                            </span>
-                            {plan.old_price && (
-                              <span className="text-xs text-muted-foreground line-through">
-                                {formatPrice(productPriceInLkr({ price: plan.old_price, reseller_product_id: product.reseller_product_id }))}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {selectedPlan?.id === plan.id && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="w-3 h-3 text-primary-foreground" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-
-
-              {/* Sub-Plans (Variants) Selector - Only show when variant pricing is enabled */}
-              {product.use_variant_pricing && activeVariants.length > 0 && (
-                <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <p className="text-sm font-medium text-foreground mb-3">
-                    Select Package:
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                    {activeVariants.map((variant) => (
-                      <button
-                        key={variant.id}
-                        onClick={() => setSelectedVariant(variant)}
-                        className={cn(
-                          "relative flex items-center justify-between px-3 py-3.5 sm:px-4 sm:py-4 rounded-xl border transition-all duration-200 group text-left min-h-[72px]",
-                          selectedVariant?.id === variant.id
-                            ? "border-primary bg-primary/5 shadow-[0_0_0_1px_rgba(var(--primary),1)] scale-[1.02]"
-                            : "border-border hover:border-primary/30 bg-secondary/30 hover:bg-secondary/50 active:scale-[0.98]"
-                        )}
-                      >
-                        <div className="flex flex-col flex-1 pr-2">
-                          <span className="text-sm sm:text-base font-semibold text-foreground leading-tight">
-                            {variant.name}
-                          </span>
-                          {variant.stock_status !== 'in_stock' && (
-                            <span className={cn(
-                              "text-[10px] sm:text-xs font-medium mt-1",
-                              variant.stock_status === 'limited' ? "text-amber-500" : "text-red-500"
-                            )}>
-                              {variant.stock_status === 'limited' ? 'Limited Stock' : 'Out of Stock'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
-                          {variant.old_price && (
-                            <div className="text-[11px] sm:text-xs text-muted-foreground/80 line-through font-medium">
-                              {formatPrice(productPriceInLkr({ price: variant.old_price, reseller_product_id: product.reseller_product_id }))}
-                            </div>
-                          )}
-                          <div className={cn(
-                            "font-bold whitespace-nowrap",
-                            variant.old_price
-                              ? "text-base sm:text-lg text-primary"
-                              : "text-sm sm:text-base text-foreground"
-                          )}>
-                            {formatPrice(productPriceInLkr({ price: variant.price, reseller_product_id: product.reseller_product_id }))}
-                          </div>
-                          {variant.old_price && (
-                            <div className="text-[10px] sm:text-xs font-semibold text-green-600 dark:text-green-500">
-                              Save {Math.round(((variant.old_price - variant.price) / variant.old_price) * 100)}%
-                            </div>
-                          )}
-                        </div>
-                        {selectedVariant?.id === variant.id && (
-                          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary flex items-center justify-center shadow-md">
-                            <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary-foreground" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Actions Footer — sticky on mobile with safe area */}
@@ -542,29 +578,45 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               <div className="flex items-center justify-between gap-2 mb-3 p-2.5 sm:p-3 rounded-xl bg-secondary/60">
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">
-                    {selectedPlan ? 'Selected' : 'Price'}
+                    {needsSelection
+                      ? 'Starting from'
+                      : selectedPlan
+                        ? 'Selected'
+                        : 'Price'}
                   </p>
                   {selectedPlan ? (
                     <div className="flex flex-wrap gap-1 items-center">
                       <p className="text-sm font-semibold text-foreground truncate">{selectedPlan.name}</p>
-                      {selectedVariant && (
+                      {selectedVariant ? (
                         <>
-                          <span className="text-muted-foreground">›</span>
+                          <span className="text-muted-foreground">·</span>
                           <span className="text-sm font-semibold text-primary truncate">{selectedVariant.name}</span>
                         </>
-                      )}
+                      ) : needsBothPicks ? (
+                        <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                          {variantsAreWarranty || plansAreCreditPacks ? 'pick warranty' : 'pick package'}
+                        </span>
+                      ) : null}
                     </div>
                   ) : (
                     <p className="text-sm font-semibold text-foreground truncate">
-                      {isResellerApiProduct(product) ? 'Auto delivery' : hasPlans ? 'Choose a plan' : 'One-time'}
+                      {needsBothPicks
+                        ? plansAreCreditPacks
+                          ? 'Pick credits + warranty'
+                          : 'Choose both options'
+                        : isResellerApiProduct(product)
+                          ? 'Auto delivery'
+                          : hasPlans
+                            ? 'Choose a plan'
+                            : 'One-time'}
                     </p>
                   )}
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums">
-                    {currentPrice > 0 ? formatPrice(currentPrice) : '—'}
+                    {displayPriceLkr > 0 ? formatPrice(displayPriceLkr) : '—'}
                   </p>
-                  {currentOldPrice != null && currentOldPrice > currentPrice && (
+                  {selectionComplete && currentOldPrice != null && currentOldPrice > currentPrice && (
                     <p className="text-xs text-muted-foreground line-through tabular-nums">
                       {formatPrice(currentOldPrice)}
                     </p>
@@ -576,22 +628,36 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl border-2 border-border bg-card text-foreground font-bold hover:bg-secondary hover:text-foreground active:scale-[0.98] transition-all touch-manipulation"
+                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl border-2 border-border bg-card text-foreground font-bold hover:bg-secondary hover:text-foreground active:scale-[0.98] transition-all touch-manipulation disabled:opacity-50"
                   onClick={handleAddToCart}
-                  disabled={isOutOfStock}
+                  disabled={isOutOfStock || needsSelection}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2 shrink-0" />
-                  {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                  {isOutOfStock
+                    ? 'Out of Stock'
+                    : needsSelection
+                      ? !selectedPlan
+                        ? plansAreCreditPacks
+                          ? 'Select credits'
+                          : 'Select option'
+                        : variantsAreWarranty || plansAreCreditPacks
+                          ? 'Select warranty'
+                          : 'Select package'
+                      : 'Add to Cart'}
                 </Button>
                 <Button
                   variant="hero"
                   size="lg"
-                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl font-bold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all touch-manipulation"
+                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl font-bold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all touch-manipulation disabled:opacity-50"
                   onClick={handleBuyNow}
-                  disabled={isOutOfStock}
+                  disabled={isOutOfStock || needsSelection}
                 >
                   <Zap className="w-5 h-5 mr-2 fill-current shrink-0" />
-                  {isOutOfStock ? 'Unavailable' : 'Buy Now'}
+                  {isOutOfStock
+                    ? 'Unavailable'
+                    : needsSelection
+                      ? 'Select to buy'
+                      : 'Buy Now'}
                 </Button>
               </div>
             </div>

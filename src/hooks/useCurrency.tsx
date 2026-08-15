@@ -47,6 +47,16 @@ export function convertLkrToDisplay(amountLkr: number, currency: CurrencyCode): 
   return Math.ceil(usd * 100 - 1e-10) / 100;
 }
 
+/** Always LKR catalog — what they must send to a Sri Lankan bank. */
+export function formatCatalogLkr(amountLkr: number): string {
+  return `Rs. ${convertLkrToDisplay(amountLkr, 'LKR').toLocaleString('en-LK')}`;
+}
+
+/** Ceiled INR — what they must send via UPI. */
+export function formatCatalogInr(amountLkr: number): string {
+  return `₹${convertLkrToDisplay(amountLkr, 'INR').toLocaleString('en-IN')}`;
+}
+
 interface CurrencyInfo {
   code: CurrencyCode;
   symbol: string;

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useCartStore, generateOrderId } from '@/lib/store';
-import { useCurrency } from '@/hooks/useCurrency';
+import { formatCatalogLkr, useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateOrder, useUpdateExistingOrder } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
@@ -994,6 +994,12 @@ const CheckoutPage = () => {
                   <span className="text-lg font-semibold text-foreground">Total</span>
                   <span className="text-2xl font-bold gradient-text">{formatPrice(getFinalTotal())}</span>
                 </div>
+                {currency !== 'LKR' && (
+                  <p className="text-[11px] text-muted-foreground text-right mt-1.5 leading-snug">
+                    Bank transfer: pay{' '}
+                    <span className="font-bold text-foreground">{formatCatalogLkr(getFinalTotal())}</span>
+                  </p>
+                )}
               </div>
             </div>
           </div>

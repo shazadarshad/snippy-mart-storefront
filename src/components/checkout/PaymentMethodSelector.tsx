@@ -36,6 +36,7 @@ import {
 } from '@/lib/cryptoPayments';
 import { quoteCrypto, quoteUsdt, useCryptoRates } from '@/hooks/useCryptoRates';
 import { copyToClipboard as safeCopy } from '@/lib/clipboard';
+import { formatCatalogInr, formatCatalogLkr } from '@/hooks/useCurrency';
 
 export type PaymentMethod = 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card';
 
@@ -319,12 +320,24 @@ const PaymentMethodSelector = ({
         <div
           className={cn(
             'overflow-hidden transition-all duration-300',
-            isBank ? 'max-h-[900px] opacity-100' : 'max-h-0 opacity-0',
+            isBank ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0',
           )}
         >
           <div className="p-4 pt-0 space-y-4">
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/25">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Pay exactly (bank)
+              </p>
+              <p className="text-2xl font-black text-foreground tabular-nums mt-0.5">
+                {formatCatalogLkr(totalLkr)}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                Transfer this LKR amount — not the USD / INR display price.
+              </p>
+            </div>
+
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside bg-secondary/40 rounded-lg p-3 border border-border/60">
-              <li>Transfer the exact order total to the account below</li>
+              <li>Transfer the exact LKR amount above to the account below</li>
               <li>
                 Put your <strong className="text-foreground">Order ID</strong> in the bank remarks
               </li>
@@ -444,14 +457,26 @@ const PaymentMethodSelector = ({
         <div
           className={cn(
             'overflow-hidden transition-all duration-300',
-            isUpi ? 'max-h-[900px] opacity-100' : 'max-h-0 opacity-0',
+            isUpi ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0',
           )}
         >
           <div className="p-4 pt-0 space-y-4">
+            <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/25">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Pay exactly (UPI)
+              </p>
+              <p className="text-2xl font-black text-foreground tabular-nums mt-0.5">
+                {formatCatalogInr(totalLkr)}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                Send this INR amount. Catalog total is {formatCatalogLkr(totalLkr)}.
+              </p>
+            </div>
+
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside bg-secondary/40 rounded-lg p-3 border border-border/60">
               <li>Open any UPI app (GPay, PhonePe, Paytm, etc.)</li>
               <li>
-                Pay the order total to the UPI ID below
+                Pay the exact INR amount above to the UPI ID below
               </li>
               <li>
                 Put your <strong className="text-foreground">Order ID</strong> in the note / remarks
@@ -496,8 +521,7 @@ const PaymentMethodSelector = ({
                 <p className="text-sm font-mono font-bold text-primary break-all">{orderId}</p>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Amount shown on your cart is in your selected currency (LKR / USD / INR). Pay the
-                equivalent total via UPI.
+                Ignore the USD / LKR switch on the site — send the INR amount shown above.
               </p>
             </div>
 
