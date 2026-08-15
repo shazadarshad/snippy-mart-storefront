@@ -60,7 +60,7 @@ const Footer = () => {
             <ul className="space-y-2.5">
               {shop.map((i) => (
                 <li key={i.p}>
-                  <Link to={i.p} className="text-sm text-muted-foreground hover:text-foreground transition">
+                  <Link to={i.p} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {i.n}
                   </Link>
                 </li>
@@ -75,7 +75,7 @@ const Footer = () => {
             <ul className="space-y-2.5">
               {legal.map((i) => (
                 <li key={i.p}>
-                  <Link to={i.p} className="text-sm text-muted-foreground hover:text-foreground transition">
+                  <Link to={i.p} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {i.n}
                   </Link>
                 </li>

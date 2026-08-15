@@ -14,7 +14,7 @@ const ThemeToggle = () => {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="relative">
+      <Button variant="ghost" size="icon" className="relative rounded-xl w-10 h-10">
         <Sun className="w-5 h-5" />
       </Button>
     );
@@ -25,7 +25,7 @@ const ThemeToggle = () => {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="relative overflow-hidden"
+      className="relative overflow-hidden rounded-xl w-10 h-10"
     >
       {/* Light mode → show moon (switch to dark). Dark mode → show sun. */}
       <Sun className={`w-5 h-5 transition-all duration-300 ${theme === 'dark' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />

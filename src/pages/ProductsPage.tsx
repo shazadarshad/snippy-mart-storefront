@@ -152,7 +152,7 @@ const ProductsPage = () => {
         </div>
 
         {/* Toolbar */}
-        <div className="sticky top-[4.5rem] sm:top-20 z-30 mb-6 sm:mb-8 rounded-2xl border border-border/60 bg-background/95 sm:bg-background/90 sm:backdrop-blur-xl p-2.5 sm:p-4 shadow-md">
+        <div className="sticky top-[4.5rem] sm:top-20 z-30 mb-6 sm:mb-8 rounded-2xl border border-border/50 bg-background/95 sm:bg-background/80 sm:backdrop-blur-xl p-2.5 sm:p-3.5 shadow-[var(--shadow-sm)]">
           <div className="flex flex-col gap-2.5 sm:gap-3">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

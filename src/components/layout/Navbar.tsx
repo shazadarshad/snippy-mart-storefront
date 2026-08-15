@@ -60,8 +60,8 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
         className={cn(
           'mx-auto max-w-6xl rounded-2xl border transition-all duration-300',
           scrolled
-            ? 'border-border/70 bg-background/95 sm:bg-background/90 sm:backdrop-blur-xl shadow-[var(--shadow-md)]'
-            : 'border-border/40 bg-background/95 sm:bg-background/80 sm:backdrop-blur-md'
+            ? 'border-border/60 bg-background/95 sm:bg-background/85 sm:backdrop-blur-xl shadow-[var(--shadow-md)] ring-1 ring-black/[0.03] dark:ring-white/[0.04]'
+            : 'border-border/40 bg-background/90 sm:bg-background/70 sm:backdrop-blur-md'
         )}
       >
         <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-5">
@@ -109,7 +109,7 @@ const Navbar = ({ onCartOpen }: NavbarProps) => {
             >
               <ShoppingCart className="w-[18px] h-[18px]" />
               {itemCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center ring-2 ring-background">
                   {itemCount}
                 </span>
               )}

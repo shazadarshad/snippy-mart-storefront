@@ -41,7 +41,7 @@ const HomePage = () => {
     { icon: Zap, title: 'Instant-ready delivery', body: 'Access after payment confirmation — no endless waiting.' },
     { icon: Shield, title: 'Secure bank / Binance checkout', body: 'Pay, upload proof, get a trackable Order ID.' },
     { icon: BadgeCheck, title: 'Live order status', body: 'Payment confirmed → processing → completed, in real time.' },
-    { icon: MessageCircle, title: 'Human WhatsApp help', body: 'Real support when you need it — not bots only.' },
+    { icon: MessageCircle, title: 'Human WhatsApp help', body: 'Real support in listed hours — AI chat anytime on the site.' },
   ];
 
   return (
@@ -108,17 +108,17 @@ const HomePage = () => {
               </Button>
             </div>
 
-            <div className="mt-14 grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto">
+            <div className="mt-14 grid grid-cols-3 gap-2 sm:gap-3 max-w-lg mx-auto">
               {[
                 { v: '2K+', l: 'Buyers' },
                 { v: '50+', l: 'Products' },
-                { v: '24/7', l: 'Support' },
+                { v: 'Live', l: 'Tracking' },
               ].map((s) => (
                 <div
                   key={s.l}
-                  className="rounded-2xl border border-border/50 bg-card/90 px-3 py-4 shadow-[var(--shadow-sm)] ring-1 ring-primary/5"
+                  className="rounded-2xl border border-border/40 bg-card/80 px-2.5 py-3.5 sm:px-3 sm:py-4 shadow-[var(--shadow-sm)]"
                 >
-                  <p className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{s.v}</p>
+                  <p className="font-display text-xl sm:text-3xl font-bold tracking-tight">{s.v}</p>
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-1">
                     {s.l}
                   </p>
@@ -142,8 +142,8 @@ const HomePage = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {features.map((f) => (
-              <div key={f.title} className="surface-card-interactive p-6 group">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+              <div key={f.title} className="surface-card-interactive p-5 sm:p-6 group">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <f.icon className="w-5 h-5" />
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-2">{f.title}</h3>

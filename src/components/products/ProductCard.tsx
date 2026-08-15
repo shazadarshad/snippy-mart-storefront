@@ -50,9 +50,9 @@ const ProductCard = memo(function ProductCard({
       aria-label={soldOut ? `${product.name} (sold out)` : product.name}
       className={cn(
         'group text-left w-full flex flex-col overflow-hidden rounded-3xl content-auto',
-        'border border-border/50 bg-card/90',
+        'border border-border/45 bg-card/90',
         'shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] duration-200 ease-out',
-        'hover:border-primary/45 hover:shadow-[var(--shadow-md)] hover:shadow-primary/10 hover:-translate-y-1',
+        'hover:border-primary/40 hover:shadow-[var(--shadow-md)] hover:-translate-y-[3px]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         soldOut && 'opacity-75',
         'will-change-transform',
@@ -70,7 +70,7 @@ const ProductCard = memo(function ProductCard({
           height={320}
           className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent opacity-90 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-card/10 to-transparent pointer-events-none" />
 
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
           {isAuto && (
@@ -99,9 +99,9 @@ const ProductCard = memo(function ProductCard({
             </span>
           </div>
         ) : (
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/90 border border-border/80 text-foreground shadow-lg">
-              <ArrowUpRight className="w-4 h-4" />
+          <div className="absolute top-3 right-3 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background/85 border border-border/70 text-foreground shadow-md">
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </span>
           </div>
         )}

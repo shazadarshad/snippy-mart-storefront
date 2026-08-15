@@ -72,7 +72,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
               </div>
               <h3 className="text-lg font-medium text-foreground mb-2">Cart is empty</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                Add some amazing subscriptions to get started
+                Browse the catalogue and add a product to check out.
               </p>
               <Button variant="default" onClick={onClose} asChild>
                 <Link to="/products">
