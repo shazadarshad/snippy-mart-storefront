@@ -41,7 +41,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 right-0 h-full w-full sm:max-w-md bg-background/95 backdrop-blur-2xl border-l border-border z-50 transition-transform duration-500 ease-out flex flex-col shadow-2xl',
+          'fixed top-0 right-0 h-[100dvh] w-full sm:max-w-md bg-background/95 backdrop-blur-2xl border-l border-border z-50 transition-transform duration-500 ease-out flex flex-col shadow-2xl pt-[env(safe-area-inset-top)]',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -147,7 +147,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="p-6 border-t border-border/50 bg-secondary/30 backdrop-blur-md">
+          <div className="p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border/50 bg-secondary/30 backdrop-blur-md">
             <div className="flex items-center justify-between mb-4">
               <span className="text-muted-foreground font-medium">Subtotal</span>
               <span className="text-2xl font-display font-bold text-foreground">{formatPrice(getTotal())}</span>

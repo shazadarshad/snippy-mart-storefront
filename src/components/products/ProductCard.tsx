@@ -49,7 +49,7 @@ const ProductCard = memo(function ProductCard({
       onClick={() => onViewDetails(product)}
       aria-label={soldOut ? `${product.name} (sold out)` : product.name}
       className={cn(
-        'group text-left w-full flex flex-col overflow-hidden rounded-3xl content-auto',
+        'group text-left w-full min-w-0 flex flex-col overflow-hidden rounded-3xl content-auto',
         'border border-border/45 bg-card/90',
         'shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] duration-200 ease-out',
         'hover:border-primary/40 hover:shadow-[var(--shadow-md)] hover:-translate-y-[3px]',

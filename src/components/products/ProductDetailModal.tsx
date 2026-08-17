@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ShoppingCart, Zap, Check, Share2, Copy, MessageCircle, ChevronLeft, ChevronRight, Package, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, Zap, Copy, MessageCircle, ChevronLeft, ChevronRight, Package, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -12,34 +12,13 @@ import { useProductImages } from '@/hooks/useProductImages';
 import type { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { FormattedDescription } from './FormattedDescription';
+import ProductOptionPicker from './ProductOptionPicker';
 
 interface ProductDetailModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
 }
-
-const overlayVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 }
-};
-
-const modalVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { type: 'spring', damping: 25, stiffness: 300 }
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.95,
-    y: 20,
-    transition: { duration: 0.2 }
-  }
-};
 
 const StockIndicator = ({
   status,
@@ -269,10 +248,10 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className={cn(
-          "max-w-[calc(100vw-0.75rem)] sm:max-w-5xl",
+          "max-w-[calc(100vw-0.5rem)] sm:max-w-5xl",
           "w-full p-0 gap-0 overflow-hidden",
-          "h-[min(92dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.5rem))]",
-          "max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.5rem))]",
+          "h-[min(94dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.35rem))]",
+          "max-h-[min(94dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.35rem))]",
           "bg-card text-foreground border-border/50",
           "rounded-2xl sm:rounded-3xl shadow-2xl",
         )}
@@ -335,11 +314,11 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative bg-card">
             <div
               data-lenis-prevent
-              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3.5 sm:px-6 md:px-8 pt-12 sm:pt-10 md:pt-8 pb-3 custom-scrollbar"
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 sm:px-6 md:px-8 pt-12 sm:pt-10 md:pt-8 pb-3 custom-scrollbar"
             >
 
-              {/* Mobile Image Gallery */}
-              <div className="md:hidden relative aspect-[4/3] sm:aspect-square max-h-[42dvh] mx-auto w-full bg-muted rounded-xl mb-4 overflow-hidden">
+              {/* Mobile Image Gallery — compact so pickers stay on screen */}
+              <div className="md:hidden relative aspect-[16/10] max-h-[26dvh] mx-auto w-full bg-muted rounded-xl mb-3 overflow-hidden">
                 <img
                   src={allImages[currentImageIndex] || product.image_url}
                   alt={product.name}
@@ -408,17 +387,17 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               </div>
 
               {/* Title + price (always visible, including API products without plans) */}
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-2 leading-snug pr-1">
+              <h2 className="text-base sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-1.5 leading-snug pr-8">
                 {product.name}
               </h2>
-              <div className="mb-4 sm:mb-5">
+              <div className="mb-3 sm:mb-5">
                 {needsSelection && (
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
+                  <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
                     Starting from
                   </p>
                 )}
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-2xl sm:text-3xl font-display font-black text-foreground tabular-nums">
+                  <span className="text-xl sm:text-3xl font-display font-black text-foreground tabular-nums">
                     {displayPriceLkr > 0 ? formatPrice(displayPriceLkr) : '—'}
                   </span>
                   {selectionComplete && currentOldPrice != null && currentOldPrice > currentPrice && (
@@ -432,117 +411,18 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 </div>
               </div>
 
-              {/* 1) Credits / plan  2) Warranty / package — before the long description */}
               {pricingPlans.length > 0 && (
-                <div className="mb-5 space-y-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2.5">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-                        1
-                      </span>
-                      <p className="text-sm font-semibold text-foreground">
-                        {plansAreCreditPacks
-                          ? 'Select credits'
-                          : product.use_variant_pricing
-                            ? 'Select option'
-                            : 'Select plan'}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {pricingPlans.map((plan) => (
-                        <button
-                          key={plan.id}
-                          type="button"
-                          onClick={() => setSelectedPlan(plan)}
-                          className={cn(
-                            "relative px-3 py-2.5 rounded-xl border transition-all duration-200 text-left touch-manipulation",
-                            selectedPlan?.id === plan.id
-                              ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary))]"
-                              : "border-border bg-secondary/30 hover:border-primary/40 hover:bg-secondary/50"
-                          )}
-                        >
-                          <div className="text-sm font-semibold text-foreground leading-tight">
-                            {plan.name.replace(/\s*Credits$/i, '')}
-                          </div>
-                          {plan.duration?.trim() ? (
-                            <div className="text-[11px] text-muted-foreground mt-0.5">
-                              {plan.duration}
-                            </div>
-                          ) : plansAreCreditPacks ? (
-                            <div className="text-[11px] text-muted-foreground mt-0.5">credits</div>
-                          ) : null}
-                          {!product.use_variant_pricing && (
-                            <div className="mt-1 text-sm font-bold text-foreground tabular-nums">
-                              {formatPrice(productPriceInLkr({ price: plan.price, reseller_product_id: product.reseller_product_id }))}
-                            </div>
-                          )}
-                          {selectedPlan?.id === plan.id && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                              <Check className="w-2.5 h-2.5 text-primary-foreground" />
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {product.use_variant_pricing && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2.5">
-                        <span className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold",
-                          selectedPlan
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
-                        )}>
-                          2
-                        </span>
-                        <p className={cn(
-                          "text-sm font-semibold",
-                          selectedPlan ? "text-foreground" : "text-muted-foreground"
-                        )}>
-                          {variantsAreWarranty || plansAreCreditPacks
-                            ? 'Select warranty'
-                            : 'Select package'}
-                        </p>
-                      </div>
-                      {!selectedPlan ? (
-                        <p className="text-xs text-muted-foreground rounded-xl border border-dashed border-border px-3 py-3">
-                          {plansAreCreditPacks ? 'Pick a credit pack first.' : 'Pick an option first.'}
-                        </p>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                          {activeVariants.map((variant) => (
-                            <button
-                              key={variant.id}
-                              type="button"
-                              onClick={() => setSelectedVariant(variant)}
-                              disabled={variant.stock_status === 'out_of_stock'}
-                              className={cn(
-                                "relative flex flex-col justify-center px-3 py-2.5 rounded-xl border text-left touch-manipulation transition-all",
-                                selectedVariant?.id === variant.id
-                                  ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary))]"
-                                  : "border-border bg-secondary/30 hover:border-primary/40 hover:bg-secondary/50",
-                                variant.stock_status === 'out_of_stock' && "opacity-50 pointer-events-none"
-                              )}
-                            >
-                              <span className="text-sm font-semibold text-foreground leading-tight">
-                                {variant.name.replace(/\s*Warranty$/i, '')}
-                              </span>
-                              <span className="text-sm font-bold text-foreground tabular-nums mt-0.5">
-                                {formatPrice(productPriceInLkr({ price: variant.price, reseller_product_id: product.reseller_product_id }))}
-                              </span>
-                              {selectedVariant?.id === variant.id && (
-                                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                                  <Check className="w-2.5 h-2.5 text-primary-foreground" />
-                                </div>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                <div className="mb-4 sm:mb-5">
+                  <ProductOptionPicker
+                    product={product}
+                    plans={pricingPlans}
+                    activeVariants={activeVariants}
+                    selectedPlan={selectedPlan}
+                    selectedVariant={selectedVariant}
+                    onSelectPlan={setSelectedPlan}
+                    onSelectVariant={setSelectedVariant}
+                    formatPrice={formatPrice}
+                  />
                 </div>
               )}
 
@@ -624,40 +504,40 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="flex flex-row gap-2">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl border-2 border-border bg-card text-foreground font-bold hover:bg-secondary hover:text-foreground active:scale-[0.98] transition-all touch-manipulation disabled:opacity-50"
+                  className="flex-1 min-h-11 h-11 sm:min-h-12 sm:h-12 rounded-xl border-2 border-border bg-card text-foreground font-bold hover:bg-secondary hover:text-foreground active:scale-[0.98] transition-all touch-manipulation disabled:opacity-50 px-2 sm:px-4 text-xs sm:text-sm"
                   onClick={handleAddToCart}
                   disabled={isOutOfStock || needsSelection}
                 >
-                  <ShoppingCart className="w-5 h-5 mr-2 shrink-0" />
+                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 shrink-0" />
                   {isOutOfStock
-                    ? 'Out of Stock'
+                    ? 'Sold out'
                     : needsSelection
                       ? !selectedPlan
                         ? plansAreCreditPacks
-                          ? 'Select credits'
-                          : 'Select option'
+                          ? 'Credits'
+                          : 'Select'
                         : variantsAreWarranty || plansAreCreditPacks
-                          ? 'Select warranty'
-                          : 'Select package'
-                      : 'Add to Cart'}
+                          ? 'Warranty'
+                          : 'Package'
+                      : 'Add'}
                 </Button>
                 <Button
                   variant="hero"
                   size="lg"
-                  className="w-full sm:flex-1 min-h-12 h-12 rounded-xl font-bold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all touch-manipulation disabled:opacity-50"
+                  className="flex-1 min-h-11 h-11 sm:min-h-12 sm:h-12 rounded-xl font-bold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all touch-manipulation disabled:opacity-50 px-2 sm:px-4 text-xs sm:text-sm"
                   onClick={handleBuyNow}
                   disabled={isOutOfStock || needsSelection}
                 >
-                  <Zap className="w-5 h-5 mr-2 fill-current shrink-0" />
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 fill-current shrink-0" />
                   {isOutOfStock
                     ? 'Unavailable'
                     : needsSelection
-                      ? 'Select to buy'
-                      : 'Buy Now'}
+                      ? 'Select first'
+                      : 'Buy now'}
                 </Button>
               </div>
             </div>

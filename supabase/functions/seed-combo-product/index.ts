@@ -137,6 +137,60 @@ DROP POLICY IF EXISTS "Allow all select admin_push_tokens" ON public.admin_push_
 CREATE POLICY "Allow all select admin_push_tokens" ON public.admin_push_tokens
   FOR SELECT TO anon, authenticated USING (true);
 
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read products" ON public.products;
+CREATE POLICY "Allow public read products" ON public.products
+  FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow admin update products" ON public.products;
+CREATE POLICY "Allow admin update products" ON public.products
+  FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow admin insert products" ON public.products;
+CREATE POLICY "Allow admin insert products" ON public.products
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow admin delete products" ON public.products;
+CREATE POLICY "Allow admin delete products" ON public.products
+  FOR DELETE TO anon, authenticated USING (true);
+
+ALTER TABLE public.product_pricing_plans ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read product_pricing_plans" ON public.product_pricing_plans;
+CREATE POLICY "Allow public read product_pricing_plans" ON public.product_pricing_plans
+  FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow all update product_pricing_plans" ON public.product_pricing_plans;
+CREATE POLICY "Allow all update product_pricing_plans" ON public.product_pricing_plans
+  FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all insert product_pricing_plans" ON public.product_pricing_plans;
+CREATE POLICY "Allow all insert product_pricing_plans" ON public.product_pricing_plans
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all delete product_pricing_plans" ON public.product_pricing_plans;
+CREATE POLICY "Allow all delete product_pricing_plans" ON public.product_pricing_plans
+  FOR DELETE TO anon, authenticated USING (true);
+
+ALTER TABLE public.product_pricing_plan_variants ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read product_pricing_plan_variants" ON public.product_pricing_plan_variants;
+CREATE POLICY "Allow public read product_pricing_plan_variants" ON public.product_pricing_plan_variants
+  FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow all update product_pricing_plan_variants" ON public.product_pricing_plan_variants;
+CREATE POLICY "Allow all update product_pricing_plan_variants" ON public.product_pricing_plan_variants
+  FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all insert product_pricing_plan_variants" ON public.product_pricing_plan_variants;
+CREATE POLICY "Allow all insert product_pricing_plan_variants" ON public.product_pricing_plan_variants
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all delete product_pricing_plan_variants" ON public.product_pricing_plan_variants;
+CREATE POLICY "Allow all delete product_pricing_plan_variants" ON public.product_pricing_plan_variants
+  FOR DELETE TO anon, authenticated USING (true);
+
 -- Insert Product: 🎥 HeyGen Pro – 3 Months
 INSERT INTO public.products (
   name,

@@ -3,82 +3,82 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://snippymart.com/</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://snippymart.com/products</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://snippymart.com/claude</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://snippymart.com/affiliate</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://snippymart.com/about</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://snippymart.com/contact</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://snippymart.com/track-order</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
     <loc>https://snippymart.com/download</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.55</priority>
   </url>
   <url>
     <loc>https://snippymart.com/privacy-policy</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.35</priority>
   </url>
   <url>
     <loc>https://snippymart.com/terms-of-service</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.35</priority>
   </url>
   <url>
     <loc>https://snippymart.com/refund-policy</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.35</priority>
   </url>
   <url>
-    <loc>https://snippymart.com/product/coursera-premium-readymade-api-55b51411</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/railway-hobby-framer-pro-12-months-combo</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-d3ed0b79%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230c141e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23152437%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-d3ed0b79%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2360a5fa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230c141e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-d3ed0b79)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-d3ed0b79)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2360a5fa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2360a5fa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EC%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ECoursera%20Premium%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EReadymade%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+      <image:loc>https://snippymart.com/railway-framer-combo.jpg</image:loc>
     </image:image>
   </url>
   <url>
     <loc>https://snippymart.com/product/gemini-ai-pro-18-months-api-d4e55f34</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -86,566 +86,89 @@
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/claude-api-tokens</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/coursera-premium-readymade-api-55b51411</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/claude-api-tokens-8ffcf45d.svg?v=1783947968618</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-d3ed0b79%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230c141e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23152437%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-d3ed0b79%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2360a5fa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230c141e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-d3ed0b79)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-d3ed0b79)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2360a5fa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2360a5fa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EC%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ECoursera%20Premium%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EReadymade%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/c418a147-a480-45d4-aa31-a9abf6a4c449</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/career-2-months-new-user-api-5bb98083</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/coursera-premium-12-months-c418a147.svg?v=1783947972796</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-734e5e08%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081912%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2e22%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-734e5e08%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2334d399%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081912%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-734e5e08)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-734e5e08)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2334d399%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EC%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ECareer%202%20Months%20New%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EUser%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/openai-codex-api-tokens</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/framer-pro-12-months-api-fed416ca</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/openai-codex-api-tokens-d141b824.svg?v=1783948039036</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-ddab3f04%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231d0e16%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23361928%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-ddab3f04%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f472b6%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231d0e16%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-ddab3f04)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-ddab3f04)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23f472b6%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23f472b6%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EF%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EFramer%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/canva-pro-1-year</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/granola-business-10-seats-12-months-api-b06ae9d9</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/canva-pro-1-year-4473b9ee.svg?v=1784092250996</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-1486b50b%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1208%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2337200e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-1486b50b%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fb923c%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1208%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-1486b50b)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-1486b50b)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23fb923c%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23fb923c%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EG%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EGranola%20Business%2010%20Seats%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/canva-edu-1-year</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/magic-patterns-starter-12-months-api-68f58075</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/canva-edu-1-year-558cdefa.svg?v=1784092250996</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-cda06517%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1808%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23372d0e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-cda06517%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23facc15%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1808%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-cda06517)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-cda06517)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23facc15%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EM%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EMagic%20Patterns%20Starter%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/1fb36ffd-24ac-49eb-9172-91893bcc4fcb</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/warp-build-12-months-api-4e4bcffc</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/linear-business-6-months-1fb36ffd.svg?v=1783948030570</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-a6c4e828%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081912%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2e22%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-a6c4e828%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2334d399%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081912%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-a6c4e828)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-a6c4e828)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2334d399%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EW%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EWarp%20Build%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/f4fa1f39-764e-4607-ad14-bacb416d1178</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/gumloop-pro-12-months-api-da8aa638</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/nordvpn-3-months-f4fa1f39.svg?v=1783948037905</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-e0e1202%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2314111e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23251f37%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-e0e1202%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23a78bfa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2314111e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-e0e1202)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-e0e1202)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23a78bfa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EG%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EGumloop%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/cf3ed631-57fa-4260-8da9-0711cd98a4dd</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/mobbin-10x-seat-12-months-api-814e9cbf</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/textshift-starter-1-year-cf3ed631.svg?v=1783948118253</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-1dd1b017%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1808%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23372d0e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-1dd1b017%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23facc15%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1808%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-1dd1b017)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-1dd1b017)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23facc15%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EM%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EMobbin%2010x%20Seat%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/9065a714-7f3e-4a4a-838d-1ce441ba3514</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/railway-hobby-12-months-api-b98d48a0</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/rezi-ai-lifetime-subscription-9065a714.svg?v=1783948109126</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/e4d28126-2235-4228-ba4a-243c5f59523c</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/resumai-1-month-e4d28126.svg?v=1783948108338</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/197a6d11-1b44-4423-bcdb-68e5c46310e8</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/medium-premium-1-year-redeem-code-197a6d11.svg?v=1783948035230</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/db4b8eb0-d4e1-4f39-95cb-a7c9bf214878</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/1password-2-years-individual-db4b8eb0.svg?v=1783947649542</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/1274a90c-6cf6-4a8e-a824-1e5d519b9a3f</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/perplexity-ai-1-year-1274a90c.svg?v=1783948039749</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/a2edc3b6-1cbf-48fd-ad50-7cb810ba4d3c</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/notion-business-6-months-a2edc3b6.svg?v=1783948038459</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/figma-edu-plan-personal-account</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/figma-edu-plan-personal-account-d4f0538a.svg?v=1783948022302</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/c13db024-ac7a-4b92-8428-1edf7a33a4fc</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/descript-ai-creator-1-year-c13db024.svg?v=1783948100219</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/51538672-88f2-41d4-92ff-7c81c3374af1</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/magic-patterns-starter-1-year-51538672.svg?v=1783948105971</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/ae8351bc-3cdf-4836-8396-7974bb9906aa</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/flora-ai-pro-1-month-ae8351bc.svg?v=1783948101066</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/521a5db1-83d4-4bcb-a095-4aacc3aec4d3</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/unsplash-3-months-521a5db1.svg?v=1783948048119</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/37516807-6aa2-476b-9669-187863d2e923</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/mobbin-pro-1-year-37516807.svg?v=1783948106723</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/1506b19c-989c-4911-8553-3acdc94e7659</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/imagine-art-standard-1-month-1506b19c.svg?v=1783948102704</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/d3af76ec-6b81-46e0-b255-5000600abd9a</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/invoice-clearing-supabase-replit-up-to-50-off-d3af76ec.svg?v=1783948103391</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/1da4c8bd-b1e3-4281-824a-62f089847d4c</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/scalingo-1-000-credits-9-months-validity-1da4c8bd.svg?v=1783948115760</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/bd4b8f47-ea92-40d1-9a57-6ea3a25774de</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/webflow-1-year-bd4b8f47.svg?v=1783948050180</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/a1cc6a3f-dc0d-4506-98e1-cb7f81f2d717</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/v0-dev-25-credits-card-added-a1cc6a3f.svg?v=1783948048646</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/49d8fcb7-8619-4ffe-9e5c-2ec3cae3fe68</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/render-50-credits-card-added-49d8fcb7.svg?v=1783948043662</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/c2cd4dfa-50f9-4f69-925a-49ea86f940fa</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/apify-100-credits-loaded-c2cd4dfa.svg?v=1783948099275</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/d6532526-b566-40e9-88c9-b5401622b538</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/n8n-cloud-starter-1-month-d6532526.svg?v=1783948036310</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/9a535b9d-d5d5-47e8-9ded-420705c1b384</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/replit-ai-core-1-year-9a535b9d.svg?v=1783948044642</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/1e325a12-a857-4f2b-8389-4232cd9ff7cc</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/replit-ai-core-1-month-1e325a12.svg?v=1783948044139</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/83cda520-8eb2-41d9-9af5-0639a51916b6</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/bolt-ai-pro-1-year-83cda520.svg?v=1783947830971</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/55efa077-862c-4a2e-a345-b1727ab25724</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/bolt-ai-pro-1-month-55efa077.svg?v=1783947824196</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/b0030e32-4f78-4e9f-8775-c787072fa9e2</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/warp-build-plan-12-months-b0030e32.svg?v=1783948049657</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/3bb57748-38a5-4714-a693-030eedc4ee3a</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/n8n-starter-1-year-coupon-3bb57748.svg?v=1783948036804</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/ed90aafe-5e96-44d9-88ba-78ad34c127e2</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/wispr-flow-pro-12-months-ed90aafe.svg?v=1783948119177</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/3c31cced-a990-4dad-a802-a88d5661f0eb</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/gumloop-pro-12-months-3c31cced.svg?v=1783948025246</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/d2e9ef6e-53a5-4396-9bc8-e169e754a4ca</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/capcut-pro-team-30-days-d2e9ef6e.svg?v=1783947909067</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/d274c514-aca3-4f22-983e-eb6dcc558c51</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/surfshark-vpn-2-months-d274c514.svg?v=1783948046874</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/a90d4f14-eb14-4ebf-948f-06914e34feec</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/prime-video-6-months-private-account-a90d4f14.svg?v=1783948040565</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/adobe-creative-cloud-4-months</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/adobe-creative-cloud-4-months-2c1cb413.svg?v=1783947683970</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/84ca4a0e-c27a-455a-8bac-cf467aa252a4</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/heygen-creator-plan-1-month-84ca4a0e.svg?v=1783948101941</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/3b0f4824-487d-43a1-ae2e-2c16b92c5872</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/magnific-by-freepik-ai-tools-credits-3b0f4824.svg?v=1783948034654</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/09bcc766-16ba-4690-ad1e-6857139a2a2b</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/veo-3-ultra-extension-unlimited-ai-video-generation-09bcc766.svg?v=1783948049111</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/5c29a336-06ca-4f09-a392-bde0a0fcfb8e</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/lovable-unlimited-credits-extension-1-month-5c29a336.svg?v=1783948105020</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/deepseek-v4-pro-api-tokens</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/deepseek-v4-pro-api-tokens-05677622.svg?v=1783947975298</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/297d6b38-c5f2-4e77-bd0f-69c71fa223be</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/chatgpt-go-5-months-shared-297d6b38.svg?v=1783947946366</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/google-ai-pro-18-months-</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/google-ai-pro-18-months-b6c3f641.svg?v=1783948024062</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/railway-plans-1-year-access</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/railway-hobby-plan-1-year-db517077.svg?v=1783948043137</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/grammarly-pro-official-premium-on-your-account</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/grammarly-pro-official-premium-on-your-account-165ca5de.svg?v=1783948024662</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/netflix-premium-private-profile-monthly</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/netflix-premium-private-profile-monthly-9d0f819a.svg?v=1783948037354</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/capcut-pro-1-month-subscription</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/capcut-pro-1-month-subscription-ece31a1e.svg?v=1783947905353</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/duolingo-super-1-year</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/duolingo-super-1-year-98928330.svg?v=1784092117762</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/chatgpt-plus-1-year</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/chatgpt-plus-1-year-6b3c6255.svg?v=1784095263817</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/chatgpt-plus-1-month</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/chatgpt-plus-1-month-957338f9.svg?v=1784095043977</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/factory-12m-api-0cd0dda9</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-31d3d53c%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231d0e16%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23361928%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-31d3d53c%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f472b6%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231d0e16%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-31d3d53c)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-31d3d53c)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23f472b6%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23f472b6%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EF%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EFactory%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/posthog-scale-12-months-api-925ac084</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-dc0a8bc%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231d0e16%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23361928%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-dc0a8bc%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f472b6%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231d0e16%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-dc0a8bc)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-dc0a8bc)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23f472b6%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23f472b6%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EP%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EPostHog%20Scale%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/supabase-pro-api-7d629498</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-3279d9b1%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230c141e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23152437%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-3279d9b1%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2360a5fa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230c141e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-3279d9b1)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-3279d9b1)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2360a5fa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2360a5fa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ES%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ESupabase%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/gamma-pro-12-months-api-3d20d8ab</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-10c91646%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23121416%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23212428%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-10c91646%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394a3b8%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23121416%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-10c91646)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-10c91646)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2394a3b8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2394a3b8%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EG%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EGamma%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/manus-pro-12-months-api-2ee839ff</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-916da657%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1808%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23372d0e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-916da657%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23facc15%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1808%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-916da657)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-916da657)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23facc15%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EM%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EManus%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/cursor-pro-12-months-api-cc8fb4f3</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-cursor5122%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23121416%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23212428%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-cursor5122%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394A3B8%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23121416%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-cursor5122)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-cursor5122)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2394A3B8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2394A3B8%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EC%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ECursor%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/lovabe-pro-12-months-api-cd3bf17b</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-59e4590%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081912%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2e22%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-59e4590%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2334d399%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081912%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-59e4590)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-59e4590)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2334d399%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EL%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ELovabe%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/notion-business-12-months-api-65ff22cd</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-notion9dea%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23121416%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23212428%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-notion9dea%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394A3B8%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23121416%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-notion9dea)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-notion9dea)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2394A3B8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Cg%20transform%3D%22translate(-70%2C-70)%20scale(5.833)%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M4.459%204.208c.746.606%201.026.56%202.428.466l13.215-.793c.28%200%20.047-.28-.046-.326L17.86%201.968c-.42-.326-.981-.7-2.055-.607L3.01%202.295c-.466.046-.56.28-.374.466zm.793%203.08v13.904c0%20.747.373%201.027%201.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42%200%20.84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748%200-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21%2019s0%20.84-1.168.84l-3.222.186c-.093-.186%200-.653.327-.746l.84-.233V9.854L7.822%209.76c-.094-.42.14-1.026.793-1.073l3.456-.233%204.764%207.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936%201.035l13.31-.98c1.634-.14%202.055-.047%203.082.7l4.249%202.986c.7.513.934.653.934%201.213v16.378c0%201.026-.373%201.634-1.68%201.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54%201.447-1.632z%22%2F%3E%3C%2Fg%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ENotion%20Business%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-3772f7e1%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230c141e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23152437%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-3772f7e1%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2360a5fa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230c141e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-3772f7e1)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-3772f7e1)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2360a5fa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2360a5fa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ER%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ERailway%20Hobby%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
     <loc>https://snippymart.com/product/n8n-starter-12-months-api-7e58735f</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -653,8 +176,17 @@
     </image:image>
   </url>
   <url>
+    <loc>https://snippymart.com/product/notion-business-12-months-api-65ff22cd</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-notion9dea%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23121416%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23212428%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-notion9dea%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394A3B8%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23121416%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-notion9dea)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-notion9dea)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2394A3B8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Cg%20transform%3D%22translate(-70%2C-70)%20scale(5.833)%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M4.459%204.208c.746.606%201.026.56%202.428.466l13.215-.793c.28%200%20.047-.28-.046-.326L17.86%201.968c-.42-.326-.981-.7-2.055-.607L3.01%202.295c-.466.046-.56.28-.374.466zm.793%203.08v13.904c0%20.747.373%201.027%201.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42%200%20.84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748%200-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21%2019s0%20.84-1.168.84l-3.222.186c-.093-.186%200-.653.327-.746l.84-.233V9.854L7.822%209.76c-.094-.42.14-1.026.793-1.073l3.456-.233%204.764%207.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936%201.035l13.31-.98c1.634-.14%202.055-.047%203.082.7l4.249%202.986c.7.513.934.653.934%201.213v16.378c0%201.026-.373%201.634-1.68%201.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54%201.447-1.632z%22%2F%3E%3C%2Fg%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ENotion%20Business%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
     <loc>https://snippymart.com/product/replit-core-12-months-api-4acb4a4a</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -663,7 +195,7 @@
   </url>
   <url>
     <loc>https://snippymart.com/product/wispr-flow-pro-12-months-api-235cece2</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -671,17 +203,467 @@
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/canva-business-12-months-api-929b6c55</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/supabase-pro-api-7d629498</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-canvabad3%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081818%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2b2d%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-canvabad3%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2300C4CC%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081818%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-canvabad3)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-canvabad3)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2300C4CC%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Cg%20transform%3D%22translate(-70%2C-70)%20scale(5.833)%22%3E%3Cpath%20fill%3D%22%2300C4CC%22%20d%3D%22M12%200C5.373%200%200%205.373%200%2012s5.373%2012%2012%2012%2012-5.373%2012-12S18.627%200%2012%200zM6.962%207.68c.754%200%201.337.549%201.405%201.2.069.583-.171%201.097-.822%201.406-.343.171-.48.172-.549.069-.034-.069%200-.137.069-.206.617-.514.617-.926.548-1.508-.034-.378-.308-.618-.583-.618-1.2%200-2.914%202.674-2.674%204.629.103.754.549%201.646%201.509%201.646.308%200%20.65-.103.96-.24.5-.264.799-.47%201.097-.8-.073-.885.704-2.046%201.851-2.046.515%200%20.926.205.96.583.068.514-.377.582-.514.582s-.378-.034-.378-.17c-.034-.138.309-.07.275-.378-.035-.206-.24-.274-.446-.274-.72%200-1.131.994-1.029%201.611.035.275.172.549.447.549.205%200%20.514-.31.617-.755.068-.308.343-.514.583-.514.102%200%20.17.034.205.171v.138c-.034.137-.137.548-.102.651%200%20.069.034.171.17.171.092%200%20.436-.18.777-.459.117-.59.253-1.298.253-1.357.034-.24.137-.48.617-.48.103%200%20.171.034.205.171v.138l-.136.617c.445-.583%201.097-.994%201.508-.994.172%200%20.309.102.309.274%200%20.103%200%20.274-.069.446-.137.377-.309.96-.412%201.474%200%20.137.035.274.207.274.171%200%20.685-.206%201.096-.754l.007-.004c-.002-.068-.007-.134-.007-.202%200-.411.035-.754.104-.994.068-.274.411-.514.617-.514.103%200%20.205.069.205.171%200%20.035%200%20.103-.034.137-.137.446-.24.857-.24%201.269%200%20.24.034.582.102.788%200%20.034.035.069.07.069.068%200%20.548-.445.89-1.028-.308-.206-.48-.549-.48-.96%200-.72.446-1.097.858-1.097.343%200%20.617.24.617.72%200%20.308-.103.65-.274.96h.102a.77.77%200%200%200%20.584-.24.293.293%200%200%201%20.134-.117c.335-.425.83-.74%201.41-.74.48%200%20.924.205.959.582.068.515-.378.618-.515.618l-.002-.002c-.138%200-.377-.035-.377-.172%200-.137.309-.068.274-.376-.034-.206-.24-.275-.446-.275-.686%200-1.13.891-1.028%201.611.034.275.171.583.445.583.206%200%20.515-.308.652-.754.068-.274.343-.514.583-.514.103%200%20.17.034.205.171%200%20.069%200%20.206-.137.652-.17.308-.171.48-.137.617.034.274.171.48.309.583.034.034.068.102.068.102%200%20.069-.034.138-.137.138-.034%200-.068%200-.103-.035-.514-.205-.72-.548-.789-.891-.205.24-.445.377-.72.377-.445%200-.89-.411-.96-.926a1.609%201.609%200%200%201%20.075-.649c-.203.13-.422.203-.623.203h-.17c-.447.652-.927%201.098-1.27%201.303a.896.896%200%200%201-.377.104c-.068%200-.171-.035-.205-.104-.095-.152-.156-.392-.193-.667-.481.527-1.145.805-1.453.805-.343%200-.548-.206-.582-.55v-.376c.102-.754.377-1.2.377-1.337a.074.074%200%200%200-.069-.07c-.24%200-1.028.824-1.166%201.373l-.103.445c-.068.309-.377.515-.582.515-.103%200-.172-.035-.206-.172v-.137l.046-.233c-.435.31-.87.508-1.075.508-.308%200-.48-.172-.514-.412-.206.274-.445.412-.754.412-.352%200-.696-.24-.862-.593-.244.275-.523.553-.852.764-.48.309-1.028.549-1.68.549-.582%200-1.097-.309-1.371-.583-.412-.377-.651-.96-.686-1.509-.205-1.68.823-3.84%202.4-4.8.378-.205.755-.343%201.132-.343zm9.77%203.291c-.104%200-.172.172-.172.343%200%20.274.137.583.309.755a1.74%201.74%200%200%200%20.102-.583c0-.343-.137-.515-.24-.515z%22%2F%3E%3C%2Fg%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ECanva%20Business%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-3279d9b1%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230c141e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23152437%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-3279d9b1%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2360a5fa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230c141e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-3279d9b1)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-3279d9b1)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2360a5fa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2360a5fa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ES%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ESupabase%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/gamma-pro-12-months-api-3d20d8ab</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-10c91646%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23121416%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23212428%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-10c91646%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394a3b8%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23121416%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-10c91646)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-10c91646)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2394a3b8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2394a3b8%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EG%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EGamma%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/lovabe-pro-12-months-api-cd3bf17b</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-59e4590%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081912%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2e22%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-59e4590%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2334d399%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081912%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-59e4590)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-59e4590)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2334d399%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EL%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ELovabe%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/manus-pro-12-months-api-2ee839ff</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-916da657%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1808%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23372d0e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-916da657%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23facc15%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1808%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-916da657)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-916da657)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23facc15%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EM%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EManus%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/cursor-pro-12-months-api-cc8fb4f3</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-cursor5122%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23121416%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23212428%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-cursor5122%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394A3B8%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23121416%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-cursor5122)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-cursor5122)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2394A3B8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2394A3B8%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EC%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ECursor%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/claude-api-tokens</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/claude-api-tokens-8ffcf45d.svg?v=1783947968618</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/c418a147-a480-45d4-aa31-a9abf6a4c449</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/coursera-premium-12-months-c418a147.svg?v=1783947972796</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/openai-codex-api-tokens</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/openai-codex-api-tokens-d141b824.svg?v=1783948039036</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/canva-pro-1-year</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/canva-pro-1-year-4473b9ee.svg?v=1784092250996</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/canva-edu-1-year</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/canva-edu-1-year-558cdefa.svg?v=1784092250996</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/1fb36ffd-24ac-49eb-9172-91893bcc4fcb</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/linear-business-6-months-1fb36ffd.svg?v=1783948030570</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/f4fa1f39-764e-4607-ad14-bacb416d1178</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/nordvpn-3-months-f4fa1f39.svg?v=1783948037905</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/cf3ed631-57fa-4260-8da9-0711cd98a4dd</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/textshift-starter-1-year-cf3ed631.svg?v=1783948118253</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/9065a714-7f3e-4a4a-838d-1ce441ba3514</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/rezi-ai-lifetime-subscription-9065a714.svg?v=1783948109126</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/e4d28126-2235-4228-ba4a-243c5f59523c</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/resumai-1-month-e4d28126.svg?v=1783948108338</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/197a6d11-1b44-4423-bcdb-68e5c46310e8</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/medium-premium-1-year-redeem-code-197a6d11.svg?v=1783948035230</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/db4b8eb0-d4e1-4f39-95cb-a7c9bf214878</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/1password-2-years-individual-db4b8eb0.svg?v=1783947649542</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/1274a90c-6cf6-4a8e-a824-1e5d519b9a3f</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/perplexity-ai-1-year-1274a90c.svg?v=1783948039749</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/figma-edu-plan-personal-account</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/figma-edu-plan-personal-account-d4f0538a.svg?v=1783948022302</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/c13db024-ac7a-4b92-8428-1edf7a33a4fc</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/descript-ai-creator-1-year-c13db024.svg?v=1783948100219</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/ae8351bc-3cdf-4836-8396-7974bb9906aa</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/flora-ai-pro-1-month-ae8351bc.svg?v=1783948101066</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/521a5db1-83d4-4bcb-a095-4aacc3aec4d3</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/unsplash-3-months-521a5db1.svg?v=1783948048119</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/37516807-6aa2-476b-9669-187863d2e923</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/mobbin-pro-1-year-37516807.svg?v=1783948106723</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/1506b19c-989c-4911-8553-3acdc94e7659</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/imagine-art-standard-1-month-1506b19c.svg?v=1783948102704</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/d3af76ec-6b81-46e0-b255-5000600abd9a</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/invoice-clearing-supabase-replit-up-to-50-off-d3af76ec.svg?v=1783948103391</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/1da4c8bd-b1e3-4281-824a-62f089847d4c</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/scalingo-1-000-credits-9-months-validity-1da4c8bd.svg?v=1783948115760</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/bd4b8f47-ea92-40d1-9a57-6ea3a25774de</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/webflow-1-year-bd4b8f47.svg?v=1783948050180</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/a1cc6a3f-dc0d-4506-98e1-cb7f81f2d717</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/v0-dev-25-credits-card-added-a1cc6a3f.svg?v=1783948048646</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/49d8fcb7-8619-4ffe-9e5c-2ec3cae3fe68</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/render-50-credits-card-added-49d8fcb7.svg?v=1783948043662</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/c2cd4dfa-50f9-4f69-925a-49ea86f940fa</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/apify-100-credits-loaded-c2cd4dfa.svg?v=1783948099275</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/d6532526-b566-40e9-88c9-b5401622b538</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/n8n-cloud-starter-1-month-d6532526.svg?v=1783948036310</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/1e325a12-a857-4f2b-8389-4232cd9ff7cc</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/replit-ai-core-1-month-1e325a12.svg?v=1783948044139</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/83cda520-8eb2-41d9-9af5-0639a51916b6</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/bolt-ai-pro-1-year-83cda520.svg?v=1783947830971</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/55efa077-862c-4a2e-a345-b1727ab25724</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/bolt-ai-pro-1-month-55efa077.svg?v=1783947824196</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/ed90aafe-5e96-44d9-88ba-78ad34c127e2</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/wispr-flow-pro-12-months-ed90aafe.svg?v=1783948119177</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/d2e9ef6e-53a5-4396-9bc8-e169e754a4ca</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/capcut-pro-team-30-days-d2e9ef6e.svg?v=1783947909067</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/d274c514-aca3-4f22-983e-eb6dcc558c51</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/surfshark-vpn-2-months-d274c514.svg?v=1783948046874</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/a90d4f14-eb14-4ebf-948f-06914e34feec</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/prime-video-6-months-private-account-a90d4f14.svg?v=1783948040565</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/adobe-creative-cloud-4-months</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/adobe-creative-cloud-4-months-2c1cb413.svg?v=1783947683970</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/84ca4a0e-c27a-455a-8bac-cf467aa252a4</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/heygen-creator-plan-1-month-84ca4a0e.svg?v=1783948101941</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/3b0f4824-487d-43a1-ae2e-2c16b92c5872</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/magnific-by-freepik-ai-tools-credits-3b0f4824.svg?v=1783948034654</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/veo-3-ultra-extension-unlimited-ai-video-generation</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/veo-3-ultra-extension-unlimited-ai-video-generation-09bcc766.svg?v=1783948049111</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/5c29a336-06ca-4f09-a392-bde0a0fcfb8e</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/lovable-unlimited-credits-extension-1-month-5c29a336.svg?v=1783948105020</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/deepseek-v4-pro-api-tokens</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/deepseek-v4-pro-api-tokens-05677622.svg?v=1783947975298</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/297d6b38-c5f2-4e77-bd0f-69c71fa223be</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/chatgpt-go-5-months-shared-297d6b38.svg?v=1783947946366</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/railway-plans-1-year-access</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/railway-hobby-plan-1-year-db517077.svg?v=1783948043137</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/grammarly-pro-official-premium-on-your-account</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/grammarly-pro-official-premium-on-your-account-165ca5de.svg?v=1783948024662</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/netflix-premium-private-profile-monthly</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/netflix-premium-private-profile-monthly-9d0f819a.svg?v=1783948037354</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/capcut-pro-1-month-subscription</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/capcut-pro-1-month-subscription-ece31a1e.svg?v=1783947905353</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/duolingo-super-1-year</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/duolingo-super-1-year-98928330.svg?v=1784092117762</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/chatgpt-plus-1-year</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/product-images/brand-v2/chatgpt-plus-1-year-6b3c6255.svg?v=1784095263817</image:loc>
     </image:image>
   </url>
   <url>
     <loc>https://snippymart.com/product/elevenlabs-creator-12-months-api-3a60b280</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -689,26 +671,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/mobbin-10x-seat-12-months-api-814e9cbf</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-1dd1b017%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1808%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23372d0e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-1dd1b017%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23facc15%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1808%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-1dd1b017)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-1dd1b017)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23facc15%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EM%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EMobbin%2010x%20Seat%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/magic-patterns-starter-12-months-api-68f58075</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-cda06517%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1808%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23372d0e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-cda06517%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23facc15%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1808%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-cda06517)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-cda06517)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23facc15%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EM%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EMagic%20Patterns%20Starter%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://snippymart.com/product/linear-business-12-months-api-91924976</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -717,7 +681,7 @@
   </url>
   <url>
     <loc>https://snippymart.com/product/chatprd-12-months-api-3f224d72</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -725,53 +689,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/framer-pro-12-months-api-fed416ca</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-ddab3f04%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231d0e16%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23361928%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-ddab3f04%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f472b6%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231d0e16%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-ddab3f04)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-ddab3f04)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23f472b6%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23f472b6%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EF%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EFramer%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/gumloop-pro-12-months-api-da8aa638</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-e0e1202%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2314111e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23251f37%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-e0e1202%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23a78bfa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2314111e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-e0e1202)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-e0e1202)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23a78bfa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EG%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EGumloop%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/railway-hobby-12-months-api-b98d48a0</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-3772f7e1%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230c141e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23152437%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-3772f7e1%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2360a5fa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230c141e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-3772f7e1)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-3772f7e1)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2360a5fa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2360a5fa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ER%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ERailway%20Hobby%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/warp-build-12-months-api-4e4bcffc</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-a6c4e828%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081912%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2e22%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-a6c4e828%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2334d399%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081912%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-a6c4e828)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-a6c4e828)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2334d399%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EW%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EWarp%20Build%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://snippymart.com/product/granola-business-10-seats-12-months-api-b06ae9d9</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-    <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-1486b50b%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1208%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2337200e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-1486b50b%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fb923c%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1208%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-1486b50b)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-1486b50b)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23fb923c%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23fb923c%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EG%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EGranola%20Business%2010%20Seats%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://snippymart.com/product/quillbot-premium-1-month-api-619525a7</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -779,30 +698,57 @@
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/career-2-months-new-user-api-5bb98083</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/linkedin-business-premium-12-months-api-48831edf</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-734e5e08%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081912%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2e22%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-734e5e08%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2334d399%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081912%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-734e5e08)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-734e5e08)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2334d399%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EC%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ECareer%202%20Months%20New%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EUser%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-linkedin61%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23080c17%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e162b%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-linkedin61%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230A66C2%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23080c17%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-linkedin61)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-linkedin61)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%230A66C2%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Cg%20transform%3D%22translate(-70%2C-70)%20scale(5.833)%22%3E%3Cpath%20fill%3D%22%230A66C2%22%20d%3D%22M20.447%2020.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853%200-2.136%201.445-2.136%202.939v5.667H9.351V9h3.414v1.561h.046c.477-.9%201.637-1.85%203.37-1.85%203.601%200%204.267%202.37%204.267%205.455v6.286zM5.337%207.433c-1.144%200-2.063-.926-2.063-2.065%200-1.138.92-2.063%202.063-2.063%201.14%200%202.064.925%202.064%202.063%200%201.139-.925%202.065-2.064%202.065zm1.782%2013.019H3.555V9h3.564v11.452zM22.225%200H1.771C.792%200%200%20.774%200%201.729v20.542C0%2023.227.792%2024%201.771%2024h20.451C23.2%2024%2024%2023.227%2024%2022.271V1.729C24%20.774%2023.2%200%2022.222%200h.003z%22%2F%3E%3C%2Fg%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ELinkedin%20Business%20Premium%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/sales-navigator-1-month-old-user-api-8297855a</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/linkedin-career-premium-12-months-api-97dfe06c</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-4063b670%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23081912%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e2e22%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-4063b670%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2334d399%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23081912%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-4063b670)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-4063b670)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%2334d399%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ES%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ESales%20Navigator%201%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EMonth%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-linkedin89%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23080c17%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230e162b%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-linkedin89%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230A66C2%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23080c17%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-linkedin89)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-linkedin89)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%230A66C2%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Cg%20transform%3D%22translate(-70%2C-70)%20scale(5.833)%22%3E%3Cpath%20fill%3D%22%230A66C2%22%20d%3D%22M20.447%2020.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853%200-2.136%201.445-2.136%202.939v5.667H9.351V9h3.414v1.561h.046c.477-.9%201.637-1.85%203.37-1.85%203.601%200%204.267%202.37%204.267%205.455v6.286zM5.337%207.433c-1.144%200-2.063-.926-2.063-2.065%200-1.138.92-2.063%202.063-2.063%201.14%200%202.064.925%202.064%202.063%200%201.139-.925%202.065-2.064%202.065zm1.782%2013.019H3.555V9h3.564v11.452zM22.225%200H1.771C.792%200%200%20.774%200%201.729v20.542C0%2023.227.792%2024%201.771%2024h20.451C23.2%2024%2024%2023.227%2024%2022.271V1.729C24%20.774%2023.2%200%2022.222%200h.003z%22%2F%3E%3C%2Fg%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ELinkedin%20Career%20Premium%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://snippymart.com/product/lovable-lite-12-months-api-a75e158d</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://snippymart.com/product/resend-pro-12-months-api-07f3a901</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-10b76193%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1208%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2337200e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-10b76193%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fb923c%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1208%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-10b76193)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-10b76193)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23fb923c%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23fb923c%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EL%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ELovable%20Lite%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-98ae481a%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2314111e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23251f37%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-98ae481a%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23a78bfa%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2314111e%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-98ae481a)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-98ae481a)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23a78bfa%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23a78bfa%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ER%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EResend%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/supercut-pro-10-seat-12-months-api-889308ca</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-7cd83bac%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231d0e16%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23361928%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-7cd83bac%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f472b6%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231d0e16%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-7cd83bac)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-7cd83bac)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23f472b6%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23f472b6%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ES%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ESupercut%20Pro%2010%20Seat%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/jam-team-10-seat-12-months-api-fae146a6</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-3ee4075f%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1808%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23372d0e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-3ee4075f%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23facc15%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1808%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-3ee4075f)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-3ee4075f)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23facc15%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3EJ%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3EJam%20Team%2010%20Seat%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://snippymart.com/product/runway-pro-12-months-api-72649a76</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://snippymart.com/data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22800%22%20viewBox%3D%220%200%20800%20800%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg-330408a3%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e1208%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2337200e%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow-330408a3%22%20cx%3D%2250%25%22%20cy%3D%2232%25%22%20r%3D%2250%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fb923c%22%20stop-opacity%3D%220.28%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231e1208%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23bg-330408a3)%22%2F%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22800%22%20fill%3D%22url(%23glow-330408a3)%22%2F%3E%0A%20%20%3Cg%20transform%3D%22translate(400%2C%20300)%22%3E%0A%20%20%20%20%3Ccircle%20r%3D%22110%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.08%22%2F%3E%0A%20%20%20%20%3Ccircle%20r%3D%2296%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.06%22%20stroke%3D%22%23fb923c%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%3Ctext%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20fill%3D%22%23fb923c%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2264%22%20font-weight%3D%22800%22%3ER%3C%2Ftext%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22560%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3ERunway%20Pro%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22604%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-0.4%22%3E12%20Months%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22400%22%20y%3D%22730%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%20fill-opacity%3D%220.4%22%20font-family%3D%22Inter%2CSegoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22600%22%20letter-spacing%3D%224%22%3ESNIPPY%20MART%3C%2Ftext%3E%0A%3C%2Fsvg%3E</image:loc>
     </image:image>
   </url>
 </urlset>

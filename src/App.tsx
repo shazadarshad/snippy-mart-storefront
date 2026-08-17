@@ -151,7 +151,7 @@ const AppContent = () => {
       </main>
 
       {!isAdminRoute && <Footer />}
-      {!isAdminRoute && (
+      {!isAdminRoute && !location.pathname.startsWith('/checkout') && (
         <Suspense fallback={null}>
           <AIChatWidget />
         </Suspense>

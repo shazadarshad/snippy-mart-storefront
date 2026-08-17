@@ -146,7 +146,7 @@ export default function AIChatWidget() {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 group"
+                    className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 sm:bottom-6 sm:right-6 z-40 group"
                     aria-label="Open AI Chat"
                 >
                     <div className="relative">
