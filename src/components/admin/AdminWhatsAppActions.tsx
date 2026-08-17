@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { formatCatalogLkr } from '@/hooks/useCurrency';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { cardPaymentPageUrl } from '@/lib/cardPayment';
 import {
   detectWhatsAppScenario,
   getOrderWhatsAppLink,
@@ -41,9 +41,8 @@ export function AdminWhatsAppActions({
   className,
 }: Props) {
   const { toast } = useToast();
-  const { data: settings } = useSiteSettings();
   const waExtras = {
-    cardPaymentLink: settings?.card_payment_link || null,
+    cardPaymentLink: order.order_number ? cardPaymentPageUrl(order.order_number) : null,
     amountLabel:
       order.total_amount != null && Number.isFinite(Number(order.total_amount))
         ? formatCatalogLkr(Number(order.total_amount))

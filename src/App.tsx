@@ -38,6 +38,8 @@ const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminCardPayments = lazy(() => import("./pages/admin/AdminCardPayments"));
+const CardPaymentPage = lazy(() => import("./pages/CardPaymentPage"));
 const AdminClaude = lazy(() => import("./pages/admin/AdminClaude"));
 const AdminFulfillment = lazy(() => import("./pages/admin/AdminFulfillment"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
@@ -104,6 +106,7 @@ const AppContent = () => {
             <Route path="/affiliate" element={<PageTransition><AffiliatePage /></PageTransition>} />
             <Route path="/affiliates" element={<PageTransition><AffiliatePage /></PageTransition>} />
             <Route path="/track-order" element={<PageTransition><TrackOrderPage /></PageTransition>} />
+            <Route path="/payment/:orderNumber" element={<PageTransition><CardPaymentPage /></PageTransition>} />
             <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
             <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
             <Route path="/download" element={<PageTransition><DownloadExtension /></PageTransition>} />
@@ -121,6 +124,7 @@ const AppContent = () => {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="card-payments" element={<AdminCardPayments />} />
               <Route path="claude" element={<AdminClaude />} />
               <Route path="fulfillment" element={<AdminFulfillment />} />
               <Route path="testimonials" element={<AdminTestimonials />} />

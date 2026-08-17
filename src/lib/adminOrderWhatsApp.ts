@@ -4,6 +4,7 @@
  */
 
 import { buildWhatsAppUrl, toWhatsAppDigits } from '@/lib/phoneWhatsApp';
+import { cardPaymentPageUrl } from '@/lib/cardPayment';
 
 const TRACK_BASE = 'https://snippymart.com/track-order';
 
@@ -155,22 +156,26 @@ export function buildOrderWhatsAppMessage(
 
     case 'card_link': {
       const amount = opts?.amountLabel ? `\nAmount: *${opts.amountLabel}*` : '';
-      const link = String(opts?.cardPaymentLink || '').trim();
-      const linkBlock = link
-        ? ['Pay securely with Visa / Mastercard here:', link]
-        : ['Reply here and we will send your secure Visa / Mastercard payment link.'];
+      const payPage =
+        String(opts?.cardPaymentLink || '').trim() || cardPaymentPageUrl(id);
       return [
         `Hi ${name}!`,
         '',
-        'Card payment for your Snippy Mart order:',
+        'Pay securely for your Snippy Mart order.',
         '',
         `Order ID: *${id}*${amount}`,
         '',
-        ...linkBlock,
+        'Open this Snippy Mart page:',
+        payPage,
         '',
-        'After you pay, reply with the confirmation screenshot (or upload it on checkout).',
+        '1. Tap *Proceed to payment*',
+        '2. Pay with Visa / Mastercard',
+        '3. Come back and upload the confirmation on the same page',
+        '',
         'Track order:',
         url,
+        '',
+        'Reply here if you need help.',
       ].join('\n');
     }
 

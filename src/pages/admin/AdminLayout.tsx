@@ -26,6 +26,7 @@ import {
   MoreHorizontal,
   Store,
   Handshake,
+  CreditCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -54,6 +55,7 @@ const menuItems: MenuItem[] = [
   { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, group: 'Main' },
   { name: 'Fulfillment', path: '/admin/fulfillment', icon: ShieldCheck, group: 'Ops' },
   { name: 'Inventory', path: '/admin/inventory', icon: Package, group: 'Ops' },
+  { name: 'Card payments', path: '/admin/card-payments', icon: CreditCard, badge: 'NEW', group: 'Ops' },
   { name: 'Claude', path: '/admin/claude', icon: Zap, badge: 'NEW', group: 'Ops' },
   { name: 'Coupons', path: '/admin/coupons', icon: Tag, group: 'Ops' },
   {

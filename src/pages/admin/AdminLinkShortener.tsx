@@ -37,7 +37,7 @@ const SITE_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'ht
 const RESERVED_SLUGS = new Set([
   'admin', 'products', 'product', 'checkout', 'order-success', 'about',
   'contact', 'track-order', 'privacy-policy', 'refund-policy', 'download',
-  'claude', 'terms-of-service', 'shared', 'api', 'assets', 'favicon.ico',
+  'claude', 'payment', 'terms-of-service', 'shared', 'api', 'assets', 'favicon.ico',
   'robots.txt', 'sitemap.xml', 'manifest.json', 'admin-manifest.json', 'sw.js', 'affiliate', 'affiliates',
 ]);
 

@@ -31,6 +31,8 @@ export interface Order {
   notes: string | null;
   payment_method: 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card' | null;
   payment_proof_url: string | null;
+  card_checkout_url?: string | null;
+  card_link_created_at?: string | null;
   binance_id: string | null;
   customer_country: string | null;
   currency_code?: string;
@@ -505,6 +507,8 @@ export const useTrackOrder = (query: string) => {
           updated_at,
           payment_method,
           payment_proof_url,
+          card_checkout_url,
+          card_link_created_at,
           currency_code,
           currency_symbol,
           currency_rate,

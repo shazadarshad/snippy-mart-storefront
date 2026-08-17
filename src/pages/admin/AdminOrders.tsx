@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Eye, MessageCircle, Loader2, RefreshCw, Trash2, Building2, Bitcoin, ExternalLink, Image as ImageIcon, FileText, Globe, Clock, ShieldCheck, User, CreditCard, ChevronRight, LayoutList, Fingerprint, X, ShieldAlert, Monitor, Cpu, MapPin, Activity, Package, CheckCircle2, Copy, Zap, Mail, Wallet, BadgeCheck, XCircle, AlertTriangle, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,6 +67,7 @@ import {
 import { paymentMethodLabel, paymentMethodShort } from '@/lib/paymentMethod';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { getOrderWhatsAppLink } from '@/lib/adminOrderWhatsApp';
+import { cardPaymentPageUrl } from '@/lib/cardPayment';
 
 // Sub-component for Manual Assignment
 const ManualAssignmentPanel = ({ order }: { order: Order }) => {
@@ -1466,7 +1468,7 @@ const AdminOrders = () => {
                                     'card_link',
                                     [],
                                     {
-                                      cardPaymentLink: siteSettings?.card_payment_link || null,
+                                      cardPaymentLink: cardPaymentPageUrl(selectedOrder.order_number),
                                       amountLabel: formatCatalogLkr(Number(selectedOrder.total_amount)),
                                     },
                                   );
@@ -1483,6 +1485,17 @@ const AdminOrders = () => {
                               >
                                 <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
                                 Send card link
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-9 rounded-lg text-xs font-bold"
+                                asChild
+                              >
+                                <Link to={`/admin/card-payments?order=${encodeURIComponent(selectedOrder.order_number)}`}>
+                                  Open card desk
+                                </Link>
                               </Button>
                               <Button
                                 type="button"

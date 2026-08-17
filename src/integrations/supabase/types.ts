@@ -182,6 +182,8 @@ export type Database = {
         Row: {
           applied_coupon_id: string | null
           binance_id: string | null
+          card_checkout_url: string | null
+          card_link_created_at: string | null
           created_at: string
           customer_name: string
           customer_whatsapp: string
@@ -198,6 +200,8 @@ export type Database = {
         Insert: {
           applied_coupon_id?: string | null
           binance_id?: string | null
+          card_checkout_url?: string | null
+          card_link_created_at?: string | null
           created_at?: string
           customer_name: string
           customer_whatsapp: string
@@ -214,6 +218,8 @@ export type Database = {
         Update: {
           applied_coupon_id?: string | null
           binance_id?: string | null
+          card_checkout_url?: string | null
+          card_link_created_at?: string | null
           created_at?: string
           customer_name?: string
           customer_whatsapp?: string
