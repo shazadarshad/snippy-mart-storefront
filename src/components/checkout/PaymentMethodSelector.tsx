@@ -62,6 +62,8 @@ interface PaymentMethodSelectorProps {
   onCryptoSelectionChange: (sel: CryptoSelection) => void;
   onPreRegister: () => Promise<void>;
   isPreRegistering: boolean;
+  /** Extra lines for the customer → store WhatsApp (items, name, amount) */
+  cardWhatsAppDetails?: string;
 }
 
 const PaymentMethodSelector = ({
@@ -77,6 +79,7 @@ const PaymentMethodSelector = ({
   onCryptoSelectionChange,
   onPreRegister,
   isPreRegistering,
+  cardWhatsAppDetails,
 }: PaymentMethodSelectorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -212,7 +215,19 @@ const PaymentMethodSelector = ({
   const handleWhatsAppClick = async () => {
     await onPreRegister();
     const digits = String(settings?.whatsapp_number || '94787767869').replace(/\D/g, '');
-    const message = `Hi! I'd like to pay by card for Order ${orderId}. Please send me the payment link.`;
+    const extra = String(cardWhatsAppDetails || '').trim();
+    const message = [
+      `Hi Snippy Mart! I'd like to pay by card (Visa / Mastercard).`,
+      '',
+      `Order ID: ${orderId}`,
+      extra,
+      extra ? '' : `Amount: ${formatCatalogLkr(totalLkr)}`,
+      'Please send me the secure card payment link.',
+    ]
+      .filter((line) => line !== undefined)
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(message)}`, '_blank');
   };
 

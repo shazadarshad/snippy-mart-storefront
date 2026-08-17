@@ -828,6 +828,23 @@ const CheckoutPage = () => {
                   onCryptoSelectionChange={setCryptoSelection}
                   onPreRegister={handlePreRegister}
                   isPreRegistering={isPreRegistering}
+                  cardWhatsAppDetails={[
+                    `Name: ${formData.name.trim() || 'Customer'}`,
+                    `WhatsApp: ${formData.whatsapp.trim() || '—'}`,
+                    formData.email.trim() ? `Email: ${formData.email.trim()}` : '',
+                    `Amount: ${formatCatalogLkr(getFinalTotal())}`,
+                    '',
+                    'Items:',
+                    ...items.map((item) => {
+                      const opt = [item.product.plan_name, item.product.variant_name]
+                        .filter(Boolean)
+                        .join(' · ');
+                      const line = `${item.product.name}${opt ? ` (${opt})` : ''} ×${item.quantity}`;
+                      return `• ${line} — ${formatCatalogLkr(item.product.price * item.quantity)}`;
+                    }),
+                  ]
+                    .filter((l) => l !== '')
+                    .join('\n')}
                 />
               </div>
 
