@@ -380,12 +380,13 @@ const CheckoutPage = () => {
       paymentMethod !== 'bank_transfer' &&
       paymentMethod !== 'upi' &&
       paymentMethod !== 'binance_usdt' &&
-      paymentMethod !== 'crypto_onchain'
+      paymentMethod !== 'crypto_onchain' &&
+      paymentMethod !== 'card'
     ) {
       setPaymentMethod('bank_transfer');
       toast({
         title: 'Payment method unavailable',
-        description: 'Please use bank transfer, UPI, or crypto.',
+        description: 'Please use bank transfer, UPI, crypto, or card.',
         variant: 'destructive',
       });
       return;
@@ -411,7 +412,9 @@ const CheckoutPage = () => {
             ? 'Please upload your bank transfer receipt screenshot.'
             : paymentMethod === 'upi'
               ? 'Please upload your UPI payment success screenshot.'
-              : 'Please upload your crypto payment screenshot / TX confirmation.',
+              : paymentMethod === 'card'
+                ? 'Please upload your card payment confirmation screenshot.'
+                : 'Please upload your crypto payment screenshot / TX confirmation.',
         variant: 'destructive',
       });
       return;
@@ -803,10 +806,11 @@ const CheckoutPage = () => {
                       m === 'bank_transfer' ||
                       m === 'upi' ||
                       m === 'binance_usdt' ||
-                      m === 'crypto_onchain'
+                      m === 'crypto_onchain' ||
+                      m === 'card'
                     ) {
                       setPaymentMethod(m);
-                      if (m === 'bank_transfer' || m === 'upi') {
+                      if (m === 'bank_transfer' || m === 'upi' || m === 'card') {
                         setCryptoSelection(null);
                       }
                     } else if (m === null) {
@@ -835,10 +839,11 @@ const CheckoutPage = () => {
                   <p className="text-foreground/70 text-xs sm:text-sm leading-relaxed">
                     {allAutoItems ? (
                       <>
-                        Pay by bank or crypto, put your <strong className="text-foreground">Order ID</strong> in
-                        the transfer note, upload proof, then place the order. After we confirm payment,
-                        your product appears on <strong className="text-foreground">Track Order</strong> —
-                        save your Order ID.
+                        Pay by bank, UPI, crypto, or card, put your{' '}
+                        <strong className="text-foreground">Order ID</strong> in the transfer note,
+                        upload proof, then place the order. After we confirm payment, your product
+                        appears on <strong className="text-foreground">Track Order</strong> — save
+                        your Order ID.
                       </>
                     ) : isMixedCart ? (
                       <>
@@ -848,8 +853,8 @@ const CheckoutPage = () => {
                       </>
                     ) : (
                       <>
-                        Pay by bank or crypto, put your Order ID in the note, upload proof, then place
-                        the order. We verify payment and deliver — WhatsApp helps if you need support.
+                        Pay by bank, UPI, crypto, or card. For card, tap Contact on WhatsApp to get
+                        a payment link, then upload confirmation and place the order.
                       </>
                     )}
                   </p>

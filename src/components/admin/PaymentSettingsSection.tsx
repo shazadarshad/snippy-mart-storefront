@@ -7,6 +7,7 @@ import {
   Trash2,
   Wallet,
   Info,
+  CreditCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +42,8 @@ const PaymentSettingsSection = () => {
   });
 
   const [upiId, setUpiId] = useState('7411760671-3@ybl');
+  const [cardPaymentLink, setCardPaymentLink] = useState('');
+  const [cardPaymentNote, setCardPaymentNote] = useState('');
 
   const [markupPercent, setMarkupPercent] = useState(String(DEFAULT_CRYPTO_MARKUP_PERCENT));
   const [lkrPerUsd, setLkrPerUsd] = useState(String(DEFAULT_CRYPTO_LKR_PER_USD));
@@ -66,6 +69,8 @@ const PaymentSettingsSection = () => {
         (siteSettings as any).upi_vpa ||
         '7411760671-3@ybl',
     );
+    setCardPaymentLink(siteSettings.card_payment_link || '');
+    setCardPaymentNote(siteSettings.card_payment_note || '');
     const crypto = parseCryptoSettings(
       siteSettings.crypto_wallets,
       siteSettings.crypto_markup_percent,
@@ -100,6 +105,21 @@ const PaymentSettingsSection = () => {
       toast({ title: 'Binance settings saved', description: 'Binance Pay details updated.' });
     } catch {
       toast({ title: 'Error', description: 'Failed to save Binance settings.', variant: 'destructive' });
+    }
+  };
+
+  const handleSaveCard = async () => {
+    try {
+      await Promise.all([
+        updateSetting.mutateAsync({ key: 'card_payment_link', value: cardPaymentLink.trim() }),
+        updateSetting.mutateAsync({ key: 'card_payment_note', value: cardPaymentNote.trim() }),
+      ]);
+      toast({
+        title: 'Card settings saved',
+        description: 'The link is included when you send a card payment WhatsApp from an order.',
+      });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to save card settings.', variant: 'destructive' });
     }
   };
 
@@ -241,6 +261,55 @@ const PaymentSettingsSection = () => {
           <Button onClick={handleSaveBankSettings} disabled={updateSetting.isPending}>
             <Save className="w-4 h-4 mr-2" />
             Save Bank Settings
+          </Button>
+        </div>
+      </div>
+
+      {/* Card (Visa / Master) */}
+      <div className="p-6 rounded-2xl bg-card border border-border">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+            <CreditCard className="w-5 h-5 text-purple-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Card Payment (Visa / Master)</h2>
+            <p className="text-sm text-muted-foreground">
+              Live on checkout — customer WhatsApps you, you send a secure card link
+            </p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="card_payment_link">Default card checkout link (optional)</Label>
+            <Input
+              id="card_payment_link"
+              value={cardPaymentLink}
+              onChange={(e) => setCardPaymentLink(e.target.value)}
+              placeholder="https://payhere.lk/pay/… or Stripe / Genie link"
+              className="mt-1.5 bg-secondary/50 border-border font-mono text-sm"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Included automatically in “Send card link” on the order. Leave empty to type the link in WhatsApp yourself.
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="card_payment_note">Internal note (admin only)</Label>
+            <Input
+              id="card_payment_note"
+              value={cardPaymentNote}
+              onChange={(e) => setCardPaymentNote(e.target.value)}
+              placeholder="e.g. Use PayHere Genie · verify name matches order"
+              className="mt-1.5 bg-secondary/50 border-border"
+            />
+          </div>
+          <Button
+            onClick={handleSaveCard}
+            disabled={updateSetting.isPending}
+            variant="outline"
+            className="border-purple-500/30 text-purple-600 hover:bg-purple-500/10"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Save Card Settings
           </Button>
         </div>
       </div>

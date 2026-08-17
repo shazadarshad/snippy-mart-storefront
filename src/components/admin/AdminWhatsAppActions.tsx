@@ -2,6 +2,8 @@ import { MessageCircle, Copy, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { formatCatalogLkr } from '@/hooks/useCurrency';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import {
   detectWhatsAppScenario,
   getOrderWhatsAppLink,
@@ -15,6 +17,7 @@ const SECONDARY: WhatsAppScenario[] = [
   'auto_ready',
   'auto_processing',
   'pending_payment',
+  'card_link',
   'payment_rejected',
   'manual_ready',
   'generic_support',
@@ -38,10 +41,18 @@ export function AdminWhatsAppActions({
   className,
 }: Props) {
   const { toast } = useToast();
-  const primary = getOrderWhatsAppLink(order, undefined, deliveries);
+  const { data: settings } = useSiteSettings();
+  const waExtras = {
+    cardPaymentLink: settings?.card_payment_link || null,
+    amountLabel:
+      order.total_amount != null && Number.isFinite(Number(order.total_amount))
+        ? formatCatalogLkr(Number(order.total_amount))
+        : null,
+  };
+  const primary = getOrderWhatsAppLink(order, undefined, deliveries, waExtras);
 
   const openScenario = (scenario: WhatsAppScenario) => {
-    const link = getOrderWhatsAppLink(order, scenario, deliveries);
+    const link = getOrderWhatsAppLink(order, scenario, deliveries, waExtras);
     if (!link.url) {
       toast({
         title: 'Invalid WhatsApp number',
@@ -54,7 +65,7 @@ export function AdminWhatsAppActions({
   };
 
   const copyMessage = (scenario?: WhatsAppScenario) => {
-    const link = getOrderWhatsAppLink(order, scenario, deliveries);
+    const link = getOrderWhatsAppLink(order, scenario, deliveries, waExtras);
     navigator.clipboard.writeText(link.message);
     toast({
       title: 'Message copied',

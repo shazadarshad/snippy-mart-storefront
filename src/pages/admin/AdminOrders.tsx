@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useCurrency } from '@/hooks/useCurrency';
+import { formatCatalogLkr, useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrders, useUpdateOrderStatus, useDeleteOrder, useDeleteOrderProof, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
@@ -63,6 +63,9 @@ import {
   getDefaultStatusMessage,
   getOrderStatusDisplay,
 } from '@/lib/orderStatus';
+import { paymentMethodLabel, paymentMethodShort } from '@/lib/paymentMethod';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { getOrderWhatsAppLink } from '@/lib/adminOrderWhatsApp';
 
 // Sub-component for Manual Assignment
 const ManualAssignmentPanel = ({ order }: { order: Order }) => {
@@ -128,12 +131,16 @@ const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'claude' | 'standard'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<
+    'all' | 'card' | 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain'
+  >('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [isFindingOrder, setIsFindingOrder] = useState(false);
   const [isUpdatingClaudeStage, setIsUpdatingClaudeStage] = useState(false);
 
   const { data: orders = [], isLoading, error, refetch } = useOrders();
+  const { data: siteSettings } = useSiteSettings();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
   const deleteProof = useDeleteOrderProof();
@@ -158,14 +165,17 @@ const AdminOrders = () => {
       order.customer_name.toLowerCase().includes(q) ||
       order.customer_whatsapp.includes(searchQuery) ||
       (claude?.claudeEmail || '').toLowerCase().includes(q) ||
-      (order.notes || '').toLowerCase().includes(q);
+      (order.notes || '').toLowerCase().includes(q) ||
+      paymentMethodLabel(order.payment_method).toLowerCase().includes(q) ||
+      paymentMethodShort(order.payment_method).toLowerCase().includes(q);
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const isClaude = isClaudePreOrder(order);
     const matchesType =
       typeFilter === 'all' ||
       (typeFilter === 'claude' && isClaude) ||
       (typeFilter === 'standard' && !isClaude);
-    return matchesSearch && matchesStatus && matchesType;
+    const matchesPayment = paymentFilter === 'all' || order.payment_method === paymentFilter;
+    return matchesSearch && matchesStatus && matchesType && matchesPayment;
   });
 
   const getStatusColor = (status: string) => {
@@ -211,6 +221,9 @@ const AdminOrders = () => {
     const stage = parseClaudePreOrder(o)?.stage;
     return stage && stage !== 'activated';
   }).length;
+  const cardOrders = orders.filter((o) => o.payment_method === 'card');
+  const cardCount = cardOrders.length;
+  const cardPendingCount = cardOrders.filter((o) => o.status === 'pending').length;
 
   const handleClaudeStageChange = async (order: Order, stage: ClaudeWorkflowStage) => {
     setIsUpdatingClaudeStage(true);
@@ -532,7 +545,7 @@ const AdminOrders = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 admin-stagger">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 admin-stagger">
         <button
           type="button"
           onClick={() => setStatusFilter(statusFilter === 'pending' ? 'all' : 'pending')}
@@ -589,7 +602,7 @@ const AdminOrders = () => {
           type="button"
           onClick={() => setTypeFilter(typeFilter === 'claude' ? 'all' : 'claude')}
           className={cn(
-            'admin-stat-tile col-span-2 sm:col-span-1',
+            'admin-stat-tile',
             typeFilter === 'claude'
               ? 'bg-orange-500/15 border-orange-500/40 ring-2 ring-orange-500/30'
               : 'bg-orange-500/10 border-orange-500/20 hover:border-orange-500/40',
@@ -601,6 +614,26 @@ const AdminOrders = () => {
             {claudeActiveCount > 0 && (
               <span className="block normal-case text-orange-400 font-semibold tracking-normal">
                 {claudeActiveCount} open
+              </span>
+            )}
+          </p>
+        </button>
+        <button
+          type="button"
+          onClick={() => setPaymentFilter(paymentFilter === 'card' ? 'all' : 'card')}
+          className={cn(
+            'admin-stat-tile',
+            paymentFilter === 'card'
+              ? 'bg-purple-500/15 border-purple-500/40 ring-2 ring-purple-500/30'
+              : 'bg-purple-500/10 border-purple-500/20 hover:border-purple-500/40',
+          )}
+        >
+          <p className="text-xl sm:text-2xl font-black text-purple-500 tabular-nums">{cardCount}</p>
+          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wide mt-0.5">
+            Card
+            {cardPendingCount > 0 && (
+              <span className="block normal-case text-purple-500 font-semibold tracking-normal">
+                {cardPendingCount} pending
               </span>
             )}
           </p>
@@ -645,6 +678,26 @@ const AdminOrders = () => {
                 <SelectItem value="all">All types</SelectItem>
                 <SelectItem value="claude">Claude pre-order</SelectItem>
                 <SelectItem value="standard">Standard only</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={paymentFilter}
+              onValueChange={(v) =>
+                setPaymentFilter(
+                  v as 'all' | 'card' | 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain',
+                )
+              }
+            >
+              <SelectTrigger className="w-full sm:w-44 h-11 sm:h-12 bg-card border-border rounded-xl">
+                <SelectValue placeholder="Payment" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All payments</SelectItem>
+                <SelectItem value="card">Card</SelectItem>
+                <SelectItem value="bank_transfer">Bank</SelectItem>
+                <SelectItem value="upi">UPI</SelectItem>
+                <SelectItem value="binance_usdt">Binance</SelectItem>
+                <SelectItem value="crypto_onchain">Crypto wallet</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -865,17 +918,7 @@ const AdminOrders = () => {
                           {order.payment_method === 'crypto_onchain' && <Wallet className="w-3 h-3 text-violet-500" />}
                           {order.payment_method === 'card' && <CreditCard className="w-3 h-3 text-purple-500" />}
                           <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                            {order.payment_method === 'card'
-                              ? 'CARD'
-                              : order.payment_method === 'binance_usdt'
-                                ? 'BINANCE'
-                                : order.payment_method === 'crypto_onchain'
-                                  ? 'CRYPTO'
-                                  : order.payment_method === 'bank_transfer'
-                                    ? 'BANK'
-                                    : order.payment_method === 'upi'
-                                      ? 'UPI'
-                                      : order.payment_method?.replace(/_/g, ' ') || 'UNPAID'}
+                            {paymentMethodShort(order.payment_method)}
                           </span>
                         </div>
                       )}
@@ -965,7 +1008,7 @@ const AdminOrders = () => {
                             : formatPrice(order.total_amount)}
                         </p>
                         <p className="text-[9px] font-black uppercase text-muted-foreground mt-0.5">
-                          {order.payment_method?.replace(/_/g, ' ') || 'unpaid'}
+                          {paymentMethodShort(order.payment_method)}
                         </p>
                       </div>
                     </div>
@@ -1389,13 +1432,88 @@ const AdminOrders = () => {
                               <div className="flex items-center gap-2 text-sm font-bold text-orange-500">
                                 <Smartphone className="w-4 h-4" /> UPI
                               </div>
-                            ) : (
+                            ) : selectedOrder.payment_method === 'bank_transfer' ? (
                               <div className="flex items-center gap-2 text-sm font-bold text-primary">
                                 <Building2 className="w-4 h-4" /> Bank Transfer
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                                {paymentMethodLabel(selectedOrder.payment_method)}
                               </div>
                             )}
                           </div>
                         </div>
+                        {selectedOrder.payment_method === 'card' && (
+                          <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 space-y-2">
+                            <p className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
+                              Card payment
+                            </p>
+                            <p className="text-xs text-foreground leading-relaxed">
+                              {selectedOrder.payment_proof_url
+                                ? 'Customer uploaded a card confirmation. Verify the receipt, then mark Payment confirmed.'
+                                : selectedOrder.status === 'pending'
+                                  ? 'Customer requested a Visa / Mastercard link. Send the payment link on WhatsApp, then wait for the screenshot.'
+                                  : 'Card order — check proof and fulfill as usual.'}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="h-9 rounded-lg text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white"
+                                onClick={() => {
+                                  const link = getOrderWhatsAppLink(
+                                    selectedOrder,
+                                    'card_link',
+                                    [],
+                                    {
+                                      cardPaymentLink: siteSettings?.card_payment_link || null,
+                                      amountLabel: formatCatalogLkr(Number(selectedOrder.total_amount)),
+                                    },
+                                  );
+                                  if (!link.url) {
+                                    toast({
+                                      title: 'Invalid WhatsApp number',
+                                      description: 'Fix the customer number first.',
+                                      variant: 'destructive',
+                                    });
+                                    return;
+                                  }
+                                  window.open(link.url, '_blank', 'noopener,noreferrer');
+                                }}
+                              >
+                                <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+                                Send card link
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-9 rounded-lg text-xs font-bold"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(formatCatalogLkr(Number(selectedOrder.total_amount)));
+                                  toast({ title: 'Amount copied', description: formatCatalogLkr(Number(selectedOrder.total_amount)) });
+                                }}
+                              >
+                                <Copy className="w-3.5 h-3.5 mr-1.5" />
+                                Copy amount
+                              </Button>
+                            </div>
+                            {siteSettings?.card_payment_note && (
+                              <p className="text-[10px] text-foreground/80">
+                                Note: {siteSettings.card_payment_note}
+                              </p>
+                            )}
+                            {siteSettings?.card_payment_link ? (
+                              <p className="text-[10px] text-muted-foreground break-all">
+                                Saved link: {siteSettings.card_payment_link}
+                              </p>
+                            ) : (
+                              <p className="text-[10px] text-muted-foreground">
+                                Optional: save a default card checkout URL in Settings → Payments.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1773,7 +1891,11 @@ const AdminOrders = () => {
                 <div className="space-y-4">
                   {selectedOrder.payment_proof_url && (
                     <div className="group">
-                      <p className="text-[10px] text-muted-foreground uppercase font-black mb-2 tracking-widest pl-1">Compliance Proof</p>
+                      <p className="text-[10px] text-muted-foreground uppercase font-black mb-2 tracking-widest pl-1">
+                        {selectedOrder.payment_method === 'card'
+                          ? 'Card payment confirmation'
+                          : 'Compliance Proof'}
+                      </p>
                       {isLoadingProof ? (
                         <div className="h-20 rounded-2xl bg-secondary animate-pulse flex items-center justify-center">
                           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -1792,8 +1914,16 @@ const AdminOrders = () => {
                                   <ImageIcon className="w-6 h-6" />
                                 </div>
                                 <div className="text-left">
-                                  <p className="text-sm font-black text-success">Transaction Proof Available</p>
-                                  <p className="text-xs text-success/60">Click to expand audit capture</p>
+                                  <p className="text-sm font-black text-success">
+                                    {selectedOrder.payment_method === 'card'
+                                      ? 'Card confirmation available'
+                                      : 'Transaction Proof Available'}
+                                  </p>
+                                  <p className="text-xs text-success/60">
+                                    {selectedOrder.payment_method === 'card'
+                                      ? 'Open to verify the card payment screenshot'
+                                      : 'Click to expand audit capture'}
+                                  </p>
                                 </div>
                               </div>
                               <ExternalLink className="w-5 h-5 text-success/40 group-hover:text-success transition-colors" />

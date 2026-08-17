@@ -227,7 +227,9 @@ serve(async (req) => {
     knowledgeBase += `**Payment Methods**:\n`;
     knowledgeBase += `• Bank Transfer\n`;
     knowledgeBase += `• Binance USDT\n`;
-    knowledgeBase += `• Card Payment (secure link via support / Dialog Genie when available)\n\n`;
+    knowledgeBase += `• Card Payment (Visa / Mastercard — request a secure link on WhatsApp at checkout)\n`;
+    knowledgeBase += `• UPI (India)\n`;
+    knowledgeBase += `• On-chain crypto wallets\n\n`;
     knowledgeBase += `**Delivery**: Digital delivery — often within hours; typically within 24 hours during support windows (some products note 7–10 days).\n`;
     knowledgeBase += `**Fulfillment types**: Private accounts, redeem codes, on-mail activation, or upgrade of customer's own account — depends on product.\n\n`;
 

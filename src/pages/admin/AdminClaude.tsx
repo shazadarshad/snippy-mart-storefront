@@ -62,6 +62,7 @@ import {
   type ClaudePreOrderInfo,
   type ClaudeWorkflowStage,
 } from '@/lib/claudePreorder';
+import { paymentMethodLabel } from '@/lib/paymentMethod';
 
 type StageFilter = 'all' | ClaudeWorkflowStage;
 type PlanFilter = 'all' | 'pro' | 'max' | 'other';
@@ -540,7 +541,7 @@ const AdminClaude = () => {
                   </div>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 px-1">
                     <Clock className="w-3.5 h-3.5" />
-                    {formatDateTime(selected.created_at)} · {selected.payment_method?.replace('_', ' ')}
+                    {formatDateTime(selected.created_at)} · {paymentMethodLabel(selected.payment_method)}
                   </p>
                 </div>
 
@@ -814,6 +815,20 @@ function ClaudeOrderCard({
                 <span className="inline-flex items-center gap-1 ml-2">
                   <Building2 className="w-3 h-3" /> Bank
                 </span>
+              )}
+              {order.payment_method === 'card' && (
+                <span className="inline-flex items-center gap-1 ml-2 text-purple-500">
+                  Card
+                </span>
+              )}
+              {order.payment_method === 'upi' && (
+                <span className="inline-flex items-center gap-1 ml-2">UPI</span>
+              )}
+              {order.payment_method === 'binance_usdt' && (
+                <span className="inline-flex items-center gap-1 ml-2">Binance</span>
+              )}
+              {order.payment_method === 'crypto_onchain' && (
+                <span className="inline-flex items-center gap-1 ml-2">Crypto</span>
               )}
               {order.payment_proof_url && (
                 <span className="text-success font-bold ml-2">· Proof ✓</span>

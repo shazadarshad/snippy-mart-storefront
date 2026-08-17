@@ -39,6 +39,7 @@ import {
 } from '@/lib/orderStatus';
 import { isClaudePreOrder, parseClaudePreOrder, formatLkrAdmin } from '@/lib/claudePreorder';
 import { copyToClipboard } from '@/lib/clipboard';
+import { paymentMethodLabel } from '@/lib/paymentMethod';
 
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/EB9hDAkQBmcHEjlTMLYXBh';
 const TRUSTPILOT_URL = 'https://www.trustpilot.com/review/snippymart.com';
@@ -731,7 +732,7 @@ const TrackOrderPage = () => {
                       <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-secondary border border-border text-[10px] font-black uppercase max-w-full">
                         <CreditCard className="w-3 h-3 text-primary shrink-0" />
                         <span className="truncate">
-                          {order.payment_method?.replace(/_/g, ' ') || 'Not specified'}
+                          {paymentMethodLabel(order.payment_method)}
                         </span>
                       </div>
                       {order.payment_proof_url && (

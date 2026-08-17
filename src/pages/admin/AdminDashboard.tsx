@@ -12,6 +12,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useOrderStats, useRecentOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
 import { adminStatusLabel } from '@/lib/orderStatus';
+import { paymentMethodShort } from '@/lib/paymentMethod';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -200,6 +201,9 @@ const AdminDashboard = () => {
                         </p>
                         <p className="text-[10px] text-muted-foreground truncate">
                           {order.order_items?.map((i) => i.product_name).join(', ') || '—'}
+                          {order.payment_method
+                            ? ` · ${paymentMethodShort(order.payment_method)}`
+                            : ''}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
@@ -235,6 +239,9 @@ const AdminDashboard = () => {
                         Products
                       </th>
                       <th className="text-left text-xs font-bold text-muted-foreground py-3 px-2">
+                        Pay
+                      </th>
+                      <th className="text-left text-xs font-bold text-muted-foreground py-3 px-2">
                         Status
                       </th>
                       <th className="text-right text-xs font-bold text-muted-foreground py-3 px-2">
@@ -264,6 +271,11 @@ const AdminDashboard = () => {
                         <td className="py-3 px-2 text-sm text-muted-foreground max-w-[180px] truncate">
                           {order.order_items?.map((item) => item.product_name).join(', ') ||
                             '—'}
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-[10px] font-black uppercase text-muted-foreground">
+                            {paymentMethodShort(order.payment_method)}
+                          </span>
                         </td>
                         <td className="py-3 px-2">
                           <span

@@ -12,6 +12,7 @@ export type WhatsAppScenario =
   | 'auto_processing'
   | 'manual_ready'
   | 'pending_payment'
+  | 'card_link'
   | 'payment_rejected'
   | 'generic_support';
 
@@ -21,6 +22,8 @@ export type OrderForWhatsApp = {
   customer_whatsapp?: string | null;
   customer_country?: string | null;
   status?: string | null;
+  payment_method?: string | null;
+  total_amount?: number | null;
   order_items?: Array<{
     product_name?: string | null;
     products?: { reseller_product_id?: string | null } | null;
@@ -66,6 +69,9 @@ export function detectWhatsAppScenario(
   if (status === 'cancelled' || status === 'refunded' || status === 'on_hold') {
     return 'payment_rejected';
   }
+  if (status === 'pending' && order.payment_method === 'card') {
+    return 'card_link';
+  }
   if (status === 'pending') {
     return 'pending_payment';
   }
@@ -87,7 +93,7 @@ export function detectWhatsAppScenario(
 export function buildOrderWhatsAppMessage(
   scenario: WhatsAppScenario,
   order: OrderForWhatsApp,
-  opts?: { mixedCart?: boolean },
+  opts?: { mixedCart?: boolean; cardPaymentLink?: string | null; amountLabel?: string | null },
 ): string {
   const name = firstName(order.customer_name);
   const id = order.order_number;
@@ -147,6 +153,27 @@ export function buildOrderWhatsAppMessage(
         'Reply here if you need anything.',
       ].join('\n');
 
+    case 'card_link': {
+      const amount = opts?.amountLabel ? `\nAmount: *${opts.amountLabel}*` : '';
+      const link = String(opts?.cardPaymentLink || '').trim();
+      const linkBlock = link
+        ? ['Pay securely with Visa / Mastercard here:', link]
+        : ['Reply here and we will send your secure Visa / Mastercard payment link.'];
+      return [
+        `Hi ${name}!`,
+        '',
+        'Card payment for your Snippy Mart order:',
+        '',
+        `Order ID: *${id}*${amount}`,
+        '',
+        ...linkBlock,
+        '',
+        'After you pay, reply with the confirmation screenshot (or upload it on checkout).',
+        'Track order:',
+        url,
+      ].join('\n');
+    }
+
     case 'pending_payment':
       return [
         `Hi ${name},`,
@@ -200,6 +227,8 @@ export function scenarioLabel(scenario: WhatsAppScenario): string {
       return 'Order complete';
     case 'pending_payment':
       return 'Pending payment';
+    case 'card_link':
+      return 'Send card payment link';
     case 'payment_rejected':
       return 'Payment issue';
     default:
@@ -211,6 +240,7 @@ export function getOrderWhatsAppLink(
   order: OrderForWhatsApp,
   scenario?: WhatsAppScenario,
   deliveries: DeliveryRowLite[] = [],
+  extras?: { cardPaymentLink?: string | null; amountLabel?: string | null },
 ): { url: string | null; digits: string; display: string; ok: boolean; fixed: boolean; message: string; scenario: WhatsAppScenario } {
   const sc = scenario || detectWhatsAppScenario(order, deliveries);
   const isAuto = orderHasAutoItems(order) || deliveries.length > 0;
@@ -221,7 +251,11 @@ export function getOrderWhatsAppLink(
     ) &&
     (order.order_items || []).length > 1;
 
-  const message = buildOrderWhatsAppMessage(sc, order, { mixedCart: mixed });
+  const message = buildOrderWhatsAppMessage(sc, order, {
+    mixedCart: mixed,
+    cardPaymentLink: extras?.cardPaymentLink,
+    amountLabel: extras?.amountLabel,
+  });
   const phone = toWhatsAppDigits(order.customer_whatsapp || '', {
     defaultCountry: 'LK',
     countryHint: order.customer_country,
