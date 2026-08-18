@@ -426,9 +426,8 @@ const PaymentSettingsSection = () => {
         <div className="flex gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-muted-foreground mb-6 mt-4">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <p>
-            Conversion always <strong className="text-foreground">rounds up</strong> and adds your
-            safety markup so you never receive less than the LKR order value. Amounts use live USD
-            coin prices (CoinGecko) + your LKR/USD rate.
+            Crypto follows the same <strong className="text-foreground">$ shop price</strong> as
+            the catalog (Rs. 4,999 → $16.99 → 16.99 USDT). Optional markup is extra on top.
           </p>
         </div>
 
@@ -446,7 +445,7 @@ const PaymentSettingsSection = () => {
               className="mt-1.5 bg-secondary/50 border-border"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              Recommended 1.5–3%. Extra buffer on top of market rate.
+              Leave 0 so USDT equals the $ price. 1–2% only if you want extra on volatile coins.
             </p>
           </div>
           <div>

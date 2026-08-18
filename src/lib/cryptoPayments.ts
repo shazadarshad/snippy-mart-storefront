@@ -28,13 +28,13 @@ export type CryptoPaymentSettings = {
 };
 
 /** Crypto quotes use a lower LKR/USD divisor so customers send slightly more crypto. */
-import { LKR_PER_USD } from '@/hooks/useCurrency';
+import { convertLkrToDisplay, LKR_PER_USD } from '@/hooks/useCurrency';
 
-/** Same store rate as catalog display so USDT ≈ the $ on the product card. */
+/** Same store rate as catalog display so USDT matches the $ on the product card. */
 export const DEFAULT_CRYPTO_LKR_PER_USD = LKR_PER_USD;
 
-/** Extra % on top of converted amount so FX moves don't leave you short. */
-export const DEFAULT_CRYPTO_MARKUP_PERCENT = 2;
+/** Extra % on shop USD. 0 = USDT equals the $ price. Admin can add 1–2% for volatile coins. */
+export const DEFAULT_CRYPTO_MARKUP_PERCENT = 0;
 
 export const DEFAULT_CRYPTO_WALLETS: CryptoWallet[] = [
   {
@@ -127,12 +127,13 @@ export function parseCryptoSettings(
 
   const markup = Number(rawMarkup);
   const lkr = Number(rawLkrPerUsd);
-  // 320 was the old padded default — treat as unset so quotes match store display (300).
+  // Old defaults (320 LKR/$ and 2% markup) — treat as unset so quotes match $ shop price.
   const useStoredRate = Number.isFinite(lkr) && lkr > 0 && lkr !== 320;
+  const useStoredMarkup = Number.isFinite(markup) && markup >= 0 && markup !== 2;
 
   return {
     wallets,
-    markup_percent: Number.isFinite(markup) && markup >= 0 ? markup : DEFAULT_CRYPTO_MARKUP_PERCENT,
+    markup_percent: useStoredMarkup ? markup : DEFAULT_CRYPTO_MARKUP_PERCENT,
     lkr_per_usd: useStoredRate ? lkr : DEFAULT_CRYPTO_LKR_PER_USD,
   };
 }
@@ -178,8 +179,8 @@ export function ceilToDecimals(value: number, decimals: number): number {
 }
 
 /**
- * Convert order total in LKR to a coin amount.
- * Always ceils; applies markup; uses a 1% safer LKR→USD rate (more USD, never less).
+ * Coin amount from the same shop USD as the currency switcher.
+ * Rs. 4,999 → $16.99 → 16.99 USDT (if USDT ≈ $1). No extra 370/320/2% path.
  */
 export function convertLkrToCryptoAmount(
   amountLkr: number,
@@ -193,12 +194,9 @@ export function convertLkrToCryptoAmount(
   if (!Number.isFinite(amountLkr) || amountLkr <= 0) return 0;
   if (!Number.isFinite(coinPriceUsd) || coinPriceUsd <= 0) return 0;
 
-  const lkrPerUsd = options.lkrPerUsd > 0 ? options.lkrPerUsd : DEFAULT_CRYPTO_LKR_PER_USD;
-  // Slightly lower LKR-per-USD ⇒ slightly higher USD quote (safer for store)
-  const safeLkrPerUsd = lkrPerUsd * 0.99;
-  const usdValue = amountLkr / safeLkrPerUsd;
+  const shopUsd = convertLkrToDisplay(amountLkr, 'USD');
   const markup = Math.max(0, options.markupPercent) / 100;
-  const usdWithBuffer = usdValue * (1 + markup);
+  const usdWithBuffer = shopUsd * (1 + markup);
   const rawCoin = usdWithBuffer / coinPriceUsd;
   return ceilToDecimals(rawCoin, options.decimals);
 }

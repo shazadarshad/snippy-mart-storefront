@@ -6,6 +6,7 @@ import {
   charmUsd,
   charmInr,
 } from '@/hooks/useCurrency';
+import { convertLkrToCryptoAmount } from '@/lib/cryptoPayments';
 
 describe('convertLkrToDisplay — equal shop prices, never under-charge', () => {
   const samples = [299, 1110, 1199, 1999, 3999, 4999, 13999];
@@ -47,5 +48,16 @@ describe('convertLkrToDisplay — equal shop prices, never under-charge', () => 
     expect(charmUsd(17)).toBe(17.99);
     expect(charmInr(1432)).toBe(1499);
     expect(charmInr(1499)).toBe(1499);
+  });
+
+  it('USDT matches the shop dollar when markup is 0', () => {
+    const usd = convertLkrToDisplay(4999, 'USD');
+    const usdt = convertLkrToCryptoAmount(4999, 1, {
+      lkrPerUsd: LKR_PER_USD,
+      markupPercent: 0,
+      decimals: 2,
+    });
+    expect(usd).toBe(16.99);
+    expect(usdt).toBe(16.99);
   });
 });
