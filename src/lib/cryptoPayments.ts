@@ -28,7 +28,10 @@ export type CryptoPaymentSettings = {
 };
 
 /** Crypto quotes use a lower LKR/USD divisor so customers send slightly more crypto. */
-export const DEFAULT_CRYPTO_LKR_PER_USD = 320;
+import { LKR_PER_USD } from '@/hooks/useCurrency';
+
+/** Same store rate as catalog display so USDT ≈ the $ on the product card. */
+export const DEFAULT_CRYPTO_LKR_PER_USD = LKR_PER_USD;
 
 /** Extra % on top of converted amount so FX moves don't leave you short. */
 export const DEFAULT_CRYPTO_MARKUP_PERCENT = 2;
@@ -124,11 +127,13 @@ export function parseCryptoSettings(
 
   const markup = Number(rawMarkup);
   const lkr = Number(rawLkrPerUsd);
+  // 320 was the old padded default — treat as unset so quotes match store display (300).
+  const useStoredRate = Number.isFinite(lkr) && lkr > 0 && lkr !== 320;
 
   return {
     wallets,
     markup_percent: Number.isFinite(markup) && markup >= 0 ? markup : DEFAULT_CRYPTO_MARKUP_PERCENT,
-    lkr_per_usd: Number.isFinite(lkr) && lkr > 0 ? lkr : DEFAULT_CRYPTO_LKR_PER_USD,
+    lkr_per_usd: useStoredRate ? lkr : DEFAULT_CRYPTO_LKR_PER_USD,
   };
 }
 

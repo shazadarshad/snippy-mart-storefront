@@ -146,7 +146,7 @@ const PaymentSettingsSection = () => {
     if (!Number.isFinite(rate) || rate < 100 || rate > 1000) {
       toast({
         title: 'Invalid LKR rate',
-        description: 'LKR per USD should be a realistic number (e.g. 320–370).',
+        description: 'Use ~300 to match store display. Lower = customer sends more crypto.',
         variant: 'destructive',
       });
       return;
@@ -462,7 +462,7 @@ const PaymentSettingsSection = () => {
               className="mt-1.5 bg-secondary/50 border-border"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              Default 320 LKR per USD. System also applies a tiny extra safety factor automatically.
+              Match store display: 300 LKR = $1. Lower than 300 = customer sends more crypto.
             </p>
           </div>
         </div>

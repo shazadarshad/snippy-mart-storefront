@@ -10,16 +10,13 @@ export interface CurrencyItem {
 }
 
 /**
- * Catalog prices are stored in LKR.
- *
- * Fixed display rates:
- *   1 USD = 370 LKR (always)
- *   1 LKR = 0.35 INR
+ * Catalog is LKR. Display rates sit on real-world FX (not padded 370).
+ * 300 LKR ≈ $1 and 86 INR ≈ $1 — so Rs. 4,999 ≈ $16.99 ≈ ₹1,499.
+ * Shop-round UP after convert so the store is never short, without a fat markup.
  */
-export const LKR_PER_USD = 370;
-export const INR_PER_LKR = 0.35;
-/** Implied: 1 USD ≈ 370 × 0.35 = 129.5 INR (via LKR path) */
-export const INR_PER_USD = LKR_PER_USD * INR_PER_LKR;
+export const LKR_PER_USD = 300;
+export const INR_PER_USD = 86;
+export const INR_PER_LKR = INR_PER_USD / LKR_PER_USD;
 
 export const CURRENCIES: Record<CurrencyCode, CurrencyItem> = {
   LKR: { code: 'LKR', symbol: 'Rs.', name: 'Sri Lankan Rupee', flag: '🇱🇰' },
@@ -34,17 +31,45 @@ const RATES: Record<CurrencyCode, number> = {
   INR: INR_PER_LKR,
 };
 
+/** Snap up to n.99 so USD looks like a shop price, never below the raw convert. */
+export function charmUsd(usd: number): number {
+  if (!Number.isFinite(usd) || usd <= 0) return 0;
+  const floor = Math.floor(usd + 1e-12);
+  let candidate = floor + 0.99;
+  if (candidate + 1e-12 < usd) candidate += 1;
+  return Math.round(candidate * 100) / 100;
+}
+
+/** Snap up to xx99 (₹199, ₹1499). */
+export function charmInr(amount: number): number {
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  const n = Math.ceil(amount - 1e-10);
+  if (n <= 99) return 99;
+  if (n % 100 === 99) return n;
+  const bucket = Math.floor(n / 100);
+  const candidate = bucket * 100 + 99;
+  return candidate >= n ? candidate : candidate + 100;
+}
+
 /**
- * Convert LKR catalog → display currency, always rounding UP.
- * Never floor / banker's-round a customer-facing amount or FX can
- * leave the store short (e.g. 1199 LKR → $3.24 would be 1198.80 LKR).
+ * LKR catalog → shop display.
+ * Convert at the store rate, then charm-round UP so:
+ *   display × rate ≥ catalog  (no loss)
+ *   $16.99 / ₹1,499 not $13.51 / ₹1,750
  */
 export function convertLkrToDisplay(amountLkr: number, currency: CurrencyCode): number {
   if (!Number.isFinite(amountLkr) || amountLkr <= 0) return 0;
   if (currency === 'LKR') return Math.ceil(amountLkr - 1e-10);
-  if (currency === 'INR') return Math.ceil(amountLkr * INR_PER_LKR - 1e-10);
-  const usd = amountLkr / LKR_PER_USD;
-  return Math.ceil(usd * 100 - 1e-10) / 100;
+
+  if (currency === 'INR') {
+    let inr = charmInr(amountLkr * INR_PER_LKR);
+    while (inr / INR_PER_LKR + 1e-9 < amountLkr) inr += 100;
+    return inr;
+  }
+
+  let usd = charmUsd(amountLkr / LKR_PER_USD);
+  while (usd * LKR_PER_USD + 1e-9 < amountLkr) usd = Math.round((usd + 1) * 100) / 100;
+  return usd;
 }
 
 /** Always LKR catalog — what they must send to a Sri Lankan bank. */
