@@ -448,7 +448,19 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               </div>
 
               <div className="mb-2">
-                <FormattedDescription description={product.description} />
+                <details className="md:hidden group rounded-xl border border-border/70 bg-secondary/30">
+                  <summary className="list-none flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-semibold text-foreground cursor-pointer touch-manipulation [&::-webkit-details-marker]:hidden">
+                    Product details
+                    <span className="text-xs font-medium text-muted-foreground group-open:hidden">Show</span>
+                    <span className="text-xs font-medium text-muted-foreground hidden group-open:inline">Hide</span>
+                  </summary>
+                  <div className="px-3 pb-3">
+                    <FormattedDescription description={product.description} />
+                  </div>
+                </details>
+                <div className="hidden md:block">
+                  <FormattedDescription description={product.description} />
+                </div>
               </div>
             </div>
 

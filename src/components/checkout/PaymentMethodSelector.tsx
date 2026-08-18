@@ -812,7 +812,7 @@ const PaymentMethodSelector = ({
         <div
           className={cn(
             'overflow-hidden transition-all duration-300',
-            selectedMethod === 'card' ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0',
+            selectedMethod === 'card' ? 'max-h-[1600px] opacity-100' : 'max-h-0 opacity-0',
           )}
         >
           <div className="p-4 pt-0 space-y-4">
@@ -870,7 +870,7 @@ const PaymentMethodSelector = ({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className="h-10 w-10"
                   onClick={() => copyToClipboard(orderId, 'Order ID')}
                 >
                   <Copy className="w-3 h-3" />

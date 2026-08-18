@@ -141,7 +141,7 @@ const CardPaymentPage = () => {
   const closed = order.status === 'cancelled' || order.status === 'refunded';
 
   return (
-    <div className="min-h-dvh page-mesh pt-24 pb-16 px-4">
+    <div className="min-h-dvh page-mesh pt-[max(5.5rem,calc(4.5rem+env(safe-area-inset-top)))] pb-[max(8.5rem,calc(7rem+env(safe-area-inset-bottom)))] px-3 sm:px-4">
       <SEO
         title={`Pay ${order.order_number}`}
         description="Complete your Snippy Mart card payment."
@@ -198,7 +198,7 @@ const CardPaymentPage = () => {
             type="button"
             variant="hero"
             size="xl"
-            className="w-full min-h-14 h-14 text-base font-bold"
+            className="hidden sm:inline-flex w-full min-h-14 h-14 text-base font-bold touch-manipulation"
             onClick={() => window.open(payUrl, '_blank', 'noopener,noreferrer')}
           >
             Proceed to payment
@@ -232,7 +232,7 @@ const CardPaymentPage = () => {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full min-h-[6.5rem] p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50"
+                  className="w-full min-h-[7.5rem] p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 touch-manipulation"
                 >
                   <Upload className="w-7 h-7 text-muted-foreground" />
                   <span className="text-sm font-medium">Tap to upload screenshot / PDF</span>
@@ -267,11 +267,25 @@ const CardPaymentPage = () => {
         </div>
 
         <p className={cn('text-center text-xs text-muted-foreground')}>
-          <Link to={`/track-order?orderId=${encodeURIComponent(order.order_number)}`} className="text-primary font-semibold">
+          <Link to={`/track-order?orderId=${encodeURIComponent(order.order_number)}`} className="text-primary font-semibold inline-block py-2">
             Track this order
           </Link>
         </p>
       </div>
+
+      {!closed && payUrl ? (
+        <div className="sm:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <Button
+            type="button"
+            variant="hero"
+            className="w-full min-h-12 h-12 text-base font-bold touch-manipulation"
+            onClick={() => window.open(payUrl, '_blank', 'noopener,noreferrer')}
+          >
+            Proceed to payment
+            <ExternalLink className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 };

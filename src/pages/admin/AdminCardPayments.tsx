@@ -145,7 +145,7 @@ const AdminCardPayments = () => {
   };
 
   return (
-    <div className="min-w-0 space-y-4 sm:space-y-5">
+    <div className="min-w-0 space-y-4 sm:space-y-5 pb-[calc(8.5rem+env(safe-area-inset-bottom))] sm:pb-0">
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Card payments</h1>
@@ -172,7 +172,7 @@ const AdminCardPayments = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="SNIP-2026-123456"
-              className="pl-10 h-12 font-mono"
+              className="pl-10 h-12 font-mono text-base"
             />
           </div>
           <Button type="submit" className="h-12 px-5 font-bold" disabled={isLoading}>
@@ -213,7 +213,7 @@ const AdminCardPayments = () => {
                 value={processorUrl}
                 onChange={(e) => setProcessorUrl(e.target.value)}
                 placeholder="https://…"
-                className="mt-1.5 h-11 font-mono text-sm"
+                className="mt-1.5 h-12 font-mono text-base"
               />
             </div>
 
@@ -222,10 +222,10 @@ const AdminCardPayments = () => {
               <p className="text-sm font-mono break-all">{smUrl}</p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="hidden sm:flex flex-wrap gap-2">
               <Button
                 type="button"
-                className="font-bold"
+                className="font-bold min-h-11"
                 onClick={handleSave}
                 disabled={saveOrder.isPending}
               >
@@ -234,19 +234,31 @@ const AdminCardPayments = () => {
               </Button>
               <Button
                 type="button"
-                className="font-bold bg-[#25D366] hover:bg-[#128C7E] text-white"
+                className="font-bold min-h-11 bg-[#25D366] hover:bg-[#128C7E] text-white"
                 onClick={handleSendWhatsApp}
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Send on WhatsApp
               </Button>
-              <Button type="button" variant="outline" onClick={() => copy(smUrl, 'Snippy payment page')}>
+              <Button type="button" variant="outline" className="min-h-11" onClick={() => copy(smUrl, 'Snippy payment page')}>
                 <Copy className="w-4 h-4 mr-2" />
                 Copy SM link
               </Button>
-              <Button type="button" variant="outline" asChild>
+              <Button type="button" variant="outline" className="min-h-11" asChild>
                 <a href={smUrl} target="_blank" rel="noreferrer">
                   <ExternalLink className="w-4 h-4 mr-2" />
+                  Preview
+                </a>
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:hidden">
+              <Button type="button" variant="outline" className="min-h-11 h-11" onClick={() => copy(smUrl, 'Snippy payment page')}>
+                <Copy className="w-4 h-4 mr-1.5" />
+                Copy
+              </Button>
+              <Button type="button" variant="outline" className="min-h-11 h-11" asChild>
+                <a href={smUrl} target="_blank" rel="noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-1.5" />
                   Preview
                 </a>
               </Button>
@@ -270,7 +282,7 @@ const AdminCardPayments = () => {
               type="button"
               onClick={() => applyOrder(o)}
               className={cn(
-                'w-full text-left px-4 py-3 hover:bg-secondary/40 touch-manipulation',
+                'w-full text-left px-4 py-3.5 min-h-[4.25rem] hover:bg-secondary/40 touch-manipulation',
                 loaded?.id === o.id && 'bg-purple-500/10',
               )}
             >
@@ -301,6 +313,28 @@ const AdminCardPayments = () => {
         </Link>
         .
       </p>
+
+      {loaded && (
+        <div className="sm:hidden fixed inset-x-0 bottom-[3.75rem] z-50 border-t border-border bg-background/95 backdrop-blur-md px-3 pt-2 pb-2 grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            className="min-h-12 h-12 font-bold"
+            onClick={handleSave}
+            disabled={saveOrder.isPending}
+          >
+            {saveOrder.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
+            Save
+          </Button>
+          <Button
+            type="button"
+            className="min-h-12 h-12 font-bold bg-[#25D366] hover:bg-[#128C7E] text-white"
+            onClick={handleSendWhatsApp}
+          >
+            <MessageCircle className="w-4 h-4 mr-1.5" />
+            WhatsApp
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
