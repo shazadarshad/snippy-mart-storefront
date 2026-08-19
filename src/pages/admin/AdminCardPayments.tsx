@@ -145,7 +145,7 @@ const AdminCardPayments = () => {
   };
 
   return (
-    <div className="min-w-0 space-y-4 sm:space-y-5 pb-[calc(8.5rem+env(safe-area-inset-bottom))] sm:pb-0">
+    <div className="min-w-0 space-y-4 sm:space-y-5">
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Card payments</h1>
@@ -222,10 +222,10 @@ const AdminCardPayments = () => {
               <p className="text-sm font-mono break-all">{smUrl}</p>
             </div>
 
-            <div className="hidden sm:flex flex-wrap gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <Button
                 type="button"
-                className="font-bold min-h-11"
+                className="font-bold min-h-12 h-12 sm:h-11 sm:min-h-11 w-full sm:w-auto"
                 onClick={handleSave}
                 disabled={saveOrder.isPending}
               >
@@ -234,34 +234,29 @@ const AdminCardPayments = () => {
               </Button>
               <Button
                 type="button"
-                className="font-bold min-h-11 bg-[#25D366] hover:bg-[#128C7E] text-white"
+                className="font-bold min-h-12 h-12 sm:h-11 sm:min-h-11 w-full sm:w-auto bg-[#25D366] hover:bg-[#128C7E] text-white"
                 onClick={handleSendWhatsApp}
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Send on WhatsApp
               </Button>
-              <Button type="button" variant="outline" className="min-h-11" onClick={() => copy(smUrl, 'Snippy payment page')}>
-                <Copy className="w-4 h-4 mr-2" />
-                Copy SM link
-              </Button>
-              <Button type="button" variant="outline" className="min-h-11" asChild>
-                <a href={smUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Preview
-                </a>
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:hidden">
-              <Button type="button" variant="outline" className="min-h-11 h-11" onClick={() => copy(smUrl, 'Snippy payment page')}>
-                <Copy className="w-4 h-4 mr-1.5" />
-                Copy
-              </Button>
-              <Button type="button" variant="outline" className="min-h-11 h-11" asChild>
-                <a href={smUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink className="w-4 h-4 mr-1.5" />
-                  Preview
-                </a>
-              </Button>
+              <div className="grid grid-cols-2 gap-2 sm:contents">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11 h-11"
+                  onClick={() => copy(smUrl, 'Snippy payment page')}
+                >
+                  <Copy className="w-4 h-4 mr-1.5 sm:mr-2" />
+                  Copy SM link
+                </Button>
+                <Button type="button" variant="outline" className="min-h-11 h-11" asChild>
+                  <a href={smUrl} target="_blank" rel="noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-1.5 sm:mr-2" />
+                    Preview
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -314,27 +309,6 @@ const AdminCardPayments = () => {
         .
       </p>
 
-      {loaded && (
-        <div className="sm:hidden fixed inset-x-0 bottom-[3.75rem] z-50 border-t border-border bg-background/95 backdrop-blur-md px-3 pt-2 pb-2 grid grid-cols-2 gap-2">
-          <Button
-            type="button"
-            className="min-h-12 h-12 font-bold"
-            onClick={handleSave}
-            disabled={saveOrder.isPending}
-          >
-            {saveOrder.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
-            Save
-          </Button>
-          <Button
-            type="button"
-            className="min-h-12 h-12 font-bold bg-[#25D366] hover:bg-[#128C7E] text-white"
-            onClick={handleSendWhatsApp}
-          >
-            <MessageCircle className="w-4 h-4 mr-1.5" />
-            WhatsApp
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
