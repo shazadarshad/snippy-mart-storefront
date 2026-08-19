@@ -1,3 +1,6 @@
+/** Flip to true to restore UPI at checkout. */
+export const UPI_CHECKOUT_ENABLED = false;
+
 export type StorePaymentMethod =
   | 'bank_transfer'
   | 'upi'

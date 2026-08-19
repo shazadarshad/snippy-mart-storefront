@@ -1,9 +1,9 @@
 /**
  * Add / update Magnific (Freepik) Credits product:
- *   Plans    = credit packs                            (Select credits)
- *   Variants = warranty duration 2 / 7 / 15 / 30 days  (Select warranty)
+ *   Plans    = credit packs                                      (Select credits)
+ *   Variants = warranty 24 hours / 7 / 15 / 30 days              (Select warranty)
  *
- * Catalog is LKR. Charm USD list UP to xx99 so we never sell under the floor.
+ * Catalog is LKR. Prices are the live storefront list (already xx99).
  */
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -22,43 +22,31 @@ const headers = {
   Prefer: 'return=representation',
 };
 
-/** Charm an LKR amount UP to xx99. */
-function charmAmount(amount) {
-  const n = Math.ceil(Number(amount));
-  if (n <= 99) return 99;
-  if (n % 100 === 99) return n;
-  const bucket = Math.floor(n / 100);
-  const candidate = bucket * 100 + 99;
-  return candidate >= n ? candidate : (bucket + 1) * 100 + 99;
-}
-
-/**
- * Supplier USD list is the cost floor.
- * Add a small margin (~4% or +100 LKR, whichever is larger), then charm to xx99.
- */
-function LKR(usd) {
-  const cost = Number(usd) * 370;
-  const marked = cost + Math.max(100, cost * 0.04);
-  return charmAmount(marked);
-}
 const SLUG = 'freepik-credits';
 
+/** Warranty keys match WARRANTIES.key. Amounts are LKR. */
 const CREDIT_PACKS = [
-  { name: '50K Credits', usd: { 2: 3, 7: 8, 15: 13, 30: 23 } },
-  { name: '100K Credits', usd: { 2: 6, 7: 11, 15: 16, 30: 26 } },
-  { name: '200K Credits', usd: { 2: 8, 7: 13, 15: 18, 30: 28 } },
-  { name: '600K Credits', usd: { 2: 12, 7: 17, 15: 22, 30: 32 } },
-  { name: '1M Credits', usd: { 2: 20, 7: 25, 15: 30, 30: 40 } },
-  { name: '2M Credits', usd: { 2: 30, 7: 35, 15: 40, 30: 50 } },
-  { name: '4M Credits', usd: { 2: 50, 7: 55, 15: 60, 30: 70 } },
+  { name: '50K Credits', lkr: { h24: 1499, d7: 8499, d15: 11999, d30: 15499 } },
+  { name: '100K Credits', lkr: { h24: 2299, d7: 9199, d15: 12799, d30: 16299 } },
+  { name: '200K Credits', lkr: { h24: 3599, d7: 10499, d15: 13999, d30: 17499 } },
+  { name: '300K Credits', lkr: { h24: 4799, d7: 11699, d15: 15199, d30: 18699 } },
+  { name: '400K Credits', lkr: { h24: 6199, d7: 12999, d15: 16499, d30: 19999 } },
+  { name: '500K Credits', lkr: { h24: 7199, d7: 13999, d15: 17499, d30: 20999 } },
+  { name: '600K Credits', lkr: { h24: 8699, d7: 15499, d15: 18999, d30: 22499 } },
+  { name: '1M Credits', lkr: { h24: 13999, d7: 20999, d15: 24499, d30: 27999 } },
+  { name: '2M Credits', lkr: { h24: 17999, d7: 24499, d15: 27999, d30: 31499 } },
+  { name: '3M Credits', lkr: { h24: 19999, d7: 26499, d15: 29999, d30: 33499 } },
+  { name: '4M Credits', lkr: { h24: 23999, d7: 30499, d15: 33999, d30: 37499 } },
 ];
 
 const WARRANTIES = [
-  { days: 2, name: '2 Day Warranty', duration: '2 days' },
-  { days: 7, name: '7 Day Warranty', duration: '7 days' },
-  { days: 15, name: '15 Day Warranty', duration: '15 days' },
-  { days: 30, name: '30 Day Warranty', duration: '30 days' },
+  { key: 'h24', name: '24 Hours Warranty', duration: '24 hours' },
+  { key: 'd7', name: '7 Day Warranty', duration: '7 days' },
+  { key: 'd15', name: '15 Day Warranty', duration: '15 days' },
+  { key: 'd30', name: '30 Day Warranty', duration: '30 days' },
 ];
+
+const STARTING_PRICE = CREDIT_PACKS[0].lkr.h24;
 
 const description = `**Magnific (Freepik) Credits**
 
@@ -82,13 +70,17 @@ Credit packs:
 • 50K
 • 100K
 • 200K
+• 300K
+• 400K
+• 500K
 • 600K
 • 1M
 • 2M
+• 3M
 • 4M
 
 Warranty:
-• 2 Days
+• 24 Hours
 • 7 Days
 • 15 Days
 • 30 Days
@@ -107,7 +99,7 @@ if (process.argv.includes('--reseed-prices')) {
     method: 'PATCH',
     body: {
       description,
-      price: LKR(3),
+      price: STARTING_PRICE,
       requirements: { require_email: false, require_password: false, require_username: false },
       updated_at: new Date().toISOString(),
     },
@@ -120,7 +112,7 @@ if (process.argv.includes('--reseed-prices')) {
     product_id: productId,
     name: pack.name,
     duration: '',
-    price: LKR(pack.usd[2]),
+    price: pack.lkr.h24,
     old_price: null,
     is_default: i === 0,
   }));
@@ -135,7 +127,7 @@ if (process.argv.includes('--reseed-prices')) {
       variantsPayload.push({
         plan_id: plan.id,
         name: warranty.name,
-        price: LKR(pack.usd[warranty.days]),
+        price: pack.lkr[warranty.key],
         old_price: null,
         is_active: true,
         stock_status: 'in_stock',
@@ -209,7 +201,7 @@ const product = {
   name: 'Magnific (Freepik) Credits',
   slug: SLUG,
   description,
-  price: LKR(3),
+  price: STARTING_PRICE,
   old_price: null,
   category: 'Design',
   categories: ['Design', 'AI'],
@@ -247,7 +239,7 @@ const plansPayload = CREDIT_PACKS.map((pack, i) => ({
   product_id: productId,
   name: pack.name,
   duration: 'Magnific credits',
-  price: LKR(pack.usd[2]),
+  price: pack.lkr.h24,
   old_price: null,
   is_default: i === 0,
 }));
@@ -264,7 +256,7 @@ for (const plan of createdPlans) {
     variantsPayload.push({
       plan_id: plan.id,
       name: warranty.name,
-      price: LKR(pack.usd[warranty.days]),
+      price: pack.lkr[warranty.key],
       old_price: null,
       is_active: true,
       stock_status: 'in_stock',

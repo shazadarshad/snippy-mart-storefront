@@ -37,6 +37,7 @@ import {
 import { quoteCrypto, quoteUsdt, useCryptoRates } from '@/hooks/useCryptoRates';
 import { copyToClipboard as safeCopy } from '@/lib/clipboard';
 import { formatCatalogInr, formatCatalogLkr } from '@/hooks/useCurrency';
+import { UPI_CHECKOUT_ENABLED } from '@/lib/paymentMethod';
 
 export type PaymentMethod = 'bank_transfer' | 'upi' | 'binance_usdt' | 'crypto_onchain' | 'card';
 
@@ -64,6 +65,9 @@ interface PaymentMethodSelectorProps {
   isPreRegistering: boolean;
   /** Extra lines for the customer → store WhatsApp (items, name, amount) */
   cardWhatsAppDetails?: string;
+  /** Payment tabs stay locked until a valid WhatsApp number is entered */
+  phoneReady: boolean;
+  onNeedPhone: () => void;
 }
 
 const PaymentMethodSelector = ({
@@ -80,6 +84,8 @@ const PaymentMethodSelector = ({
   onPreRegister,
   isPreRegistering,
   cardWhatsAppDetails,
+  phoneReady,
+  onNeedPhone,
 }: PaymentMethodSelectorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -299,8 +305,26 @@ const PaymentMethodSelector = ({
         Payment Method <span className="text-destructive">*</span>
       </Label>
       <p className="text-xs text-muted-foreground -mt-2">
-        Bank (LK), UPI (India), crypto, or card. Upload payment proof to place the order.
+        {UPI_CHECKOUT_ENABLED
+          ? 'Bank (LK), UPI (India), crypto, or card. Upload payment proof to place the order.'
+          : 'Bank (LK), crypto, or card. Upload payment proof to place the order.'}
       </p>
+      {!phoneReady && (
+        <p className="text-xs font-medium text-amber-800 dark:text-amber-200 bg-amber-400/20 border border-amber-500/40 rounded-lg px-3 py-2">
+          Enter your WhatsApp number above first — then you can choose a payment method.
+        </p>
+      )}
+
+      <div className="relative">
+        {!phoneReady && (
+          <button
+            type="button"
+            className="absolute inset-0 z-10 rounded-xl cursor-not-allowed"
+            onClick={onNeedPhone}
+            aria-label="Enter WhatsApp number first to choose payment"
+          />
+        )}
+        <div className={cn('space-y-4', !phoneReady && 'pointer-events-none select-none opacity-50')}>
 
       {/* Bank Transfer */}
       <div
@@ -439,7 +463,8 @@ const PaymentMethodSelector = ({
         </div>
       </div>
 
-      {/* UPI (India) */}
+      {/* UPI (India) — hidden while UPI_CHECKOUT_ENABLED is false */}
+      {UPI_CHECKOUT_ENABLED && (
       <div
         className={cn(
           'border rounded-xl overflow-hidden transition-all duration-300 ease-out',
@@ -559,6 +584,7 @@ const PaymentMethodSelector = ({
           </div>
         </div>
       </div>
+      )}
 
       {/* Crypto — opens modal */}
       <div
@@ -885,6 +911,8 @@ const PaymentMethodSelector = ({
               hint="After you pay by card, upload the confirmation screenshot or receipt (JPG, PNG, WebP, HEIC, PDF · max 10MB)"
             />
           </div>
+        </div>
+      </div>
         </div>
       </div>
 

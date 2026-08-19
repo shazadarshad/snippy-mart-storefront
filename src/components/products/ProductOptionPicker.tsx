@@ -12,6 +12,7 @@ function warrantyLabel(name: string) {
   return name
     .replace(/\s*Warranty$/i, '')
     .replace(/^(\d+)\s*Day$/i, '$1 Days')
+    .replace(/^(\d+)\s*Hour$/i, '$1 Hours')
     .trim();
 }
 
@@ -39,7 +40,7 @@ const ProductOptionPicker = ({
   if (!plans.length) return null;
 
   const credits = plans.some((p) => /credit/i.test(p.name));
-  const warranty = activeVariants.some((v) => /warranty|\bday\b/i.test(v.name));
+  const warranty = activeVariants.some((v) => /warranty|\bday\b|\bhour/i.test(v.name));
   const twoStep = !!product.use_variant_pricing;
 
   return (

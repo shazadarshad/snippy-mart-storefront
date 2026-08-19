@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
+import { UPI_CHECKOUT_ENABLED } from '@/lib/paymentMethod';
 
 export type OrderStatus = 'pending' | 'processing' | 'shipping' | 'completed' | 'on_hold' | 'cancelled' | 'refunded';
 
@@ -166,6 +167,10 @@ export const useCreateOrder = () => {
         customer_credentials?: any;
       }[];
     }) => {
+      if (!UPI_CHECKOUT_ENABLED && orderData.payment_method === 'upi') {
+        throw new Error('UPI is temporarily unavailable. Please use bank transfer, crypto, or card.');
+      }
+
       const payload = {
         order_number: orderData.order_number,
         customer_name: orderData.customer_name,

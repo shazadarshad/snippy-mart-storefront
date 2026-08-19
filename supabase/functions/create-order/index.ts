@@ -98,6 +98,15 @@ serve(async (req) => {
     return json({ error: "Missing required fields" }, 400);
   }
 
+  // Temporarily off — flip this with UPI_CHECKOUT_ENABLED in src/lib/paymentMethod.ts
+  const UPI_CHECKOUT_ENABLED = false;
+  if (!UPI_CHECKOUT_ENABLED && body.payment_method === "upi") {
+    return json(
+      { error: "UPI is temporarily unavailable. Please use bank transfer, crypto, or card." },
+      400,
+    );
+  }
+
   console.log(`[create-order] Processing order ${body.order_number} items=${body.items.length}`);
 
   // --- Server-side price / stock trust (never trust client totals) ---

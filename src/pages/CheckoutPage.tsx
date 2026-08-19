@@ -20,6 +20,7 @@ import { isResellerApiProduct } from '@/hooks/useResellerApi';
 import { getAffiliateRef } from '@/lib/affiliate';
 import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
 import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
+import { UPI_CHECKOUT_ENABLED } from '@/lib/paymentMethod';
 
 import SEO from '@/components/seo/SEO';
 import {
@@ -179,7 +180,7 @@ const CheckoutPage = () => {
     notes: '',
   });
   const [customerCredentials, setCustomerCredentials] = useState<Record<string, { email?: string; password?: string }>>({});
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [binanceId, setBinanceId] = useState('');
   const [cryptoSelection, setCryptoSelection] = useState<CryptoSelection>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -193,6 +194,10 @@ const CheckoutPage = () => {
   const orderIdRef = useRef<string>(generateOrderId());
   /** Prevents double-submit races before React state flushes */
   const submitLockRef = useRef(false);
+  /** Prevents double pending-order create when tapping Card + WhatsApp together */
+  const preRegisterLockRef = useRef(false);
+
+  const phoneReady = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' }).ok;
   // If we have an existing order ID from pre-registration, use it. Otherwise use the generated one.
   const orderId = existingOrderId || orderIdRef.current;
 
@@ -207,6 +212,7 @@ const CheckoutPage = () => {
         if (Date.now() - created < 30 * 60 * 1000) {
           setExistingOrderId(parsed.orderId);
           setFormData(prev => ({ ...prev, whatsapp: parsed.whatsapp || '' }));
+          setPaymentMethod('card');
         } else {
           sessionStorage.removeItem('pendingOrder');
         }
@@ -274,6 +280,21 @@ const CheckoutPage = () => {
     };
   };
 
+  const focusWhatsAppField = () => {
+    const el = document.getElementById('whatsapp');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (el instanceof HTMLInputElement) el.focus();
+  };
+
+  const handleNeedPhone = () => {
+    toast({
+      title: 'WhatsApp number required',
+      description: 'Enter your WhatsApp number first, then choose a payment method.',
+      variant: 'destructive',
+    });
+    focusWhatsAppField();
+  };
+
   const handlePreRegister = async () => {
     // 1. Validate WhatsApp (normalized digits, not loose regex)
     const waCheck = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
@@ -283,15 +304,16 @@ const CheckoutPage = () => {
         description: waCheck.reason || "Please enter a valid WhatsApp number (e.g. 077 123 4567 or +94…).",
         variant: "destructive",
       });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      focusWhatsAppField();
       return;
     }
 
     // 2. Prevent re-registration if already done
-    if (existingOrderId) {
+    if (existingOrderId || preRegisterLockRef.current) {
       return;
     }
 
+    preRegisterLockRef.current = true;
     setIsPreRegistering(true);
 
     try {
@@ -299,7 +321,7 @@ const CheckoutPage = () => {
       // Force payment method to 'card' for this flow
       payload.payment_method = 'card';
 
-      // 3. Create Order
+      // 3. Create pending order only for card checkout
       await createOrder.mutateAsync(payload);
 
       // 4. Save state
@@ -311,11 +333,12 @@ const CheckoutPage = () => {
       }));
 
       toast({
-        title: "Order Initiated",
-        description: "We've created a pending order. Please contact us on WhatsApp.",
+        title: 'Pending order created',
+        description: 'Contact us on WhatsApp to get your card payment link.',
       });
 
     } catch (error) {
+      preRegisterLockRef.current = false;
       console.error('Pre-registration failed:', error);
       toast({
         title: "Connection Error",
@@ -376,6 +399,24 @@ const CheckoutPage = () => {
       return;
     }
 
+    if (!paymentMethod) {
+      toast({
+        title: 'Select a payment method',
+        description: 'Enter your WhatsApp number, then choose bank, crypto, or card.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (paymentMethod === 'upi' && !UPI_CHECKOUT_ENABLED) {
+      toast({
+        title: 'UPI is temporarily unavailable',
+        description: 'Please use bank transfer, crypto, or card.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (
       paymentMethod !== 'bank_transfer' &&
       paymentMethod !== 'upi' &&
@@ -386,7 +427,9 @@ const CheckoutPage = () => {
       setPaymentMethod('bank_transfer');
       toast({
         title: 'Payment method unavailable',
-        description: 'Please use bank transfer, UPI, crypto, or card.',
+        description: UPI_CHECKOUT_ENABLED
+          ? 'Please use bank transfer, UPI, crypto, or card.'
+          : 'Please use bank transfer, crypto, or card.',
         variant: 'destructive',
       });
       return;
@@ -634,6 +677,9 @@ const CheckoutPage = () => {
                     <Label htmlFor="whatsapp" className="text-foreground">
                       WhatsApp Number <span className="text-destructive">*</span>
                     </Label>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Required before you can choose a payment method.
+                    </p>
                     <div className="relative mt-1.5">
                       <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <Input
@@ -801,7 +847,14 @@ const CheckoutPage = () => {
                 </h2>
                 <PaymentMethodSelector
                   selectedMethod={paymentMethod}
+                  phoneReady={phoneReady}
+                  onNeedPhone={handleNeedPhone}
                   onMethodChange={(m) => {
+                    if (!phoneReady) {
+                      handleNeedPhone();
+                      return;
+                    }
+                    if (m === 'upi' && !UPI_CHECKOUT_ENABLED) return;
                     if (
                       m === 'bank_transfer' ||
                       m === 'upi' ||
@@ -813,8 +866,11 @@ const CheckoutPage = () => {
                       if (m === 'bank_transfer' || m === 'upi' || m === 'card') {
                         setCryptoSelection(null);
                       }
+                      if (m === 'card') {
+                        void handlePreRegister();
+                      }
                     } else if (m === null) {
-                      setPaymentMethod('bank_transfer');
+                      setPaymentMethod(null);
                       setCryptoSelection(null);
                     }
                   }}
@@ -856,7 +912,7 @@ const CheckoutPage = () => {
                   <p className="text-foreground/70 text-xs sm:text-sm leading-relaxed">
                     {allAutoItems ? (
                       <>
-                        Pay by bank, UPI, crypto, or card, put your{' '}
+                        Pay by bank{UPI_CHECKOUT_ENABLED ? ', UPI,' : ','} crypto, or card, put your{' '}
                         <strong className="text-foreground">Order ID</strong> in the transfer note,
                         upload proof, then place the order. After we confirm payment, your product
                         appears on <strong className="text-foreground">Track Order</strong> — save
@@ -870,7 +926,7 @@ const CheckoutPage = () => {
                       </>
                     ) : (
                       <>
-                        Pay by bank, UPI, crypto, or card. For card, tap Contact on WhatsApp to get
+                        Pay by bank{UPI_CHECKOUT_ENABLED ? ', UPI,' : ','} crypto, or card. For card, tap Contact on WhatsApp to get
                         a payment link, then upload confirmation and place the order.
                       </>
                     )}
