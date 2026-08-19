@@ -61,7 +61,7 @@ interface PaymentMethodSelectorProps {
   totalLkr: number;
   cryptoSelection: CryptoSelection;
   onCryptoSelectionChange: (sel: CryptoSelection) => void;
-  onPreRegister: () => Promise<void>;
+  onPreRegister: () => Promise<boolean>;
   isPreRegistering: boolean;
   /** Extra lines for the customer → store WhatsApp (items, name, amount) */
   cardWhatsAppDetails?: string;
@@ -219,7 +219,8 @@ const PaymentMethodSelector = ({
   };
 
   const handleWhatsAppClick = async () => {
-    await onPreRegister();
+    const registered = await onPreRegister();
+    if (!registered) return;
     const digits = String(settings?.whatsapp_number || '94787767869').replace(/\D/g, '');
     const extra = String(cardWhatsAppDetails || '').trim();
     const message = [
@@ -878,7 +879,7 @@ const PaymentMethodSelector = ({
                 {isPreRegistering ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Connecting…
+                    Creating order…
                   </>
                 ) : (
                   <>

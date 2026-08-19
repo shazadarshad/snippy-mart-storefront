@@ -194,8 +194,8 @@ const CheckoutPage = () => {
   const orderIdRef = useRef<string>(generateOrderId());
   /** Prevents double-submit races before React state flushes */
   const submitLockRef = useRef(false);
-  /** Prevents double pending-order create when tapping Card + WhatsApp together */
-  const preRegisterLockRef = useRef(false);
+  /** In-flight card pending-order create — WhatsApp must await this, not bail early */
+  const preRegisterPromiseRef = useRef<Promise<boolean> | null>(null);
 
   const phoneReady = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' }).ok;
   // If we have an existing order ID from pre-registration, use it. Otherwise use the generated one.
@@ -240,9 +240,9 @@ const CheckoutPage = () => {
     timestamp: new Date().toISOString()
   });
 
-  const getOrderPayload = async () => {
-    // Detect country
-    const customerCountry = await getCountry();
+  const getOrderPayload = async (opts?: { skipGeo?: boolean }) => {
+    // Detect country — skip on card pre-register so WhatsApp isn't waiting on IP lookups
+    const customerCountry = opts?.skipGeo ? 'Unknown' : await getCountry();
     const securityMetadata = getSecurityMetadata();
     // Store WhatsApp-ready digits (e.g. 0776512486 → 94776512486)
     const wa = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
@@ -295,59 +295,77 @@ const CheckoutPage = () => {
     focusWhatsAppField();
   };
 
-  const handlePreRegister = async () => {
-    // 1. Validate WhatsApp (normalized digits, not loose regex)
-    const waCheck = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
-    if (!formData.whatsapp.trim() || !waCheck.ok) {
-      toast({
-        title: "Required",
-        description: waCheck.reason || "Please enter a valid WhatsApp number (e.g. 077 123 4567 or +94…).",
-        variant: "destructive",
-      });
-      focusWhatsAppField();
-      return;
-    }
+  const handlePreRegister = (): Promise<boolean> => {
+    if (existingOrderId) return Promise.resolve(true);
+    if (preRegisterPromiseRef.current) return preRegisterPromiseRef.current;
 
-    // 2. Prevent re-registration if already done
-    if (existingOrderId || preRegisterLockRef.current) {
-      return;
-    }
+    const run = async (): Promise<boolean> => {
+      const waCheck = toWhatsAppDigits(formData.whatsapp, { defaultCountry: 'LK' });
+      if (!formData.whatsapp.trim() || !waCheck.ok) {
+        toast({
+          title: 'Required',
+          description: waCheck.reason || 'Please enter a valid WhatsApp number (e.g. 077 123 4567 or +94…).',
+          variant: 'destructive',
+        });
+        focusWhatsAppField();
+        return false;
+      }
 
-    preRegisterLockRef.current = true;
-    setIsPreRegistering(true);
+      if (items.length === 0) {
+        toast({
+          title: 'Cart is empty',
+          description: 'Add a product before paying by card.',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
-    try {
-      const payload = await getOrderPayload();
-      // Force payment method to 'card' for this flow
-      payload.payment_method = 'card';
+      setIsPreRegistering(true);
+      try {
+        const payload = await getOrderPayload({ skipGeo: true });
+        payload.payment_method = 'card';
+        payload.customer_whatsapp = waCheck.digits;
 
-      // 3. Create pending order only for card checkout
-      await createOrder.mutateAsync(payload);
+        await createOrder.mutateAsync(payload);
 
-      // 4. Save state
-      setExistingOrderId(orderId);
-      sessionStorage.setItem('pendingOrder', JSON.stringify({
-        orderId,
-        whatsapp: formData.whatsapp,
-        timestamp: new Date().toISOString()
-      }));
+        setExistingOrderId(orderId);
+        sessionStorage.setItem(
+          'pendingOrder',
+          JSON.stringify({
+            orderId,
+            whatsapp: formData.whatsapp,
+            timestamp: new Date().toISOString(),
+          }),
+        );
 
-      toast({
-        title: 'Pending order created',
-        description: 'Contact us on WhatsApp to get your card payment link.',
-      });
+        toast({
+          title: 'Pending order created',
+          description: 'Contact us on WhatsApp to get your card payment link.',
+        });
+        return true;
+      } catch (error) {
+        const message =
+          error instanceof Error && error.message
+            ? error.message
+            : 'Could not create pending order. Please try again.';
+        console.error('Pre-registration failed:', error);
+        toast({
+          title: 'Could not create pending order',
+          description: message,
+          variant: 'destructive',
+        });
+        return false;
+      } finally {
+        setIsPreRegistering(false);
+      }
+    };
 
-    } catch (error) {
-      preRegisterLockRef.current = false;
-      console.error('Pre-registration failed:', error);
-      toast({
-        title: "Connection Error",
-        description: "Could not create pending order, but you can still contact us manually.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsPreRegistering(false);
-    }
+    const promise = run().then((ok) => {
+      if (!ok) preRegisterPromiseRef.current = null;
+      return ok;
+    });
+    preRegisterPromiseRef.current = promise;
+    return promise;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
