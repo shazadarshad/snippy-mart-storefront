@@ -185,9 +185,7 @@ serve(async (req) => {
   const notifBody = isCardPaid
     ? `${num} · ${name}${total ? ` · ${total}` : ""} — open Card payments`
     : `${num} · ${name}${total ? ` · ${total}` : ""}`;
-  const openUrl = isCardPaid
-    ? `/admin/card-payments?order=${encodeURIComponent(String(body.order_number || ""))}`
-    : "/admin/orders";
+  const openUrl = `/admin/inbox?order=${encodeURIComponent(String(body.order_number || ""))}`;
 
   let accessToken: string;
   try {

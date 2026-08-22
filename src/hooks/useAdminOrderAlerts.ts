@@ -139,9 +139,7 @@ export function useAdminOrderAlerts(enabled: boolean) {
         row.total_amount != null ? `Rs. ${Number(row.total_amount).toLocaleString()}` : '';
       const isCard = row.payment_method === 'card';
       const cardPaid = isCard && !!row.card_marked_paid_at;
-      const openUrl = isCard
-        ? `/admin/card-payments?order=${encodeURIComponent(String(row.order_number || ''))}`
-        : '/admin/orders';
+      const openUrl = `/admin/inbox?order=${encodeURIComponent(String(row.order_number || ''))}`;
 
       toast({
         title: cardPaid
@@ -194,7 +192,7 @@ export function useAdminOrderAlerts(enabled: boolean) {
           title: '💳 Customer paid — verify',
           body: `${num} — ${name}${total ? ` · ${total}` : ''}. Tap Card payments.`,
           orderId: id,
-          url: `/admin/card-payments?order=${encodeURIComponent(String(row.order_number || ''))}`,
+          url: `/admin/inbox?order=${encodeURIComponent(String(row.order_number || ''))}`,
         });
       }
       return true;

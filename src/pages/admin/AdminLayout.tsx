@@ -27,11 +27,12 @@ import {
   Store,
   Handshake,
   CreditCard,
+  Inbox,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import { useCardInboxStats } from '@/hooks/useOrders';
+import { useAdminInboxStats, useCardInboxStats } from '@/hooks/useOrders';
 import { AdminPwaBanner } from '@/components/admin/AdminPwaBanner';
 import { useAdminOrderAlerts } from '@/hooks/useAdminOrderAlerts';
 import SEO from '@/components/seo/SEO';
@@ -48,6 +49,7 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
+  { name: 'Inbox', path: '/admin/inbox', icon: Inbox, group: 'Main' },
   { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, group: 'Main' },
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart, group: 'Main' },
   { name: 'Products', path: '/admin/products', icon: Package, group: 'Main' },
@@ -97,7 +99,7 @@ const bottomNav: {
   icon: React.ComponentType<{ className?: string }>;
   match?: string;
 }[] = [
-  { name: 'Home', path: '/admin/dashboard', icon: LayoutDashboard, match: '/admin/dashboard' },
+  { name: 'Inbox', path: '/admin/inbox', icon: Inbox, match: '/admin/inbox' },
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart, match: '/admin/orders' },
   { name: 'Card', path: '/admin/card-payments', icon: CreditCard, match: '/admin/card-payments' },
   { name: 'Products', path: '/admin/products', icon: Package, match: '/admin/products' },
@@ -111,7 +113,9 @@ const AdminLayout = () => {
 
   const adminReady = !!user && !!isAdmin && !loading;
   const { data: cardStats } = useCardInboxStats(adminReady);
+  const { data: inboxStats } = useAdminInboxStats(adminReady);
   const cardActionCount = cardStats?.actionCount || 0;
+  const inboxCount = inboxStats?.pending || 0;
   // Web: toast + beep + browser notifications (unchanged)
   useAdminOrderAlerts(adminReady);
   // Capacitor APK only: FCM token for closed-app pushes (no-op on website)
@@ -152,11 +156,11 @@ const AdminLayout = () => {
 
   const isBottomActive = (item: (typeof bottomNav)[0]) => {
     const m = item.match || item.path;
-    if (m === '/admin/dashboard') {
+    if (m === '/admin/inbox') {
       return (
         location.pathname === '/admin' ||
         location.pathname === '/admin/' ||
-        location.pathname.startsWith('/admin/dashboard')
+        location.pathname.startsWith('/admin/inbox')
       );
     }
     return location.pathname.startsWith(m);
@@ -216,7 +220,11 @@ const AdminLayout = () => {
         className={cn('w-5 h-5 shrink-0', isActive(item.path) ? 'opacity-100' : 'opacity-70')}
       />
       <span className="flex-1 truncate">{item.name}</span>
-      {item.path === '/admin/card-payments' && cardActionCount > 0 ? (
+      {item.path === '/admin/inbox' && inboxCount > 0 ? (
+        <span className="min-w-[1.25rem] px-1.5 py-0.5 text-[10px] font-black tabular-nums text-center rounded-md bg-primary text-primary-foreground">
+          {inboxCount > 99 ? '99+' : inboxCount}
+        </span>
+      ) : item.path === '/admin/card-payments' && cardActionCount > 0 ? (
         <span className="min-w-[1.25rem] px-1.5 py-0.5 text-[10px] font-black tabular-nums text-center rounded-md bg-purple-500 text-white">
           {cardActionCount > 99 ? '99+' : cardActionCount}
         </span>
@@ -414,6 +422,11 @@ const AdminLayout = () => {
                   )}
                 >
                   <item.icon className={cn('w-5 h-5', active && 'stroke-[2.5]')} />
+                  {item.path === '/admin/inbox' && inboxCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[1.05rem] h-[1.05rem] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-black leading-[1.05rem] tabular-nums">
+                      {inboxCount > 9 ? '9+' : inboxCount}
+                    </span>
+                  )}
                   {item.path === '/admin/card-payments' && cardActionCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 min-w-[1.05rem] h-[1.05rem] px-1 rounded-full bg-purple-500 text-white text-[9px] font-black leading-[1.05rem] tabular-nums">
                       {cardActionCount > 9 ? '9+' : cardActionCount}

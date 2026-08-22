@@ -63,3 +63,30 @@ export function cardInboxLabel(state: CardInboxState): string {
       return 'Done';
   }
 }
+
+/** Lower = higher in the all-orders admin inbox. */
+export function adminInboxRank(order: {
+  status?: string | null;
+  payment_method?: string | null;
+  payment_proof_url?: string | null;
+  card_checkout_url?: string | null;
+  card_marked_paid_at?: string | null;
+  order_items?: Array<{ products?: { reseller_product_id?: string | null } | null }> | null;
+}): number {
+  const pending = String(order.status || '') === 'pending';
+  if (!pending) return 90;
+  const auto = (order.order_items || []).some(
+    (i) => i.products?.reseller_product_id && String(i.products.reseller_product_id).trim(),
+  );
+  const card = order.payment_method === 'card';
+  if (card) {
+    const s = cardInboxState(order);
+    if (s === 'marked_paid' && auto) return 0;
+    if (s === 'marked_paid') return 1;
+    if (s === 'needs_link') return 2;
+    if (s === 'waiting_pay') return 6;
+  }
+  if (auto) return order.payment_proof_url ? 3 : 4;
+  if (order.payment_proof_url) return 5;
+  return 7;
+}

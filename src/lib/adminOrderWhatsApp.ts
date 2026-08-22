@@ -108,17 +108,17 @@ export function buildOrderWhatsAppMessage(
       return [
         `Hi ${name}! ✅`,
         '',
-        'Your Snippy Mart order is ready.',
+        'Your order is *done*.',
         '',
         `Order ID: *${id}*`,
         mixedNote,
-        'How to get your product:',
-        `1. Open: ${url}`,
-        '2. Tap *Track* (Order ID is in the link — or paste it if needed)',
+        'Get your product in 3 steps:',
+        `1. Open Track Order: ${url}`,
+        '2. Tap *Track* (Order ID is already in the link)',
         '3. Copy your code / link / login from the page',
         '',
-        'Save this message so you can reopen Track Order anytime.',
-        'Questions? Reply here.',
+        'Save this message so you can open it again anytime.',
+        'Need help? Reply here.',
       ]
         .filter((l) => l !== undefined)
         .join('\n')

@@ -134,6 +134,23 @@ export const useOrderStats = () => {
   });
 };
 
+export const useAdminInboxStats = (enabled = true) => {
+  return useQuery({
+    queryKey: ['orders', 'inbox-stats'],
+    enabled,
+    staleTime: 10_000,
+    refetchInterval: 20_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      if (error) throw error;
+      return { pending: count || 0 };
+    },
+  });
+};
+
 export const useCardInboxStats = (enabled = true) => {
   return useQuery({
     queryKey: ['orders', 'card-inbox-stats'],

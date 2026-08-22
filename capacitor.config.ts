@@ -16,7 +16,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     // Open admin panel (not storefront homepage)
-    url: 'https://snippymart.com/admin/dashboard',
+    url: 'https://snippymart.com/admin/inbox',
     cleartext: false,
     allowNavigation: [
       'snippymart.com',
