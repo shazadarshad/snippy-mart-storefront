@@ -21,6 +21,7 @@ import { getAffiliateRef } from '@/lib/affiliate';
 import { parseEdgeFunctionError } from '@/utils/parseEdgeFunctionError';
 import { toWhatsAppDigits } from '@/lib/phoneWhatsApp';
 import { UPI_CHECKOUT_ENABLED } from '@/lib/paymentMethod';
+import { cardPaymentPagePath } from '@/lib/cardPayment';
 
 import SEO from '@/components/seo/SEO';
 import {
@@ -465,7 +466,7 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (!proofFile) {
+    if (!proofFile && paymentMethod !== 'card') {
       toast({
         title: 'Payment proof required',
         description:
@@ -473,9 +474,7 @@ const CheckoutPage = () => {
             ? 'Please upload your bank transfer receipt screenshot.'
             : paymentMethod === 'upi'
               ? 'Please upload your UPI payment success screenshot.'
-              : paymentMethod === 'card'
-                ? 'Please upload your card payment confirmation screenshot.'
-                : 'Please upload your crypto payment screenshot / TX confirmation.',
+              : 'Please upload your crypto payment screenshot / TX confirmation.',
         variant: 'destructive',
       });
       return;
@@ -534,21 +533,21 @@ const CheckoutPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Upload payment proof
-      const rawExt = (proofFile.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      const fileExt = rawExt || (proofFile.type === 'application/pdf' ? 'pdf' : 'jpg');
-      const fileName = `${orderId}-${Date.now()}.${fileExt}`;
+      let paymentProofPath: string | undefined;
+      if (proofFile) {
+        const rawExt = (proofFile.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const fileExt = rawExt || (proofFile.type === 'application/pdf' ? 'pdf' : 'jpg');
+        const fileName = `${orderId}-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('payment-proofs')
-        .upload(fileName, proofFile);
+        const { error: uploadError } = await supabase.storage
+          .from('payment-proofs')
+          .upload(fileName, proofFile);
 
-      if (uploadError) {
-        throw new Error(uploadError.message || 'Failed to upload payment proof');
+        if (uploadError) {
+          throw new Error(uploadError.message || 'Failed to upload payment proof');
+        }
+        paymentProofPath = fileName;
       }
-
-      // Store the uploaded file path (bucket is private)
-      const paymentProofPath = fileName;
 
       // Create or Update order
       const invalid = items.find((i) => !i.product?.id || typeof i.product.id !== 'string');
@@ -626,7 +625,11 @@ const CheckoutPage = () => {
       }
 
       clearCart();
-      navigate(`/order-success?orderId=${encodeURIComponent(orderId)}`);
+      if (paymentMethod === 'card') {
+        navigate(cardPaymentPagePath(orderId));
+      } else {
+        navigate(`/order-success?orderId=${encodeURIComponent(orderId)}`);
+      }
     } catch (error) {
       const message = await parseEdgeFunctionError(error);
       console.error('Order creation failed:', error);

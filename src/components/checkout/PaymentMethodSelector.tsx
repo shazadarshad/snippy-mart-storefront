@@ -865,8 +865,8 @@ const PaymentMethodSelector = ({
                     Step 1: Get card payment link
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Message us on WhatsApp with your Order ID. We’ll send a secure Visa / Mastercard
-                    checkout link for this order.
+                    We’ll send a secure pay page on WhatsApp. After you pay, tap I’ve paid — no
+                    screenshot needed.
                   </p>
                 </div>
               </div>
@@ -904,13 +904,8 @@ const PaymentMethodSelector = ({
                 </Button>
               </div>
               <p className="text-sm font-mono font-bold text-primary">{orderId}</p>
-              <p className="text-xs text-primary/80 mt-1">Share this ID when you message us</p>
+              <p className="text-xs text-primary/80 mt-1">We attach this ID to your pending order</p>
             </div>
-
-            <ProofUpload
-              title="Step 2: Upload payment confirmation"
-              hint="After you pay by card, upload the confirmation screenshot or receipt (JPG, PNG, WebP, HEIC, PDF · max 10MB)"
-            />
           </div>
         </div>
       </div>

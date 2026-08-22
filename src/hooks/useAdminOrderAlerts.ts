@@ -16,6 +16,8 @@ type OrderAlertRow = {
   total_amount?: number;
   status?: string;
   created_at?: string;
+  payment_method?: string;
+  card_marked_paid_at?: string | null;
 };
 
 function notificationsWanted(): boolean {
@@ -110,8 +112,10 @@ export function useAdminOrderAlerts(enabled: boolean) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const seen = useRef<Set<string>>(new Set());
+  const seenPaid = useRef<Set<string>>(new Set());
   /** Newest order timestamp we've already accounted for. */
   const watermark = useRef<string>(new Date().toISOString());
+  const paidWatermark = useRef<string>(new Date().toISOString());
 
   /** Toast + beep + system notification for one order. Ignores repeats. */
   const announce = useCallback(
@@ -133,9 +137,18 @@ export function useAdminOrderAlerts(enabled: boolean) {
       const name = row.customer_name || 'Customer';
       const total =
         row.total_amount != null ? `Rs. ${Number(row.total_amount).toLocaleString()}` : '';
+      const isCard = row.payment_method === 'card';
+      const cardPaid = isCard && !!row.card_marked_paid_at;
+      const openUrl = isCard
+        ? `/admin/card-payments?order=${encodeURIComponent(String(row.order_number || ''))}`
+        : '/admin/orders';
 
       toast({
-        title: 'New order received',
+        title: cardPaid
+          ? 'Customer paid — verify card'
+          : isCard
+            ? 'Card pending — send link'
+            : 'New order received',
         description: `${num} · ${name}${total ? ` · ${total}` : ''}`,
       });
 
@@ -143,9 +156,45 @@ export function useAdminOrderAlerts(enabled: boolean) {
 
       if (notificationsWanted()) {
         void showAdminOrderNotification({
-          title: '🛒 New Snippy order',
-          body: `${num} — ${name}${total ? ` · ${total}` : ''}. Tap to open Orders.`,
+          title: cardPaid
+            ? '💳 Customer paid — verify'
+            : isCard
+              ? '💳 Card pending — send link'
+              : '🛒 New Snippy order',
+          body: `${num} — ${name}${total ? ` · ${total}` : ''}. Tap to open.`,
           orderId: id,
+          url: openUrl,
+        });
+      }
+      return true;
+    },
+    [toast],
+  );
+
+  const announcePaid = useCallback(
+    (row: OrderAlertRow) => {
+      const id = String(row.id || row.order_number || '');
+      if (!id || !row.card_marked_paid_at || seenPaid.current.has(id)) return false;
+      seenPaid.current.add(id);
+      const t = Date.parse(row.card_marked_paid_at);
+      if (Number.isFinite(t) && t > Date.parse(paidWatermark.current)) {
+        paidWatermark.current = new Date(t).toISOString();
+      }
+      const num = row.order_number || id.slice(0, 8);
+      const name = row.customer_name || 'Customer';
+      const total =
+        row.total_amount != null ? `Rs. ${Number(row.total_amount).toLocaleString()}` : '';
+      toast({
+        title: 'Customer paid — verify card',
+        description: `${num} · ${name}${total ? ` · ${total}` : ''}`,
+      });
+      playAdminOrderBeep();
+      if (notificationsWanted()) {
+        void showAdminOrderNotification({
+          title: '💳 Customer paid — verify',
+          body: `${num} — ${name}${total ? ` · ${total}` : ''}. Tap Card payments.`,
+          orderId: id,
+          url: `/admin/card-payments?order=${encodeURIComponent(String(row.order_number || ''))}`,
         });
       }
       return true;
@@ -163,7 +212,7 @@ export function useAdminOrderAlerts(enabled: boolean) {
       const since = watermark.current;
       const { data, error } = await supabase
         .from('orders')
-        .select('id, order_number, customer_name, total_amount, status, created_at')
+        .select('id, order_number, customer_name, total_amount, status, created_at, payment_method, card_marked_paid_at')
         .gt('created_at', since)
         .order('created_at', { ascending: true })
         .limit(50);
@@ -177,10 +226,28 @@ export function useAdminOrderAlerts(enabled: boolean) {
       if (announced > 0) {
         queryClient.invalidateQueries({ queryKey: ['orders'] });
       }
+
+      const { data: paidRows } = await supabase
+        .from('orders')
+        .select(
+          'id, order_number, customer_name, total_amount, status, created_at, payment_method, card_marked_paid_at',
+        )
+        .eq('payment_method', 'card')
+        .eq('status', 'pending')
+        .not('card_marked_paid_at', 'is', null)
+        .gt('card_marked_paid_at', paidWatermark.current)
+        .order('card_marked_paid_at', { ascending: true })
+        .limit(30);
+
+      let paidN = 0;
+      for (const row of (paidRows || []) as OrderAlertRow[]) {
+        if (announcePaid(row)) paidN++;
+      }
+      if (paidN > 0) queryClient.invalidateQueries({ queryKey: ['orders'] });
     } catch {
       /* offline — the next tick will retry */
     }
-  }, [announce, queryClient]);
+  }, [announce, announcePaid, queryClient]);
 
   // Unlock Web Audio on first tap/click so mobile PWA can beep later
   useEffect(() => {
@@ -207,6 +274,18 @@ export function useAdminOrderAlerts(enabled: boolean) {
             // Without this the order list the admin is looking at stays stale,
             // so the beep fires for an order that isn't on screen yet.
             queryClient.invalidateQueries({ queryKey: ['orders'] });
+          }
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        (payload) => {
+          const row = payload.new as OrderAlertRow;
+          if (row.payment_method === 'card' && row.card_marked_paid_at) {
+            if (announcePaid(row)) {
+              queryClient.invalidateQueries({ queryKey: ['orders'] });
+            }
           }
         },
       )

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   CreditCard,
@@ -10,6 +10,8 @@ import {
   Loader2,
   ShieldCheck,
   Package,
+  CheckCircle2,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/seo/SEO';
@@ -29,6 +31,29 @@ const CardPaymentPage = () => {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  const [openedPay, setOpenedPay] = useState(false);
+  const [marking, setMarking] = useState(false);
+  const [markedLocal, setMarkedLocal] = useState(false);
+  const [showShot, setShowShot] = useState(false);
+
+  useEffect(() => {
+    if (!orderNumber) return;
+    const channel = supabase
+      .channel(`card-pay-${orderNumber}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        () => {
+          void refetch();
+        },
+      )
+      .subscribe();
+    const poll = window.setInterval(() => void refetch(), 6000);
+    return () => {
+      window.clearInterval(poll);
+      void supabase.removeChannel(channel);
+    };
+  }, [orderNumber, refetch]);
 
   const handleFile = (file: File | null) => {
     if (!file) {
@@ -93,8 +118,8 @@ const CardPaymentPage = () => {
       setProofFile(null);
       refetch();
       toast({
-        title: 'Proof uploaded',
-        description: 'We’ll verify your card payment and update the order.',
+        title: 'Screenshot saved',
+        description: 'We’ll verify and update your order.',
       });
     } catch (e) {
       toast({
@@ -104,6 +129,43 @@ const CardPaymentPage = () => {
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const openPay = () => {
+    const url = String(order?.card_checkout_url || '').trim();
+    if (!url) return;
+    setOpenedPay(true);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleMarkedPaid = async () => {
+    if (!order) return;
+    setMarking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('mark-card-paid', {
+        body: { order_number: order.order_number },
+      });
+      if (error || data?.error) {
+        throw new Error(
+          (data?.error && String(data.error)) ||
+            (error ? await parseEdgeFunctionError(error) : 'Could not notify us'),
+        );
+      }
+      setMarkedLocal(true);
+      refetch();
+      toast({
+        title: 'We’ll verify now',
+        description: 'No screenshot needed. We’ll update your order after we confirm payment.',
+      });
+    } catch (e) {
+      toast({
+        title: 'Could not notify us',
+        description: e instanceof Error ? e.message : 'Try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setMarking(false);
     }
   };
 
@@ -138,10 +200,13 @@ const CardPaymentPage = () => {
 
   const payUrl = String(order.card_checkout_url || '').trim();
   const hasProof = !!order.payment_proof_url || uploaded;
+  const markedPaid = !!order.card_marked_paid_at || markedLocal;
+  const done = hasProof || markedPaid;
   const closed = order.status === 'cancelled' || order.status === 'refunded';
+  const paidOk = !closed && ['processing', 'shipping', 'completed'].includes(order.status);
 
   return (
-    <div className="min-h-dvh page-mesh pt-[max(5.5rem,calc(4.5rem+env(safe-area-inset-top)))] pb-[max(8.5rem,calc(7rem+env(safe-area-inset-bottom)))] px-3 sm:px-4">
+    <div className="min-h-dvh page-mesh pt-[max(5.5rem,calc(4.5rem+env(safe-area-inset-top)))] pb-[max(2.5rem,calc(1.5rem+env(safe-area-inset-bottom)))] px-3 sm:px-4">
       <SEO
         title={`Pay ${order.order_number}`}
         description="Complete your Snippy Mart card payment."
@@ -168,7 +233,7 @@ const CardPaymentPage = () => {
               <p className="text-2xl font-black tabular-nums">{formatCatalogLkr(order.total_amount)}</p>
             </div>
             <span className="self-start text-[10px] font-black uppercase px-2 py-1 rounded-full border border-border">
-              {order.status}
+              {paidOk ? 'confirmed' : done ? 'verifying' : order.status}
             </span>
           </div>
           <p className="text-sm text-foreground/80">Hi {order.customer_name || 'there'}</p>
@@ -193,99 +258,135 @@ const CardPaymentPage = () => {
 
         {closed ? (
           <p className="text-sm text-destructive font-semibold">This order is no longer open for payment.</p>
-        ) : payUrl ? (
-          <Button
-            type="button"
-            variant="hero"
-            size="xl"
-            className="hidden sm:inline-flex w-full min-h-14 h-14 text-base font-bold touch-manipulation"
-            onClick={() => window.open(payUrl, '_blank', 'noopener,noreferrer')}
-          >
-            Proceed to payment
-            <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
+        ) : paidOk ? (
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <p className="font-bold">Payment confirmed</p>
+            </div>
+            <Button asChild className="w-full min-h-12">
+              <Link to={`/track-order?orderId=${encodeURIComponent(order.order_number)}`}>
+                Track this order
+              </Link>
+            </Button>
+          </div>
+        ) : done ? (
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-1">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <p className="font-bold">We’re verifying your payment</p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              You don’t need to send a screenshot. We’ll update Track Order as soon as we confirm.
+            </p>
+          </div>
+        ) : !payUrl ? (
+          <div className="rounded-2xl border border-dashed border-border p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <p className="text-sm font-semibold">Preparing your payment link…</p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              This page updates itself. Keep it open — Pay with card will appear here.
+            </p>
+          </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-            Payment link is not ready yet. Reply on WhatsApp and we’ll send it.
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="hero"
+              className="w-full min-h-14 h-14 text-base font-bold touch-manipulation"
+              onClick={openPay}
+            >
+              Pay with card
+              <ExternalLink className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              type="button"
+              className={cn(
+                'w-full min-h-12 h-12 text-base font-bold touch-manipulation',
+                openedPay ? '' : 'bg-secondary text-foreground hover:bg-secondary/80',
+              )}
+              variant={openedPay ? 'default' : 'secondary'}
+              disabled={marking}
+              onClick={() => void handleMarkedPaid()}
+            >
+              {marking ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+              I’ve paid — notify us
+            </Button>
+            <p className="text-xs text-center text-muted-foreground leading-relaxed">
+              Open Pay with card, finish on the bank page, then tap I’ve paid. No screenshot needed.
+            </p>
           </div>
         )}
 
-        <div className="rounded-2xl border border-border bg-card/95 p-4 sm:p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-bold">After you pay — upload confirmation</h2>
-          </div>
-          {hasProof ? (
-            <p className="text-sm text-emerald-600 font-semibold">
-              Confirmation on file. We’ll verify and update your order.
-            </p>
-          ) : (
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif,application/pdf"
-                className="hidden"
-                onChange={(e) => handleFile(e.target.files?.[0] || null)}
-              />
-              {!proofFile ? (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full min-h-[7.5rem] p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 touch-manipulation"
-                >
-                  <Upload className="w-7 h-7 text-muted-foreground" />
-                  <span className="text-sm font-medium">Tap to upload screenshot / PDF</span>
-                </button>
-              ) : (
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-border">
-                  {proofFile.type === 'application/pdf' ? (
-                    <FileText className="w-5 h-5 text-destructive" />
-                  ) : (
-                    <ImageIcon className="w-5 h-5 text-primary" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{proofFile.name}</p>
-                    <p className="text-xs text-muted-foreground">{(proofFile.size / 1024).toFixed(1)} KB</p>
+        {!closed && !paidOk && !done && (
+          <div className="rounded-2xl border border-border bg-card/95 overflow-hidden">
+            <button
+              type="button"
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left min-h-12 touch-manipulation"
+              onClick={() => setShowShot((v) => !v)}
+            >
+              <span className="text-sm font-semibold text-muted-foreground">Optional screenshot</span>
+              <ChevronDown className={cn('w-4 h-4 text-muted-foreground transition-transform', showShot && 'rotate-180')} />
+            </button>
+            {showShot && (
+              <div className="px-4 pb-4 space-y-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif,application/pdf"
+                  className="hidden"
+                  onChange={(e) => handleFile(e.target.files?.[0] || null)}
+                />
+                {!proofFile ? (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full min-h-[5.5rem] p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 touch-manipulation"
+                  >
+                    <Upload className="w-6 h-6 text-muted-foreground" />
+                    <span className="text-sm font-medium">Screenshot / PDF</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-border">
+                    {proofFile.type === 'application/pdf' ? (
+                      <FileText className="w-5 h-5 text-destructive" />
+                    ) : (
+                      <ImageIcon className="w-5 h-5 text-primary" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{proofFile.name}</p>
+                    </div>
+                    <Button type="button" variant="outline" size="icon" onClick={() => handleFile(null)}>
+                      <X className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button type="button" variant="outline" size="icon" onClick={() => handleFile(null)}>
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-              <Button
-                type="button"
-                className="w-full min-h-12"
-                disabled={!proofFile || uploading || closed}
-                onClick={handleUploadProof}
-              >
-                {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                I’ve paid — submit proof
-              </Button>
-            </>
-          )}
-        </div>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full min-h-11"
+                  disabled={!proofFile || uploading}
+                  onClick={() => void handleUploadProof()}
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Attach screenshot
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
         <p className={cn('text-center text-xs text-muted-foreground')}>
-          <Link to={`/track-order?orderId=${encodeURIComponent(order.order_number)}`} className="text-primary font-semibold inline-block py-2">
+          <Link
+            to={`/track-order?orderId=${encodeURIComponent(order.order_number)}`}
+            className="text-primary font-semibold inline-block py-2"
+          >
             Track this order
           </Link>
         </p>
       </div>
-
-      {!closed && payUrl ? (
-        <div className="sm:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <Button
-            type="button"
-            variant="hero"
-            className="w-full min-h-12 h-12 text-base font-bold touch-manipulation"
-            onClick={() => window.open(payUrl, '_blank', 'noopener,noreferrer')}
-          >
-            Proceed to payment
-            <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 };

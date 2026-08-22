@@ -31,6 +31,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useCardInboxStats } from '@/hooks/useOrders';
 import { AdminPwaBanner } from '@/components/admin/AdminPwaBanner';
 import { useAdminOrderAlerts } from '@/hooks/useAdminOrderAlerts';
 import SEO from '@/components/seo/SEO';
@@ -55,7 +56,7 @@ const menuItems: MenuItem[] = [
   { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, group: 'Main' },
   { name: 'Fulfillment', path: '/admin/fulfillment', icon: ShieldCheck, group: 'Ops' },
   { name: 'Inventory', path: '/admin/inventory', icon: Package, group: 'Ops' },
-  { name: 'Card payments', path: '/admin/card-payments', icon: CreditCard, badge: 'NEW', group: 'Ops' },
+  { name: 'Card payments', path: '/admin/card-payments', icon: CreditCard, group: 'Ops' },
   { name: 'Claude', path: '/admin/claude', icon: Zap, badge: 'NEW', group: 'Ops' },
   { name: 'Coupons', path: '/admin/coupons', icon: Tag, group: 'Ops' },
   {
@@ -98,8 +99,8 @@ const bottomNav: {
 }[] = [
   { name: 'Home', path: '/admin/dashboard', icon: LayoutDashboard, match: '/admin/dashboard' },
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart, match: '/admin/orders' },
+  { name: 'Card', path: '/admin/card-payments', icon: CreditCard, match: '/admin/card-payments' },
   { name: 'Products', path: '/admin/products', icon: Package, match: '/admin/products' },
-  { name: 'Auto', path: '/admin/reseller-api', icon: Wallet, match: '/admin/reseller-api' },
 ];
 
 const AdminLayout = () => {
@@ -109,6 +110,8 @@ const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
 
   const adminReady = !!user && !!isAdmin && !loading;
+  const { data: cardStats } = useCardInboxStats(adminReady);
+  const cardActionCount = cardStats?.actionCount || 0;
   // Web: toast + beep + browser notifications (unchanged)
   useAdminOrderAlerts(adminReady);
   // Capacitor APK only: FCM token for closed-app pushes (no-op on website)
@@ -213,11 +216,15 @@ const AdminLayout = () => {
         className={cn('w-5 h-5 shrink-0', isActive(item.path) ? 'opacity-100' : 'opacity-70')}
       />
       <span className="flex-1 truncate">{item.name}</span>
-      {item.badge && !isActive(item.path) && (
+      {item.path === '/admin/card-payments' && cardActionCount > 0 ? (
+        <span className="min-w-[1.25rem] px-1.5 py-0.5 text-[10px] font-black tabular-nums text-center rounded-md bg-purple-500 text-white">
+          {cardActionCount > 99 ? '99+' : cardActionCount}
+        </span>
+      ) : item.badge && !isActive(item.path) ? (
         <span className="px-1.5 py-0.5 text-[9px] font-black bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 rounded-md border border-emerald-500/20">
           {item.badge}
         </span>
-      )}
+      ) : null}
       {isActive(item.path) && <ChevronRight className="w-4 h-4 opacity-70 shrink-0" />}
     </Link>
   );
@@ -402,11 +409,16 @@ const AdminLayout = () => {
               >
                 <div
                   className={cn(
-                    'w-11 h-8 rounded-xl flex items-center justify-center transition-all duration-200',
+                    'relative w-11 h-8 rounded-xl flex items-center justify-center transition-all duration-200',
                     active && 'bg-primary/12 shadow-sm',
                   )}
                 >
                   <item.icon className={cn('w-5 h-5', active && 'stroke-[2.5]')} />
+                  {item.path === '/admin/card-payments' && cardActionCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[1.05rem] h-[1.05rem] px-1 rounded-full bg-purple-500 text-white text-[9px] font-black leading-[1.05rem] tabular-nums">
+                      {cardActionCount > 9 ? '9+' : cardActionCount}
+                    </span>
+                  )}
                 </div>
                 <span
                   className={cn(

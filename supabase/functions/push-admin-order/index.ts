@@ -32,6 +32,7 @@ type ServiceAccount = {
 };
 
 type PushBody = {
+  kind?: "new_order" | "card_paid";
   order_id?: string;
   order_number?: string;
   customer_name?: string;
@@ -179,8 +180,14 @@ serve(async (req) => {
     (body.total_amount != null
       ? `Rs. ${Number(body.total_amount).toLocaleString()}`
       : "");
-  const title = "🛒 New Snippy order";
-  const notifBody = `${num} · ${name}${total ? ` · ${total}` : ""}`;
+  const isCardPaid = body.kind === "card_paid";
+  const title = isCardPaid ? "💳 Customer paid — verify" : "🛒 New Snippy order";
+  const notifBody = isCardPaid
+    ? `${num} · ${name}${total ? ` · ${total}` : ""} — open Card payments`
+    : `${num} · ${name}${total ? ` · ${total}` : ""}`;
+  const openUrl = isCardPaid
+    ? `/admin/card-payments?order=${encodeURIComponent(String(body.order_number || ""))}`
+    : "/admin/orders";
 
   let accessToken: string;
   try {
@@ -204,7 +211,7 @@ serve(async (req) => {
           title,
           notifBody,
           {
-            url: "/admin/orders",
+            url: openUrl,
             order_id: String(body.order_id || ""),
             order_number: String(body.order_number || ""),
           },

@@ -173,9 +173,10 @@ export async function showAdminOrderNotification(opts: {
   title: string;
   body: string;
   orderId?: string;
+  url?: string;
 }) {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  const url = opts.orderId ? `/admin/orders` : '/admin/orders';
+  const url = opts.url || (opts.orderId ? `/admin/orders` : '/admin/orders');
   const payload: NotificationOptions & { renotify?: boolean; vibrate?: number[] } = {
     body: opts.body,
     icon: '/android-chrome-192x192.png',

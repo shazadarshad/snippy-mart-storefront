@@ -34,6 +34,7 @@ export interface Order {
   payment_proof_url: string | null;
   card_checkout_url?: string | null;
   card_link_created_at?: string | null;
+  card_marked_paid_at?: string | null;
   binance_id: string | null;
   customer_country: string | null;
   currency_code?: string;
@@ -127,6 +128,42 @@ export const useOrderStats = () => {
       };
 
       return stats;
+    },
+  });
+};
+
+export const useCardInboxStats = (enabled = true) => {
+  return useQuery({
+    queryKey: ['orders', 'card-inbox-stats'],
+    enabled,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, card_checkout_url, card_marked_paid_at, payment_proof_url')
+        .eq('payment_method', 'card')
+        .eq('status', 'pending');
+
+      if (error) {
+        if (String(error.message || '').includes('card_marked_paid_at')) {
+          return { pending: 0, needsLink: 0, markedPaid: 0, actionCount: 0 };
+        }
+        throw error;
+      }
+      const rows = data || [];
+      let needsLink = 0;
+      let markedPaid = 0;
+      for (const row of rows) {
+        if (row.card_marked_paid_at || row.payment_proof_url) markedPaid += 1;
+        else if (!String(row.card_checkout_url || '').trim()) needsLink += 1;
+      }
+      return {
+        pending: rows.length,
+        needsLink,
+        markedPaid,
+        actionCount: needsLink + markedPaid,
+      };
     },
   });
 };
@@ -516,6 +553,7 @@ export const useTrackOrder = (query: string) => {
           payment_proof_url,
           card_checkout_url,
           card_link_created_at,
+          card_marked_paid_at,
           currency_code,
           currency_symbol,
           currency_rate,
