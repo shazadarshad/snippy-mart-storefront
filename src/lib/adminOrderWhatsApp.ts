@@ -158,6 +158,7 @@ export function buildOrderWhatsAppMessage(
       const amount = opts?.amountLabel ? `\nAmount: *${opts.amountLabel}*` : '';
       const payPage =
         String(opts?.cardPaymentLink || '').trim() || cardPaymentPageUrl(id);
+      const auto = orderHasAutoItems(order);
       return [
         `Hi ${name}!`,
         '',
@@ -168,15 +169,21 @@ export function buildOrderWhatsAppMessage(
         'Open this Snippy Mart page:',
         payPage,
         '',
-        '1. Tap *Proceed to payment*',
+        '1. Tap *Pay with card*',
         '2. Pay with Visa / Mastercard',
-        '3. Come back and upload the confirmation on the same page',
+        '3. Come back and tap *I’ve paid* (no screenshot needed)',
+        auto
+          ? '4. After we confirm, your product appears on Track Order'
+          : '',
         '',
         'Track order:',
         url,
         '',
         'Reply here if you need help.',
-      ].join('\n');
+      ]
+        .filter((l) => l !== undefined)
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n');
     }
 
     case 'pending_payment':

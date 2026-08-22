@@ -13,12 +13,22 @@ import {
   CheckCircle2,
   Clock,
   Link2,
+  Zap,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useOrders, useUpdateExistingOrder, type Order } from '@/hooks/useOrders';
+import { useOrders, useUpdateExistingOrder, useUpdateOrderStatus, type Order } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  useDeliverOrderViaReseller,
+  useOrderResellerDeliveryLog,
+  summarizeDeliverResult,
+} from '@/hooks/useResellerApi';
+import { getOrderWhatsAppLink, orderHasAutoItems } from '@/lib/adminOrderWhatsApp';
+import { openOrderWhatsApp } from '@/components/admin/AdminWhatsAppActions';
 import { formatCatalogLkr } from '@/hooks/useCurrency';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import {
@@ -29,7 +39,6 @@ import {
   isValidHttpUrl,
   type CardInboxState,
 } from '@/lib/cardPayment';
-import { getOrderWhatsAppLink } from '@/lib/adminOrderWhatsApp';
 import { adminStatusLabel } from '@/lib/orderStatus';
 import { formatDateTime, cn } from '@/lib/utils';
 import { copyToClipboard as safeCopy } from '@/lib/clipboard';
@@ -52,6 +61,27 @@ const AdminCardPayments = () => {
   const { data: orders = [], isLoading, refetch, isFetching } = useOrders();
   const { data: settings } = useSiteSettings();
   const saveOrder = useUpdateExistingOrder();
+  const updateStatus = useUpdateOrderStatus();
+  const deliverReseller = useDeliverOrderViaReseller();
+  const { data: deliveryLog = [], refetch: refetchDeliveryLog } = useOrderResellerDeliveryLog(
+    loaded?.id,
+  );
+
+  const isAuto = loaded ? orderHasAutoItems(loaded) : false;
+  const confirming = updateStatus.isPending || deliverReseller.isPending;
+
+  useEffect(() => {
+    if (!loaded?.id) return;
+    const fresh = orders.find((o) => o.id === loaded.id);
+    if (
+      fresh &&
+      (fresh.status !== loaded.status ||
+        fresh.card_marked_paid_at !== loaded.card_marked_paid_at ||
+        fresh.card_checkout_url !== loaded.card_checkout_url)
+    ) {
+      setLoaded(fresh);
+    }
+  }, [orders, loaded]);
 
   const cardOrders = useMemo(() => {
     return orders
@@ -180,6 +210,99 @@ const AdminCardPayments = () => {
     toast({ title: ok ? 'Copied' : 'Copy failed', description: label });
   };
 
+  const handleConfirmPaid = async () => {
+    if (!loaded) return;
+    try {
+      const result = await updateStatus.mutateAsync({
+        orderId: loaded.id,
+        status: 'processing',
+      });
+      const finalStatus = (result.order?.status || 'processing') as Order['status'];
+      try {
+        await supabase.functions.invoke('handle-order-status-change', {
+          body: {
+            order: { ...loaded, ...result.order, status: finalStatus },
+            old_order: loaded,
+          },
+        });
+      } catch {
+        /* email is best-effort */
+      }
+
+      if (result.order) setLoaded({ ...loaded, ...result.order, status: finalStatus });
+      refetch();
+      void refetchDeliveryLog();
+
+      const delivery = result.delivery;
+      const delivered = delivery?.delivered ?? 0;
+      const failed = delivery?.failed ?? 0;
+      const auto = orderHasAutoItems(loaded);
+
+      if (auto && failed > 0 && delivered === 0) {
+        toast({
+          title: 'Payment confirmed — auto delivery failed',
+          description: delivery?.error || summarizeDeliverResult(delivery as any) || 'Open retry below.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (auto && delivered > 0) {
+        toast({
+          title: 'Paid & auto-delivered',
+          description: summarizeDeliverResult(delivery as any),
+        });
+        openOrderWhatsApp(loaded, [], 'auto_ready');
+        return;
+      }
+
+      toast({
+        title: 'Payment confirmed',
+        description: auto
+          ? 'Customer can use Track Order once delivery finishes.'
+          : 'Mark fulfillment from Orders if this is a manual product.',
+      });
+      if (auto) openOrderWhatsApp(loaded, [], 'auto_processing');
+    } catch (e: unknown) {
+      toast({
+        title: 'Could not confirm payment',
+        description: e instanceof Error ? e.message : 'Try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRetryDeliver = async () => {
+    if (!loaded) return;
+    try {
+      const res = await deliverReseller.mutateAsync({
+        orderId: loaded.id,
+        bypassEnabled: true,
+      });
+      void refetchDeliveryLog();
+      refetch();
+      const failed = res.failed ?? 0;
+      const delivered = res.delivered ?? 0;
+      toast({
+        title:
+          failed > 0 && delivered === 0
+            ? 'Delivery failed'
+            : delivered > 0
+              ? 'Delivered'
+              : 'Delivery finished',
+        description: summarizeDeliverResult(res),
+        variant: failed > 0 && delivered === 0 ? 'destructive' : 'default',
+      });
+      if (delivered > 0) openOrderWhatsApp(loaded, [], 'auto_ready');
+    } catch (e: unknown) {
+      toast({
+        title: 'Delivery failed',
+        description: e instanceof Error ? e.message : 'Try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const inboxList = (
     <div className="admin-card overflow-hidden flex flex-col min-h-0 lg:max-h-[calc(100dvh-8.5rem)]">
       <div className="px-4 py-3 border-b border-border shrink-0">
@@ -233,7 +356,14 @@ const AdminCardPayments = () => {
             >
               <div className="flex justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-mono text-sm font-bold">{o.order_number}</p>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <p className="font-mono text-sm font-bold truncate">{o.order_number}</p>
+                    {orderHasAutoItems(o) && (
+                      <span className="shrink-0 text-[9px] font-black uppercase tracking-wide px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+                        Auto
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground truncate">
                     {o.customer_name} · {formatDateTime(o.created_at)}
                   </p>
@@ -268,7 +398,14 @@ const AdminCardPayments = () => {
           >
             <ArrowLeft className="w-4 h-4" /> Inbox
           </button>
-          <p className="font-mono font-black text-lg sm:text-xl">{loaded.order_number}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-mono font-black text-lg sm:text-xl">{loaded.order_number}</p>
+            {isAuto && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30">
+                <Zap className="w-3 h-3" /> Auto
+              </span>
+            )}
+          </div>
           <p className="text-sm font-semibold truncate">{loaded.customer_name}</p>
           <p className="text-xs text-muted-foreground font-mono">{loaded.customer_whatsapp}</p>
         </div>
@@ -293,7 +430,8 @@ const AdminCardPayments = () => {
           <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
             Customer tapped I’ve paid
             {loaded.card_marked_paid_at ? ` · ${formatDateTime(loaded.card_marked_paid_at)}` : ''}.
-            Check PayHere / Genie, then mark the order processing.
+            Check PayHere / Genie, then confirm
+            {isAuto ? ' — Auto products deliver immediately.' : '.'}
           </p>
         </div>
       )}
@@ -311,18 +449,94 @@ const AdminCardPayments = () => {
       )}
 
       <ul className="text-sm space-y-1.5">
-        {(loaded.order_items || []).map((i) => (
-          <li key={i.id} className="flex justify-between gap-3">
-            <span className="min-w-0 truncate">
-              {i.product_name}
-              {(i.plan_name || i.variant_name)
-                ? ` (${[i.plan_name, i.variant_name].filter(Boolean).join(' · ')})`
-                : ''}
-              <span className="text-muted-foreground"> ×{i.quantity}</span>
-            </span>
-          </li>
-        ))}
+        {(loaded.order_items || []).map((i) => {
+          const autoLine = !!(
+            i.products?.reseller_product_id && String(i.products.reseller_product_id).trim()
+          );
+          return (
+            <li key={i.id} className="flex justify-between gap-3">
+              <span className="min-w-0 truncate">
+                {i.product_name}
+                {(i.plan_name || i.variant_name)
+                  ? ` (${[i.plan_name, i.variant_name].filter(Boolean).join(' · ')})`
+                  : ''}
+                <span className="text-muted-foreground"> ×{i.quantity}</span>
+              </span>
+              {autoLine && (
+                <span className="shrink-0 text-[9px] font-black uppercase text-emerald-700 dark:text-emerald-300">
+                  Auto
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ul>
+
+      {(loadedState === 'marked_paid' ||
+        (loaded.status === 'pending' && loaded.payment_proof_url)) && (
+        <Button
+          type="button"
+          className="w-full min-h-12 h-12 font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-base"
+          disabled={confirming}
+          onClick={() => void handleConfirmPaid()}
+        >
+          {confirming ? (
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+          ) : isAuto ? (
+            <Wallet className="w-4 h-4 mr-2" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 mr-2" />
+          )}
+          {isAuto ? 'Confirm paid & auto-deliver' : 'Confirm payment'}
+        </Button>
+      )}
+
+      {isAuto && loaded.status !== 'pending' && loaded.status !== 'cancelled' && (
+        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-3 space-y-2">
+          <p className="text-xs font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
+            Reseller delivery
+          </p>
+          {deliveryLog.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No delivery yet. Confirm paid above, or retry.</p>
+          ) : (
+            <ul className="space-y-1.5">
+              {deliveryLog.slice(0, 6).map((d) => (
+                <li key={d.id} className="text-xs">
+                  <span className="font-semibold">{d.product_name || 'Item'}</span>{' '}
+                  <span className="text-muted-foreground uppercase">{d.status}</span>
+                  {d.error_message ? (
+                    <span className="block text-destructive font-semibold">{d.error_message}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              className="min-h-11 h-11 font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
+              disabled={confirming}
+              onClick={() => void handleRetryDeliver()}
+            >
+              {deliverReseller.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+              ) : (
+                <Wallet className="w-4 h-4 mr-1.5" />
+              )}
+              Deliver
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 h-11"
+              onClick={() => openOrderWhatsApp(loaded, deliveryLog, 'auto_ready')}
+            >
+              <MessageCircle className="w-4 h-4 mr-1.5" />
+              Track Order WA
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div>
         <Label htmlFor="processor">Processor link (PayHere / Stripe / Genie)</Label>

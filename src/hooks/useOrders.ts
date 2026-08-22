@@ -18,7 +18,7 @@ export interface OrderItem {
   total_price: number;
   created_at: string;
   customer_credentials?: any | null;
-  products?: { manual_fulfillment: boolean } | null;
+  products?: { manual_fulfillment: boolean; reseller_product_id?: string | null } | null;
 }
 
 export interface Order {
@@ -68,7 +68,8 @@ export const useOrders = () => {
           order_items (
             *,
             products (
-              manual_fulfillment
+              manual_fulfillment,
+              reseller_product_id
             )
           )
         `)
@@ -91,7 +92,8 @@ export const useRecentOrders = (limit: number = 5) => {
           order_items (
             *,
             products (
-              manual_fulfillment
+              manual_fulfillment,
+              reseller_product_id
             )
           )
         `)
