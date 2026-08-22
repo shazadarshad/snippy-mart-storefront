@@ -42,6 +42,7 @@ import { paymentMethodShort } from '@/lib/paymentMethod';
 import { adminStatusLabel } from '@/lib/orderStatus';
 import { formatDateTime, cn } from '@/lib/utils';
 import { copyToClipboard as safeCopy } from '@/lib/clipboard';
+import { openExternalUrl, preserveOpenGesture } from '@/lib/openExternal';
 
 const AdminInbox = () => {
   const { toast } = useToast();
@@ -144,6 +145,7 @@ const AdminInbox = () => {
     setProcessorUrl(order.card_checkout_url || settings?.card_payment_link || '');
     setSearchParams({ order: order.order_number }, { replace: true });
     setMobileList(false);
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   };
 
   const smUrl = loaded ? cardPaymentPageUrl(loaded.order_number) : '';
@@ -178,14 +180,19 @@ const AdminInbox = () => {
   };
 
   const handleSaveAndSend = async () => {
+    const popup = preserveOpenGesture();
     try {
       const saved = await persistCardLink();
-      if (!saved) return;
+      if (!saved) {
+        popup?.close();
+        return;
+      }
       const link = getOrderWhatsAppLink(saved, 'card_link', [], {
         cardPaymentLink: cardPaymentPageUrl(saved.order_number),
         amountLabel: formatCatalogLkr(Number(saved.total_amount)),
       });
       if (!link.url) {
+        popup?.close();
         toast({
           title: 'Invalid customer WhatsApp',
           description: link.display,
@@ -193,9 +200,10 @@ const AdminInbox = () => {
         });
         return;
       }
-      window.open(link.url, '_blank', 'noopener,noreferrer');
+      openExternalUrl(link.url, popup);
       toast({ title: 'Saved & WhatsApp opened', description: 'Send the prefilled pay-link message.' });
     } catch (e: unknown) {
+      popup?.close();
       toast({
         title: 'Could not save',
         description: e instanceof Error ? e.message : 'Try again.',
@@ -206,6 +214,7 @@ const AdminInbox = () => {
 
   const handleConfirmAuto = async () => {
     if (!loaded) return;
+    const popup = preserveOpenGesture();
     try {
       const result = await updateStatus.mutateAsync({
         orderId: loaded.id,
@@ -243,6 +252,7 @@ const AdminInbox = () => {
       void refetchDeliveryLog();
 
       if (failed > 0 && delivered === 0) {
+        popup?.close();
         toast({
           title: 'Confirmed — delivery failed',
           description: summary || 'Use Deliver to retry.',
@@ -256,8 +266,9 @@ const AdminInbox = () => {
         title: ready ? 'Done — WhatsApp opened' : 'Confirmed — WhatsApp opened',
         description: summary || 'Send the prefilled steps.',
       });
-      openOrderWhatsApp(loaded, deliveryLog, ready ? 'auto_ready' : 'auto_processing');
+      openOrderWhatsApp(loaded, deliveryLog, ready ? 'auto_ready' : 'auto_processing', popup);
     } catch (e: unknown) {
+      popup?.close();
       toast({
         title: 'Could not confirm',
         description: e instanceof Error ? e.message : 'Try again.',
@@ -302,7 +313,7 @@ const AdminInbox = () => {
   };
 
   const list = (
-    <div className="admin-card overflow-hidden flex flex-col min-h-0 lg:max-h-[calc(100dvh-8.5rem)]">
+    <div className="admin-card overflow-hidden flex flex-col min-h-[calc(100dvh-11.5rem)] lg:min-h-0 lg:max-h-[calc(100dvh-8.5rem)]">
       <div className="px-4 py-3 border-b border-border shrink-0">
         <div className="flex items-center justify-between gap-2">
           <div>
@@ -385,7 +396,7 @@ const AdminInbox = () => {
   );
 
   const workspace = loaded ? (
-    <div className="admin-card p-4 sm:p-5 space-y-4">
+    <div className="admin-card p-4 sm:p-5 space-y-4 pb-28 lg:pb-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <button
@@ -488,14 +499,24 @@ const AdminInbox = () => {
               onChange={(e) => setProcessorUrl(e.target.value)}
               placeholder="https://…"
               className="mt-1.5 h-12 font-mono text-base"
+              type="url"
+              inputMode="url"
+              enterKeyHint="go"
               autoCapitalize="off"
               autoCorrect="off"
+              autoComplete="off"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void handleSaveAndSend();
+                }
+              }}
             />
           </div>
           <p className="text-[11px] font-mono text-muted-foreground break-all">Customer page: {smUrl}</p>
           <Button
             type="button"
-            className="w-full min-h-12 h-12 font-bold bg-[#25D366] hover:bg-[#128C7E] text-white text-base"
+            className="hidden lg:inline-flex w-full min-h-12 h-12 font-bold bg-[#25D366] hover:bg-[#128C7E] text-white text-base"
             disabled={busy}
             onClick={() => void handleSaveAndSend()}
           >
@@ -524,7 +545,7 @@ const AdminInbox = () => {
         (!isCard || cardState === 'marked_paid' || cardState === 'waiting_pay') && (
         <Button
           type="button"
-          className="w-full min-h-12 h-12 font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-base"
+          className="hidden lg:inline-flex w-full min-h-12 h-12 font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-base"
           disabled={busy}
           onClick={() => void handleConfirmAuto()}
         >
@@ -536,7 +557,7 @@ const AdminInbox = () => {
       {!isAuto && loaded.status === 'pending' && cardState !== 'needs_link' && (
         <Button
           type="button"
-          className="w-full min-h-12 h-12 font-bold"
+          className="hidden lg:inline-flex w-full min-h-12 h-12 font-bold"
           disabled={busy}
           onClick={() => void handleConfirmManual()}
         >
@@ -598,12 +619,24 @@ const AdminInbox = () => {
     </div>
   );
 
+  const showCardSend =
+    !!loaded &&
+    isCard &&
+    (cardState === 'needs_link' || cardState === 'waiting_pay' || !loaded.card_checkout_url);
+  const showAutoConfirm =
+    !!loaded &&
+    isAuto &&
+    loaded.status === 'pending' &&
+    (!isCard || cardState === 'marked_paid' || cardState === 'waiting_pay');
+  const showManualConfirm =
+    !!loaded && !isAuto && loaded.status === 'pending' && cardState !== 'needs_link';
+
   return (
-    <div className="min-w-0 space-y-4 sm:space-y-5">
-      <div className="admin-page-header">
+    <div className="min-w-0 space-y-3 sm:space-y-5">
+      <div className={cn('admin-page-header', !mobileList && loaded && 'hidden lg:flex')}>
         <div>
           <h1 className="admin-page-title">Inbox</h1>
-          <p className="admin-page-subtitle">
+          <p className="admin-page-subtitle hidden sm:block">
             New orders only. Auto = one tap confirm, deliver, WhatsApp steps. Card = paste link, send.
           </p>
         </div>
@@ -613,6 +646,53 @@ const AdminInbox = () => {
         <div className={cn(mobileList ? 'block' : 'hidden', 'lg:block')}>{list}</div>
         <div className={cn(!mobileList ? 'block' : 'hidden', 'lg:block')}>{workspace}</div>
       </div>
+
+      {loaded && !mobileList && (showCardSend || showAutoConfirm || showManualConfirm) && (
+        <div
+          className="lg:hidden fixed inset-x-0 z-[55] border-t border-border bg-background/95 backdrop-blur-md px-3 pt-2 pb-2"
+          style={{ bottom: 'calc(3.75rem + env(safe-area-inset-bottom, 0px))' }}
+        >
+          {showCardSend ? (
+            <Button
+              type="button"
+              className="w-full min-h-12 h-12 font-bold bg-[#25D366] hover:bg-[#128C7E] text-white text-base"
+              disabled={busy}
+              onClick={() => void handleSaveAndSend()}
+            >
+              {saveOrder.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <MessageCircle className="w-4 h-4 mr-2" />
+              )}
+              Save & send on WhatsApp
+            </Button>
+          ) : showAutoConfirm ? (
+            <Button
+              type="button"
+              className="w-full min-h-12 h-12 font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-base"
+              disabled={busy}
+              onClick={() => void handleConfirmAuto()}
+            >
+              {busy ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Wallet className="w-4 h-4 mr-2" />}
+              Confirm, deliver & WhatsApp
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              className="w-full min-h-12 h-12 font-bold"
+              disabled={busy}
+              onClick={() => void handleConfirmManual()}
+            >
+              {updateStatus.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+              )}
+              Confirm payment
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

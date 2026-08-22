@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { formatCatalogLkr } from '@/hooks/useCurrency';
 import { cardPaymentPageUrl } from '@/lib/cardPayment';
+import { openExternalUrl } from '@/lib/openExternal';
 import {
   detectWhatsAppScenario,
   getOrderWhatsAppLink,
@@ -220,9 +221,13 @@ export function openOrderWhatsApp(
   order: OrderForWhatsApp,
   deliveries: DeliveryRowLite[] = [],
   scenario?: WhatsAppScenario,
+  popup?: Window | null,
 ): boolean {
   const link = getOrderWhatsAppLink(order, scenario, deliveries);
-  if (!link.url) return false;
-  window.open(link.url, '_blank', 'noopener,noreferrer');
+  if (!link.url) {
+    popup?.close();
+    return false;
+  }
+  openExternalUrl(link.url, popup);
   return true;
 }
