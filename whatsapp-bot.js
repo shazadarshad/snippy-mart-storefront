@@ -11,8 +11,8 @@ const SEND_URL = "https://api.wasenderapi.com/api/send-message";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // Supabase
-const SUPABASE_URL = "https://vuffzfuklzzcnfnubtzx.supabase.co/functions/v1";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1ZmZ6ZnVrbHp6Y25mbnVidHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTQ1NjAsImV4cCI6MjA4NDI3MDU2MH0.qHjJYOrNi1cBYPYapmHMJgDxsI50sHAKUAvv0VnPQFM";
+const SUPABASE_URL = "https://aioyoxnjukfibsogegdb.supabase.co/functions/v1";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpb3lveG5qdWtmaWJzb2dlZ2RiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyNTA0ODAsImV4cCI6MjEwMzgyNjQ4MH0.4XrFwZgyTQ00HSyUVlxpluKL9XFBs15hmMzOrIEtepc";
 
 // Initialize OpenAI
 let openai = null;

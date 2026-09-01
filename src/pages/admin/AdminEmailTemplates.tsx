@@ -64,7 +64,7 @@ const AdminEmailTemplates = () => {
         // Logo (site brand header)
         html = html.replace(
             /\{\{logo_url\}\}/g,
-            'https://vuffzfuklzzcnfnubtzx.supabase.co/storage/v1/object/public/site-assets/logo-1768828286339.png',
+            'https://aioyoxnjukfibsogegdb.supabase.co/storage/v1/object/public/site-assets/logo-1768828286339.png',
         );
 
         // Common variables

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Initialize & Version Check
-    const API_BASE = "https://vuffzfuklzzcnfnubtzx.supabase.co/functions/v1/cursor-api";
+    const API_BASE = "https://aioyoxnjukfibsogegdb.supabase.co/functions/v1/cursor-api";
     const MANIFEST = chrome.runtime.getManifest();
 
     // Check Version

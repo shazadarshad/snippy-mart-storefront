@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/cursor/(.*)",
-      "destination": "https://vuffzfuklzzcnfnubtzx.supabase.co/functions/v1/cursor-api/$1"
+      "destination": "https://aioyoxnjukfibsogegdb.supabase.co/functions/v1/cursor-api/$1"
     },
     {
       "source": "/((?!robots\\.txt|sitemap\\.xml|llms\\.txt|manifest\\.json|site\\.webmanifest|sw\\.js|favicon\\.ico|.*\\..*).*)",

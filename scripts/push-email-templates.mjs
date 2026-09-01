@@ -8,8 +8,8 @@ const sql = readFileSync(sqlPath, 'utf8');
 
 const serviceKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1ZmZ6ZnVrbHp6Y25mbnVidHp4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODY5NDU2MCwiZXhwIjoyMDg0MjcwNTYwfQ.1puMnXamnjVIk8PM5gbJourUfatAeuaoFkDdFajlpn0';
-const base = 'https://vuffzfuklzzcnfnubtzx.supabase.co/rest/v1/email_templates';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpb3lveG5qdWtmaWJzb2dlZ2RiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODI1MDQ4MCwiZXhwIjoyMTAzODI2NDgwfQ.o0V69mCQAt_grTEaLLgIcPvAlCH4fyOZBExVDC7Gm6I';
+const base = 'https://aioyoxnjukfibsogegdb.supabase.co/rest/v1/email_templates';
 const headers = {
   apikey: serviceKey,
   Authorization: `Bearer ${serviceKey}`,

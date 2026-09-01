@@ -22,7 +22,7 @@ const config: CapacitorConfig = {
       'snippymart.com',
       'www.snippymart.com',
       '*.supabase.co',
-      'vuffzfuklzzcnfnubtzx.supabase.co',
+      'aioyoxnjukfibsogegdb.supabase.co',
     ],
   },
   plugins: {

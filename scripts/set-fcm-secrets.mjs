@@ -7,7 +7,7 @@ import { spawnSync } from 'child_process';
 import { resolve } from 'path';
 
 const keyPath = process.argv[2];
-const projectRef = process.argv[3] || 'vuffzfuklzzcnfnubtzx';
+const projectRef = process.argv[3] || 'aioyoxnjukfibsogegdb';
 
 if (!keyPath) {
   console.error('Usage: node scripts/set-fcm-secrets.mjs <path-to-serviceAccount.json>');

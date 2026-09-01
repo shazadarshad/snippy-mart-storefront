@@ -1,4 +1,4 @@
-project_id = "vuffzfuklzzcnfnubtzx"
+project_id = "aioyoxnjukfibsogegdb"
 
 [functions.create-order]
 verify_jwt = false
@@ -10,4 +10,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.apply-admin-push-migration]
+verify_jwt = false
+
+[functions.auto-buyer]
+verify_jwt = false
+
+[functions.attach-payment-proof]
+verify_jwt = false
+
+[functions.apply-card-checkout-columns]
 verify_jwt = false

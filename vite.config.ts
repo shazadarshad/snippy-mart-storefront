@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
     },
     proxy: {
       '/api/chat': {
-        target: 'https://vuffzfuklzzcnfnubtzx.supabase.co/functions/v1/ai-chat',
+        target: 'https://aioyoxnjukfibsogegdb.supabase.co/functions/v1/ai-chat',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/chat/, ''),
       },

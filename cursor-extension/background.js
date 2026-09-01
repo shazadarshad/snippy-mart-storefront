@@ -1,7 +1,7 @@
 // Cursor Smart Recovery - High Logic Background Worker
 // "Service Worker Inactive" Fix: We use Alarms to keep logic fresh and top-level listeners.
 
-const API_BASE = "https://vuffzfuklzzcnfnubtzx.supabase.co/functions/v1/cursor-api";
+const API_BASE = "https://aioyoxnjukfibsogegdb.supabase.co/functions/v1/cursor-api";
 
 // 1. TOP LEVEL LISTENERS (Crucial for Wake-Up)
 chrome.runtime.onInstalled.addListener(setupHeartbeat);
